@@ -1,0 +1,57 @@
+#%RAML 1.0
+title: ItsYouOnline
+version: 0.1
+baseUri: /users
+securitySchemes:
+  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
+types:
+  phonenumber:
+    pattern: ^\+[0-9]+$
+  user:
+    properties:
+        username: string
+        expire?: date
+        email?:
+          properties:
+            []:
+              type: string
+        phone?:
+          properties:
+            []:
+              type: phonenumber
+
+    example:
+        username: bob
+        expire: 2018-10-20
+        email:
+            work: bob@company.com
+            home: bob@example.com
+            "dance club": bob@linedanceclub.example.org
+        phone:
+          be: +3212341234123
+          eg: +2012341234123
+
+  userview:
+    properties:
+        username: string
+        email?: string[]
+        phone?: phonenumber[]
+
+/users:
+  post:
+    description: Register a new user
+    body:
+        application/json:
+            type: user
+  /{username}/info:
+    securedBy: [ oauth_2_0 ]
+    get:
+        responses:
+            200:
+                body:
+                    application/json:
+                        type: userview
+  /{username}/validate:
+    get:
+        queryParameters:
+            token: string
