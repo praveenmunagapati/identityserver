@@ -7,9 +7,31 @@ securitySchemes:
 types:
   phonenumber:
     pattern: ^\+[0-9]+$
+  address:
+    properties:
+        city:
+            type: string
+            maxLength: 30
+        street:
+            type: string
+            maxLength: 50
+        nr:
+            type: string
+            maxLength: 10
+        other?:
+            type: string
+            maxLength: 30
+        country:
+            type: string
+            maxLength: 40
+        postalcode:
+            type: string
+            maxLength: 20
   user:
     properties:
-        username: string
+        username:
+            type: string
+            maxLength: 30
         expire?: date
         email?:
           properties:
@@ -19,6 +41,10 @@ types:
           properties:
             []:
               type: phonenumber
+        address?:
+          properties:
+            []:
+              type: address
 
     example:
         username: bob
@@ -30,6 +56,13 @@ types:
         phone:
           be: +3212341234123
           eg: +2012341234123
+        address:
+            home:
+                city: Springfield
+                street: Main street
+                nr: 45B
+                country: Tomorrowland
+                postalcode: T-9450
 
   userview:
     properties:
