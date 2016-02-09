@@ -71,3 +71,16 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 #slide3 .content { background: rgba(72, 72, 72, 0.2); }
 #slide5 .content { background: rgba(175, 175, 175, 0.2); }
 footer { background: #3091BB; color: #FFF; padding: 20px 0; text-align: center; font-family: 'arvo'; font-size: 16px; }
+#slide7 {    background: url(../img/api.jpg) 50% 0 no-repeat fixed;
+    color: #fff;
+    height: 400px;
+    padding: 270px 0 0 0;
+    background-size: cover;
+}
+.doc  {}
+.doc a { background: url(../img/button.png) no-repeat; width: 171px;height: 171px; display: block; float: left;margin: 0 60px;color: #FFF;text-decoration: none;font-family: arial;text-align: center;padding-top: 34px;}
+.text-center { text-align: center;width: 590px;margin: 0 auto;}
+.doc a i {
+    display: block;
+    margin-bottom: 12px;
+}
