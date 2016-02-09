@@ -1,10 +1,14 @@
 package main
 
 import (
+	"net/http"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
+	"github.com/gorilla/mux"
+	"github.com/itsyouonline/identityserver/identityserver"
+	"github.com/itsyouonline/identityserver/site"
 )
 
 func main() {
@@ -40,14 +44,19 @@ func main() {
 
 	app.Action = func(c *cli.Context) {
 
-		//r, err := server.GetRouter()
+		router := mux.NewRouter()
 
-		//if err != nil {
-		//	log.Error(err)
-		//	os.Exit(1)
-		//}
+		identityService := &identityserver.Service{}
+		identityService.AddRoutes(router)
 
-		//r.Run(bindAddress)
+		siteService := &site.Service{}
+		siteService.AddRoutes(router)
+
+		err := http.ListenAndServe(bindAddress, router)
+		if err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
 	}
 
 	app.Run(os.Args)
