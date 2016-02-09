@@ -71,7 +71,7 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 #slide3 .content { background: rgba(72, 72, 72, 0.2); }
 #slide5 .content { background: rgba(175, 175, 175, 0.2); }
 footer { background: #3091BB; color: #FFF; padding: 20px 0; text-align: center; font-family: 'arvo'; font-size: 16px; }
-#slide7 {    background: url(../img/api.jpg) 50% 0 no-repeat fixed;color: #fff;height: 400px;padding: 270px 0 0 0;background-size: cover;}
-.doc a { background: url(../img/button2.png) no-repeat;width: 175px;height: 191px; display: block; float: left;margin: 0 60px;color: #FFF;text-decoration: none;font-family: arial;text-align: center;padding-top: 42px;padding-right: 8px;padding-left: 8px;}
-.text-center { text-align: center;width: 622px;margin: 0 auto;}
-.doc a i {display: block;margin-bottom: 12px;}
+#slide7 {background: url(../img/bg.png) repeat;height: 120px;padding: 49px 0 0 0;}
+.doc a {background: url(../img/button1.png) no-repeat center center;width: 315px;float: left;margin: 0 27px;color: #FFF;text-decoration: none;font-family: arial;padding: 24px 0 24px 49px;text-align: center;}
+.text-center { text-align: center;width: 962px;margin: 0 auto;}
+.doc2 a {background-image: url(../img/button2.png);padding: 24px 0 24px 59px;}
