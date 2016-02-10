@@ -1,4 +1,6 @@
 body { margin: 0; padding: 0; width: 100%; }
+
+
 h1 { font-family:"Arvo"; font-weight:normal; font-size: 55px; text-align: center; color: #fff; margin: 0; padding: 0; }
 h2 { font-family:"Arvo"; font-weight: normal; font-size: 40px; text-align: center; margin: 0; padding: 0; text-shadow: 2px 2px #3C3C3C; color: #FFFFFF; }
 h3 { font-family: Oswald; font-weight: normal; font-size: 16px; text-align: center; margin: 5px 0; padding: 0; z-index: 1; position: relative; }
@@ -42,6 +44,42 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 --------------------------------------------------------*/
 
 #slide1 .content { margin-top: 220px; background: rgba(72, 72, 72, 0.2); }
+
+
+.fullscreenform:before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: -999;
+  display: block;
+  background-image: url('../img/masks.jpg');
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  -webkit-filter: opacity(0.2) contrast(0.2);
+  -moz-filter: opacity(0.2) contrast(0.2);
+  -o-filter: opacity(0.2) contrast(0.2);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+  filter: opacity(0.2) contrast(0.2);
+}
+
+.fullscreenform {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.fullscreenform form {
+  margin: 150px 50px 0px 50px;
+}
+
+
+
+
 @media (max-width: 1200px) {
 .content { width: 960px; }
 .quotes_container { width: 800px; }
