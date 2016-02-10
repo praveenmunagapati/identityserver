@@ -7,7 +7,7 @@ h3 { font-family: Oswald; font-weight: normal; font-size: 16px; text-align: cent
 .clear { clear: both; }
 /*= HEADER & NAVIGATION
 --------------------------------------------------------*/
-#header { width: 100%; background: rgba(48, 145, 187, 0.92); height: 80px; position: fixed;z-index: 2;}
+#header { width: 100%; background: rgba(48, 145, 187, 0.92); height: 80px; margin-top: 15px; position: fixed;z-index: 2;}
 #nav { width: 473px; float: right; margin-top: 30px; }
 #logo a { text-decoration: none; float: left; font-size: 30px; margin-top: 20px; color: #FFF; font-family: Wellfleet; font-weight: bold; }
 #nav ul { list-style: none; display: block; margin: 0 auto; list-style: none; padding: 0; }
