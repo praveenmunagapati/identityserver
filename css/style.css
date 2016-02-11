@@ -1,6 +1,4 @@
-body { margin: 0; padding: 0; width: 100%; }
-
-
+body { margin: 0; padding: 0; width: 100%;font-family: arial }
 h1 { font-family:"Arvo"; font-weight:normal; font-size: 55px; text-align: center; color: #fff; margin: 0; padding: 0; }
 h2 { font-family:"Arvo"; font-weight: normal; font-size: 40px; text-align: center; margin: 0; padding: 0; text-shadow: 2px 2px #3C3C3C; color: #FFFFFF; }
 h3 { font-family: Oswald; font-weight: normal; font-size: 16px; text-align: center; margin: 5px 0; padding: 0; z-index: 1; position: relative; }
@@ -9,7 +7,7 @@ h3 { font-family: Oswald; font-weight: normal; font-size: 16px; text-align: cent
 .clear { clear: both; }
 /*= HEADER & NAVIGATION
 --------------------------------------------------------*/
-#header { width: 100%; background: rgba(48, 145, 187, 0.92); height: 80px; margin-top: 15px; position: fixed;z-index: 2;}
+#header { width: 100%; background: rgba(48, 145, 187, 0.92); height: 80px; position: fixed;z-index: 2;margin-top: 15px;}
 #nav { width: 473px; float: right; margin-top: 30px; }
 #logo a { text-decoration: none; float: left; font-size: 30px; margin-top: 20px; color: #FFF; font-family: Wellfleet; font-weight: bold; }
 #nav ul { list-style: none; display: block; margin: 0 auto; list-style: none; padding: 0; }
@@ -45,7 +43,6 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 
 #slide1 .content { margin-top: 220px; background: rgba(72, 72, 72, 0.2); }
 
-
 .fullscreenform:before {
   content: "";
   position: fixed;
@@ -77,9 +74,6 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
   margin: 150px 50px 0px 50px;
 }
 
-
-
-
 @media (max-width: 1200px) {
 .content { width: 960px; }
 .quotes_container { width: 800px; }
@@ -95,6 +89,8 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 .text-center { width: 100% !important; padding-bottom: 20px}
 .doc a {    display: inline-block; float: none !important;}
 #slide7 {padding: 49px 0 60px 0 !important;}
+.sign-wrap {float: none !important;text-align: center;}
+.sign-wrap a { color: #FFF; text-decoration: none;margin: 20px 20px 0 0 !important;display: inline-block;} 
 }
 @media (max-width: 768px) {
 .content { width: 100%; }
@@ -114,3 +110,7 @@ footer { background: #3091BB; color: #FFF; padding: 20px 0; text-align: center; 
 .text-center { text-align: center;width: 962px;margin: 0 auto;}
 .doc2 a {background-image: url(../img/button2.png);padding: 24px 0 24px 59px;}
 .doc a:hover { opacity: 0.9;}
+.sign-wrap { float: right;}
+.sign-wrap a { color: #FFF; text-decoration: none;margin: 31px 20px 0 0;display: inline-block;}
+.sign-wrap a:hover { opacity: 0.9}
+.sign-wrap a i {margin: 0 6px 0 0;font-size: 15px;}
