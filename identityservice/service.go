@@ -1,4 +1,4 @@
-package site
+package identityservice
 
 import (
 	"github.com/gorilla/mux"
@@ -10,6 +10,5 @@ type Service struct {
 
 //AddRoutes registers the http routes with the router
 func (service *Service) AddRoutes(router *mux.Router) {
-	router.Methods("GET").Path("register").HandlerFunc(service.ShowRegistrationForm)
-	router.Methods("POST").Path("register").HandlerFunc(service.ProcessRegistrationForm)
+
 }

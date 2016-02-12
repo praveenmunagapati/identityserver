@@ -12,7 +12,7 @@ package crypt
 import (
 	"errors"
 
-	"github.com/itsyouonline/identityserver/oauthserver/keyderivation/crypt/common"
+	"github.com/itsyouonline/identityserver/oauthservice/keyderivation/crypt/common"
 )
 
 var ErrKeyMismatch = errors.New("hashed value is not the hash of the given password")

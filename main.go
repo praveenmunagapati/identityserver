@@ -6,9 +6,10 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/itsyouonline/identityserver/identityserver"
-	"github.com/itsyouonline/identityserver/site"
+	"github.com/itsyouonline/identityserver/identityservice"
+	"github.com/itsyouonline/identityserver/siteservice"
 )
 
 func main() {
@@ -46,13 +47,14 @@ func main() {
 
 		router := mux.NewRouter()
 
-		identityService := &identityserver.Service{}
+		identityService := &identityservice.Service{}
 		identityService.AddRoutes(router)
 
-		siteService := &site.Service{}
+		siteService := &siteservice.Service{}
 		siteService.AddRoutes(router)
 
-		err := http.ListenAndServe(bindAddress, router)
+		loggedRouter := handlers.LoggingHandler(log.StandardLogger().Out, router)
+		err := http.ListenAndServe(bindAddress, loggedRouter)
 		if err != nil {
 			log.Error(err)
 			os.Exit(1)

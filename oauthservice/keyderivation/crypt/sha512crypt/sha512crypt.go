@@ -18,8 +18,8 @@ import (
 	"crypto/sha512"
 	"strconv"
 
-	"github.com/itsyouonline/identityserver/oauthserver/keyderivation/crypt"
-	"github.com/itsyouonline/identityserver/oauthserver/keyderivation/crypt/common"
+	"github.com/itsyouonline/identityserver/oauthservice/keyderivation/crypt"
+	"github.com/itsyouonline/identityserver/oauthservice/keyderivation/crypt/common"
 )
 
 const (
