@@ -6,6 +6,7 @@
 
        <link rel='stylesheet prefetch' href='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css'>
        <link rel="stylesheet" href="assets/css/style.css"/>
+       <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
        <link href='http://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
         <style>
 
@@ -17,23 +18,18 @@
 
 <body ng-app="registrationApp">
 
-<!----- HEADER START--->
 <header id="header">
-<div class="content">
-<div id="logo"><a href=""> ItsYou.Online </a></div>
-
-<nav id="nav">
-	<ul>
-		<li><a href="#login" title="Login">Login</a></li>
-	</ul>
-</nav>
-</div>
+  <div class="content">
+    <div id="logo"><a href="home"> ItsYou.Online </a></div>
+    <div class="sign-wrap">
+      <a href="login"><i class="fa fa-lock"></i>Log in</a>
+    </div>
+  </div>
 </header>
-<!----- HEADER END--->
 
 
 <div class="fullscreenform">
-    <form ng-cloak layout="column">
+    <form ng-cloak layout="column" method="post" action="register">
       <md-input-container>
         <label>Username</label>
         <input ng-model="login" name="login" type="text" autofocus>
@@ -60,7 +56,7 @@
 
       <div layout="row">
         <span flex></span>
-        <md-button type="submit" class="md-primary" ng-click="next()">Sign up</md-button>
+        <md-button type="submit" class="md-primary">Sign up</md-button>
       </div>
     </form>
 </div>
