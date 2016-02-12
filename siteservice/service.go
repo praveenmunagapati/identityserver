@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/website/packaged/assets"
 	"github.com/itsyouonline/website/packaged/html"
+	"github.com/itsyouonline/website/packaged/thirdpartyassets"
 )
 
 //Service is the identityserver http service
@@ -20,6 +21,8 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("POST").Path("/register").HandlerFunc(service.ProcessRegistrationForm)
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(
 		&assetfs.AssetFS{Asset: assets.Asset, AssetDir: assets.AssetDir, AssetInfo: assets.AssetInfo})))
+	router.PathPrefix("/thirdpartyassets/").Handler(http.StripPrefix("/thirdpartyassets/", http.FileServer(
+		&assetfs.AssetFS{Asset: thirdpartyassets.Asset, AssetDir: thirdpartyassets.AssetDir, AssetInfo: thirdpartyassets.AssetInfo})))
 
 }
 

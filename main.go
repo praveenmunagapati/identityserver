@@ -54,6 +54,8 @@ func main() {
 		siteService.AddRoutes(router)
 
 		loggedRouter := handlers.LoggingHandler(log.StandardLogger().Out, router)
+
+		log.Info("Listening on ", bindAddress)
 		err := http.ListenAndServe(bindAddress, loggedRouter)
 		if err != nil {
 			log.Error(err)

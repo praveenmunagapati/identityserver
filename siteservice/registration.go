@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/itsyouonline/website/packaged/html"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 const registrationFileName = "registration.html"
@@ -19,6 +21,15 @@ func (service *Service) ShowRegistrationForm(w http.ResponseWriter, request *htt
 }
 
 //ProcessRegistrationForm processes the user registration form
-func (service *Service) ProcessRegistrationForm(response http.ResponseWriter, request *http.Request) {
+func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *http.Request) {
+	err := request.ParseForm()
+	if err != nil {
+		log.Debug("ERROR parsing registration form:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	values := request.Form
+	log.Debug(values)
 
+	http.Redirect(w, request, "", http.StatusFound)
 }
