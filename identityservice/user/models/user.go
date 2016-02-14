@@ -39,7 +39,7 @@ type UserManager struct {
 }
 
 func getUserCollection(session *mgo.Session) *mgo.Collection {
-	return session.DB(db.DB_NAME).C(COLLECTION_USERS)
+	return db.GetCollection(session, COLLECTION_USERS)
 }
 
 func NewUserManager(r *http.Request) *UserManager {

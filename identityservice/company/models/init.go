@@ -8,12 +8,11 @@ import (
 
 // Initialize models in DB, if required.
 func InitModels() {
-	// TODO: Use model tags to ensure indices/constraints.
 	index := mgo.Index{
-		Key:      []string{"username"},
+		Key:      []string{"globalid"},
 		Unique:   true,
 		DropDups: true,
 	}
 
-	db.EnsureIndex(COLLECTION_USERS, index)
+	db.EnsureIndex(COLLECTION_COMPANIES, index)
 }
