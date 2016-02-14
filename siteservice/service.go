@@ -14,6 +14,10 @@ import (
 type Service struct {
 }
 
+func NewService() *Service {
+	return &Service{}
+}
+
 //AddRoutes registers the http routes with the router
 func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("GET").Path("/").HandlerFunc(service.HomePage)
