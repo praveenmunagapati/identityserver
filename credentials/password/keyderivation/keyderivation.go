@@ -1,6 +1,6 @@
 package keyderivation
 
-import "github.com/itsyouonline/identityserver/oauthservice/keyderivation/crypt/sha512crypt"
+import "github.com/itsyouonline/identityserver/credentials/password/keyderivation/crypt/sha512crypt"
 
 //Hash creates a random 16 character salt and creates a key using this salt
 //Key generation function: SHA512 with 5000 iterations
