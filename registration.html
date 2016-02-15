@@ -69,11 +69,11 @@
             <div flex layout="row">
                 <span flex></span>
                 <div layout="column" flex="60">
-                <md-input-container>
-                    <label>2-Factor authentication code</label>
-                    <input ng-model="totpcode" name="totpcode">
-                </md-input-container>
-                    <qrcode version="6" error-correction-level="M" size="200" data="oauth://123412341234" href="oauth://123412341234"></qrcode>
+                    <md-input-container>
+                        <label>2-Factor authentication code</label>
+                        <input ng-model="totpcode" name="totpcode">
+                    </md-input-container>
+                    <qrcode version="6" error-correction-level="M" size="200" data="otpauth://totp/ItsYou.online?secret=1234123412341234&issuer=ItsYou.Online" href="otpauth://totp/ItsYou.online:?secret=1234123412341234&issuer=ItsYou.Online"></qrcode>
                 </div>
                 <span flex></span>
             </div>
@@ -84,7 +84,7 @@
 
         <div layout="row">
             <span flex></span>
-            <md-button type="submit" class="md-primary">Sign up</md-button>
+            <md-button type="submit" class="md-raised md-primary">Sign up</md-button>
             <span flex></span>
         </div>
     </form>
