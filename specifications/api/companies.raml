@@ -1,17 +1,22 @@
 #%RAML 1.0
 title: ItsYouOnline
 version: 0.1
-baseUri: /companies
-securitySchemes:
-  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
+baseUri: /
 types:
   company:
     properties:
-        globalid: string
-        expire?: date
-        organizations?: string[]
+        globalid:
+            type: string
+        expire:
+            type: date
+            required: false
+        organizations:
+            type: string[]
+            required: false
         info: string[]
-        taxnr?: string
+        taxnr:
+            type: string
+            required: false
     example:
         globalid: ILikeCandy
         expire: 2018-10-20
@@ -21,14 +26,13 @@ types:
 
   companyview: company
 
-/users:
+/companies:
   post:
     description: Register a new company
     body:
         application/json:
             type: company
   /{globalid}/info:
-    securedBy: [ oauth_2_0 ]
     get:
         responses:
             200:
@@ -38,4 +42,5 @@ types:
   /{globalid}/validate:
     get:
         queryParameters:
-            token: string
+            token:
+                type: string

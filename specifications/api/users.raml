@@ -2,8 +2,6 @@
 title: ItsYouOnline
 version: 0.1
 baseUri: /users
-securitySchemes:
-  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
 types:
   phonenumber:
     pattern: ^\+[0-9]+$
@@ -18,9 +16,10 @@ types:
         nr:
             type: string
             maxLength: 10
-        other?:
+        other:
             type: string
             maxLength: 30
+            required: false
         country:
             type: string
             maxLength: 40
@@ -32,16 +31,21 @@ types:
         username:
             type: string
             maxLength: 30
-        expire?: date
-        email?:
+        expire:
+            type: date
+            required: false
+        email:
+          required: false
           properties:
             []:
               type: string
-        phone?:
+        phone:
+          required: false
           properties:
             []:
               type: phonenumber
-        address?:
+        address:
+          required: false
           properties:
             []:
               type: address
@@ -66,10 +70,17 @@ types:
 
   userview:
     properties:
-        username: string
-        email?: string[]
-        phone?: phonenumber[]
-        address?: address[]
+        username:
+            type: string
+        email:
+            type: string[]
+            required: false
+        phone:
+            type: phonenumber[]
+            required: false
+        address:
+            type: address[]
+            required: false
 
 /users:
   post:
@@ -78,7 +89,6 @@ types:
         application/json:
             type: user
   /{username}/info:
-    securedBy: [ oauth_2_0 ]
     get:
         responses:
             200:
@@ -88,4 +98,5 @@ types:
   /{username}/validate:
     get:
         queryParameters:
-            token: string
+            token:
+                type: string
