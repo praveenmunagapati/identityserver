@@ -3,6 +3,7 @@ package identityservice
 import (
 	"github.com/gorilla/mux"
 
+	"github.com/itsyouonline/identityserver/identityservice/company"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 )
 
@@ -18,4 +19,7 @@ func NewService() *Service {
 func (service *Service) AddRoutes(router *mux.Router) {
 	// User API
 	user.AddRoutes(router)
+
+	// Company API
+	company.AddRoutes(router)
 }

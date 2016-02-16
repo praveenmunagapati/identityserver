@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/itsyouonline/identityserver/identityservice/user/api"
+	"github.com/itsyouonline/identityserver/identityservice/user/models"
 )
 
 func AddRoutes(r *mux.Router) {
@@ -16,4 +17,7 @@ func AddRoutes(r *mux.Router) {
 			Path(route.Path).
 			Handler(route.HandlerFunc)
 	}
+
+	// Create indices ...
+	go models.InitModels()
 }
