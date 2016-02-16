@@ -6,10 +6,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/itsyouonline/identityserver/identityservice"
-	"github.com/itsyouonline/identityserver/siteservice"
+
+	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/routes"
 )
 
 func main() {
@@ -19,8 +18,10 @@ func main() {
 	app.Version = "0.1-Dev"
 
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+
 	var debugLogging bool
-	var bindAddress string
+	var bindAddress, dbConnectionString string
+
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:        "debug, d",
@@ -33,7 +34,14 @@ func main() {
 			Value:       ":8080",
 			Destination: &bindAddress,
 		},
+		cli.StringFlag{
+			Name:        "connectionstring, c",
+			Usage:       "Mongodb connection string",
+			Value:       "127.0.0.1:27017",
+			Destination: &dbConnectionString,
+		},
 	}
+
 	app.Before = func(c *cli.Context) error {
 		if debugLogging {
 			log.SetLevel(log.DebugLevel)
@@ -44,23 +52,14 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) {
+		// Connect to DB!
+		go db.Connect(dbConnectionString)
+		defer db.Close()
 
-		router := mux.NewRouter()
+		// Get router!
+		r := routes.GetRouter()
 
-		identityService := &identityservice.Service{}
-		identityService.AddRoutes(router)
-
-		siteService := &siteservice.Service{}
-		siteService.AddRoutes(router)
-
-		loggedRouter := handlers.LoggingHandler(log.StandardLogger().Out, router)
-
-		log.Info("Listening on ", bindAddress)
-		err := http.ListenAndServe(bindAddress, loggedRouter)
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
+		log.Fatal(http.ListenAndServe(bindAddress, r))
 	}
 
 	app.Run(os.Args)
