@@ -32,6 +32,14 @@ types:
     body:
         application/json:
             type: company
+  /{globalId}:
+    put:
+      description: Update existing company. Updating ``globalId`` is not allowed.
+      responses:
+        200:
+          body:
+            application/json:
+              type: company
   /{globalid}/info:
     get:
         responses:

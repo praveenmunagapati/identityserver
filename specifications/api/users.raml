@@ -84,10 +84,18 @@ types:
 
 /users:
   post:
-    displayName: Create a new user
+    description: Create a new user
     body:
         application/json:
             type: user
+  /{username}:
+    put:
+      description: Update existing user. Updating ``username`` is not allowed.
+      responses:
+        200:
+          body:
+            application/json:
+              type: user
   /{username}/info:
     get:
         responses:
