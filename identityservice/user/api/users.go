@@ -44,6 +44,7 @@ func (u *UserResource) GetRoutes() resource.Routes {
 			Name: "UserDetail",
 			Methods: resource.RouteMethods{
 				resource.GET,
+				resource.PUT,
 			},
 			Path:        "/users/{username}/",
 			HandlerFunc: u.DispatchDetail,
@@ -80,6 +81,41 @@ func (u *UserResource) GetDetail(w http.ResponseWriter, r *http.Request) {
 	user, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	response := u.serialize(user)
+
+	u.Respond(w, response)
+}
+
+func (u *UserResource) PutDetail(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	user, err := u.deserialize(r)
+	if err != nil {
+		log.Debug(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	userMgr := userModel.NewUserManager(r)
+
+	oldUser, uerr := userMgr.GetByName(username)
+	if uerr != nil {
+		log.Debug(uerr)
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	if user.Username != username || user.GetId() != oldUser.GetId() {
+		http.Error(w, "Changing username or id is Forbidden!", http.StatusForbidden)
+		return
+	}
+
+	err = user.Save()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

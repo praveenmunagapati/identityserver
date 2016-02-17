@@ -96,6 +96,8 @@ types:
           body:
             application/json:
               type: user
+        403:
+          description: Updating username is Forbidden!
   /{username}/info:
     get:
         responses:
