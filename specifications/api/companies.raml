@@ -40,6 +40,8 @@ types:
           body:
             application/json:
               type: company
+        403:
+          description: Updating globalId is Forbidden!
   /{globalid}/info:
     get:
         responses:

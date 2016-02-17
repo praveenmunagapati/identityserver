@@ -43,6 +43,7 @@ func (c *CompanyResource) GetRoutes() resource.Routes {
 			Name: "CompanyDetail",
 			Methods: resource.RouteMethods{
 				resource.GET,
+				resource.PUT,
 			},
 			Path:        "/companies/{globalId}/",
 			HandlerFunc: c.DispatchDetail,
@@ -79,6 +80,41 @@ func (c *CompanyResource) GetDetail(w http.ResponseWriter, r *http.Request) {
 	company, err := companyMgr.GetByName(globalId)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	response := c.serialize(company)
+
+	c.Respond(w, response)
+}
+
+func (c *CompanyResource) PutDetail(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalId"]
+
+	company, err := c.deserialize(r)
+	if err != nil {
+		log.Debug(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	companyMgr := companyModel.NewCompanyManager(r)
+
+	oldCompany, cerr := companyMgr.GetByName(globalId)
+	if cerr != nil {
+		log.Debug(cerr)
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	if company.GlobalId != globalId || company.GetId() != oldCompany.GetId() {
+		http.Error(w, "Changing globalId or id is Forbidden!", http.StatusForbidden)
+		return
+	}
+
+	err = company.Save()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
