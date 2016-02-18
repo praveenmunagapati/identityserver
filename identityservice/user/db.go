@@ -1,4 +1,4 @@
-package models
+package user
 
 import (
 	"errors"
@@ -10,28 +10,21 @@ import (
 	"github.com/itsyouonline/identityserver/db"
 )
 
-type UserAddress struct {
-	City       string `json:"city"`
-	Street     string `json:"street"`
-	Nr         string `json:"nr"`
-	Other      string `json:"other"`
-	Country    string `json:"country"`
-	PostalCode string `json:"postalCode"`
+const (
+	COLLECTION_USERS = "users"
+)
+
+// Initialize models in DB, if required.
+func InitModels() {
+	// TODO: Use model tags to ensure indices/constraints.
+	index := mgo.Index{
+		Key:      []string{"username"},
+		Unique:   true,
+		DropDups: true,
+	}
+
+	db.EnsureIndex(COLLECTION_USERS, index)
 }
-
-type User struct {
-	Id       bson.ObjectId          `json:"id" bson:"_id,omitempty"`
-	Username string                 `json:"username"`
-	Expires  int64                  `json:"expires"`
-	Email    map[string]string      `json:"email"`
-	Phone    map[string]string      `json:"phone"`
-	Address  map[string]UserAddress `json:"address"`
-
-	session    *mgo.Session
-	collection *mgo.Collection
-}
-
-type UserList []*User
 
 type UserManager struct {
 	session    *mgo.Session
@@ -48,15 +41,6 @@ func NewUserManager(r *http.Request) *UserManager {
 		session:    session,
 		collection: getUserCollection(session),
 	}
-}
-
-// Get all users from DB.
-func (um *UserManager) All() (UserList, error) {
-	var userList UserList
-
-	err := um.collection.Find(nil).All(&userList)
-
-	return userList, err
 }
 
 // Get user by ID.
@@ -88,41 +72,31 @@ func (um *UserManager) Exists(username string) bool {
 	return count != 1
 }
 
-// Return new blank user.
-func NewUser(r *http.Request) *User {
-	session := db.GetDBSession(r)
-	return &User{
-		Id:         "",
-		session:    session,
-		collection: getUserCollection(session),
-	}
-}
-
 func (u *User) GetId() string {
 	return u.Id.Hex()
 }
 
-// Save current user.
-func (u *User) Save() error {
+// Save a user.
+func (um *UserManager) Save(u *User) error {
 	// TODO: Validation!
 
 	if u.Id == "" {
 		// New Doc!
 		u.Id = bson.NewObjectId()
-		err := u.collection.Insert(u)
+		err := um.collection.Insert(u)
 		return err
 	}
 
-	_, err := u.collection.UpsertId(u.Id, u)
+	_, err := um.collection.UpsertId(u.Id, u)
 
 	return err
 }
 
-// Delete current user.
-func (u *User) Delete() error {
+// Delete a user.
+func (um *UserManager) Delete(u *User) error {
 	if u.Id == "" {
 		return errors.New("User not stored")
 	}
 
-	return u.collection.RemoveId(u.Id)
+	return um.collection.RemoveId(u.Id)
 }

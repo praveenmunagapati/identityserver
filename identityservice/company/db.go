@@ -1,4 +1,4 @@
-package models
+package company
 
 import (
 	"errors"
@@ -10,19 +10,20 @@ import (
 	"github.com/itsyouonline/identityserver/db"
 )
 
-type Company struct {
-	Id            bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	GlobalId      string        `json:"globalId"`
-	Expires       int           `json:"expires"`
-	TaxNr         string        `json:"taxNr"`
-	Organizations []string      `json:"organizations"`
-	Info          []string      `json:"info"`
+const (
+	COLLECTION_COMPANIES = "companies" // name of the company collection in mongodb
+)
 
-	session    *mgo.Session
-	collection *mgo.Collection
+//InitModels initializes models in DB, if required.
+func InitModels() {
+	index := mgo.Index{
+		Key:      []string{"globalid"},
+		Unique:   true,
+		DropDups: true,
+	}
+
+	db.EnsureIndex(COLLECTION_COMPANIES, index)
 }
-
-type CompanyList []*Company
 
 type CompanyManager struct {
 	session    *mgo.Session
@@ -39,15 +40,6 @@ func NewCompanyManager(r *http.Request) *CompanyManager {
 		session:    session,
 		collection: getCompanyCollection(session),
 	}
-}
-
-// Get all companies from DB.
-func (cm *CompanyManager) All() (CompanyList, error) {
-	var companyList CompanyList
-
-	err := cm.collection.Find(nil).All(&companyList)
-
-	return companyList, err
 }
 
 // Get company by ID.
@@ -79,42 +71,31 @@ func (cm *CompanyManager) Exists(globalId string) bool {
 	return count != 1
 }
 
-func NewCompany(r *http.Request) *Company {
-	session := db.GetDBSession(r)
-	return &Company{
-		Id:            "",
-		Organizations: []string{},
-		Info:          []string{},
-		session:       session,
-		collection:    getCompanyCollection(session),
-	}
-}
-
 func (c *Company) GetId() string {
 	return c.Id.Hex()
 }
 
-// Save current company.
-func (c *Company) Save() error {
+// Save a company.
+func (cm *CompanyManager) Save(company *Company) error {
 	// TODO: Validation!
 
-	if c.Id == "" {
+	if company.Id == "" {
 		// New Doc!
-		c.Id = bson.NewObjectId()
-		err := c.collection.Insert(c)
+		company.Id = bson.NewObjectId()
+		err := cm.collection.Insert(company)
 		return err
 	}
 
-	_, err := c.collection.UpsertId(c.Id, c)
+	_, err := cm.collection.UpsertId(company.Id, company)
 
 	return err
 }
 
-// Delete current company.
-func (c *Company) Delete() error {
-	if c.Id == "" {
+// Delete a company.
+func (cm *CompanyManager) Delete(company *Company) error {
+	if company.Id == "" {
 		return errors.New("Company not stored")
 	}
 
-	return c.collection.RemoveId(c.Id)
+	return cm.collection.RemoveId(company.Id)
 }

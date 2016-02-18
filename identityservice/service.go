@@ -18,8 +18,10 @@ func NewService() *Service {
 //AddRoutes registers the http routes with the router.
 func (service *Service) AddRoutes(router *mux.Router) {
 	// User API
-	user.AddRoutes(router)
+	user.UsersInterfaceRoutes(router, user.UsersAPI{})
+	user.InitModels()
 
 	// Company API
-	company.AddRoutes(router)
+	company.CompaniesInterfaceRoutes(router, company.CompaniesAPI{})
+	company.InitModels()
 }

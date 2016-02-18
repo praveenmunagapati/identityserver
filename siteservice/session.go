@@ -22,7 +22,8 @@ func (service *Service) initializeSessions() {
 
 	registrationSessionStore := sessions.NewCookieStore([]byte(cookieStoreSecret))
 	registrationSessionStore.Options.HttpOnly = true
-	registrationSessionStore.Options.Secure = true
+	//TODO: enable this when we have automatic https
+	//registrationSessionStore.Options.Secure = true
 	registrationSessionStore.Options.MaxAge = 10 * 60 //10 minutes
 
 	service.Sessions[SessionForRegistration] = registrationSessionStore

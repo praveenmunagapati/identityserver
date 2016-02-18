@@ -13,7 +13,9 @@ types:
         organizations:
             type: string[]
             required: false
-        info: string[]
+        info:
+            type: string[]
+            required: false
         taxnr:
             type: string
             required: false
@@ -24,7 +26,8 @@ types:
           - info@ilikecandy.com
         taxnr: BE1234123412341234
 
-  companyview: company
+  companyview:
+        type: company
 
 /companies:
   post:

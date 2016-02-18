@@ -52,11 +52,13 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 
 	totpsession, err := service.GetSession(request, SessionForRegistration, "totp")
 	if err != nil {
+		log.Error("EROR while getting the totp registration session", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if totpsession.IsNew {
-		//TODO: indicate expired session
+		//TODO: indicate expired registration session
+		log.Debug("New registration session while processing the registration form")
 		service.ShowRegistrationForm(w, request)
 		return
 	}
