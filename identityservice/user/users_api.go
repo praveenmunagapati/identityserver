@@ -21,7 +21,7 @@ func (api UsersAPI) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMgr := NewUserManager(r)
+	userMgr := NewManager(r)
 	if err := userMgr.Save(&u); err != nil {
 		log.Error("ERROR while saving user:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -43,7 +43,7 @@ func (api UsersAPI) usernamePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMgr := NewUserManager(r)
+	userMgr := NewManager(r)
 
 	oldUser, uerr := userMgr.GetByName(username)
 	if uerr != nil {
@@ -52,7 +52,7 @@ func (api UsersAPI) usernamePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if u.Username != username || u.GetId() != oldUser.GetId() {
+	if u.Username != username || u.getID() != oldUser.getID() {
 		http.Error(w, "Changing username or id is Forbidden!", http.StatusForbidden)
 		return
 	}

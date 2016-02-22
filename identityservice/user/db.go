@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	COLLECTION_USERS = "users"
+	mongoCollectionName = "users"
 )
 
-// Initialize models in DB, if required.
+//InitModels initialize models in mongo, if required.
 func InitModels() {
 	// TODO: Use model tags to ensure indices/constraints.
 	index := mgo.Index{
@@ -23,41 +23,43 @@ func InitModels() {
 		DropDups: true,
 	}
 
-	db.EnsureIndex(COLLECTION_USERS, index)
+	db.EnsureIndex(mongoCollectionName, index)
 }
 
-type UserManager struct {
+//Manager is used to store users
+type Manager struct {
 	session    *mgo.Session
 	collection *mgo.Collection
 }
 
 func getUserCollection(session *mgo.Session) *mgo.Collection {
-	return db.GetCollection(session, COLLECTION_USERS)
+	return db.GetCollection(session, mongoCollectionName)
 }
 
-func NewUserManager(r *http.Request) *UserManager {
+//NewManager creates and initializes a new Manager
+func NewManager(r *http.Request) *Manager {
 	session := db.GetDBSession(r)
-	return &UserManager{
+	return &Manager{
 		session:    session,
 		collection: getUserCollection(session),
 	}
 }
 
 // Get user by ID.
-func (um *UserManager) Get(id string) (*User, error) {
+func (um *Manager) Get(id string) (*User, error) {
 	var user User
 
-	objectId := bson.ObjectIdHex(id)
+	objectID := bson.ObjectIdHex(id)
 
-	if err := um.collection.FindId(objectId).One(&user); err != nil {
+	if err := um.collection.FindId(objectID).One(&user); err != nil {
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-// Get user by Name.
-func (um *UserManager) GetByName(username string) (*User, error) {
+//GetByName gets a user by it's username.
+func (um *Manager) GetByName(username string) (*User, error) {
 	var user User
 
 	err := um.collection.Find(bson.M{"username": username}).One(&user)
@@ -65,19 +67,19 @@ func (um *UserManager) GetByName(username string) (*User, error) {
 	return &user, err
 }
 
-// Check if user exists.
-func (um *UserManager) Exists(username string) bool {
+//Exists checks if a user with this username already exists.
+func (um *Manager) Exists(username string) bool {
 	count, _ := um.collection.Find(bson.M{"username": username}).Count()
 
 	return count != 1
 }
 
-func (u *User) GetId() string {
+func (u *User) getID() string {
 	return u.Id.Hex()
 }
 
 // Save a user.
-func (um *UserManager) Save(u *User) error {
+func (um *Manager) Save(u *User) error {
 	// TODO: Validation!
 
 	if u.Id == "" {
@@ -93,7 +95,7 @@ func (um *UserManager) Save(u *User) error {
 }
 
 // Delete a user.
-func (um *UserManager) Delete(u *User) error {
+func (um *Manager) Delete(u *User) error {
 	if u.Id == "" {
 		return errors.New("User not stored")
 	}

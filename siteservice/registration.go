@@ -79,7 +79,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	//TODO: validate newuser
 
 	//validate the username is not taken yet
-	userMgr := user.NewUserManager(request)
+	userMgr := user.NewManager(request)
 	//TODO: distributed lock
 	if userMgr.Exists(newuser.Username) {
 		validationErrors = append(validationErrors, "duplicateusername")
