@@ -30,7 +30,7 @@ func NewToken() (*Token, error) {
 	}, err
 }
 
-//TokenFromSecret create a totp token from an existing base32 encoded secret
+//TokenFromSecret creates a totp token from an existing base32 encoded secret
 func TokenFromSecret(secret string) *Token {
 	return &Token{
 		Provider: provider,
