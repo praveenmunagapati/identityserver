@@ -16,10 +16,10 @@ func EnsureIndex(collectionName string, index mgo.Index) {
 
 	// Make sure idices are created.
 	if err := c.EnsureIndex(index); err == nil {
-		log.Infof("Created \"%s\" collection indices!", collectionName)
+		log.Debugf("Ensured \"%s\" collection indices", collectionName)
 	} else {
 		// Important: Mongo3 doesn't support DropDups!
-		log.Fatalf("Failed to create index on collection \"%s\". Aborting!", collectionName)
+		log.Fatalf("Failed to create index on collection \"%s\". Aborting", collectionName)
 	}
 }
 

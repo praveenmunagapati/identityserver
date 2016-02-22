@@ -59,6 +59,7 @@ func main() {
 		// Get router!
 		r := routes.GetRouter()
 
+		log.Info("Listening on ", bindAddress)
 		log.Fatal(http.ListenAndServe(bindAddress, r))
 	}
 

@@ -12,7 +12,7 @@ var dbSession *mgo.Session
 func initializeDB(url string) error {
 
 	if dbSession != nil {
-		log.Debug("DB Session is already initialized!")
+		log.Debug("DB Session is already initialized")
 		return nil
 	}
 
@@ -27,7 +27,7 @@ func initializeDB(url string) error {
 	return nil
 }
 
-// Goroutine to ensure DB connection is initialized.
+// Connect ensures a mongo DB connection is initialized.
 func Connect(url string) {
 	if dbSession != nil {
 		return
@@ -42,7 +42,7 @@ func Connect(url string) {
 		time.Sleep(5 * time.Second)
 	}
 
-	log.Info("Initialized DB connection successfully!")
+	log.Info("Initialized mongo connection")
 }
 
 func Close() {
