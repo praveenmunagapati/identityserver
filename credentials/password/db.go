@@ -3,12 +3,11 @@ package password
 import (
 	"net/http"
 
-	"git.aydo.com/0-complexity/oauthserver/users/keyderivation"
-
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/credentials/password/keyderivation"
 	"github.com/itsyouonline/identityserver/db"
 )
 
