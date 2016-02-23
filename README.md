@@ -18,8 +18,17 @@ identityserver
 
 To see the available options (like changing the default mongo connectionstring), execute `identityserver -h`.
 
-
 Browse to http://localhost:8080
+
+### Docker-compose
+
+You can run via [Docker-compose](https://docs.docker.com/compose/install/). You will get a running `identityserver` with its own [Mongo](https://hub.docker.com/_/mongo/) docker instance.
+
+```
+docker-compose up
+```
+
+then browse to http://localhost:8080
 
 ## Contribute
 

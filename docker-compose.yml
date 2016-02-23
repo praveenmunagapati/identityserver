@@ -1,0 +1,14 @@
+identityserver:
+  build: .
+  ports:
+    - "8080:8080"
+  volumes:
+    - .:/code
+  links:
+    - mongo
+  command: ["-c", "mongo:27017", "-d"]
+
+mongo:
+  image: mongo
+  ports:
+    - "17017:27017"
