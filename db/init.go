@@ -38,7 +38,7 @@ func Connect(url string) {
 		if err == nil {
 			break
 		}
-		log.Debug("Failed to connect to DB, retrying in 5 seconds...")
+		log.Debugf("Failed to connect to DB (%s), retrying in 5 seconds...", url)
 		time.Sleep(5 * time.Second)
 	}
 
