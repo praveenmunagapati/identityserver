@@ -7,6 +7,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/db"
 )
 
@@ -69,9 +70,10 @@ func (um *Manager) GetByName(username string) (*User, error) {
 
 //Exists checks if a user with this username already exists.
 func (um *Manager) Exists(username string) bool {
+	log.Debugf("Checking if user '%s' already exists", username)
 	count, _ := um.collection.Find(bson.M{"username": username}).Count()
 
-	return count != 1
+	return count >= 1
 }
 
 func (u *User) getID() string {

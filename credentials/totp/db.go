@@ -64,7 +64,7 @@ func (pwm *Manager) Validate(username, securityCode string) (bool, error) {
 
 // Save stores a secret for a specific username.
 func (pwm *Manager) Save(username, secret string) error {
-	//TODO: username and password validation
+	//TODO: username and secret validation
 
 	storedSecret := userSecret{Username: username, Secret: secret}
 
