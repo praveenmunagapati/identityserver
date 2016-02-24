@@ -52,9 +52,12 @@ func NewManager(r *http.Request) *Manager {
 
 //Validate checks the password for a specific username
 func (pwm *Manager) Validate(username, password string) (bool, error) {
-
 	var storedPassword userPass
 	if err := pwm.collection.Find(bson.M{"username": username}).One(&storedPassword); err != nil {
+		if err == mgo.ErrNotFound {
+			log.Debug("No password found for this user")
+			return false, nil
+		}
 		log.Debug(err)
 		return false, err
 	}

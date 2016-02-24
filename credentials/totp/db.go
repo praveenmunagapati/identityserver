@@ -54,6 +54,10 @@ func (pwm *Manager) Validate(username, securityCode string) (bool, error) {
 
 	var storedSecret userSecret
 	if err := pwm.collection.Find(bson.M{"username": username}).One(&storedSecret); err != nil {
+		if err == mgo.ErrNotFound {
+			log.Debug("No totpsecret found for this user")
+			return false, nil
+		}
 		log.Debug(err)
 		return false, err
 	}

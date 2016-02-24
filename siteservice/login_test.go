@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRegistrationHtmlAvailable(t *testing.T) {
+func TestLoginHtmlAvailable(t *testing.T) {
 
-	htmlData, err := html.Asset(registrationFileName)
+	htmlData, err := html.Asset(loginFileName)
 	assert.NoError(t, err)
 	assert.NotNil(t, htmlData)
 }

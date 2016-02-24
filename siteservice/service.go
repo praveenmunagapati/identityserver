@@ -23,8 +23,14 @@ func NewService() *Service {
 //AddRoutes registers the http routes with the router
 func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("GET").Path("/").HandlerFunc(service.HomePage)
+	//Registration form
 	router.Methods("GET").Path("/register").HandlerFunc(service.ShowRegistrationForm)
 	router.Methods("POST").Path("/register").HandlerFunc(service.ProcessRegistrationForm)
+	//Login form
+	router.Methods("GET").Path("/login").HandlerFunc(service.ShowLoginForm)
+	router.Methods("POST").Path("/login").HandlerFunc(service.ProcessLoginForm)
+
+	//host the assets used in the htmlpages
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(
 		&assetfs.AssetFS{Asset: assets.Asset, AssetDir: assets.AssetDir, AssetInfo: assets.AssetInfo})))
 	router.PathPrefix("/thirdpartyassets/").Handler(http.StripPrefix("/thirdpartyassets/", http.FileServer(

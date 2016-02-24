@@ -74,8 +74,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 
 	values := request.Form
 
-	log.Debug(values)
-
 	totpsession, err := service.GetSession(request, SessionForRegistration, "totp")
 	if err != nil {
 		log.Error("EROR while getting the totp registration session", err)
@@ -104,7 +102,12 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	//validate the username is not taken yet
 	userMgr := user.NewManager(request)
 	//TODO: distributed lock
-	if userMgr.Exists(newuser.Username) {
+	userExists, err := userMgr.Exists(newuser.Username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if userExists {
 		validationErrors = append(validationErrors, "duplicateusername")
 		log.Debug("USER ", newuser.Username, " already registered")
 		service.renderRegistrationFrom(w, request, validationErrors, totpsecret)
@@ -127,6 +130,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	totpMgr := totp.NewManager(request)
 	totpMgr.Save(newuser.Username, totpsecret)
 
-	log.Debugf("Registered %s")
+	log.Debugf("Registered %s", newuser.Username)
 	http.Redirect(w, request, "", http.StatusFound)
 }
