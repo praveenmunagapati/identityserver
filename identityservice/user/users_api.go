@@ -29,9 +29,10 @@ func (api UsersAPI) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(&u)
+	w.Header().Set("Content-type", "application/json")
 }
 
-// Update existing user. Updating ``username`` i s not allowed.
+// Update existing user. Updating ``username`` is not allowed.
 // It is handler for PUT /users/{username}
 func (api UsersAPI) usernamePut(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
@@ -64,16 +65,46 @@ func (api UsersAPI) usernamePut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(&u)
+	w.Header().Set("Content-type", "application/json")
 }
 
 // It is handler for GET /users/{username}/info
 func (api UsersAPI) usernameinfoGet(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	userMgr := NewManager(r)
 
-	var respBody Userview
-	json.NewEncoder(w).Encode(&respBody)
+	user, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
 
-	// uncomment below line to add header
-	// w.Header.Set("key","value")
+	// TODO: apply authorization limits.
+	addresses := []Address{}
+	emails := []string{}
+	phones := []Phonenumber{}
+
+	for _, address := range user.Address {
+		addresses = append(addresses, address)
+	}
+
+	for _, email := range user.Email {
+		emails = append(emails, email)
+	}
+
+	for _, phone := range user.Phone {
+		phones = append(phones, phone)
+	}
+
+	respBody := &Userview{
+		Address:  addresses,
+		Email:    emails,
+		Phone:    phones,
+		Username: user.Username,
+	}
+
+	json.NewEncoder(w).Encode(respBody)
+	w.Header().Set("Content-type", "application/json")
 }
 
 // It is handler for GET /users/{username}/validate

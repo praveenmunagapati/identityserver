@@ -97,7 +97,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 
 	newuser := &user.User{
 		Username: values.Get("login"),
-		Email:    values.Get("email"),
+		Email:    map[string]string{"registration": values.Get("email")},
 	}
 	//TODO: validate newuser
 
