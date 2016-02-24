@@ -7,4 +7,4 @@ package website
 //go:generate go-bindata -pkg thirdpartyassets -prefix thirdpartyassets -o ./packaged/thirdpartyassets/thirdpartyassets.go thirdpartyassets/...
 
 //package the html files
-//go:generate go-bindata -pkg html -o ./packaged/html/html.go index.html registration.html
+//go:generate go-bindata -pkg html -o ./packaged/html/html.go index.html registration.html login.html
