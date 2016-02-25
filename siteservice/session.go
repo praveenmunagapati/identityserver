@@ -3,6 +3,7 @@ package siteservice
 import (
 	"net/http"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/sessions"
 )
 
@@ -12,6 +13,8 @@ type SessionType int
 const (
 	//SessionForRegistration is the short anynymous session used during registration
 	SessionForRegistration SessionType = iota
+	//SessionInteractive is the session of an authenticated user on the itsyou.online website
+	SessionInteractive SessionType = iota
 )
 
 func (service *Service) initializeSessions() {
@@ -27,9 +30,43 @@ func (service *Service) initializeSessions() {
 	registrationSessionStore.Options.MaxAge = 10 * 60 //10 minutes
 
 	service.Sessions[SessionForRegistration] = registrationSessionStore
+
+	interactiveSessionStore := sessions.NewCookieStore([]byte(cookieStoreSecret))
+	interactiveSessionStore.Options.HttpOnly = true
+	//TODO: enable this when we have automatic https
+	//registrationSessionStore.Options.Secure = true
+	interactiveSessionStore.Options.MaxAge = 10 * 60 //10 minutes
+
+	service.Sessions[SessionInteractive] = registrationSessionStore
+
 }
 
 //GetSession returns the a session of the specified kind and a spefic name
 func (service *Service) GetSession(request *http.Request, kind SessionType, name string) (*sessions.Session, error) {
 	return service.Sessions[kind].Get(request, name)
+}
+
+//SetLoggedInUser creates a session for an authenticated user
+func (service *Service) SetLoggedInUser(request *http.Request, username string) (err error) {
+	authenticatedSession, err := service.GetSession(request, SessionInteractive, "authenticatedsession")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	authenticatedSession.Values["username"] = username
+	return
+}
+
+//GetLoggedInUser returns an authenticated user, empty string if not logged in
+func (service *Service) GetLoggedInUser(request *http.Request) (username string, err error) {
+	authenticatedSession, err := service.GetSession(request, SessionInteractive, "authenticatedsession")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	savedusername := authenticatedSession.Values["username"]
+	if savedusername != nil {
+		username, _ = savedusername.(string)
+	}
+	return
 }

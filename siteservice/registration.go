@@ -131,5 +131,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	totpMgr.Save(newuser.Username, totpsecret)
 
 	log.Debugf("Registered %s", newuser.Username)
+	service.SetLoggedInUser(request, newuser.Username)
 	http.Redirect(w, request, "", http.StatusFound)
 }

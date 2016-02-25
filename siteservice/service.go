@@ -16,8 +16,11 @@ type Service struct {
 	Sessions map[SessionType]*sessions.CookieStore
 }
 
-func NewService() *Service {
-	return &Service{}
+//NewService creates and initializes a Service
+func NewService() (service *Service) {
+	service = &Service{}
+	service.initializeSessions()
+	return
 }
 
 //AddRoutes registers the http routes with the router
@@ -29,6 +32,8 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	//Login form
 	router.Methods("GET").Path("/login").HandlerFunc(service.ShowLoginForm)
 	router.Methods("POST").Path("/login").HandlerFunc(service.ProcessLoginForm)
+	//Logout link
+	router.Methods("GET").Path("/logout").HandlerFunc(service.Logout)
 
 	//host the assets used in the htmlpages
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(
@@ -36,18 +41,48 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.PathPrefix("/thirdpartyassets/").Handler(http.StripPrefix("/thirdpartyassets/", http.FileServer(
 		&assetfs.AssetFS{Asset: thirdpartyassets.Asset, AssetDir: thirdpartyassets.AssetDir, AssetInfo: thirdpartyassets.AssetInfo})))
 
-	service.initializeSessions()
-
 }
 
-const homepageFileName = "index.html"
+const (
+	mainpageFileName = "index.html"
+	homepageFileName = "home.html"
+)
 
-//HomePage shows the homepage
-func (service *Service) HomePage(w http.ResponseWriter, request *http.Request) {
-	htmlData, err := html.Asset(homepageFileName)
+//ShowPublicSite shows the public website
+func (service *Service) ShowPublicSite(w http.ResponseWriter, request *http.Request) {
+	htmlData, err := html.Asset(mainpageFileName)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	w.Write(htmlData)
+}
+
+//HomePage shows the home page when logged in, if not, delegate to showing the public website
+func (service *Service) HomePage(w http.ResponseWriter, request *http.Request) {
+
+	loggedinuser, err := service.GetLoggedInUser(request)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if loggedinuser == "" {
+		service.ShowPublicSite(w, request)
+		return
+	}
+
+	htmlData, err := html.Asset(homepageFileName)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	sessions.Save(request, w)
+	w.Write(htmlData)
+}
+
+//Logout logs out the user and redirect to the homepage
+func (service *Service) Logout(w http.ResponseWriter, request *http.Request) {
+	service.SetLoggedInUser(request, "")
+	sessions.Save(request, w)
+	http.Redirect(w, request, "", http.StatusFound)
 }

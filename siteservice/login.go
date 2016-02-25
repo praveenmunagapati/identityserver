@@ -77,7 +77,14 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		return
 	}
 
+	if err := service.SetLoggedInUser(request, username); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	sessions.Save(request, w)
+
 	log.Debugf("Successfull login by '%s'", username)
+
 	http.Redirect(w, request, "", http.StatusFound)
 
 }
