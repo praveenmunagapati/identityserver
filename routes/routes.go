@@ -15,9 +15,10 @@ import (
 func GetRouter() http.Handler {
 	r := mux.NewRouter().StrictSlash(true)
 
+	siteservice := siteservice.NewService()
+	siteservice.AddRoutes(r)
 	identityservice.NewService().AddRoutes(r)
-	oauthservice.NewService().AddRoutes(r)
-	siteservice.NewService().AddRoutes(r)
+	oauthservice.NewService(siteservice).AddRoutes(r)
 
 	// Add middlewares
 	router := NewRouter(r)

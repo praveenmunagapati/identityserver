@@ -2,6 +2,7 @@ package siteservice
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -16,7 +17,7 @@ import (
 const loginFileName = "login.html"
 
 //renderLoginForm shows the user login page
-func (service *Service) renderLoginForm(w http.ResponseWriter, request *http.Request, indicateError bool) {
+func (service *Service) renderLoginForm(w http.ResponseWriter, request *http.Request, indicateError bool, postbackURL string) {
 	htmlData, err := html.Asset(loginFileName)
 	if err != nil {
 		log.Error(err)
@@ -26,13 +27,14 @@ func (service *Service) renderLoginForm(w http.ResponseWriter, request *http.Req
 	if indicateError {
 		htmlData = bytes.Replace(htmlData, []byte(`{"invalidsomething": true}`), []byte(`{"invalidcredentials": true}`), 1)
 	}
+	htmlData = bytes.Replace(htmlData, []byte(`action="login"`), []byte(fmt.Sprintf("action=\"%s\"", postbackURL)), 1)
 	sessions.Save(request, w)
 	w.Write(htmlData)
 }
 
 //ShowLoginForm shows the user login page on the initial request
 func (service *Service) ShowLoginForm(w http.ResponseWriter, request *http.Request) {
-	service.renderLoginForm(w, request, false)
+	service.renderLoginForm(w, request, false, request.RequestURI)
 
 }
 
@@ -40,6 +42,9 @@ func (service *Service) ShowLoginForm(w http.ResponseWriter, request *http.Reque
 func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Request) {
 	//TODO: validate csrf token
 	//TODO: limit the number of failed/concurrent requests
+
+	log.Debug(request.RequestURI)
+
 	err := request.ParseForm()
 	if err != nil {
 		log.Debug("ERROR parsing registration form")
@@ -73,7 +78,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 	}
 	validcredentials := userexists && validpassword && validtotpcode
 	if !validcredentials {
-		service.renderLoginForm(w, request, true)
+		service.renderLoginForm(w, request, true, request.RequestURI)
 		return
 	}
 
@@ -85,6 +90,14 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 
 	log.Debugf("Successfull login by '%s'", username)
 
-	http.Redirect(w, request, "", http.StatusFound)
+	redirectURL := ""
+	queryValues := request.URL.Query()
+	endpoint := queryValues.Get("endpoint")
+	if endpoint != "" {
+		queryValues.Del("endpoint")
+		redirectURL = endpoint + "?" + queryValues.Encode()
+	}
+
+	http.Redirect(w, request, redirectURL, http.StatusFound)
 
 }
