@@ -3,6 +3,7 @@ package oauthservice
 import (
 	"net/http"
 	"net/url"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -46,6 +47,7 @@ func (service *Service) Authorize(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login?"+queryvalues.Encode(), http.StatusFound)
 	}
 
+	//Validate client and redirect_uri
 	redirectURI, err := url.QueryUnescape(r.Form.Get("redirect_uri"))
 	if err != nil {
 		log.Debug("Unparsable redirect_uri")
@@ -55,11 +57,27 @@ func (service *Service) Authorize(w http.ResponseWriter, r *http.Request) {
 	clientID := r.Form.Get("client_id")
 	service.validateRedirectURI(redirectURI, clientID)
 
-	requestedScopes := r.Form.Get("scope")
-	//TODO: Convert the requestedScopes to a form for the user to select and authorize
-	clientState := r.Form.Get("state")
-	//TODO: store the state to pass it when redirecting
+	//requestedScopes := r.Form.Get("scope")
+	//TODO: check if the client still has a valid authorization for the requested scope, if not ask the user
 
-	log.Debug(redirectURI, clientID, requestedScopes, clientState)
+	clientState := r.Form.Get("state")
+	//TODO: generate and store the Authorization Code
+	authorizationCode := "FIXTHIS"
+
+	//TODO: store the state to pass it when redirecting
+	parameters := make(url.Values)
+	parameters.Add("code", authorizationCode)
+	parameters.Add("state", clientState)
+	//Don't parse the redirect url, can only give errors while we don't gain much
+	if !strings.Contains(redirectURI, "?") {
+		redirectURI += "?"
+	} else {
+		if !strings.HasSuffix(redirectURI, "&") {
+			redirectURI += "&"
+		}
+	}
+	redirectURI += parameters.Encode()
+
+	http.Redirect(w, r, redirectURI, http.StatusFound)
 
 }

@@ -19,14 +19,26 @@ The authorization code grant type is the most commonly used because it is optimi
 First, the user is given an authorization code link that looks like the following:
 
 ```
-https://itsyou.online/v1/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=CALLBACK_URL&scope=read
+https://itsyou.online/v1/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=CALLBACK_URL&scope=read&state=STATE
 ```
 
 * https://itsyou.online/v1/oauth/authorize: the API authorization endpoint
-* client_id=client_id: the application's client ID
-* redirect_uri=CALLBACK_URL: where the service redirects the user-agent after an authorization code is granted
-* response_type=code: specifies that your application is requesting an authorization code grant
-* scope=read: specifies the level of access that the application is requesting
+* client_id=client_id
+
+    the application's client ID
+* redirect_uri=CALLBACK_URL
+
+    The redirect_uri parameter is optional. If left out, the users will redirected to the callback URL configured in the OAuth Application settings. If provided, the redirect URL's host and port must exactly match the callback URL. The redirect URL's path must reference a subdirectory of the callback URL.
+* response_type=code
+
+    specifies that your application is requesting an authorization code grant
+* scope=read
+
+    specifies the level of access that the application is requesting
+
+* state=STATE
+
+    A random string. It is used to protect against csrf attacks.
 
 ### Step 2: User Authorizes Application
 
@@ -34,10 +46,11 @@ When the user clicks the link, they must first log in to the service, to authent
 
 ### Step 3: Application Receives Authorization Code
 
-After the the user authorizes the application some of it's information, itsyou.online redirects the user-agent to the application redirect URI, which was specified during the client registration, along with an authorization code. The redirect would look something like this (assuming the application is "petshop.com"):
+After the the user authorizes the application some of it's information, itsyou.online redirects the user-agent to the application redirect URI, which was specified during the client registration, along with an authorization code and a state parameter passed in step 1. If the state parameters don't match, the reqeust has been created by a third party and the process should be aborted.
+The redirect would look something like this (assuming the application is "petshop.com"):
 
 ```
-https://petshop.com/callback?code=AUTHORIZATION_CODE
+https://petshop.com/callback?code=AUTHORIZATION_CODE&state=STATE
 ```
 
 ### Step 4: Application Requests Access Token
