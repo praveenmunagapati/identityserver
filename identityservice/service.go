@@ -11,6 +11,7 @@ import (
 type Service struct {
 }
 
+//NewService creates and initializes a Service
 func NewService() *Service {
 	return &Service{}
 }

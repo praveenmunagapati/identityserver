@@ -1,24 +1,49 @@
 package oauthservice
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
 
-const (
-	//AuthorizationGrantCodeType is requested response_type for an 'authorization code' oauth2 flow
-	AuthorizationGrantCodeType = "code"
-)
+type authorizationRequest struct {
+	AuthorizationCode string
+	Username          string
+	RedirectURL       string
+	ClientID          string
+	State             string
+	Scope             string
+	CreatedAt         time.Time
+}
+
+func (ar *authorizationRequest) IsExpiredAt(testtime time.Time) bool {
+	return testtime.After(ar.CreatedAt.Add(time.Second * 10))
+}
+
+func newAuthorizationRequest(username, clientID, state string) *authorizationRequest {
+	var ar authorizationRequest
+	randombytes := make([]byte, 21) //Multiple of 3 to make sure no padding is added
+	rand.Read(randombytes)
+	ar.AuthorizationCode = base64.URLEncoding.EncodeToString(randombytes)
+	ar.CreatedAt = time.Now()
+	ar.Username = username
+	ar.ClientID = clientID
+	ar.State = state
+
+	return &ar
+}
 
 func (service *Service) validateRedirectURI(redirectURI, clientID string) {
 	//TODO:
 }
 
-//Authorize is the handler of the /login/oauth/authorize endpoint
-func (service *Service) Authorize(w http.ResponseWriter, r *http.Request) {
+//AuthorizeHandler is the handler of the /login/oauth/authorize endpoint
+func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
@@ -61,12 +86,14 @@ func (service *Service) Authorize(w http.ResponseWriter, r *http.Request) {
 	//TODO: check if the client still has a valid authorization for the requested scope, if not ask the user
 
 	clientState := r.Form.Get("state")
-	//TODO: generate and store the Authorization Code
-	authorizationCode := "FIXTHIS"
+	//TODO: validate state (length and stuff)
 
-	//TODO: store the state to pass it when redirecting
+	ar := newAuthorizationRequest(username, clientID, clientState)
+	arMgr := NewManager(r)
+	arMgr.Save(ar)
+
 	parameters := make(url.Values)
-	parameters.Add("code", authorizationCode)
+	parameters.Add("code", ar.AuthorizationCode)
 	parameters.Add("state", clientState)
 	//Don't parse the redirect url, can only give errors while we don't gain much
 	if !strings.Contains(redirectURI, "?") {

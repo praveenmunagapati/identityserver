@@ -57,7 +57,7 @@ func (service *Service) SetLoggedInUser(request *http.Request, username string) 
 	return
 }
 
-//GetLoggedInUser returns an authenticated user, empty string if not logged in
+//GetLoggedInUser returns an authenticated user, or an empty string if there is none
 func (service *Service) GetLoggedInUser(request *http.Request) (username string, err error) {
 	authenticatedSession, err := service.GetSession(request, SessionInteractive, "authenticatedsession")
 	if err != nil {

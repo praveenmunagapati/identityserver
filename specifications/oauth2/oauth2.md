@@ -58,7 +58,7 @@ https://petshop.com/callback?code=AUTHORIZATION_CODE&state=STATE
 The application requests an access token from the API, by passing the authorization code along with authentication details, including the client secret, to the API token endpoint. Here is an example POST request to itsyou.online's token endpoint:
 
 ```
-https://itsyou.online/v1/oauth/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=authorization_code&code=AUTHORIZATION_CODE&redirect_uri=CALLBACK_URL
+POST https://itsyou.online/v1/oauth/access_token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&code=AUTHORIZATION_CODE&redirect_uri=CALLBACK_URL
 ```
 
 ### Step 5: Application Receives Access Token
@@ -66,6 +66,25 @@ https://itsyou.online/v1/oauth/token?client_id=CLIENT_ID&client_secret=CLIENT_SE
 If the authorization is valid, the API will send a response containing the access token (and optionally, a refresh token) to the application. The entire response will look something like this:
 
 ```
-{"access_token":"ACCESS_TOKEN","token_type":"bearer","expires_in":2592000,"refresh_token":"REFRESH_TOKEN","scope":"read","uid":100101,"info":{"username":"bob"}}
+{"access_token":"ACCESS_TOKEN","token_type":"bearer","expires_in":2592000,"refresh_token":"REFRESH_TOKEN","scope":"read","info":{"username":"bob"}}
 ```
 Now the application is authorized! It may use the token to access the user's account via the service API, limited to the scope of access, until the token expires or is revoked. If a refresh token was issued, it may be used to request new access tokens if the original token has expired.
+
+
+### Use the access token to access the API
+
+The access token allows you to make requests to the API on a behalf of a user.
+
+```
+GET https://itsyou.online/users/bob/info?access_token=...
+```
+You can pass the token in the query params like shown above, but a cleaner approach is to include it in the Authorization header
+
+```
+Authorization: token OAUTH-TOKEN
+```
+For example, in curl you can set the Authorization header like this:
+
+```
+curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/users/bob/info
+```
