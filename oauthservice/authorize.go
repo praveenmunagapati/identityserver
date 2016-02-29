@@ -89,8 +89,8 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 	//TODO: validate state (length and stuff)
 
 	ar := newAuthorizationRequest(username, clientID, clientState)
-	arMgr := NewManager(r)
-	arMgr.Save(ar)
+	mgr := NewManager(r)
+	mgr.SaveAuthorizationRequest(ar)
 
 	parameters := make(url.Values)
 	parameters.Add("code", ar.AuthorizationCode)

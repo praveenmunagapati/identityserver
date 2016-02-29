@@ -33,37 +33,70 @@ func InitModels() {
 	}
 	db.EnsureIndex(requestsCollectionName, automaticExpiration)
 
+	index = mgo.Index{
+		Key:    []string{"AccessToken"},
+		Unique: true,
+	} //Do not drop duplicates since it would hijack another authorizationrequest, better to error out
+
+	db.EnsureIndex(tokensCollectionName, index)
+
+	//TODO: unique username/clientid combination
+
+	automaticExpiration = mgo.Index{
+		Key:         []string{"CreatedAt"},
+		ExpireAfter: AccessTokenExpiration,
+		Background:  true,
+	}
+	db.EnsureIndex(tokensCollectionName, automaticExpiration)
+
 }
 
 //Manager is used to store users
 type Manager struct {
-	session    *mgo.Session
-	collection *mgo.Collection
+	session *mgo.Session
 }
 
 //NewManager creates and initializes a new Manager
 func NewManager(r *http.Request) *Manager {
 	session := db.GetDBSession(r)
 	return &Manager{
-		session:    session,
-		collection: db.GetCollection(session, requestsCollectionName),
+		session: session,
 	}
+}
+
+//GetAuthorizationRequestCollection returns the mongo collection for the authorizationRequests
+func (m *Manager) GetAuthorizationRequestCollection() *mgo.Collection {
+	return db.GetCollection(m.session, requestsCollectionName)
+}
+
+//GetAccessTokenCollection returns the mongo collection for the accessTokens
+func (m *Manager) GetAccessTokenCollection() *mgo.Collection {
+	return db.GetCollection(m.session, tokensCollectionName)
 }
 
 // Get an authorizationRequest by it's authorizationcode.
 func (m *Manager) Get(authorizationcode string) (*authorizationRequest, error) {
 	var ar authorizationRequest
 
-	err := m.collection.Find(bson.M{"authorizationcode": authorizationcode}).One(&ar)
+	err := m.GetAuthorizationRequestCollection().Find(bson.M{"authorizationcode": authorizationcode}).One(&ar)
 
 	return &ar, err
 }
 
-// Save stores an authorizationRequest, only adding new authorizationRequests is allowed, updating is not
-func (m *Manager) Save(ar *authorizationRequest) (err error) {
+// SaveAuthorizationRequest stores an authorizationRequest, only adding new authorizationRequests is allowed, updating is not
+func (m *Manager) SaveAuthorizationRequest(ar *authorizationRequest) (err error) {
 	// TODO: Validation!
 
-	err = m.collection.Insert(ar)
+	err = m.GetAuthorizationRequestCollection().Insert(ar)
+
+	return
+}
+
+// SaveAccessToken stores an accessToken, only adding new accessTokens is allowed, updating is not
+func (m *Manager) SaveAccessToken(at *accessToken) (err error) {
+	// TODO: Validation!
+
+	err = m.GetAccessTokenCollection().Insert(at)
 
 	return
 }

@@ -61,8 +61,8 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 
 	state := r.FormValue("state")
 
-	arMgr := NewManager(r)
-	ar, err := arMgr.Get(code)
+	mgr := NewManager(r)
+	ar, err := mgr.Get(code)
 	if err != nil {
 		log.Error("ERROR getting the original authorization request:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -96,7 +96,7 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		ClientID:  ar.ClientID,
 		CreatedAt: time.Now(),
 	}
-	//TODO: save access token
+	mgr.SaveAccessToken(&at)
 
 	response := struct {
 		AccessToken string      `json:"access_token"`
