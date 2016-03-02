@@ -32,7 +32,8 @@ func (api UsersAPI) Post(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 }
 
-// Update existing user. Updating ``username`` is not allowed.
+// Update an existing user. Updating ``username`` is not allowed. The labelled lists
+// can not be updated this way, the normal properties can (like github and facebook account).
 // It is handler for PUT /users/{username}
 func (api UsersAPI) usernamePut(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
@@ -96,7 +97,7 @@ func (api UsersAPI) usernameinfoGet(w http.ResponseWriter, r *http.Request) {
 		phones = append(phones, phone)
 	}
 
-	respBody := &Userview{
+	respBody := &userview{
 		Address:  addresses,
 		Email:    emails,
 		Phone:    phones,
@@ -114,4 +115,75 @@ func (api UsersAPI) usernamevalidateGet(w http.ResponseWriter, r *http.Request) 
 
 	// uncomment below line to add header
 	// w.Header.Set("key","value")
+}
+
+// It is handler for GET /users/{username}/phonenumbers/{label}
+func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Update or create an existing phonenumber.
+// It is handler for PUT /users/{username}/phonenumbers/{label}
+func (api UsersAPI) usernamephonenumberslabelPut(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Delete a phonenumber
+// It is handler for DELETE /users/{username}/phonenumbers/{label}
+func (api UsersAPI) usernamephonenumberslabelDelete(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// It is handler for GET /users/{username}/banks/{label}
+func (api UsersAPI) usernamebankslabelGet(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Update or create an existing bankaccount.
+// It is handler for PUT /users/{username}/banks/{label}
+func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Delete a BankAccount
+// It is handler for DELETE /users/{username}/banks/{label}
+func (api UsersAPI) usernamebankslabelDelete(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// It is handler for GET /users/{username}
+func (api UsersAPI) usernameGet(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// It is handler for GET /users/{username}/addresses
+func (api UsersAPI) usernameaddressesGet(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// It is handler for GET /users/{username}/addresses/{label}
+func (api UsersAPI) usernameaddresseslabelGet(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Update or create an existing address.
+// It is handler for PUT /users/{username}/addresses/{label}
+func (api UsersAPI) usernameaddresseslabelPut(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Delete an address
+// It is handler for DELETE /users/{username}/addresses/{label}
+func (api UsersAPI) usernameaddresseslabelDelete(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// It is handler for GET /users/{username}/phonenumbers
+func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// It is handler for GET /users/{username}/banks
+func (api UsersAPI) usernamebanksGet(w http.ResponseWriter, r *http.Request) {
+
 }

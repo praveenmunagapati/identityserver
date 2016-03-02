@@ -3,9 +3,21 @@ title: ItsYouOnline
 version: 0.1
 baseUri: /users
 types:
-  phonenumber:
+  BankAccount:
+    properties:
+        iban:
+          type: string
+          maxLength: 30
+        bic:
+          type: string
+          maxLength: 10
+        country:
+          type: string
+          maxLength: 40
+
+  Phonenumber:
     pattern: ^\+[0-9]+$
-  address:
+  Address:
     properties:
         city:
             type: string
@@ -16,34 +28,32 @@ types:
         nr:
             type: string
             maxLength: 10
-        other:
+        other?:
             type: string
             maxLength: 30
-            required: false
         country:
             type: string
             maxLength: 40
         postalcode:
             type: string
             maxLength: 20
-  user:
+  User:
     properties:
         username:
             type: string
             maxLength: 30
             minLength: 2
-        expire:
-            type: date
-            required: false
-        email:
-            type: string{}
-            required: false
-        phone:
-            type: phonenumber{}
-            required: false
-        address:
-            type: address{}
-            required: false
+        expire?: date
+        email?: string{}
+        phone?: Phonenumber{}
+        address?: Address{}
+        bank?: BankAccount{}
+        facebook?:
+            type: string
+            maxLength: 40
+        github?:
+            type: string
+            maxLength: 50
 
     example:
         username: bob
@@ -62,20 +72,32 @@ types:
                 nr: 45B
                 country: Tomorrowland
                 postalcode: T-9450
+            work:
+                city: Capital City
+                street: Capital street
+                nr: 1
+                country: Tomorrowland
+                postalcode: T-1000
+        bank:
+            kbc:
+                iban: TL123451234512345
+                bic: ABCDEF
+                country: Tomorrowland
 
   userview:
     properties:
         username:
             type: string
-        email:
-            type: string[]
-            required: false
-        phone:
-            type: phonenumber[]
-            required: false
-        address:
-            type: address[]
-            required: false
+        email?: string[]
+        phone?: Phonenumber[]
+        address?: Address[]
+        bank?: BankAccount[]
+        facebook?:
+            type: string
+            maxLength: 40
+        github?:
+            type: string
+            maxLength: 50
 
 /users:
   post:
@@ -84,17 +106,24 @@ types:
         application/json:
             type: user
   /{username}:
+    get:
+        responses:
+            200:
+                body:
+                    application/json:
+                        type: User
     put:
-      description: Update existing user. Updating ``username`` is not allowed.
+      description: Update an existing user. Updating ``username`` is not allowed. The labelled lists can not be updated this way, the normal properties can (like github and facebook account).
       responses:
         200:
           body:
             application/json:
-              type: user
+              type: User
         403:
           description: Updating username is Forbidden!
   /{username}/info:
     get:
+        displayName: getUserInformation
         responses:
             200:
                 body:
@@ -105,3 +134,66 @@ types:
         queryParameters:
             token:
                 type: string
+  /{username}/addresses:
+    get:
+        responses:
+            200:
+                body:
+                    application/json:
+                      type: Address{}
+  /{username}/addresses/{label}:
+    get:
+        responses:
+            200:
+                body:
+                    application/json:
+                      type: Address
+    put:
+        description: Update or create an existing address.
+        body:
+            application/json:
+                type: Address
+    delete:
+        description: Delete an address
+  /{username}/phonenumbers:
+    get:
+        responses:
+            200:
+                body:
+                    application/json:
+                      type: Phonenumber{}
+  /{username}/phonenumbers/{label}:
+    get:
+        responses:
+            200:
+                body:
+                    application/json:
+                        type: Phonenumber
+    put:
+        description: Update or create an existing phonenumber.
+        body:
+            application/json:
+                type: Phonenumber
+    delete:
+        description: Delete a phonenumber
+  /{username}/banks:
+    get:
+        responses:
+            200:
+                body:
+                    application/json:
+                      type: BankAccount{}
+  /{username}/banks/{label}:
+    get:
+        responses:
+            200:
+                body:
+                    application/json:
+                        type: BankAccount
+    put:
+        description: Update or create an existing bankaccount.
+        body:
+            application/json:
+                type: BankAccount
+    delete:
+        description: Delete a BankAccount
