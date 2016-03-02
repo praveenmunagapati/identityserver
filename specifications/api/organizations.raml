@@ -1,0 +1,118 @@
+#%RAML 1.0
+title: ItsYouOnline
+version: 0.1
+baseUri: /
+
+types:
+  organization:
+    properties:
+      globalid:
+        type: string
+      dns:
+        type: string[]
+        description: List of organization DNS.
+      owners:
+        type: string[]
+        description: List of users `usernames`.
+      members:
+        type: string[]
+        description: List of users who are member in this organization.
+      includes:
+        type: string[]
+        description: globalId of sub organizations
+
+    example:
+      globalid: greenitglobe
+      dns:
+        - greenitglobe.com
+      owners:
+        - user1
+        - user2
+        - user3
+      members:
+        - user4
+      includes:
+        - admin.greenitglobe.com
+
+  member:
+    properties:
+      username:
+        type: string
+        description: Used when assigning a member to an organization.
+
+    example:
+      username: user1@somemail.com
+
+/organizations:
+  post:
+    description: Create new organization
+    responses:
+      201:
+        body:
+          application/json:
+            type: organization
+      401:
+        description: Unauthorized
+  get:
+    description: |
+      Get organizations. Authorization limits are applied to requesting user.
+    responses:
+      200:
+        body:
+          application/json:
+            type: organization[]
+
+  /{globalid}:
+    get:
+      description: Get organization info
+      responses:
+        200:
+          body:
+            application/json:
+              type: organization
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+    put:
+      description: Update organization info
+      body:
+        application/json:
+          type: organization
+      responses:
+        200:
+          body:
+            application/json:
+              type: organization
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+
+    /members:
+      post:
+        description: Assign a member to organization
+        body:
+          application/json:
+            type: member
+        responses:
+          201:
+            description: Member assigned successfully
+            body:
+              application/json:
+                type: member
+          401:
+            description: Unauthorized
+          404:
+            description: Not found
+
+      /{username}:
+        delete:
+          description: Remove a member from organization
+          responses:
+            204:
+              description: Member assigned successfully
+            401:
+              description: Unauthorized
+            404:
+              description: Not found
