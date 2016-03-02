@@ -1,7 +1,7 @@
 #%RAML 1.0
 title: ItsYouOnline
 version: 0.1
-baseUri: /users
+baseUri: /
 types:
   BankAccount:
     properties:
@@ -98,6 +98,14 @@ types:
         github?:
             type: string
             maxLength: 50
+
+  JoinOrganizationRequest:
+    properties:
+        organization: string
+        user: string
+        role:
+            type: string
+            enum: [owner, member]
 
 /users:
   post:
@@ -197,3 +205,23 @@ types:
                 type: BankAccount
     delete:
         description: Delete a BankAccount
+  /{username}/organizations:
+    get:
+        description: Get the list organizations a user is owner of member of
+        responses:
+            200:
+                body:
+                    application/json:
+                      properties:
+                        owner: string[]
+                        member: string[]
+  /{username}/notifications:
+    get:
+        description: Get the list of notifications, these are pending invitations or approvals
+        responses:
+            200:
+                body:
+                    application/json:
+                        properties:
+                            invitations: JoinOrganizationRequest[]
+                            approvals: JoinOrganizationRequest[]
