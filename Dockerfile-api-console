@@ -1,0 +1,35 @@
+FROM node
+MAINTAINER itsyou.online
+
+RUN apt-get update && \
+    apt-get install -y git rubygems
+
+RUN git clone https://github.com/mulesoft/api-console.git && \
+    cd api-console && \
+    git checkout feature/new-raml
+
+WORKDIR api-console
+
+RUN /usr/bin/gem install sass
+
+RUN npm install -g grunt-cli && \
+    npm install -g bower && \
+    npm install -g http-server
+
+RUN npm install
+
+RUN bower install --allow-root
+
+RUN grunt build -f
+
+WORKDIR dist
+
+RUN mv index.html console.html
+
+COPY specifications/api/ .
+
+COPY docs/dist/ .
+
+EXPOSE 9000
+
+ENTRYPOINT ["http-server", "-p", "9000"]

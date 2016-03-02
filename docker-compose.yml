@@ -1,14 +1,25 @@
-identityserver:
-  build: .
-  ports:
-    - "8080:8080"
-  volumes:
-    - .:/code
-  links:
-    - mongo
-  command: ["-c", "mongo:27017", "-d"]
+version: '2'
 
-mongo:
-  image: mongo
-  ports:
-    - "17017:27017"
+services:
+
+  identityserver:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/code
+    links:
+      - mongo
+    command: ["-c", "mongo:27017", "-d"]
+
+  mongo:
+    image: mongo
+    ports:
+      - "17017:27017"
+
+  api-console:
+    build:
+      context: .
+      dockerfile: Dockerfile-api-console
+    ports:
+      - "9000:9000"
