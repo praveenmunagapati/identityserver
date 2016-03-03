@@ -19,7 +19,9 @@ bob:
 
 During the authorization request, itsyou.online informs Bob that petshop.com needs two addresses, 1 for billing and 1 for shipping.
 
-He chooses to disclose the address of his mother in law as shipping address since he knows she will be home during the delivery and uses his home address as billing address. Now, Bob does not want to disclose the labels on the addresses off course since petshop.com has no business with the fact that the collar will be delivered at his mother in law. This scope mapping is saved as such and when petshop.com requests the user information on `/users/bob/info` using the oauth token acquired, the following information will be returned:
+He chooses to disclose the address of his mother in law as shipping address since he knows she will be home during the delivery and uses his home address as billing address.
+
+Now, Bob does not want to disclose the labels on the addresses off course since petshop.com has no business with the fact that the collar will be delivered at his mother in law. This scope mapping is saved as such and when petshop.com requests the user information on `/users/bob/info` using the oauth token acquired, the following information will be returned:
 
 ```json
 {
