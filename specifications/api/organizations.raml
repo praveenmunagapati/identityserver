@@ -4,7 +4,7 @@ version: 0.1
 baseUri: /
 
 types:
-  organization:
+  Organization:
     properties:
       globalid:
         type: string
@@ -37,6 +37,10 @@ types:
       includes:
         - admin.greenitglobe.com
 
+  Organizations:
+    description: List of organizations
+    type: Organization[]
+
   member:
     properties:
       username:
@@ -49,11 +53,14 @@ types:
 /organizations:
   post:
     description: Create a new organization. The authenticated user will be automatically added to the owners list.
+    body:
+      application/json:
+        type: Organization
     responses:
       201:
         body:
           application/json:
-            type: organization
+            type: Organizations
       401:
         description: Unauthorized
   get:
@@ -63,7 +70,7 @@ types:
       200:
         body:
           application/json:
-            type: organization[]
+            type: Organizations
 
   /{globalid}:
     get:
@@ -72,7 +79,7 @@ types:
         200:
           body:
             application/json:
-              type: organization
+              type: Organization
         401:
           description: Unauthorized
         404:
@@ -81,12 +88,12 @@ types:
       description: Update organization info
       body:
         application/json:
-          type: organization
+          type: Organization
       responses:
         200:
           body:
             application/json:
-              type: organization
+              type: Organization
         401:
           description: Unauthorized
         404:
