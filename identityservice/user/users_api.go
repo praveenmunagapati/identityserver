@@ -80,21 +80,21 @@ func (api UsersAPI) usernameinfoGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: apply authorization limits.
-	addresses := []Address{}
-	emails := []string{}
-	phones := []Phonenumber{}
+	addresses := map[string]Address{}
+	emails := map[string]string{}
+	phones := map[string]Phonenumber{}
 
-	for _, address := range user.Address {
-		addresses = append(addresses, address)
+	// TODO: apply authorization limits and scope mapping.
+	for label, address := range user.Address {
+		addresses[label] = address
 	}
 
-	for _, email := range user.Email {
-		emails = append(emails, email)
+	for label, email := range user.Email {
+		emails[label] = email
 	}
 
-	for _, phone := range user.Phone {
-		phones = append(phones, phone)
+	for label, phone := range user.Phone {
+		phones[label] = phone
 	}
 
 	respBody := &userview{
@@ -187,3 +187,33 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 func (api UsersAPI) usernamebanksGet(w http.ResponseWriter, r *http.Request) {
 
 }
+
+// Get the contracts where the user is 1 of the parties. Order descending by date.
+// It is handler for GET /users/{username}/contracts
+func (api UsersAPI) usernamecontractsGet(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Get a specific authorization
+// It is handler for GET /users/{username}/scopes/{grantedTo}
+func (api UsersAPI) usernamescopesgrantedToGet(w http.ResponseWriter, r *http.Request) {}
+
+// Update a Scope
+// It is handler for PUT /users/{username}/scopes/{grantedTo}
+func (api UsersAPI) usernamescopesgrantedToPut(w http.ResponseWriter, r *http.Request) {}
+
+// Remove a Scope, the granted organization will no longer have access the user's information.
+// It is handler for DELETE /users/{username}/scopes/{grantedTo}
+func (api UsersAPI) usernamescopesgrantedToDelete(w http.ResponseWriter, r *http.Request) {}
+
+// Get the list of notifications, these are pending invitations or approvals
+// It is handler for GET /users/{username}/notifications
+func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Request) {}
+
+// Get the list organizations a user is owner of member of
+// It is handler for GET /users/{username}/organizations
+func (api UsersAPI) usernameorganizationsGet(w http.ResponseWriter, r *http.Request) {}
+
+// Get the list of authorization scopes
+// It is handler for GET /users/{username}/scopes
+func (api UsersAPI) usernamescopesGet(w http.ResponseWriter, r *http.Request) {}
