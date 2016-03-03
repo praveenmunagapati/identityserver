@@ -20,7 +20,7 @@ h3 { font-family: Oswald; font-weight: normal; font-size: 16px; text-align: cent
 .quotes { font-family: 'arial', serif; font-weight: normal; font-size: 29px; text-align: left; margin: 50px auto; line-height: 39px; }
 .author_name_white { font-family:arial; margin: 70px 0 0 75px; color: #fff; font-size: 20px; }
 .author_name_gray { font-family:arial; margin: 70px 0 0 75px; color: #94a4a4; font-size: 20px; }
-.quotes_container { width: 962px; margin: 0 auto; }
+.quotes_container { width: 800px; margin: 0 auto; }
 /*= BUTTONS
 --------------------------------------------------------*/
 
