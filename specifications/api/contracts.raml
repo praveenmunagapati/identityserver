@@ -8,7 +8,11 @@ types:
     properties:
       signedBy: string
       date: date
-      signature: string
+      publicKey:
+        type: string
+        description: The public key used
+      signature:
+        type: string
 
   Contract:
     properties:

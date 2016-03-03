@@ -7,6 +7,7 @@ types:
     properties:
         globalid:
             type: string
+        publicKeys: string[]
         expire:
             type: date
             required: false
@@ -21,6 +22,8 @@ types:
             required: false
     example:
         globalid: ILikeCandy
+        publicKeys:
+            - 18SGHYSi8JCvAvTU6Ymv1HRmmu86Mq2Ypz
         expire: 2018-10-20
         info:
           - info@ilikecandy.com
@@ -57,7 +60,7 @@ types:
         queryParameters:
             token:
                 type: string
-                
+
     /contracts:
       get:
         description: Get the contracts where the organization is 1 of the parties. Order descending by date.
