@@ -8,18 +8,24 @@ types:
     properties:
       globalid:
         type: string
-      publicKeys: string[]
+      publicKeys:
+        type: string[]
+        maxItems: 20
       dns:
         type: string[]
+        maxItems: 100
         description: List of organization DNS.
       owners:
         type: string[]
+        maxItems: 20
         description: List of users `usernames`.
       members:
         type: string[]
+        maxItems: 2000
         description: List of users who are member in this organization.
       includes:
         type: string[]
+        maxItems: 100
         description: globalId of sub organizations
 
     example:

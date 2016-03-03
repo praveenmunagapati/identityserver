@@ -7,15 +7,19 @@ types:
     properties:
         globalid:
             type: string
-        publicKeys: string[]
+        publicKeys:
+            type: string[]
+            maxItems: 20
         expire:
             type: date
             required: false
         organizations:
             type: string[]
+            maxItems: 100
             required: false
         info:
             type: string[]
+            maxItems: 20
             required: false
         taxnr:
             type: string
