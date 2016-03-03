@@ -17,12 +17,21 @@ types:
         minItems: 2
         uniqueItems: true
       content: string
-      contractType: string
+      contractType:
+        type: string
+        maxLength: 40
+        description: Free field to be used for tags by the party creating a contract
+      invalidates?:
+        type: string[]
+        description: list of contractId's this contract invalidates.
+      extends?:
+        type: string[]
+        description: list of contractId's this contract is an extension upon
       expires: date
       contractId:
         type: string
         description: |
-          The contractId is the hash of the parties, the content, the contractType and the expiration date.
+          The contractId is the hash of the parties, the content, the contractType,  and the expiration date.
           To calculate the hash, take the json representation of the contract without the id and signatures, trim the newlines or spaces (except when they appear in the values) and encode in  utf8.
           From this result, take a SHA256 followed by a RIPEMD160, next base58CheckEncode the result with a 0x00 prefix.
 
