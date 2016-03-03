@@ -1,0 +1,57 @@
+#%RAML 1.0
+title: ItsYouOnline
+version: 0.1
+baseUri: /
+
+types:
+  Signature:
+    properties:
+      signedBy: string
+      date: date
+      signature: string
+
+  Contract:
+    properties:
+      parties:
+        type: string[]
+        minItems: 2
+        uniqueItems: true
+      content: string
+      contractType: string
+      expires: date
+      contractId:
+        type: string
+        description: |
+          The contractId is the hash of the parties, the content, the contractType and the expiration date.
+          To calculate the hash, take the json representation of the contract without the id and signatures, trim the newlines or spaces (except when they appear in the values) and encode in  utf8.
+          From this result, take a SHA256 followed by a RIPEMD160, next base58CheckEncode the result with a 0x00 prefix.
+
+      signatures: Signature[]
+
+/contracts:
+  post:
+    description: Create a new contract.
+    responses:
+      201:
+        body:
+          application/json:
+            type: Contract
+      401:
+        description: Unauthorized
+
+  /{contractId}:
+    get:
+      description: Get a contract
+      responses:
+        200:
+          body:
+            application/json:
+              type: Contract
+        404:
+          description: Not found
+  /{contractId}/signatures:
+    post:
+        description: Sign a contract
+        body:
+          application/json:
+            type: Signature
