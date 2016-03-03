@@ -3,6 +3,32 @@ title: ItsYouOnline
 version: 0.1
 baseUri: /
 types:
+  Scope:
+    description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
+    properties:
+        username: string
+        grantedTo:
+          type: string
+          description: The organization that is granted read access to some of the user's information
+        address?:
+          type: string{}
+          description: Mapping of the labels of the granted ones to the labels the organization requested.
+        publicKeys?: string[]
+        email?:
+          type: string{}
+          description: Mapping of the labels of the granted ones to the labels the organization requested.
+        phone?:
+          type: string{}
+          description: Mapping of the labels of the granted ones to the labels the organization requested.
+        bank?:
+          type: string{}
+          description: Mapping of the labels of the granted ones to the labels the organization requested.
+        facebook?: boolean
+        github?: boolean
+        organizations:
+          type: string[]
+          description: List of organizations the requesting organization can see your membership of.
+
   BankAccount:
     properties:
         iban:
@@ -92,16 +118,17 @@ types:
         username:
             type: string
         publicKeys?: string[]
-        email?: string[]
-        phone?: Phonenumber[]
-        address?: Address[]
-        bank?: BankAccount[]
+        email?: string{}
+        phone?: Phonenumber{}
+        address?: Address{}
+        bank?: BankAccount{}
         facebook?:
             type: string
             maxLength: 40
         github?:
             type: string
             maxLength: 50
+        organizations: string[]
 
   JoinOrganizationRequest:
     properties:
@@ -253,3 +280,24 @@ types:
             description: Max page size, useful for paging. Default is `50`.
             required: false
             maximum: 250
+
+  /{username}/scopes:
+    get:
+        description: Get the list of authorization scopes
+        responses:
+            200:
+                body:
+                    application/json:
+                        type: Scope[]
+  /{username}/scopes/{grantedTo}:
+    get:
+        description: Get a specific authorization
+        responses:
+            200:
+                body:
+                    application/json:
+                        type: Scope
+    delete:
+        description: Remove a Scope, the granted organization will no longer have access the user's information.
+    put:
+        description: Update a Scope
