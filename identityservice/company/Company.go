@@ -8,5 +8,6 @@ type Company struct {
 	Globalid      string        `json:"globalid"`
 	Info          []string      `json:"info"`
 	Organizations []string      `json:"organizations"`
+	PublicKeys    []string      `json:"publicKeys"`
 	Taxnr         string        `json:"taxnr"`
 }

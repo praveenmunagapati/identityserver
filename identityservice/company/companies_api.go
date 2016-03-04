@@ -34,7 +34,7 @@ func (api CompaniesAPI) Post(w http.ResponseWriter, r *http.Request) {
 // It is handler for PUT /companies/{globalId}
 func (api CompaniesAPI) globalIdPut(w http.ResponseWriter, r *http.Request) {
 
-	globalId := mux.Vars(r)["globalId"]
+	globalID := mux.Vars(r)["globalId"]
 
 	var company Company
 
@@ -45,14 +45,14 @@ func (api CompaniesAPI) globalIdPut(w http.ResponseWriter, r *http.Request) {
 
 	companyMgr := NewCompanyManager(r)
 
-	oldCompany, cerr := companyMgr.GetByName(globalId)
+	oldCompany, cerr := companyMgr.GetByName(globalID)
 	if cerr != nil {
 		log.Debug(cerr)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
-	if company.Globalid != globalId || company.GetId() != oldCompany.GetId() {
+	if company.Globalid != globalID || company.GetId() != oldCompany.GetId() {
 		http.Error(w, "Changing globalId or id is Forbidden!", http.StatusForbidden)
 		return
 	}
@@ -66,27 +66,32 @@ func (api CompaniesAPI) globalIdPut(w http.ResponseWriter, r *http.Request) {
 }
 
 // It is handler for GET /companies/{globalid}/info
-func (api CompaniesAPI) globalidinfoGet(w http.ResponseWriter, r *http.Request) {
+func (api CompaniesAPI) globalIdinfoGet(w http.ResponseWriter, r *http.Request) {
 	companyMgr := NewCompanyManager(r)
 
-	globalId := mux.Vars(r)["globalId"]
+	globalID := mux.Vars(r)["globalId"]
 
-	company, err := companyMgr.GetByName(globalId)
+	company, err := companyMgr.GetByName(globalID)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
-	respBody := Companyview{Company: *company}
+	respBody := company
 	json.NewEncoder(w).Encode(&respBody)
 
 }
 
 // It is handler for GET /companies/{globalid}/validate
-func (api CompaniesAPI) globalidvalidateGet(w http.ResponseWriter, r *http.Request) {
+func (api CompaniesAPI) globalIdvalidateGet(w http.ResponseWriter, r *http.Request) {
 
 	// token := req.FormValue("token")
 
 	// uncomment below line to add header
 	// w.Header.Set("key","value")
 }
+
+// Get the contracts where the organization is 1 of the parties. Order descending by
+// date.
+// It is handler for GET /companies/{globalId}/contracts
+func (api CompaniesAPI) globalIdcontractsGet(w http.ResponseWriter, r *http.Request) {}

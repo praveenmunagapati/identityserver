@@ -9,7 +9,6 @@ import (
 )
 
 type CompaniesInterface interface {
-
 	// Register a new company
 	// It is handler for POST /companies
 	Post(http.ResponseWriter, *http.Request)
@@ -18,21 +17,22 @@ type CompaniesInterface interface {
 	// It is handler for PUT /companies/{globalId}
 	globalIdPut(http.ResponseWriter, *http.Request)
 
-	// It is handler for GET /companies/{globalid}/info
-	globalidinfoGet(http.ResponseWriter, *http.Request)
+	// It is handler for GET /companies/{globalId}/info
+	globalIdinfoGet(http.ResponseWriter, *http.Request)
 
-	// It is handler for GET /companies/{globalid}/validate
-	globalidvalidateGet(http.ResponseWriter, *http.Request)
+	// It is handler for GET /companies/{globalId}/validate
+	globalIdvalidateGet(http.ResponseWriter, *http.Request)
+
+	// Get the contracts where the organization is 1 of the parties. Order descending by
+	// date.
+	// It is handler for GET /companies/{globalId}/contracts
+	globalIdcontractsGet(http.ResponseWriter, *http.Request)
 }
 
 func CompaniesInterfaceRoutes(r *mux.Router, i CompaniesInterface) {
-
 	r.HandleFunc("/companies", i.Post).Methods("POST")
-
 	r.HandleFunc("/companies/{globalId}", i.globalIdPut).Methods("PUT")
-
-	r.HandleFunc("/companies/{globalid}/info", i.globalidinfoGet).Methods("GET")
-
-	r.HandleFunc("/companies/{globalid}/validate", i.globalidvalidateGet).Methods("GET")
-
+	r.HandleFunc("/companies/{globalId}/info", i.globalIdinfoGet).Methods("GET")
+	r.HandleFunc("/companies/{globalId}/validate", i.globalIdvalidateGet).Methods("GET")
+	r.HandleFunc("/companies/{globalId}/contracts", i.globalIdcontractsGet).Methods("GET")
 }

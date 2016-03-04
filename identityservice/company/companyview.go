@@ -1,5 +1,3 @@
 package company
 
-type Companyview struct {
-	Company
-}
+type companyview Company
