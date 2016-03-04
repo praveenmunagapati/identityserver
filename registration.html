@@ -53,9 +53,11 @@
 
             <md-input-container>
                 <label>Password confirmation</label>
-                <input ng-model="passwordvalidation" required name="passwordvalidation" type="password">
+                <input ng-model="passwordvalidation" required name="passwordvalidation" ng-pattern="password" type="password">
+                <div ng-messages="signupform.passwordvalidation.$error">
+                    <div ng-message="pattern">This does not match the password</div>
+                </div>
             </md-input-container>
-
         </div>
         <div flex layout="column">
             <div flex layout="row">
