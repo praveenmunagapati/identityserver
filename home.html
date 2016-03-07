@@ -28,15 +28,15 @@
             You have no open requests
             </md-tooltip>
         </a>
-        <md-menu md-offset="0 25">
+        <md-menu md-offset="-5 30">
             <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-plus"></i><i class="fa fa-caret-down"></i>
               <md-tooltip ng-cloak>
                 Create new...
               </md-tooltip>
             </a>
             <md-menu-content ng-cloak>
-               <md-menu-item><md-button>New organization</md-button></md-menu-item>
-               <md-menu-item><md-button>New company</md-button></md-menu-item>
+               <md-menu-item><md-button href="#neworganization">New organization</md-button></md-menu-item>
+               <md-menu-item><md-button href="#newcompany">New company</md-button></md-menu-item>
              </md-menu-content>
         </md-menu>
 
@@ -47,15 +47,17 @@
 
 
 <div class="fullscreenform">
+<div ng-view></div>
 </div>
 
 
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.js"></script>
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js'></script>
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js'></script>
 <script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js'></script>
 <script>
-    angular.module('itsyouonlineApp', ['ngMaterial'])
+    angular.module('itsyouonlineApp', ['ngMaterial','ngRoute'])
         .config(function($mdThemingProvider) {
             $mdThemingProvider.definePalette('blueish', {
                 '50': '#f7fbfd',
@@ -77,7 +79,23 @@
             });
             $mdThemingProvider.theme('default')
                 .primaryPalette('blueish')
+        })
+        .config(function($routeProvider) {
+            $routeProvider
+                .when('/neworganization', {
+                    templateUrl: 'components/organization/views/neworganization.html',
+                    controller: 'OrganizationController',
+                    controllerAs: 'vm'
+                })
+                .when('/newcompany', {
+                    templateUrl: 'components/company/views/newcompany.html',
+                    controller: 'CompanyController',
+                    controllerAs: 'vm'
+                })
+            ;
         });
 </script>
+<script src='components/organization/controller.js'></script>
+<script src='components/commpany/controller.js'></script>
 </body>
 </html>
