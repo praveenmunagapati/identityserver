@@ -16,12 +16,23 @@
         </style>
  </head>
 
-<body ng-app="itsouonlineApp">
+<body ng-app="itsyouonlineApp">
 
 <header id="header">
   <div class="content">
     <div id="logo"><a href="#"> ItsYou.Online </a></div>
+
     <div class="sign-wrap">
+      <a href="notifications"><i class="fa fa-bell"></i>
+        <md-tooltip ng-cloak>
+          You have no open requests
+        </md-tooltip>
+      </a>
+      <a href="" ng-click="showMenu()"><i class="fa fa-plus"></i><i class="fa fa-caret-down"></i>
+        <md-tooltip ng-cloak>
+          Create new...
+        </md-tooltip>
+      </a>
       <a href="logout"><i class="fa fa-sign-out"></i>Sign out</a>
     </div>
   </div>
@@ -37,7 +48,7 @@
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js'></script>
 <script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js'></script>
 <script>
-    angular.module('itsouonlineApp', ['ngMaterial','monospaced.qrcode'])
+    angular.module('itsyouonlineApp', ['ngMaterial'])
         .config(function($mdThemingProvider) {
             $mdThemingProvider.definePalette('blueish', {
                 '50': '#f7fbfd',
