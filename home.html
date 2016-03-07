@@ -23,16 +23,23 @@
     <div id="logo"><a href="#"> ItsYou.Online </a></div>
 
     <div class="sign-wrap">
-      <a href="notifications"><i class="fa fa-bell"></i>
-        <md-tooltip ng-cloak>
-          You have no open requests
-        </md-tooltip>
-      </a>
-      <a href="" ng-click="showMenu()"><i class="fa fa-plus"></i><i class="fa fa-caret-down"></i>
-        <md-tooltip ng-cloak>
-          Create new...
-        </md-tooltip>
-      </a>
+        <a href="notifications"><i class="fa fa-bell"></i>
+            <md-tooltip ng-cloak>
+            You have no open requests
+            </md-tooltip>
+        </a>
+        <md-menu md-offset="0 25">
+            <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-plus"></i><i class="fa fa-caret-down"></i>
+              <md-tooltip ng-cloak>
+                Create new...
+              </md-tooltip>
+            </a>
+            <md-menu-content ng-cloak>
+               <md-menu-item><md-button>New organization</md-button></md-menu-item>
+               <md-menu-item><md-button>New company</md-button></md-menu-item>
+             </md-menu-content>
+        </md-menu>
+
       <a href="logout"><i class="fa fa-sign-out"></i>Sign out</a>
     </div>
   </div>
