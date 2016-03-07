@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/itsyouonline/website/packaged/assets"
+	"github.com/itsyouonline/website/packaged/components"
 	"github.com/itsyouonline/website/packaged/html"
 	"github.com/itsyouonline/website/packaged/thirdpartyassets"
 )
@@ -40,6 +41,8 @@ func (service *Service) AddRoutes(router *mux.Router) {
 		&assetfs.AssetFS{Asset: assets.Asset, AssetDir: assets.AssetDir, AssetInfo: assets.AssetInfo})))
 	router.PathPrefix("/thirdpartyassets/").Handler(http.StripPrefix("/thirdpartyassets/", http.FileServer(
 		&assetfs.AssetFS{Asset: thirdpartyassets.Asset, AssetDir: thirdpartyassets.AssetDir, AssetInfo: thirdpartyassets.AssetInfo})))
+	router.PathPrefix("/components/").Handler(http.StripPrefix("/components/", http.FileServer(
+		&assetfs.AssetFS{Asset: components.Asset, AssetDir: components.AssetDir, AssetInfo: components.AssetInfo})))
 
 }
 
