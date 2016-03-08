@@ -43,6 +43,7 @@ types:
 
   Phonenumber:
     pattern: ^\+[0-9]+$
+
   Address:
     properties:
         city:
@@ -185,6 +186,16 @@ types:
                 body:
                     application/json:
                       type: Address{}
+    post:
+      description: Create new address
+      body:
+        application/json:
+          type: Address{}
+      responses:
+        201:
+          body:
+            application/json:
+              type: Address{}
   /{username}/addresses/{label}:
     get:
         responses:
@@ -201,11 +212,21 @@ types:
         description: Delete an address
   /{username}/phonenumbers:
     get:
-        responses:
-            200:
-                body:
-                    application/json:
-                      type: Phonenumber{}
+      responses:
+        200:
+          body:
+            application/json:
+              type: Phonenumber{}
+    post:
+      description: Create new phonenumber
+      body:
+        application/json:
+          type: Phonenumber{}
+      responses:
+        201:
+          body:
+            application/json:
+              type: Phonenumber{}
   /{username}/phonenumbers/{label}:
     get:
         responses:
@@ -221,6 +242,16 @@ types:
     delete:
         description: Delete a phonenumber
   /{username}/banks:
+    post:
+      description: Create new bank account
+      body:
+        application/json:
+          type: BankAccount{}
+      responses:
+        201:
+          body:
+            application/json:
+              type: BankAccount{}
     get:
         responses:
             200:
