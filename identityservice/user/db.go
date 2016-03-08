@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"gopkg.in/mgo.v2"
@@ -46,12 +47,12 @@ func NewManager(r *http.Request) *Manager {
 }
 
 // Get user by ID.
-func (um *Manager) Get(id string) (*User, error) {
+func (m *Manager) Get(id string) (*User, error) {
 	var user User
 
 	objectID := bson.ObjectIdHex(id)
 
-	if err := um.collection.FindId(objectID).One(&user); err != nil {
+	if err := m.collection.FindId(objectID).One(&user); err != nil {
 		return nil, err
 	}
 
@@ -59,46 +60,118 @@ func (um *Manager) Get(id string) (*User, error) {
 }
 
 //GetByName gets a user by it's username.
-func (um *Manager) GetByName(username string) (*User, error) {
+func (m *Manager) GetByName(username string) (*User, error) {
 	var user User
 
-	err := um.collection.Find(bson.M{"username": username}).One(&user)
+	err := m.collection.Find(bson.M{"username": username}).One(&user)
 
 	return &user, err
 }
 
 //Exists checks if a user with this username already exists.
-func (um *Manager) Exists(username string) (bool, error) {
-	count, err := um.collection.Find(bson.M{"username": username}).Count()
+func (m *Manager) Exists(username string) (bool, error) {
+	count, err := m.collection.Find(bson.M{"username": username}).Count()
 
 	return count >= 1, err
 }
 
-func (u *User) getID() string {
-	return u.Id.Hex()
-}
-
 // Save a user.
-func (um *Manager) Save(u *User) error {
+func (m *Manager) Save(u *User) error {
 	// TODO: Validation!
 
 	if u.Id == "" {
 		// New Doc!
 		u.Id = bson.NewObjectId()
-		err := um.collection.Insert(u)
+		err := m.collection.Insert(u)
 		return err
 	}
 
-	_, err := um.collection.UpsertId(u.Id, u)
+	_, err := m.collection.UpsertId(u.Id, u)
 
 	return err
 }
 
 // Delete a user.
-func (um *Manager) Delete(u *User) error {
+func (m *Manager) Delete(u *User) error {
 	if u.Id == "" {
 		return errors.New("User not stored")
 	}
 
-	return um.collection.RemoveId(u.Id)
+	return m.collection.RemoveId(u.Id)
+}
+
+// SaveEmail save or update email along with its label
+func (m *Manager) SaveEmail(u *User, label string, email string) error {
+	emailLabel := fmt.Sprintf("email.%s", label)
+
+	return m.collection.Update(
+		bson.M{"username": u.Username},
+		bson.M{"$set": bson.M{emailLabel: email}})
+}
+
+// RemoveEmail remove email associated with label
+func (m *Manager) RemoveEmail(u *User, label string) error {
+	emailLabel := fmt.Sprintf("email.%s", label)
+
+	return m.collection.Update(
+		bson.M{"username": u.Username},
+		bson.M{"$unset": bson.M{emailLabel: ""}})
+}
+
+// SavePhone save or update phone along with its label
+func (m *Manager) SavePhone(u *User, label string, phonenumber Phonenumber) error {
+	phoneLabel := fmt.Sprintf("phone.%s", label)
+
+	return m.collection.Update(
+		bson.M{"username": u.Username},
+		bson.M{"$set": bson.M{phoneLabel: phonenumber}})
+}
+
+// RemovePhone remove phone associated with label
+func (m *Manager) RemovePhone(u *User, label string) error {
+	phoneLabel := fmt.Sprintf("phone.%s", label)
+
+	return m.collection.Update(
+		bson.M{"username": u.Username},
+		bson.M{"$unset": bson.M{phoneLabel: ""}})
+}
+
+// SaveAddress save or update address along with its label
+func (m *Manager) SaveAddress(u *User, label string, address Address) error {
+	addressLabel := fmt.Sprintf("address.%s", label)
+
+	return m.collection.Update(
+		bson.M{"username": u.Username},
+		bson.M{"$set": bson.M{addressLabel: address}})
+}
+
+// RemoveAddress remove address associated with label
+func (m *Manager) RemoveAddress(u *User, label string) error {
+	addressLabel := fmt.Sprintf("address.%s", label)
+
+	return m.collection.Update(
+		bson.M{"username": u.Username},
+		bson.M{"$unset": bson.M{addressLabel: ""}})
+}
+
+// SaveBank save or update bank account along with its label
+func (m *Manager) SaveBank(u *User, label string, bank BankAccount) error {
+	bankLabel := fmt.Sprintf("bank.%s", label)
+
+	return m.collection.Update(
+		bson.M{"username": u.Username},
+		bson.M{"$set": bson.M{bankLabel: bank}})
+}
+
+// RemoveBank remove bank associated with label
+func (m *Manager) RemoveBank(u *User, label string) error {
+	bankLabel := fmt.Sprintf("bank.%s", label)
+
+	return m.collection.Update(
+		bson.M{"username": u.Username},
+		bson.M{"$unset": bson.M{bankLabel: ""}})
+}
+
+func (u *User) getID() string {
+	return u.Id.Hex()
 }
