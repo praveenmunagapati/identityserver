@@ -1,3 +1,18 @@
 <div>
-    <h1>Create a new organization</h1>
+    <form layout="column">
+        <h1>Create a new organization</h1>
+        <br/>
+        <md-input-container>
+            <label>Organization name</label>
+            <input ng-model="vm.name" minlength="2" required type="text" autofocus></input>
+        </md-input-container>
+        <md-input-container>
+            <label>Primary DNS</label>
+            <input ng-model="vm.primaryDNS" type="text"></input>
+        </md-input-container>
+        <div layout="row">
+            <md-button type="submit" class="md-raised md-primary">Create</md-button>
+            <span flex></span>
+        </div>
+    </form>
 </div>

@@ -1,14 +1,20 @@
-angular.module("itsyouonlineApp").controller("CompanyController",CompanyController);
+(function() {
+    'use strict';
+
+    angular.module("itsyouonlineApp").controller("CompanyController",CompanyController);
 
 
-CompanyController.$inject = ['$location'];
+    CompanyController.$inject = ['$location'];
 
-function CompanyController($location) {
-    var vm = this;
+    function CompanyController($location) {
+        var vm = this;
+        
+        activate();
 
-    activate();
+        function activate() {
 
-    function activate() {
-
+        }
     }
-}
+
+
+})();

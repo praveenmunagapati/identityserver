@@ -1,14 +1,21 @@
-angular.module("itsyouonlineApp").controller("OrganizationController",OrganizationController);
+(function() {
+    'use strict';
 
 
-OrganizationController.$inject = ['$location'];
+    angular.module("itsyouonlineApp").controller("OrganizationController",OrganizationController);
 
-function OrganizationController($location) {
-    var vm = this;
 
-    activate();
+    OrganizationController.$inject = ['$location'];
 
-    function activate() {
+    function OrganizationController($location) {
+        var vm = this;
 
+        activate();
+
+        function activate() {
+
+        }
     }
-}
+
+
+})();

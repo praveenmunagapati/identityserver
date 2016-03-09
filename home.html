@@ -47,7 +47,13 @@
 
 
 <div class="fullscreenform">
-<div ng-view></div>
+    <div flex layout="row">
+        <div flex></div>
+        <div layout="column" flex-gt-xs="80" flex-xs="100">
+            <div ng-view></div>
+        </div>
+        <div flex></div>
+    </div>
 </div>
 
 
@@ -96,6 +102,6 @@
         });
 </script>
 <script src='components/organization/controller.js'></script>
-<script src='components/commpany/controller.js'></script>
+<script src='components/company/controller.js'></script>
 </body>
 </html>
