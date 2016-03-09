@@ -11,18 +11,26 @@ types:
           type: string
           description: The organization that is granted read access to some of the user's information
         address?:
-          type: string{}
           description: Mapping of the labels of the granted ones to the labels the organization requested.
+          properties:
+            "[]":
+              type: string
         publicKeys?: string[]
         email?:
-          type: string{}
           description: Mapping of the labels of the granted ones to the labels the organization requested.
+          properties:
+            "[]":
+              type: string
         phone?:
-          type: string{}
           description: Mapping of the labels of the granted ones to the labels the organization requested.
+          properties:
+            "[]":
+              type: string
         bank?:
-          type: string{}
           description: Mapping of the labels of the granted ones to the labels the organization requested.
+          properties:
+            "[]":
+              type: string
         facebook?: boolean
         github?: boolean
         organizations:
@@ -72,10 +80,22 @@ types:
             minLength: 2
         publicKeys: string[]
         expire?: date
-        email?: string{}
-        phone?: Phonenumber{}
-        address?: Address{}
-        bank?: BankAccount{}
+        email?:
+          properties:
+            "[]":
+              type: string
+        phone?:
+          properties:
+            "[]":
+              type: Phonenumber
+        address?:
+          properties:
+            "[]":
+              type: Address
+        bank?:
+          properties:
+            "[]":
+              type: BankAccount
         facebook?:
             type: string
             maxLength: 40
@@ -119,10 +139,22 @@ types:
         username:
             type: string
         publicKeys?: string[]
-        email?: string{}
-        phone?: Phonenumber{}
-        address?: Address{}
-        bank?: BankAccount{}
+        email?:
+          properties:
+            "[]":
+              type: string
+        phone?:
+          properties:
+            "[]":
+              type: Phonenumber
+        address?:
+          properties:
+            "[]":
+              type: Address
+        bank?:
+          properties:
+            "[]":
+              type: BankAccount
         facebook?:
             type: string
             maxLength: 40
@@ -185,17 +217,23 @@ types:
             200:
                 body:
                     application/json:
-                      type: Address{}
+                        properties:
+                          "[]":
+                            type: Address
     post:
       description: Create new address
       body:
         application/json:
-          type: Address{}
+            properties:
+              "[]":
+                type: Address
       responses:
         201:
           body:
             application/json:
-              type: Address{}
+                properties:
+                  "[]":
+                    type: Address
   /{username}/addresses/{label}:
     get:
         responses:
@@ -216,17 +254,21 @@ types:
         200:
           body:
             application/json:
-              type: Phonenumber{}
+                properties:
+                  "[]":
+                    type: Phonenumber
     post:
       description: Create new phonenumber
       body:
         application/json:
-          type: Phonenumber{}
+            properties:
+              "[]":
+                type: Phonenumber
       responses:
         201:
           body:
             application/json:
-              type: Phonenumber{}
+              type: Phonenumber
   /{username}/phonenumbers/{label}:
     get:
         responses:
@@ -246,18 +288,24 @@ types:
       description: Create new bank account
       body:
         application/json:
-          type: BankAccount{}
+            properties:
+              "[]":
+                type: BankAccount
       responses:
         201:
           body:
             application/json:
-              type: BankAccount{}
+                properties:
+                  "[]":
+                    type: BankAccount
     get:
         responses:
             200:
                 body:
                     application/json:
-                      type: BankAccount{}
+                        properties:
+                          "[]":
+                            type: BankAccount
   /{username}/banks/{label}:
     get:
         responses:
