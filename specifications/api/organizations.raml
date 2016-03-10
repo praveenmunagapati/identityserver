@@ -58,7 +58,7 @@ types:
 
 /organizations:
   post:
-    description: Create a new organization. The authenticated user will be automatically added to the owners list.
+    description: Create a new organization. 1 user should be in the owners list. Validation is performed to check if the securityScheme allows management on this user.
     body:
       application/json:
         type: Organization
