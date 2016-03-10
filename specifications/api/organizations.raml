@@ -134,6 +134,35 @@ types:
               description: Not found
 
 
+    /owners:
+      post:
+          description: Invite a user to become owner of an organization.
+          body:
+            application/json:
+              type: member
+          responses:
+            201:
+              description: Invite created successfully
+              body:
+                application/json:
+                  type: member
+            401:
+              description: Unauthorized
+            404:
+              description: Not found
+
+      /{username}:
+          delete:
+            description: Remove an owner from organization
+            responses:
+              204:
+                description: Owner removed successfully
+              401:
+                description: Unauthorized
+              404:
+                description: Not found
+
+
     /contracts:
       get:
         description: Get the contracts where the organization is 1 of the parties. Order descending by date.

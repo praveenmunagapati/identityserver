@@ -1,0 +1,45 @@
+#%RAML 1.0
+title: ItsYouOnline
+version: 0.1
+baseUri: /
+types:
+
+      JoinOrganizationInvitation:
+        properties:
+            organization: string
+            user: string
+            role:
+                type: string
+                enum: [owner, member]
+
+
+
+/users/{username}/organizations:
+  get:
+    description: Get the list organizations a user is owner or member of
+    responses:
+      200:
+        body:
+          application/json:
+            properties:
+              owner: string[]
+              member: string[]
+
+  /{globalid}/roles/{role}:
+    post:
+      description: Accept membership in organization
+      body:
+        application/json:
+          type: JoinOrganizationInvitation
+      responses:
+        201:
+          body:
+            application/json:
+              type: JoinOrganizationInvitation
+    delete:
+      description: |
+        Reject membership invitation in an organization.
+      responses:
+        204:
+          description: |
+            Succesfully rejected invitation.

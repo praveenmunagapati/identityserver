@@ -163,7 +163,7 @@ types:
             maxLength: 50
         organizations: string[]
 
-  JoinOrganizationRequest:
+  JoinOrganizationInvitation:
     properties:
         organization: string
         user: string
@@ -320,16 +320,6 @@ types:
                 type: BankAccount
     delete:
         description: Delete a BankAccount
-  /{username}/organizations:
-    get:
-        description: Get the list organizations a user is owner of member of
-        responses:
-            200:
-                body:
-                    application/json:
-                      properties:
-                        owner: string[]
-                        member: string[]
   /{username}/notifications:
     get:
         description: Get the list of notifications, these are pending invitations or approvals
@@ -338,8 +328,8 @@ types:
                 body:
                     application/json:
                         properties:
-                            invitations: JoinOrganizationRequest[]
-                            approvals: JoinOrganizationRequest[]
+                            invitations: JoinOrganizationInvitation[]
+                            approvals: JoinOrganizationInvitation[]
                             contractRequests: ContractSigningRequest[]
 
   /{username}/contracts:

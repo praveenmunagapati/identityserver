@@ -1,10 +1,12 @@
-package organization
+package userorganization
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
+	organizationpackage "github.com/itsyouonline/identityserver/identityservice/organization"
 )
 
 type UsersusernameorganizationsAPI struct {
@@ -25,7 +27,7 @@ func exists(value string, list []string) bool {
 func (api UsersusernameorganizationsAPI) Get(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
-	orgMgr := NewManager(r)
+	orgMgr := organizationpackage.NewManager(r)
 
 	orgs, err := orgMgr.AllByUser(username)
 	if err != nil {
@@ -33,6 +35,10 @@ func (api UsersusernameorganizationsAPI) Get(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	type UserOrganizations struct {
+		Member []string `json:"member"`
+		Owner  []string `json:"owner"`
+	}
 	userOrgs := UserOrganizations{
 		Member: []string{},
 		Owner:  []string{},
@@ -56,29 +62,29 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	role := mux.Vars(r)["role"]
 	organization := mux.Vars(r)["globalid"]
 
-	var j JoinOrganizationRequest
+	var j invitations.JoinOrganizationInvitation
 
 	if err := json.NewDecoder(r.Body).Decode(&j); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	orgReqMgr := NewOrganizationRequestManager(r)
+	orgReqMgr := invitations.NewInvitationManager(r)
 
-	orgRequest, err := orgReqMgr.Get(username, organization, role)
+	orgRequest, err := orgReqMgr.Get(username, organization, role, invitations.RequestPending)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
 	// TODO: Save member
-	orgMgr := NewManager(r)
+	orgMgr := organizationpackage.NewManager(r)
 
 	if org, err := orgMgr.GetByName(organization); err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	} else {
-		if exists(RoleOwner, orgRequest.Role) {
+		if invitations.RoleOwner == orgRequest.Role {
 			// Accepted Owner role
 			if err := orgMgr.SaveOwner(org, username); err != nil {
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -93,7 +99,7 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 		}
 	}
 
-	orgRequest.Status = RequestAccepted
+	orgRequest.Status = invitations.RequestAccepted
 
 	if err := orgReqMgr.Save(orgRequest); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -114,22 +120,22 @@ func (api UsersusernameorganizationsAPI) globalidrolesroleDelete(w http.Response
 	role := mux.Vars(r)["role"]
 	organization := mux.Vars(r)["globalid"]
 
-	orgReqMgr := NewOrganizationRequestManager(r)
+	orgReqMgr := invitations.NewInvitationManager(r)
 
-	orgRequest, err := orgReqMgr.Get(username, organization, role)
+	orgRequest, err := orgReqMgr.Get(username, organization, role, invitations.RequestPending)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	orgMgr := NewManager(r)
+	orgMgr := organizationpackage.NewManager(r)
 
 	if _, err := orgMgr.GetByName(organization); err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	orgRequest.Status = RequestRejected
+	orgRequest.Status = invitations.RequestRejected
 
 	if err := orgReqMgr.Save(orgRequest); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

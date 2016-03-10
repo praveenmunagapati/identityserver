@@ -6,6 +6,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/itsyouonline/identityserver/identityservice/contract"
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
 )
 
 type UsersAPI struct {
@@ -627,7 +629,34 @@ func (api UsersAPI) usernamescopesgrantedToDelete(w http.ResponseWriter, r *http
 
 // Get the list of notifications, these are pending invitations or approvals
 // It is handler for GET /users/{username}/notifications
-func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Request) {}
+func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	type NotificationList struct {
+		Approvals        []invitations.JoinOrganizationInvitation `json:"approvals"`
+		ContractRequests []contract.ContractSigningRequest        `json:"contractRequests"`
+		Invitations      []invitations.JoinOrganizationInvitation `json:"invitations"`
+	}
+	var notifications NotificationList
+
+	invititationMgr := invitations.NewInvitationManager(r)
+
+	userOrgRequests, err := invititationMgr.GetByUser(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	notifications.Invitations = userOrgRequests
+
+	// TODO: Get Approvals and Contract requests
+	notifications.Approvals = []invitations.JoinOrganizationInvitation{}
+	notifications.ContractRequests = []contract.ContractSigningRequest{}
+
+	w.Header().Set("Content-type", "application/json")
+	json.NewEncoder(w).Encode(&notifications)
+
+}
 
 // Get the list organizations a user is owner of member of
 // It is handler for GET /users/{username}/organizations

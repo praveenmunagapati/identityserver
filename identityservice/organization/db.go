@@ -46,8 +46,8 @@ func NewManager(r *http.Request) *Manager {
 
 // All get all organizations.
 // TODO: this method can take username(i.e. owner or members?) as filtering parameter.
-func (m *Manager) All() (Organizations, error) {
-	organizations := Organizations{}
+func (m *Manager) All() ([]Organization, error) {
+	organizations := []Organization{}
 
 	if err := m.collection.Find(nil).All(&organizations); err != nil {
 		return nil, err
@@ -57,8 +57,11 @@ func (m *Manager) All() (Organizations, error) {
 }
 
 // AllByUser get organizations for certain user.
-func (m *Manager) AllByUser(username string) (Organizations, error) {
-	var organizations Organizations
+func (m *Manager) AllByUser(username string) ([]Organization, error) {
+	var organizations []Organization
+	//TODO: handle this a bit smarter, select only the ones where the user is owner first, and take select only the org name
+	//do the same for the orgs where the username is member but not owners
+	//No need to pull in 1000's of records for this
 
 	condition := []interface{}{
 		bson.M{"members": username},

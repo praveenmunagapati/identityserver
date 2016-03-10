@@ -12,13 +12,12 @@ POST /organizations/<org>/members
 
 response: 201 CREATED
 {
-    "id": "56e168de47ee2036ac81e3a7",
-    "organization": "greenitglobe.com",
+    "organization": "mysoccerclub.com",
     "role": [
         "member"
     ],
     "user": "bob",
-    "status": 0
+    "status": "pending"
 }
 ```
 
@@ -33,49 +32,41 @@ GET /users/bob/notifications
     "contractRequests": [],
     "invitations": [
         {
-            "id": "56e168de47ee2036ac81e3a7",
-            "organization": "greenitglobe.com",
+            "organization": "mysoccerclub.com",
             "role": [
                 "member"
             ],
             "user": "bob",
-            "status": 0
+            "status": "pending"
         }
     ]
 }
 ```
 
-`status` indicates that request is `PENDING`. Status values are as the following:
-
-- 0: Pending request
-- 1: Accepted request
-- 2: Rejected request
 
 ## Accepting invitation
 
 A user can accept invitation via an API call
 
 ```
-POST /users/bob/organizations/greenitglobe.com/roles/member
+POST /users/bob/organizations/mysoccerclub.com/roles/member
 {
-    "id": "56e168de47ee2036ac81e3a7",
-    "organization": "greenitglobe.com",
+    "organization": "mysoccerclub.com",
     "role": [
         "member"
     ],
     "user": "bob",
-    "status": 0
+    "status": "pending"
 }
 
 response: 201 CREATED
 {
-    "id": "56e168de47ee2036ac81e3a7",
-    "organization": "greenitglobe.com",
+    "organization": "mysoccerclub.com",
     "role": [
         "member"
     ],
     "user": "bob",
-    "status": 1
+    "status": "accepted"
 }
 ```
 
@@ -84,8 +75,7 @@ response: 201 CREATED
 A user can reject an invitation via an API call
 
 ```
-DELETE /users/bob/organizations/greenitglobe.com/roles/member
+DELETE /users/bob/organizations/mysoccerclub.com/roles/member
 
 response: 204 NO CONTENT
 ```
-

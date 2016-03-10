@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 )
 
@@ -139,15 +140,15 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 	}
 
 	// Create JoinRequest
-	orgReqMgr := NewOrganizationRequestManager(r)
+	invitationMgr := invitations.NewInvitationManager(r)
 
-	orgReq := &JoinOrganizationRequest{
-		Role:         []string{RoleMember},
+	orgReq := &invitations.JoinOrganizationInvitation{
+		Role:         invitations.RoleMember,
 		Organization: globalid,
 		User:         m.Username,
 	}
 
-	if err := orgReqMgr.Save(orgReq); err != nil {
+	if err := invitationMgr.Save(orgReq); err != nil {
 		log.Error("Error inviting member: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -175,6 +176,77 @@ func (api OrganizationsAPI) globalidmembersusernameDelete(w http.ResponseWriter,
 
 	if err := orgMgr.RemoveMember(org, username); err != nil {
 		log.Error("Error adding member: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// It is handler for POST /organizations/{globalid}/members
+func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+
+	var m member
+
+	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	orgMgr := NewManager(r)
+
+	_, err := orgMgr.GetByName(globalid)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// Check if user exists
+	userMgr := user.NewManager(r)
+
+	if ok, err := userMgr.Exists(m.Username); err != nil || !ok {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// Create JoinRequest
+	invitationMgr := invitations.NewInvitationManager(r)
+
+	orgReq := &invitations.JoinOrganizationInvitation{
+		Role:         invitations.RoleOwner,
+		Organization: globalid,
+		User:         m.Username,
+	}
+
+	if err := invitationMgr.Save(orgReq); err != nil {
+		log.Error("Error inviting owner: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(orgReq)
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+// Remove a member from organization
+// It is handler for DELETE /organizations/{globalid}/members/{username}
+func (api OrganizationsAPI) globalidownersusernameDelete(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	username := mux.Vars(r)["username"]
+
+	orgMgr := NewManager(r)
+
+	org, err := orgMgr.GetByName(globalid)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if err := orgMgr.RemoveOwner(org, username); err != nil {
+		log.Error("Error removing owner: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
