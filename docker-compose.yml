@@ -15,7 +15,7 @@ services:
   mongo:
     image: mongo
     ports:
-      - "17017:27017"
+      - "27017:27017"
 
   api-console:
     build:

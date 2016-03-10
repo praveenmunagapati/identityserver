@@ -12,12 +12,16 @@ import (
 	"github.com/itsyouonline/identityserver/siteservice"
 )
 
+//GetRouter contructs the router hierarchy and registers all handlers and middleware
 func GetRouter() http.Handler {
 	r := mux.NewRouter().StrictSlash(true)
 
 	siteservice := siteservice.NewService()
 	siteservice.AddRoutes(r)
-	identityservice.NewService().AddRoutes(r)
+
+	apiRouter := r.PathPrefix("/api").Subrouter()
+	identityservice.NewService().AddRoutes(apiRouter)
+
 	oauthservice.NewService(siteservice).AddRoutes(r)
 
 	// Add middlewares
