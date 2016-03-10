@@ -10,6 +10,7 @@ import (
 
 type OrganizationsInterface interface {
 	// Get organizations. Authorization limits are applied to requesting user.
+
 	// It is handler for GET /organizations
 	Get(http.ResponseWriter, *http.Request)
 
@@ -33,11 +34,6 @@ type OrganizationsInterface interface {
 	// Remove a member from organization
 	// It is handler for DELETE /organizations/{globalid}/members/{username}
 	globalidmembersusernameDelete(http.ResponseWriter, *http.Request)
-
-	// Get the contracts where the organization is 1 of the parties. Order descending by
-	// date.
-	// It is handler for GET /organizations/{globalid}/contracts
-	globalidcontractsGet(http.ResponseWriter, *http.Request)
 }
 
 func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
@@ -47,5 +43,4 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.HandleFunc("/organizations/{globalid}", i.globalidPut).Methods("PUT")
 	r.HandleFunc("/organizations/{globalid}/members", i.globalidmembersPost).Methods("POST")
 	r.HandleFunc("/organizations/{globalid}/members/{username}", i.globalidmembersusernameDelete).Methods("DELETE")
-	r.HandleFunc("/organizations/{globalid}/contracts", i.globalidcontractsGet).Methods("GET")
 }

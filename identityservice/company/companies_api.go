@@ -78,8 +78,9 @@ func (api CompaniesAPI) globalIdinfoGet(w http.ResponseWriter, r *http.Request) 
 	}
 
 	respBody := company
-	json.NewEncoder(w).Encode(&respBody)
 
+	w.Header().Set("Content-type", "application/json")
+	json.NewEncoder(w).Encode(&respBody)
 }
 
 // It is handler for GET /companies/{globalid}/validate

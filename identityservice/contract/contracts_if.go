@@ -13,17 +13,17 @@ type ContractsInterface interface {
 	// It is handler for POST /contracts
 	Post(http.ResponseWriter, *http.Request)
 
-	// Sign a contract
-	// It is handler for POST /contracts/{contractId}/signatures
-	contractIdsignaturesPost(http.ResponseWriter, *http.Request)
-
 	// Get a contract
 	// It is handler for GET /contracts/{contractId}
 	contractIdGet(http.ResponseWriter, *http.Request)
+
+	// Sign a contract
+	// It is handler for POST /contracts/{contractId}/signatures
+	contractIdsignaturesPost(http.ResponseWriter, *http.Request)
 }
 
 func ContractsInterfaceRoutes(r *mux.Router, i ContractsInterface) {
 	r.HandleFunc("/contracts", i.Post).Methods("POST")
-	r.HandleFunc("/contracts/{contractId}/signatures", i.contractIdsignaturesPost).Methods("POST")
 	r.HandleFunc("/contracts/{contractId}", i.contractIdGet).Methods("GET")
+	r.HandleFunc("/contracts/{contractId}/signatures", i.contractIdsignaturesPost).Methods("POST")
 }
