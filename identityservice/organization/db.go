@@ -25,7 +25,7 @@ func InitModels() {
 	db.EnsureIndex(mongoCollectionName, index)
 }
 
-//Manager is used to store users
+//Manager is used to store organizations
 type Manager struct {
 	session    *mgo.Session
 	collection *mgo.Collection
@@ -42,6 +42,32 @@ func NewManager(r *http.Request) *Manager {
 		session:    session,
 		collection: getCollection(session),
 	}
+}
+
+// All get all organizations.
+// TODO: this method can take username(i.e. owner or members?) as filtering parameter.
+func (m *Manager) All() (Organizations, error) {
+	organizations := Organizations{}
+
+	if err := m.collection.Find(nil).All(&organizations); err != nil {
+		return nil, err
+	}
+
+	return organizations, nil
+}
+
+// AllByUser get organizations for certain user.
+func (m *Manager) AllByUser(username string) (Organizations, error) {
+	var organizations Organizations
+
+	condition := []interface{}{
+		bson.M{"members": username},
+		bson.M{"owners": username},
+	}
+
+	err := m.collection.Find(bson.M{"$or": condition}).All(&organizations)
+
+	return organizations, err
 }
 
 // Get organization by ID.
@@ -73,10 +99,6 @@ func (m *Manager) Exists(globalId string) bool {
 	return count != 1
 }
 
-func (o *Organization) GetId() string {
-	return o.Id.Hex()
-}
-
 // Save a organization.
 func (m *Manager) Save(organization *Organization) error {
 	// TODO: Validation!
@@ -100,4 +122,50 @@ func (m *Manager) Delete(organization *Organization) error {
 	}
 
 	return m.collection.RemoveId(organization.Id)
+}
+
+// SaveDns save or update DNS
+func (m *Manager) SaveDns(organization *Organization, dns string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$addToSet": bson.M{"dns": dns}})
+}
+
+// RemoveDns remove DNS
+func (m *Manager) RemoveDns(organization *Organization, dns string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$pull": bson.M{"dns": dns}})
+}
+
+// SaveMember save or update member
+func (m *Manager) SaveMember(organization *Organization, username string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$addToSet": bson.M{"members": username}})
+}
+
+// RemoveMember remove member
+func (m *Manager) RemoveMember(organization *Organization, username string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$pull": bson.M{"members": username}})
+}
+
+// SaveOwner save or update owners
+func (m *Manager) SaveOwner(organization *Organization, owner string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$addToSet": bson.M{"owners": owner}})
+}
+
+// RemoveOwner remove owner
+func (m *Manager) RemoveOwner(organization *Organization, owner string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$pull": bson.M{"owners": owner}})
+}
+
+func (o *Organization) GetId() string {
+	return o.Id.Hex()
 }

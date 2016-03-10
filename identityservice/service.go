@@ -4,6 +4,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/itsyouonline/identityserver/identityservice/company"
+	"github.com/itsyouonline/identityserver/identityservice/notification"
+	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 )
 
@@ -25,4 +27,12 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	// Company API
 	company.CompaniesInterfaceRoutes(router, company.CompaniesAPI{})
 	company.InitModels()
+
+	// Organization API
+	organization.OrganizationsInterfaceRoutes(router, organization.OrganizationsAPI{})
+	organization.UserorganizationsInterfaceRoutes(router, organization.UsersusernameorganizationsAPI{})
+	organization.InitModels()
+
+	// Notification API
+	notification.UsersusernamenotificationsInterfaceRoutes(router, notification.NotificationsAPI{})
 }

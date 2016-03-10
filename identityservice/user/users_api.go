@@ -28,8 +28,8 @@ func (api UsersAPI) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&u)
-	w.Header().Set("Content-type", "application/json")
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -46,8 +46,8 @@ func (api UsersAPI) usernameGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // Update an existing user. Updating ``username`` is not allowed. The labelled lists
@@ -89,8 +89,8 @@ func (api UsersAPI) usernamePut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&u)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // It is handler for GET /users/{username}/info
@@ -128,8 +128,8 @@ func (api UsersAPI) usernameinfoGet(w http.ResponseWriter, r *http.Request) {
 		Username: user.Username,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(respBody)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // It is handler for GET /users/{username}/validate
@@ -186,8 +186,8 @@ func (api UsersAPI) usernamephonenumbersPost(w http.ResponseWriter, r *http.Requ
 	}
 
 	// respond with created phone number.
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(phoneNumber)
-	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -202,8 +202,8 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user.Phone)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // It is handler for GET /users/{username}/phonenumbers/{label}
@@ -227,8 +227,8 @@ func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.
 		label: user.Phone[label],
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(respBody)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // Update or create an existing phonenumber.
@@ -272,8 +272,8 @@ func (api UsersAPI) usernamephonenumberslabelPut(w http.ResponseWriter, r *http.
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(phoneNumber)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // Delete a phonenumber
@@ -344,8 +344,8 @@ func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// respond with created phone number.
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(bank)
-	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -360,8 +360,8 @@ func (api UsersAPI) usernamebanksGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user.Bank)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // It is handler for GET /users/{username}/banks/{label}
@@ -385,8 +385,8 @@ func (api UsersAPI) usernamebankslabelGet(w http.ResponseWriter, r *http.Request
 		label: user.Bank[label],
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(respBody)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // Update or create an existing bankaccount.
@@ -425,8 +425,8 @@ func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(bank)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // Delete a BankAccount
@@ -496,8 +496,8 @@ func (api UsersAPI) usernameaddressesPost(w http.ResponseWriter, r *http.Request
 	}
 
 	// respond with created phone number.
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(address)
-	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -512,8 +512,8 @@ func (api UsersAPI) usernameaddressesGet(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user.Address)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // It is handler for GET /users/{username}/addresses/{label}
@@ -537,8 +537,8 @@ func (api UsersAPI) usernameaddresseslabelGet(w http.ResponseWriter, r *http.Req
 		label: user.Address[label],
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(respBody)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // Update or create an existing address.
@@ -577,8 +577,8 @@ func (api UsersAPI) usernameaddresseslabelPut(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(address)
-	w.Header().Set("Content-type", "application/json")
 }
 
 // Delete an address
