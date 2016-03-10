@@ -41,7 +41,7 @@ types:
     description: Register a new company
     body:
         application/json:
-            type: company
+            type: Company
   /{globalId}:
     put:
       description: Update existing company. Updating ``globalId`` is not allowed.
@@ -49,7 +49,7 @@ types:
         200:
           body:
             application/json:
-              type: company
+              type: Company
         403:
           description: Updating globalId is Forbidden!
     /info:
