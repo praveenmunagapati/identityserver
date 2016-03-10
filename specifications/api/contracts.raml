@@ -44,6 +44,11 @@ types:
 
       signatures: Signature[]
 
+  ContractSigningRequest:
+    properties:
+        contractId: string
+        party: string
+
 /contracts:
   post:
     description: Create a new contract.
@@ -71,3 +76,50 @@ types:
         body:
           application/json:
             type: Signature
+
+/users/{username}/contracts:
+  get:
+    description: Get the contracts where the user is 1 of the parties. Order descending by date.
+    queryParameters:
+      includeExpired:
+          type: boolean
+          description: Include the expired contracts, by default only the active contracts are returned.
+          required: false
+      start:
+          type: integer
+          description: Start offset, useful for paging. Default is `0`.
+          required: false
+      max:
+          type: integer
+          description: Max page size, useful for paging. Default is `50`.
+          required: false
+          maximum: 250
+    responses:
+      200:
+        body:
+          application/json:
+            type: Contract
+
+/organizations/{globalid}/contracts:
+  get:
+    description: Get the contracts where the organization is 1 of the parties. Order descending by date.
+    queryParameters:
+      includeExpired:
+          type: boolean
+          description: Include the expired contracts, by default only the active contracts are returned.
+          required: false
+      start:
+          type: integer
+          description: Start offset, useful for paging. Default is `0`.
+          required: false
+      max:
+          type: integer
+          description: Max page size, useful for paging. Default is `50`.
+          required: false
+          maximum: 250
+
+    responses:
+      200:
+        body:
+          application/json:
+            type: Contract

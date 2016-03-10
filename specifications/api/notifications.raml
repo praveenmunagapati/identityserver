@@ -1,0 +1,36 @@
+#%RAML 1.0
+title: ItsYouOnline
+version: 0.1
+baseUri: /
+types:
+
+  JoinOrganizationRequest:
+    properties:
+        organization: string
+        user: string
+        role:
+            type: string
+            enum: [owner, member]
+        status:
+          type: string
+          enum: [pending, accepted, rejected]
+
+  ContractSigningRequest:
+    properties:
+        contractId: string
+        party: string
+
+  Notification:
+    properties:
+      invitations: JoinOrganizationRequest[]
+      approvals: JoinOrganizationRequest[]
+      contractRequests: ContractSigningRequest[]
+
+/users/{username}/notifications:
+  get:
+      description: Get the list of notifications, these are pending invitations or approvals
+      responses:
+        200:
+          body:
+            application/json:
+              type: Notification
