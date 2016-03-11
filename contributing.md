@@ -55,6 +55,14 @@ go get -u github.com/jteeuwen/go-bindata/...
 
 After this execute `go generate` in the root of this repository. Check in the overwritten go files in the packaged folder.
 
+During development it can be easier if the files are served directly, execute go-bindata with the -debug flag:
+```
+go-bindata -debug -pkg assets -prefix assets -o ./packaged/assets/assets.go assets/...
+go-bindata -debug -pkg thirdpartyassets -prefix thirdpartyassets -o ./packaged/thirdpartyassets/thirdpartyassets.go thirdpartyassets/...
+go-bindata -debug -pkg components -prefix components -o ./packaged/components/components.go components/...
+go-bindata -debug -pkg html -o ./packaged/html/html.go index.html registration.html login.html home.html error.html
+
+```
 
 ## Bower dependencies
 
