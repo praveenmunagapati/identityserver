@@ -1,6 +1,7 @@
 package siteservice
 
 import (
+	"bytes"
 	"net/http"
 
 	"github.com/elazarl/go-bindata-assetfs"
@@ -10,6 +11,8 @@ import (
 	"github.com/itsyouonline/website/packaged/components"
 	"github.com/itsyouonline/website/packaged/html"
 	"github.com/itsyouonline/website/packaged/thirdpartyassets"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 //Service is the identityserver http service
@@ -35,6 +38,9 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("POST").Path("/login").HandlerFunc(service.ProcessLoginForm)
 	//Logout link
 	router.Methods("GET").Path("/logout").HandlerFunc(service.Logout)
+	//Error page
+	router.Methods("GET").Path("/error").HandlerFunc(service.ErrorPage)
+	router.Methods("GET").Path("/error{errornumber}").HandlerFunc(service.ErrorPage)
 
 	//host the assets used in the htmlpages
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(
@@ -47,8 +53,9 @@ func (service *Service) AddRoutes(router *mux.Router) {
 }
 
 const (
-	mainpageFileName = "index.html"
-	homepageFileName = "home.html"
+	mainpageFileName  = "index.html"
+	homepageFileName  = "home.html"
+	errorpageFilename = "error.html"
 )
 
 //ShowPublicSite shows the public website
@@ -89,4 +96,19 @@ func (service *Service) Logout(w http.ResponseWriter, request *http.Request) {
 	service.SetLoggedInUser(request, "")
 	sessions.Save(request, w)
 	http.Redirect(w, request, "", http.StatusFound)
+}
+
+//ErrorPage shows the errorpage
+func (service *Service) ErrorPage(w http.ResponseWriter, request *http.Request) {
+	errornumber := mux.Vars(request)["errornumber"]
+	log.Debug("Errorpage requested for error ", errornumber)
+
+	htmlData, err := html.Asset(errorpageFilename)
+	if err != nil {
+		log.Error("ERROR rendering error page: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	htmlData = bytes.Replace(htmlData, []byte(`500`), []byte(errornumber), 1)
+	w.Write(htmlData)
 }
