@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 
+	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 )
@@ -38,15 +39,30 @@ func (api OrganizationsAPI) Post(w http.ResponseWriter, r *http.Request) {
 	var org Organization
 
 	if err := json.NewDecoder(r.Body).Decode(&org); err != nil {
+		log.Debug("Error decoding the organization:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !org.IsValid() {
+		log.Debug("Invalid organization")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	orgMgr := NewManager(r)
 
-	if err := orgMgr.Save(&org); err != nil {
-		log.Error("Error saving organizations,", err.Error())
+	err := orgMgr.Create(&org)
+
+	if err != nil && err != db.ErrDuplicate {
+		log.Error("Error saving organizations:", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if err == db.ErrDuplicate {
+		log.Debug("Duplicate organization")
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 

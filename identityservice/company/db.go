@@ -75,20 +75,23 @@ func (c *Company) GetId() string {
 	return c.Id.Hex()
 }
 
+// Create a company.
+func (cm *CompanyManager) Create(company *Company) error {
+	// TODO: Validation!
+
+	company.Id = bson.NewObjectId()
+	err := cm.collection.Insert(company)
+	if mgo.IsDup(err) {
+		return db.ErrDuplicate
+	}
+	return err
+}
+
 // Save a company.
 func (cm *CompanyManager) Save(company *Company) error {
 	// TODO: Validation!
-
-	if company.Id == "" {
-		// New Doc!
-		company.Id = bson.NewObjectId()
-		err := cm.collection.Insert(company)
-		return err
-	}
-
-	_, err := cm.collection.UpsertId(company.Id, company)
-
-	return err
+	// TODO: save
+	return errors.New("Save is not implemented for a company")
 }
 
 // Delete a company.

@@ -77,45 +77,49 @@ func (m *Manager) AllByUser(username string) ([]Organization, error) {
 func (m *Manager) Get(id string) (*Organization, error) {
 	var organization Organization
 
-	objectId := bson.ObjectIdHex(id)
+	objectID := bson.ObjectIdHex(id)
 
-	if err := m.collection.FindId(objectId).One(&organization); err != nil {
+	if err := m.collection.FindId(objectID).One(&organization); err != nil {
 		return nil, err
 	}
 
 	return &organization, nil
 }
 
-// Get organization by Name.
-func (m *Manager) GetByName(globalId string) (*Organization, error) {
+// GetByName gets an organization by Name.
+func (m *Manager) GetByName(globalID string) (*Organization, error) {
 	var organization Organization
 
-	err := m.collection.Find(bson.M{"globalid": globalId}).One(&organization)
+	err := m.collection.Find(bson.M{"globalid": globalID}).One(&organization)
 
 	return &organization, err
 }
 
-// Check if organization exists.
-func (m *Manager) Exists(globalId string) bool {
-	count, _ := m.collection.Find(bson.M{"globalid": globalId}).Count()
+// Exists checks if an organization exists.
+func (m *Manager) Exists(globalID string) bool {
+	count, _ := m.collection.Find(bson.M{"globalid": globalID}).Count()
 
 	return count != 1
 }
 
-// Save a organization.
+// Create a new organization.
+func (m *Manager) Create(organization *Organization) error {
+	// TODO: Validation!
+
+	organization.Id = bson.NewObjectId()
+	err := m.collection.Insert(organization)
+	if mgo.IsDup(err) {
+		return db.ErrDuplicate
+	}
+	return err
+}
+
+// Save an organization.
 func (m *Manager) Save(organization *Organization) error {
 	// TODO: Validation!
 
-	if organization.Id == "" {
-		// New Doc!
-		organization.Id = bson.NewObjectId()
-		err := m.collection.Insert(organization)
-		return err
-	}
-
-	_, err := m.collection.UpsertId(organization.Id, organization)
-
-	return err
+	// TODO: Save
+	return errors.New("Save is not implemented yet")
 }
 
 // Delete a organization.
@@ -127,15 +131,15 @@ func (m *Manager) Delete(organization *Organization) error {
 	return m.collection.RemoveId(organization.Id)
 }
 
-// SaveDns save or update DNS
-func (m *Manager) SaveDns(organization *Organization, dns string) error {
+// SaveDNS save or update DNS
+func (m *Manager) SaveDNS(organization *Organization, dns string) error {
 	return m.collection.Update(
 		bson.M{"globalid": organization.Globalid},
 		bson.M{"$addToSet": bson.M{"dns": dns}})
 }
 
-// RemoveDns remove DNS
-func (m *Manager) RemoveDns(organization *Organization, dns string) error {
+// RemoveDNS remove DNS
+func (m *Manager) RemoveDNS(organization *Organization, dns string) error {
 	return m.collection.Update(
 		bson.M{"globalid": organization.Globalid},
 		bson.M{"$pull": bson.M{"dns": dns}})

@@ -6,6 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/itsyouonline/identityserver/db"
 )
 
 type CompaniesAPI struct {
@@ -18,16 +19,36 @@ func (api CompaniesAPI) Post(w http.ResponseWriter, r *http.Request) {
 	var company Company
 
 	if err := json.NewDecoder(r.Body).Decode(&company); err != nil {
+		log.Debug("Error decoding the company:", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	companyMgr := NewCompanyManager(r)
-	err := companyMgr.Save(&company)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	if !company.IsValid() {
+		log.Debug("Invalid organization")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+
+	companyMgr := NewCompanyManager(r)
+	err := companyMgr.Create(&company)
+	if err != nil && err != db.ErrDuplicate {
+		log.Error("Error saving company:", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if err == db.ErrDuplicate {
+		log.Debug("Duplicate company:", company)
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&company)
+
+	w.WriteHeader(http.StatusCreated)
+
 }
 
 // Update existing company. Updating ``globalId`` is not allowed.
