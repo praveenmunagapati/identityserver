@@ -17,7 +17,7 @@
 
         function create(name, dns, owner){
             var url = apiURL;
-            return $http.post(url, {name:name,dns:dns,owners:[owner]}).then(
+            return $http.post(url, {globalid:name,dns:dns,owners:[owner]}).then(
                 function(response) {
                     return response.data;
                 },

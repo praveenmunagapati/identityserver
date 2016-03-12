@@ -17,7 +17,7 @@
 
         function create(name, taxnr){
             var url = apiURL;
-            return $http.post(url, {name:name,taxnr:taxnr}).then(
+            return $http.post(url, {globalid:name,taxnr:taxnr}).then(
                 function(response) {
                     return response.data;
                 },
