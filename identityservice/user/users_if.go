@@ -96,6 +96,10 @@ type UsersInterface interface {
 	// Remove a Scope, the granted organization will no longer have access the user's information.
 	// It is handler for DELETE /users/{username}/scopes/{grantedTo}
 	usernamescopesgrantedToDelete(http.ResponseWriter, *http.Request)
+
+	// Get the list of notifications, these are pending invitations or approvals
+	// It is handler for GET /users/{username}/notifications
+	usernamenotificationsGet(http.ResponseWriter, *http.Request)
 }
 
 func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
@@ -123,4 +127,5 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.HandleFunc("/users/{username}/scopes/{grantedTo}", i.usernamescopesgrantedToGet).Methods("GET")
 	r.HandleFunc("/users/{username}/scopes/{grantedTo}", i.usernamescopesgrantedToPut).Methods("PUT")
 	r.HandleFunc("/users/{username}/scopes/{grantedTo}", i.usernamescopesgrantedToDelete).Methods("DELETE")
+	r.HandleFunc("/users/{username}/notifications", i.usernamenotificationsGet).Methods("GET")
 }
