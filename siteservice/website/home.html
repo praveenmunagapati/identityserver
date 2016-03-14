@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+       <title>It's You Online</title>
+
+       <link rel='stylesheet prefetch' href='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css'>
+       <link rel="stylesheet" href="assets/css/style.css"/>
+       <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
+       <link href='http://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <style>
+
+            [ng\:cloak], [ng-cloak], .ng-cloak {
+                display: none;
+            }
+        </style>
+ </head>
+
+<body ng-app="itsyouonlineApp">
+
+<header id="header">
+  <div class="content">
+    <div id="logo"><a href="#"> ItsYou.Online </a></div>
+
+    <div class="sign-wrap">
+        <a href="notifications"><i class="fa fa-bell"></i>
+            <md-tooltip ng-cloak>
+            You have no open requests
+            </md-tooltip>
+        </a>
+        <md-menu md-offset="-5 30">
+            <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-plus"></i><i class="fa fa-caret-down"></i>
+              <md-tooltip ng-cloak>
+                Create new...
+              </md-tooltip>
+            </a>
+            <md-menu-content ng-cloak>
+               <md-menu-item><md-button href="#neworganization">New organization</md-button></md-menu-item>
+               <md-menu-item><md-button href="#newcompany">New company</md-button></md-menu-item>
+             </md-menu-content>
+        </md-menu>
+
+      <a href="logout"><i class="fa fa-sign-out"></i>Sign out</a>
+    </div>
+  </div>
+</header>
+
+
+<div class="fullscreenform">
+    <div flex layout="row">
+        <div flex></div>
+        <div layout="column" flex-gt-xs="80" flex-xs="100">
+            <div ng-view></div>
+        </div>
+        <div flex></div>
+    </div>
+</div>
+
+
+  <div id="slide7">
+    <div class="content">
+      <div class="quotes_container">
+        <div class="button-center text-center">
+          <div class="doc">
+            <a target="_blank" href="#">
+              Documentation
+            </a>
+          </div>
+          <div class="doc doc2">
+            <a target="_blank" href="apidocumentation">
+              API Documentation
+            </a>
+          </div>
+          <div class="doc doc3">
+            <a target="_blank" href="https://github.com/itsyouonline">
+              <span class="github-link">
+                Source code on Github
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.js"></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js'></script>
+<script>
+    angular.module('itsyouonlineApp', ['ngMaterial','ngRoute', 'ngMessages'])
+        .config(function($mdThemingProvider) {
+            $mdThemingProvider.definePalette('blueish', {
+                '50': '#f7fbfd',
+                '100': '#badeed',
+                '200': '#8ec8e2',
+                '300': '#55add3',
+                '400': '#3ca1cd',
+                '500': '#3091bb',
+                '600': '#2a7ea3',
+                '700': '#236b8a',
+                '800': '#1d5872',
+                '900': '#17455a',
+                'A100': '#f7fbfd',
+                'A200': '#badeed',
+                'A400': '#3ca1cd',
+                'A700': '#236b8a',
+                'contrastDefaultColor': 'light',
+                'contrastDarkColors': '50 100 200 300 400 A100 A200 A400'
+            });
+            $mdThemingProvider.theme('default')
+                .primaryPalette('blueish')
+        })
+        .config(function($routeProvider) {
+            $routeProvider
+                .when('/neworganization', {
+                    templateUrl: 'components/organization/views/new.html',
+                    controller: 'OrganizationController',
+                    controllerAs: 'vm'
+                })
+                .when('/organizations/:globalid', {
+                    templateUrl: 'components/organization/views/detail.html',
+                    controller: 'OrganizationController',
+                    controllerAs: 'vm'
+                })
+                .when('/newcompany', {
+                    templateUrl: 'components/company/views/new.html',
+                    controller: 'CompanyController',
+                    controllerAs: 'vm'
+                })
+                .when('/companies/:globalid', {
+                    templateUrl: 'components/company/views/detail.html',
+                    controller: 'CompanyController',
+                    controllerAs: 'vm'
+                })
+            ;
+        });
+</script>
+<script src='components/organization/controller.js'></script>
+<script src='components/organization/service.js'></script>
+<script src='components/company/controller.js'></script>
+<script src='components/company/service.js'></script>
+</body>
+</html>

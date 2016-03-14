@@ -1,0 +1,22 @@
+{
+  "name": "ItsYou.online",
+  "homepage": "https://github.com/itsyouonline/website",
+  "authors": [
+    "ItsYou.online developers <info@itsyou.online>"
+  ],
+  "description": "Your online identity",
+  "main": "",
+  "moduleType": [],
+  "license": "BSD3",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-qrcode": "monospaced/angular-qrcode#^6.1.3"
+  }
+}

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>It's You Online</title>
+  <link rel="stylesheet" href="assets/css/style.css"/>
+  <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
+  <link href='http://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <style>
+  h2 { text-shadow: 2px 2px #3C3C3C; }
+
+  </style>
+</head>
+<body>
+<header id="header">
+  <div class="content">
+    <div id="logo"><a href="#"> ItsYou.Online </a></div>
+    <div class="sign-wrap">
+      <a href="register"><i class="fa fa-user-plus"></i>Register</a>
+      <a href="login"><i class="fa fa-sign-in"></i>Sign in</a>
+    </div>
+  </div>
+</header>
+
+<!-- SLIDES START -->
+<div id="slide1">
+  <div class="content">
+    <h2>Your online identity</h2>
+    <h2>in your own hands</h2>
+  </div>
+</div>
+<div id="slide2">
+  <div class="content" >
+    <div class="quotes_container">
+      <h3 class="quotes">Online presence means interaction. Companies need your identity which you present in different ways, depending on the company, person or context.</h3>
+    </div>
+  </div>
+</div>
+<div id="slide5">
+  <div class="content">
+    <h2>You communicate over various channels and</h2>
+    <h2>in different contexts but it's always you</h2>
+  </div>
+</div>
+<div id="slide6">
+  <div class="content" >
+    <div class="quotes_container">
+      <h3 class="quotes">“Then the Grinch thought of something he hadn't before! What if Christmas, he thought, doesn't come from a store. What if Christmas...perhaps...means a little bit more!”</h3>
+      <img src="assets/img/dr-seuss.png" align="left"/>
+      <h4 class="author_name_gray">Dr. Seuss </h4>
+      <br/>
+      <br/>
+      <h3 class="quotes">An identity when communicating is not about the channel or the provider, it's about who you are talking to in which context.</h3>
+    </div>
+  </div>
+</div>
+<div id="slide3">
+  <div class="content">
+    <h2>Share up to date information</h2>
+    <h2>but only as much as you want</h2>
+  </div>
+</div>
+<div id="slide4">
+  <div class="content">
+    <div class="quotes_container">
+      <h3 class="quotes">Don't be afraid to show your face anymore. Share the information you wish to share to a service provider and be sure your other information is safe.</h3>
+    </div>
+  </div>
+</div>
+  <div id="slide7">
+    <div class="content">
+      <div class="quotes_container">
+        <div class="button-center text-center">
+          <div class="doc">
+            <a target="_blank" href="#">
+              Documentation
+            </a>
+          </div>
+          <div class="doc doc2">
+            <a target="_blank" href="apidocumentation">
+              API Documentation
+            </a>
+          </div>
+          <div class="doc doc3">
+            <a target="_blank" href="https://github.com/itsyouonline">
+              <span class="github-link">
+                Source code on Github
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- SLIDES END -->
+<script src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('#nav a').each(function() {
+    if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'')
+    && location.hostname == this.hostname
+    && this.hash.replace(/#/,'') ) {
+      var $targetId = $(this.hash), $targetAnchor = $('[name=' + this.hash.slice(1) +']');
+      var $target = $targetId.length ? $targetId : $targetAnchor.length ? $targetAnchor : false;
+       if ($target) {
+         var targetOffset = $target.offset().top;
+
+
+         $(this).click(function() {
+            $("#nav li a").removeClass("active");
+            $(this).addClass('active');
+           $('html, body').animate({scrollTop: targetOffset}, 1000);
+           return false;
+         });
+      }
+    }
+  });
+
+});
+</script>
+</body>
+</html>

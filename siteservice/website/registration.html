@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+       <title>It's You Online</title>
+
+       <link rel='stylesheet prefetch' href='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css'>
+       <link rel="stylesheet" href="assets/css/style.css"/>
+       <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
+       <link href='http://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <style>
+
+            [ng\:cloak], [ng-cloak], .ng-cloak {
+                display: none;
+            }
+        </style>
+ </head>
+
+<body ng-app="registrationApp">
+
+<header id="header">
+  <div class="content">
+    <div id="logo"><a href="home"> ItsYou.Online </a></div>
+    <div class="sign-wrap">
+      <a href="login"><i class="fa fa-sign-in"></i>Sign in</a>
+    </div>
+  </div>
+</header>
+
+
+<div class="fullscreenform">
+    <form ng-cloak method="post" action="register" layout="column" name="signupform" >
+    <div ng-init='signupform.serversidevalidationerrors = {"invalidsomething": true}'></div>
+    <div flex layout="row"  layout-xs="column">
+        <div flex="50" layout="column">
+            <md-input-container>
+                <label>Username</label>
+                <input ng-model="login" md-maxlength="30" minlength="2" required name="login" type="text" autofocus>
+                <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
+                  <div ng-message="duplicateusername">This username is already taken</div>
+                </div>
+            </md-input-container>
+
+            <md-input-container>
+                <label>Email</label>
+                <input ng-model="email" required name="email" type="email">
+            </md-input-container>
+
+            <md-input-container>
+                <label>Password</label>
+                <input ng-model="password" required name="password" type="password">
+            </md-input-container>
+
+            <md-input-container>
+                <label>Password confirmation</label>
+                <input ng-model="passwordvalidation" required name="passwordvalidation" ng-pattern="password" type="password">
+                <div ng-messages="signupform.passwordvalidation.$error">
+                    <div ng-message="pattern">This does not match the password</div>
+                </div>
+            </md-input-container>
+        </div>
+        <div flex layout="column">
+            <div flex layout="row">
+                <span flex></span>
+                <div layout="column" flex="60">
+                    <md-input-container>
+                        <label>2-Factor authentication code</label>
+                        <input ng-model="totpcode" md-maxlength="6" minlength="6" required name="totpcode">
+                        <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
+                          <div ng-message="invalidtotpcode">An invalid code was given</div>
+                        </div>
+                    </md-input-container>
+                    <qrcode version="6" error-correction-level="M" size="200" data="otpauth://totp/ItsYou.online?secret=1234123412341234&issuer=ItsYou.Online" href="otpauth://totp/ItsYou.online:?secret=1234123412341234&issuer=ItsYou.Online"></qrcode>
+                </div>
+                <span flex></span>
+            </div>
+
+        </div>
+
+    </div>
+
+        <div layout="row">
+            <span flex></span>
+            <md-button type="submit" class="md-raised md-primary">Sign up</md-button>
+            <span flex></span>
+        </div>
+    </form>
+</div>
+
+
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js'></script>
+<script>
+    angular.module('registrationApp', ['ngMaterial','ngMessages','monospaced.qrcode'])
+        .config(function($mdThemingProvider) {
+            $mdThemingProvider.definePalette('blueish', {
+                '50': '#f7fbfd',
+                '100': '#badeed',
+                '200': '#8ec8e2',
+                '300': '#55add3',
+                '400': '#3ca1cd',
+                '500': '#3091bb',
+                '600': '#2a7ea3',
+                '700': '#236b8a',
+                '800': '#1d5872',
+                '900': '#17455a',
+                'A100': '#f7fbfd',
+                'A200': '#badeed',
+                'A400': '#3ca1cd',
+                'A700': '#236b8a',
+                'contrastDefaultColor': 'light',
+                'contrastDarkColors': '50 100 200 300 400 A100 A200 A400'
+            });
+            $mdThemingProvider.theme('default')
+                .primaryPalette('blueish')
+        });
+</script>
+<script src="thirdpartyassets/qrcode-generator/js/qrcode.js"></script>
+<script src="thirdpartyassets/qrcode-generator/js/qrcode_UTF8.js"></script>
+<script src="thirdpartyassets/angular-qrcode/angular-qrcode.js"></script>
+
+</body>
+</html>
