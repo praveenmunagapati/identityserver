@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+       <title>It's You Online</title>
+
+       <link rel="stylesheet" href="assets/css/style.css"/>
+       <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
+       <link href='http://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <style>
+
+            [ng\:cloak], [ng-cloak], .ng-cloak {
+                display: none;
+            }
+
+            .fullscreendocumentation {
+              left: 0;
+              right: 0;
+              z-index: 0;
+            margin-top: 10px;
+            }
+            .itsyouonlineheader {
+                width: 100%; background: rgba(48, 145, 187, 0.92); height: 80px; ;z-index: 2;margin-top: 15px;
+            }
+            #raml_documentation {
+                display: none ;
+            }
+        </style>
+
+        <link href="apidocumentation/styles/api-console-light-theme.css" rel="stylesheet" class="theme">
+ </head>
+
+<body ng-app="ramlConsoleApp" class="raml-console-body" >
+
+<div class="itsyouonlineheader">
+  <div class="content">
+    <div id="logo"><a href="./"> ItsYou.Online </a></div>
+  </div>
+</div>
+
+
+<div class="fullscreendocumentation">
+    <div>
+        <raml-console src="/apidocumentation/raml/users.raml" disable-theme-switcher disable-raml-client-generator disable-title resources-collapsed></raml-console>
+        <!-- No clue why but the raml console only renders properly if I load the users doc twice -->
+        <div style="display: none;">
+            <raml-console src="/apidocumentation/raml/users.raml" disable-theme-switcher disable-raml-client-generator disable-title resources-collapsed></raml-console>
+        </div>
+        <raml-console src="/apidocumentation/raml/organizations.raml" disable-theme-switcher disable-raml-client-generator disable-title resources-collapsed></raml-console>
+        <raml-console src="/apidocumentation/raml/companies.raml" disable-theme-switcher disable-raml-client-generator disable-title resources-collapsed></raml-console>
+        <raml-console src="/apidocumentation/raml/contracts.raml" disable-theme-switcher disable-raml-client-generator disable-title resources-collapsed></raml-console>
+        <raml-console src="/apidocumentation/raml/userorganizations.raml" disable-theme-switcher disable-raml-client-generator disable-title resources-collapsed></raml-console>
+
+</div>
+
+</div>
+
+
+<script src="/apidocumentation/scripts/api-console-vendor.js"></script>
+<script src="/apidocumentation/scripts/api-console.js"></script>
+<script>
+  $.noConflict();
+</script>
+</body>
+</html>
