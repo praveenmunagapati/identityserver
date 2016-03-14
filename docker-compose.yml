@@ -16,10 +16,3 @@ services:
     image: mongo
     ports:
       - "27017:27017"
-
-  api-console:
-    build:
-      context: .
-      dockerfile: Dockerfile-api-console
-    ports:
-      - "9000:9000"

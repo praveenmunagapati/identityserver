@@ -7,6 +7,8 @@ import (
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/itsyouonline/identityserver/siteservice/apiconsole"
+	"github.com/itsyouonline/identityserver/specifications"
 	"github.com/itsyouonline/website/packaged/assets"
 	"github.com/itsyouonline/website/packaged/components"
 	"github.com/itsyouonline/website/packaged/html"
@@ -50,17 +52,35 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.PathPrefix("/components/").Handler(http.StripPrefix("/components/", http.FileServer(
 		&assetfs.AssetFS{Asset: components.Asset, AssetDir: components.AssetDir, AssetInfo: components.AssetInfo})))
 
+	//host the apidocumentation
+	router.Methods("GET").Path("/apidocumentation").HandlerFunc(service.APIDocs)
+	router.PathPrefix("/apidocumentation/raml/").Handler(http.StripPrefix("/apidocumentation/raml", http.FileServer(
+		&assetfs.AssetFS{Asset: specifications.Asset, AssetDir: specifications.AssetDir, AssetInfo: specifications.AssetInfo})))
+	router.PathPrefix("/apidocumentation/").Handler(http.StripPrefix("/apidocumentation/", http.FileServer(
+		&assetfs.AssetFS{Asset: apiconsole.Asset, AssetDir: apiconsole.AssetDir, AssetInfo: apiconsole.AssetInfo})))
+
 }
 
 const (
-	mainpageFileName  = "index.html"
-	homepageFileName  = "home.html"
-	errorpageFilename = "error.html"
+	mainpageFileName    = "index.html"
+	homepageFileName    = "home.html"
+	errorpageFilename   = "error.html"
+	apidocsPageFilename = "apidocumentation.html"
 )
 
 //ShowPublicSite shows the public website
 func (service *Service) ShowPublicSite(w http.ResponseWriter, request *http.Request) {
 	htmlData, err := html.Asset(mainpageFileName)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Write(htmlData)
+}
+
+//APIDocs shows the api documentation
+func (service *Service) APIDocs(w http.ResponseWriter, request *http.Request) {
+	htmlData, err := html.Asset(apidocsPageFilename)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
