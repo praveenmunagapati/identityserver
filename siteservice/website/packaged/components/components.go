@@ -91,7 +91,7 @@ func companyControllerJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "company/controller.js", size: 1014, mode: os.FileMode(420), modTime: time.Unix(1457713272, 0)}
+	info := bindataFileInfo{name: "company/controller.js", size: 1014, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -111,7 +111,7 @@ func companyServiceJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "company/service.js", size: 703, mode: os.FileMode(420), modTime: time.Unix(1457772163, 0)}
+	info := bindataFileInfo{name: "company/service.js", size: 703, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -131,7 +131,7 @@ func companyViewsDetailHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "company/views/detail.html", size: 42, mode: os.FileMode(420), modTime: time.Unix(1457693299, 0)}
+	info := bindataFileInfo{name: "company/views/detail.html", size: 42, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -151,7 +151,7 @@ func companyViewsNewHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "company/views/new.html", size: 803, mode: os.FileMode(420), modTime: time.Unix(1457705626, 0)}
+	info := bindataFileInfo{name: "company/views/new.html", size: 803, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -171,7 +171,7 @@ func notificationsControllerJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "notifications/controller.js", size: 341, mode: os.FileMode(420), modTime: time.Unix(1457604838, 0)}
+	info := bindataFileInfo{name: "notifications/controller.js", size: 341, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -191,7 +191,7 @@ func organizationControllerJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "organization/controller.js", size: 1152, mode: os.FileMode(420), modTime: time.Unix(1457713448, 0)}
+	info := bindataFileInfo{name: "organization/controller.js", size: 1152, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -211,7 +211,7 @@ func organizationServiceJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "organization/service.js", size: 743, mode: os.FileMode(420), modTime: time.Unix(1457772156, 0)}
+	info := bindataFileInfo{name: "organization/service.js", size: 743, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -231,7 +231,7 @@ func organizationViewsDetailHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "organization/views/detail.html", size: 46, mode: os.FileMode(420), modTime: time.Unix(1457693254, 0)}
+	info := bindataFileInfo{name: "organization/views/detail.html", size: 46, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -251,7 +251,7 @@ func organizationViewsNewHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "organization/views/new.html", size: 819, mode: os.FileMode(420), modTime: time.Unix(1457705612, 0)}
+	info := bindataFileInfo{name: "organization/views/new.html", size: 819, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
