@@ -8,11 +8,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/itsyouonline/identityserver/siteservice/apiconsole"
+	"github.com/itsyouonline/identityserver/siteservice/website/packaged/assets"
+	"github.com/itsyouonline/identityserver/siteservice/website/packaged/components"
+	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
+	"github.com/itsyouonline/identityserver/siteservice/website/packaged/thirdpartyassets"
 	"github.com/itsyouonline/identityserver/specifications"
-	"github.com/itsyouonline/website/packaged/assets"
-	"github.com/itsyouonline/website/packaged/components"
-	"github.com/itsyouonline/website/packaged/html"
-	"github.com/itsyouonline/website/packaged/thirdpartyassets"
 
 	log "github.com/Sirupsen/logrus"
 )

@@ -10,7 +10,7 @@ import (
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/identityservice/user"
-	"github.com/itsyouonline/website/packaged/html"
+	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 )
 
 const registrationFileName = "registration.html"
