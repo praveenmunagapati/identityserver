@@ -5,7 +5,7 @@
   <title>It's You Online</title>
   <link rel="stylesheet" href="assets/css/style.css"/>
   <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
-  <link href='http://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
   <style>
   h2 { text-shadow: 2px 2px #3C3C3C; }
 
@@ -93,31 +93,6 @@
     </div>
   </div>
 </div>
-<!-- SLIDES END -->
-<script src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
-<script>
-$(document).ready(function() {
-  $('#nav a').each(function() {
-    if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'')
-    && location.hostname == this.hostname
-    && this.hash.replace(/#/,'') ) {
-      var $targetId = $(this.hash), $targetAnchor = $('[name=' + this.hash.slice(1) +']');
-      var $target = $targetId.length ? $targetId : $targetAnchor.length ? $targetAnchor : false;
-       if ($target) {
-         var targetOffset = $target.offset().top;
-
-
-         $(this).click(function() {
-            $("#nav li a").removeClass("active");
-            $(this).addClass('active');
-           $('html, body').animate({scrollTop: targetOffset}, 1000);
-           return false;
-         });
-      }
-    }
-  });
-
-});
 </script>
 </body>
 </html>
