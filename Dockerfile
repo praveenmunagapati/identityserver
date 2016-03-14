@@ -1,12 +1,9 @@
-FROM golang
+FROM golang:1.6
 MAINTAINER itsyou.online
 
-ADD . /go/src/github.com/itsyouonline/identityserver
-
-RUN cd /go/src/github.com/itsyouonline/identityserver && go get
-
-RUN go install github.com/itsyouonline/identityserver
+ENV CGO_ENABLED 0
+WORKDIR /go/src/github.com/itsyouonline/identityserver
 
 EXPOSE 8080
 
-ENTRYPOINT ["/go/bin/identityserver"]
+ENTRYPOINT go build && ./identityserver -d

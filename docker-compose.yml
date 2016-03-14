@@ -7,10 +7,10 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - .:/code
+      - .:/go/src/github.com/itsyouonline/identityserver
     links:
       - mongo
-    command: ["-c", "mongo:27017", "-d"]
+    command: -c "mongo:27017"
 
   mongo:
     image: mongo

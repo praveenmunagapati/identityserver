@@ -1,5 +1,37 @@
 # Contributing
 
+## Building/running
+
+For development, you can just `go get` or `go build` the identityserver or use the `docker-compose.yml` file in the root of this repository.
+
+When building for production usage, a reproducible build and a minimal docker to run it is wanted.
+
+The `build.sh` script builds the identityserver in a docker and places the statically linked binary in the`dist`.
+After this, a minimal docker `itsyouonline:latest` is created that can be pushed to docker repositories for deployment.
+
+## Changes to the website
+
+In order to make the html files and assets available for the identityserver, make sure you have go-bindata installed:
+```
+go get -u github.com/jteeuwen/go-bindata/...
+```
+
+After this execute `go generate in the siteservice/website` folder. Check in the overwritten go files in the packaged folder.
+
+During development it can be easier if the files are served directly, execute go-bindata with the -debug flag:
+```
+go-bindata -debug -pkg assets -prefix assets -o ./packaged/assets/assets.go assets/...
+go-bindata -debug -pkg thirdpartyassets -prefix thirdpartyassets -o ./packaged/thirdpartyassets/thirdpartyassets.go thirdpartyassets/...
+go-bindata -debug -pkg components -prefix components -o ./packaged/components/components.go components/...
+go-bindata -debug -pkg html -o ./packaged/html/html.go index.html registration.html login.html home.html error.html apidocumentation.html
+
+```
+
+### Bower dependencies
+
+Although 3rd party dependencies are installed through bower,
+only the relevant files should be checked in and be in the thirdpartyassets folder when packaging using `go generate`.
+
 ## Conventions
 
 Submit unit tests for your changes. Go has a great test framework built in; use

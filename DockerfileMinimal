@@ -1,0 +1,8 @@
+FROM scratch
+
+ADD ./dist/identityserver /identityserver
+
+EXPOSE 80
+EXPOSE 443
+
+ENTRYPOINT ["/identityserver", "-b", ":80"]
