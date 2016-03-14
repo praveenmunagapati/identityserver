@@ -3,7 +3,7 @@ package siteservice
 import (
 	"testing"
 
-	"github.com/itsyouonline/website/packaged/html"
+	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 	"github.com/stretchr/testify/assert"
 )
 
