@@ -1,0 +1,29 @@
+<div>
+    <md-content>
+        <h1>{{ vm.organization.globalid }}</h1>
+        <div layout="column" flex>
+            <h4 class="md-title">Invite new members</h4>
+            <form ng-submit="vm.invite()">
+                <md-chips
+                    ng-model="vm.members"
+                    placeholder="+Member"
+                    secondary-placeholder="Enter a member name"
+                    delete-button-label="Remove Member"
+                    delete-hint="Press delete to remove member">
+                </md-chips>
+                <div layout="row" layout-align="end end">
+                    <div>
+                        <md-button
+                            type="submit"
+                            class="md-raised md-primary"
+                            ng-disabled="vm.members.length == 0">
+                            Invite
+                        </md-button>
+                        <span flex></span>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </md-content>
+</div>

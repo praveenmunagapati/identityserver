@@ -1,6 +1,7 @@
 body { margin: 0; padding: 0; width: 100%;font-family: arial }
-h2 { font-family:"Arvo"; font-weight: normal; font-size: 40px; text-align: center; margin: 0; padding: 0;color: #FFFFFF;}
+h2 { font-family:"Arvo"; font-weight: normal; font-size: 40px; text-align: center; margin: 0; padding: 0; text-shadow: 2px 2px #3C3C3C; color: #FFFFFF; }
 h3 { font-family: Oswald; font-weight: normal; font-size: 16px; text-align: center; margin: 5px 0; padding: 0; z-index: 1; position: relative; }
+h4 { font-weight: bold !important; font-size: 20px !important; margin: 5px 0; padding: 0; z-index: 1; position: relative; }
 .center { margin: 0 auto; }
 .content { margin: 0 auto; width: 960px; }
 .clear { clear: both; }
@@ -73,9 +74,12 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
   margin-right: 20px;
 }
 
-.fullscreenform form {
+.fullscreenform form,
+md-content{
   margin: 150px 50px 0px 50px;
+  background-color: transparent !important;
 }
+
 
 @media (max-width: 1200px) {
 .content { width: 960px; }

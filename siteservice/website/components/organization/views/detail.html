@@ -1,3 +1,50 @@
 <div>
-    <h1>Organization detail</h1>
+    <md-content>
+        <div layout>
+            <div flex="80">
+                <h1>{{ vm.organization.globalid }}</h1>
+            </div>
+            <div flex>
+                <md-button class="md-raised md-primary" title="Invite member" ng-click="vm.goToInvite()">
+                    <i class="fa fa-user-plus"></i> Invite
+                    <md-tooltip ng-cloak>Invite new members</md-tooltip>
+                </md-button>
+            </div>
+        </div>
+        <div layout>
+            <md-list>
+                <md-list-item class="md-2-line">
+                    <div class="md-list-item-text">
+                        <p>Organization Name</p>
+                        <h4> {{ vm.organization.globalid }} </h4>
+                    </div>
+                </md-list-item>
+                <md-list-item class="md-2-line">
+                    <div class="md-list-item-text">
+                        <p>Primary DNS</p>
+                        <h4 ng-if="vm.organization.dns.length > 0"> {{ vm.organization.dns[0] }} </h4>
+                        <h4 ng-if="vm.organization.dns.length == 0"> No primary DNS</h4>
+                    </div>
+                </md-list-item>
+                <md-list-item class="md-2-line">
+                    <div class="md-list-item-text">
+                        <p>Owners</p>
+                        <h4 ng-repeat="owner in vm.organization.owners">
+                            <i class="fa fa-user"></i> {{ owner }}
+                        </h4>
+                    </div>
+                </md-list-item>
+                <md-list-item class="md-2-line">
+                    <div class="md-list-item-text">
+                        <p>Members</p>
+                        <h4 ng-repeat="member in vm.organization.members">
+                            <i class="fa fa-user"></i> {{ member }}
+                        </h4>
+                    </div>
+                </md-list-item>
+            </md-list>
+        </div>
+    </md-content>
 </div>
+
+
