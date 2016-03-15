@@ -8,7 +8,12 @@ import (
 )
 
 func GetDBSession(r *http.Request) *mgo.Session {
-	return context.Get(r, DB_SESSION).(*mgo.Session)
+	session := context.Get(r, DB_SESSION)
+	if session == nil {
+		return nil
+	}
+
+	return session.(*mgo.Session)
 }
 
 func SetDBSession(r *http.Request) *mgo.Session {

@@ -67,9 +67,9 @@ func (api OrganizationsAPI) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&org)
-
 	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(&org)
 }
 
 // Get organization info
@@ -171,9 +171,9 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(orgReq)
-
 	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(orgReq)
 }
 
 // Remove a member from organization
@@ -242,9 +242,9 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(orgReq)
-
 	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(orgReq)
 }
 
 // Remove a member from organization
