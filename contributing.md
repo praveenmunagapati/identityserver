@@ -16,7 +16,7 @@ In order to make the html files and assets available for the identityserver, mak
 go get -u github.com/jteeuwen/go-bindata/...
 ```
 
-After this execute `go generate in the siteservice/website` folder. Check in the overwritten go files in the packaged folder.
+After this execute `go generate` in the `siteservice/website` folder. Commit the overwritten go files in the packaged folder.
 
 During development it can be easier if the files are served directly, execute go-bindata with the -debug flag:
 ```
@@ -30,7 +30,7 @@ go-bindata -debug -pkg html -o ./packaged/html/html.go index.html registration.h
 ### Bower dependencies
 
 Although 3rd party dependencies are installed through bower,
-only the relevant files should be checked in and be in the thirdpartyassets folder when packaging using `go generate`.
+only the relevant files should be checked in and be in the `thirdpartyassets` folder when packaging using `go generate`.
 
 ## Conventions
 

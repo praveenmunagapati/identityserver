@@ -2,6 +2,7 @@
     <md-content>
         <div layout>
             <div flex="80">
+                <p>Organization</p>
                 <h1>{{ vm.organization.globalid }}</h1>
             </div>
             <div flex>
@@ -13,17 +14,10 @@
         </div>
         <div layout>
             <md-list>
-                <md-list-item class="md-2-line">
+                <md-list-item class="md-2-line" ng-if="vm.organization.dns.length > 0">
                     <div class="md-list-item-text">
-                        <p>Organization Name</p>
-                        <h4> {{ vm.organization.globalid }} </h4>
-                    </div>
-                </md-list-item>
-                <md-list-item class="md-2-line">
-                    <div class="md-list-item-text">
-                        <p>Primary DNS</p>
-                        <h4 ng-if="vm.organization.dns.length > 0"> {{ vm.organization.dns[0] }} </h4>
-                        <h4 ng-if="vm.organization.dns.length == 0"> No primary DNS</h4>
+                        <p>DNS</p>
+                        <h4 ng-repeat="dns in vm.organization.dns"> {{ dns }} </h4>
                     </div>
                 </md-list-item>
                 <md-list-item class="md-2-line">
@@ -46,5 +40,3 @@
         </div>
     </md-content>
 </div>
-
-
