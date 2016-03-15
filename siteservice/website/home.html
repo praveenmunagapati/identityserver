@@ -98,7 +98,12 @@
                 })
                 .when('/organizations/:globalid', {
                     templateUrl: 'components/organization/views/detail.html',
-                    controller: 'OrganizationController',
+                    controller: 'OrganizationDetailController',
+                    controllerAs: 'vm'
+                })
+                .when('/organizations/:globalid/invite', {
+                    templateUrl: 'components/organization/views/invite.html',
+                    controller: 'OrganizationInviteController',
                     controllerAs: 'vm'
                 })
                 .when('/newcompany', {
