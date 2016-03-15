@@ -107,9 +107,9 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	}
 
 	w.Header().Set("Content-type", "application/json")
-	json.NewEncoder(w).Encode(orgRequest)
-
 	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(orgRequest)
 }
 
 // Reject membership invitation in an organization.

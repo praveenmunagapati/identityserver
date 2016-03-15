@@ -45,10 +45,9 @@ func (api CompaniesAPI) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&company)
-
 	w.WriteHeader(http.StatusCreated)
 
+	json.NewEncoder(w).Encode(&company)
 }
 
 // Update existing company. Updating ``globalId`` is not allowed.

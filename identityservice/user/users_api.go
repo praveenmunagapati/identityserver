@@ -31,9 +31,9 @@ func (api UsersAPI) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&u)
-
 	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(&u)
 }
 
 // It is handler for GET /users/{username}
@@ -189,8 +189,9 @@ func (api UsersAPI) usernamephonenumbersPost(w http.ResponseWriter, r *http.Requ
 
 	// respond with created phone number.
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(phoneNumber)
 	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(phoneNumber)
 }
 
 // It is handler for GET /users/{username}/phonenumbers
@@ -347,8 +348,9 @@ func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 
 	// respond with created phone number.
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(bank)
 	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(bank)
 }
 
 // It is handler for GET /users/{username}/banks
@@ -499,8 +501,9 @@ func (api UsersAPI) usernameaddressesPost(w http.ResponseWriter, r *http.Request
 
 	// respond with created phone number.
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(address)
 	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(address)
 }
 
 // It is handler for GET /users/{username}/addresses
