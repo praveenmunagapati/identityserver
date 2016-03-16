@@ -60,7 +60,12 @@ func (o *InvitationManager) Get(username string, organization string, role strin
 // Save save/update an invitation
 func (o *InvitationManager) Save(invite *JoinOrganizationInvitation) error {
 
-	_, err := o.collection.Upsert(bson.M{"user": invite.User, "organization": invite.Organization, "role": invite.Role}, invite)
+	_, err := o.collection.Upsert(
+		bson.M{
+			"user":         invite.User,
+			"organization": invite.Organization,
+			"role":         invite.Role,
+		}, invite)
 
 	return err
 }

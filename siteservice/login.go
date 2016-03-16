@@ -98,6 +98,14 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		redirectURL = endpoint + "?" + queryValues.Encode()
 	}
 
+	// Set user cookie after successful login
+	cookie := &http.Cookie{
+		Name:  "itsyou.online.user",
+		Path:  "/",
+		Value: username,
+	}
+	http.SetCookie(w, cookie)
+
 	http.Redirect(w, request, redirectURL, http.StatusFound)
 
 }

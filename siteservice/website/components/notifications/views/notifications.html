@@ -1,0 +1,71 @@
+<div>
+    <md-content>
+        <h1>Welcome <strong>{{ vm.username }}</strong>!</h1>
+        <div layout flex>
+            <md-card flex>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">Notifications</span>
+                        <span class="md-subhead">{{ vm.notificationMessage }}</span>
+                        <span class="md-subhead" ng-if="vm.notifications.invitations.length === 0">You have no pending invitations!</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content>
+                    <md-list>
+                        <md-list-item
+                            ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}"
+                            class="noright">
+                                <p><i class="fa fa-users"></i> {{ invitation.organization }}</p>
+                                <md-checkbox class="md-secondary" ng-model="invitation.selected" aria-label="Select invitation">
+                                </md-checkbox>
+                        </md-list-item>
+                    </md-list>
+                </md-card-content>
+                <md-card-actions layout="row" layout-align="end center"
+                    ng-show="vm.getPendingCount(vm.notifications.invitations) > 0">
+                    <md-button
+                        ng-click="vm.accept()"
+                        ng-disabled="vm.checkSelected() === false">
+                        Accept
+                    </md-button>
+                    <md-button
+                        ng-click="vm.reject()"
+                        ng-disabled="vm.checkSelected() === false">
+                        Reject
+                    </md-button>
+                </md-card-actions>
+            </md-card>
+            <md-card flex>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">Organizations</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content>
+                    <md-list>
+                        <md-list-item
+                            ng-repeat="organization in vm.owner" class="noright"
+                            ng-click="vm.goToOrganization(organization)">
+                                <p><i class="fa fa-users"></i> {{ organization }}</p>
+                                <md-button
+                                    class="md-secondary"
+                                    ng-click="vm.goToOrganization(organization)">
+                                    Owner
+                                </md-button>
+                        </md-list-item>
+                        <md-list-item
+                            ng-repeat="organization in vm.member" class="noright"
+                            ng-click="vm.goToOrganization(organization)">
+                                <p><i class="fa fa-users"></i> {{ organization }}</p>
+                                <md-button
+                                    class="md-secondary"
+                                    ng-click="vm.goToOrganization(organization)">
+                                    Member
+                                </md-button>
+                        </md-list-item>
+                    </md-list>
+                </md-card-content>
+            </md-card>
+        </div>
+    </md-content>
+</div>

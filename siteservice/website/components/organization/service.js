@@ -13,7 +13,8 @@
         var service = {
             create: create,
             get: get,
-            invite: invite
+            invite: invite,
+            getUserOrganizations: getUserOrganizations
         }
 
         return service;
@@ -59,5 +60,21 @@
                     }
                 );
         }
+
+        function getUserOrganizations(username) {
+            var url = '/api/users/' + username + '/organizations';
+
+            return $http
+                .get(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
     }
 })();
