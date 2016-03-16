@@ -28,24 +28,28 @@
 
         function create(){
             var dns = []
-            if( vm.dns ){
+
+            if (vm.dns) {
                 dns.push(vm.dns)
             }
+
             vm.validationerrors = {};
-            OrganizationService.create(vm.name,dns,"rob")
-            .then(
-                function(data){
-                    $location.path("/organizations/" + vm.name);
-                },
-                function(reason){
-                    if (reason.status == 409) {
-                         vm.validationerrors = {duplicate: true};
+
+            OrganizationService
+                .create(vm.name, dns, "rob")
+                .then(
+                    function(data){
+                        $location.path("/organizations/" + vm.name);
+                    },
+                    function(reason){
+                        if (reason.status == 409) {
+                             vm.validationerrors = {duplicate: true};
+                        }
+                        else{
+                            $window.location.href = "error" + reason.status;
+                        }
                     }
-                    else{
-                        $window.location.href = "error" + reason.status;
-                    }
-                }
-            );
+                );
         }
     }
 
