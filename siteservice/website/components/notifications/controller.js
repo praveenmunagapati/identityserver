@@ -45,9 +45,9 @@
                         var count = getPendingCount(data.invitations);
 
                         if (count === 0) {
-                            vm.notificationMessage = 'You have no pending invitations!';
+                            vm.notificationMessage = 'No unhandled notifications';
                         } else {
-                            vm.notificationMessage = 'You have ' + count + ' invitations!';
+                            vm.notificationMessage = '';
                         }
 
                     },

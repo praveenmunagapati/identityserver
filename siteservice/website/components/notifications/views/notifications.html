@@ -1,13 +1,13 @@
 <div>
     <md-content>
-        <h1>Welcome <strong>{{ vm.username }}</strong>!</h1>
+        <h1><strong>{{ vm.username }}</strong></h1>
         <div layout flex>
             <md-card flex>
                 <md-card-title>
                     <md-card-title-text>
                         <span class="md-headline">Notifications</span>
                         <span class="md-subhead">{{ vm.notificationMessage }}</span>
-                        <span class="md-subhead" ng-if="vm.notifications.invitations.length === 0">You have no pending invitations!</span>
+                        <span class="md-subhead" ng-if="vm.notifications.invitations.length === 0">No unhandled notifications</span>
                     </md-card-title-text>
                 </md-card-title>
                 <md-card-content>
