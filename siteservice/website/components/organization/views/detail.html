@@ -12,31 +12,51 @@
                 </md-button>
             </div>
         </div>
-        <div layout>
-            <md-list>
-                <md-list-item class="md-2-line" ng-if="vm.organization.dns.length > 0">
-                    <div class="md-list-item-text">
-                        <p>DNS</p>
-                        <h4 ng-repeat="dns in vm.organization.dns"> {{ dns }} </h4>
-                    </div>
-                </md-list-item>
-                <md-list-item class="md-2-line">
-                    <div class="md-list-item-text">
-                        <p>Owners</p>
-                        <h4 ng-repeat="owner in vm.organization.owners">
-                            <i class="fa fa-user"></i> {{ owner }}
-                        </h4>
-                    </div>
-                </md-list-item>
-                <md-list-item class="md-2-line">
-                    <div class="md-list-item-text">
-                        <p>Members</p>
-                        <h4 ng-repeat="member in vm.organization.members">
-                            <i class="fa fa-user"></i> {{ member }}
-                        </h4>
-                    </div>
-                </md-list-item>
-            </md-list>
+        <div>
+            <md-tabs md-dynamic-height>
+                <md-tab>
+                    <md-tab-label><i class="fa fa-user"></i>&nbsp;People</md-tab-label>
+                    <md-tab-body>
+                        <md-list>
+                            <md-list-item class="md-2-line">
+                                <div class="md-list-item-text">
+                                    <p>Owners</p>
+                                    <h4 ng-repeat="owner in vm.organization.owners"> {{ owner }}</h4>
+                                </div>
+                            </md-list-item>
+                            <md-list-item class="md-2-line">
+                                <div class="md-list-item-text">
+                                    <p>Members</p>
+                                    <h4 ng-repeat="member in vm.organization.members">{{ member }}</h4>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab>
+                    <md-tab-label><i class="fa fa-cubes"></i>&nbsp;Structure</md-tab-label>
+                    <md-tab-body>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab>
+                    <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
+                    <md-tab-body>
+                        <md-list>
+                            <md-list-item class="md-2-line">
+                                <div class="md-list-item-text">
+                                    <p>DNS</p>
+                                    <h4 ng-repeat="dns in vm.organization.dns"> {{ dns }}</h4>
+                                </div>
+                            </md-list-item>
+                            <md-list-item class="md-2-line">
+                                <div class="md-list-item-text">
+                                    <p>API Access secrets</p>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                    </md-tab-body>
+                </md-tab>
+            </md-tabs>
         </div>
     </md-content>
 </div>
