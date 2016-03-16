@@ -141,8 +141,9 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 
 	orgMgr := NewManager(r)
 
-	_, err := orgMgr.GetByName(globalid)
-	if err != nil {
+	org, err := orgMgr.GetByName(globalid)
+	if err != nil { //TODO: make a distinction with an internal server error
+		log.Debug("Error while getting the organization: ", err)
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -153,6 +154,20 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 	if ok, err := userMgr.Exists(m.Username); err != nil || !ok {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
+	}
+
+	for _, membername := range org.Members {
+		if membername == m.Username {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
+
+	for _, membername := range org.Owners {
+		if membername == m.Username {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
 	}
 
 	// Create JoinRequest
@@ -212,7 +227,7 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 
 	orgMgr := NewManager(r)
 
-	_, err := orgMgr.GetByName(globalid)
+	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -226,6 +241,12 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	for _, membername := range org.Owners {
+		if membername == m.Username {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
 	// Create JoinRequest
 	invitationMgr := invitations.NewInvitationManager(r)
 

@@ -94,7 +94,7 @@
                     }
             })
             .then(
-                function(answer) {
+                function(invitation) {
                     vm.invitations.push(invitation);
                 });
         }
@@ -106,19 +106,25 @@
 
         $scope.cancel = cancel;
         $scope.invite = invite;
+        $scope.validationerrors = {}
+
 
         function cancel(){
             $mdDialog.cancel();
         }
 
         function invite(username, role){
+            $scope.validationerrors = {};
             OrganizationService.invite(organization, username, role).then(
                 function(data){
                     $mdDialog.hide(data);
                 },
                 function(reason){
-                    if (reason.status == 404 && reason.data.errors && (reason.data.errors.contains("NoSuchUser") || reason.data.errors.contains("Duplicate")){
-                        //Indicate error
+                    if (reason.status == 409){
+                        $scope.validationerrors.duplicate = true;
+                    }
+                    else if (reason.status == 404){
+                        $scope.validationerrors.nosuchuser = true;
                     }
                     else
                     {

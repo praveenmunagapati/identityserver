@@ -23,6 +23,10 @@
                 <md-input-container flex>
                     <label>Username</label>
                     <input ng-model="usertoinvite" minlength="2" required type="text" autofocus>
+                    <div ng-messages="validationerrors" md-auto-hide="false">
+                        <div ng-message="duplicate">This user already joined</div>
+                        <div ng-message="nosuchuser">This user does not exist</div>
+                    </div>
                 </md-input-container>
             </div>
         </div>
