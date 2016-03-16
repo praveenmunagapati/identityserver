@@ -32,11 +32,20 @@ func NewInvitationManager(r *http.Request) *InvitationManager {
 	}
 }
 
-// GetByUser get all invitations for a user.
+// GetByUser gets all invitations for a user.
 func (o *InvitationManager) GetByUser(username string) ([]JoinOrganizationInvitation, error) {
 	orgRequests := []JoinOrganizationInvitation{}
 
 	err := o.collection.Find(bson.M{"user": username}).All(&orgRequests)
+
+	return orgRequests, err
+}
+
+// GetPendingByOrganization gets all pending invitations for a user.
+func (o *InvitationManager) GetPendingByOrganization(globalid string) ([]JoinOrganizationInvitation, error) {
+	orgRequests := []JoinOrganizationInvitation{}
+
+	err := o.collection.Find(bson.M{"organization": globalid, "status": RequestPending}).All(&orgRequests)
 
 	return orgRequests, err
 }

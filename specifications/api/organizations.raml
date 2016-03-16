@@ -45,10 +45,6 @@ types:
       includes:
         - admin.greenitglobe.com
 
-  Organizations:
-    description: List of organizations
-    type: Organization[]
-
   member:
     properties:
       username:
@@ -81,7 +77,7 @@ types:
       201:
         body:
           application/json:
-            type: Organizations
+            type: Organization
       401:
         description: Unauthorized
   get:
@@ -91,7 +87,7 @@ types:
       200:
         body:
           application/json:
-            type: Organizations
+            type: Organization[]
 
   /{globalid}:
     get:
@@ -183,6 +179,7 @@ types:
 
     /contracts:
       get:
+        displayName: GetContracts
         description: Get the contracts where the organization is 1 of the parties. Order descending by date.
         queryParameters:
           includeExpired:

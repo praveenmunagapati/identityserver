@@ -14,24 +14,37 @@
                 <md-tab>
                     <md-tab-label><i class="fa fa-user"></i>&nbsp;People</md-tab-label>
                     <md-tab-body layout="row">
-                        <md-list>
-                            <md-list-item class="md-2-line">
+                        <md-list class="md-dense">
+                            <md-subheader class="md-no-sticky">Owners</md-subheader>
+                            <md-list-item class="md-1-line" ng-repeat="owner in vm.organization.owners">
                                 <div class="md-list-item-text">
-                                    <p>Owners</p>
-                                    <h4 ng-repeat="owner in vm.organization.owners"> {{ owner }}</h4>
-                                </div>
-                            </md-list-item>
-                            <md-list-item class="md-2-line">
-                                <div class="md-list-item-text">
-                                    <p>Members</p>
-                                    <h4 ng-repeat="member in vm.organization.members">{{ member }}</h4>
+                                    <h4 > {{ owner }}</h4>
                                 </div>
                             </md-list-item>
                         </md-list>
+
+                        <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
+                            <md-subheader class="md-no-sticky">Members</md-subheader>
+                            <md-list-item class="md-1-line" ng-repeat="member in vm.organization.members">
+                                <div class="md-list-item-text">
+                                    <h4>{{ member }}</h4>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+
+                        <md-list class="md-dense" ng-if="vm.invitations.length > 0">
+                            <md-subheader>Pending invitations</md-subheader>
+                            <md-list-item class="md-1-line" ng-repeat="invite in vm.invitations">
+                                    <h4 flex="30"> {{ invite.user }}</h4><h4 flex class="md-subhead">{{ {member:"Member",owner:"Owner"}[invite.role] }}</h4>
+                            </md-list-item>
+                            </md-list-item>
+                        </md-list>
+
                         <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)">
                             <i class="fa fa-user-plus"></i> Invite someone
                             <md-tooltip ng-cloak>Invite someone to join {{vm.organization.globalid}}</md-tooltip>
                         </md-button>
+
                     </md-tab-body>
                 </md-tab>
                 <md-tab>

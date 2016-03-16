@@ -14,7 +14,8 @@
             create: create,
             get: get,
             invite: invite,
-            getUserOrganizations: getUserOrganizations
+            getUserOrganizations: getUserOrganizations,
+            getInvitations: getInvitations
         }
 
         return service;
@@ -76,5 +77,21 @@
                 );
         }
 
+
+        function getInvitations(globalid){
+            var url = apiURL + '/' + globalid + '/invitations';
+
+            return $http
+                .get(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+
+        }
     }
 })();

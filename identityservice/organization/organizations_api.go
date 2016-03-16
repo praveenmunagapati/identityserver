@@ -292,3 +292,43 @@ func (api OrganizationsAPI) globalidownersusernameDelete(w http.ResponseWriter, 
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// Get the list of pending invitations for users to join this organization.
+// It is handler for GET /organizations/{globalid}/invitations
+func (api OrganizationsAPI) GetPendingInvitations(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+
+	invitationMgr := invitations.NewInvitationManager(r)
+
+	requests, err := invitationMgr.GetPendingByOrganization(globalid)
+
+	if err != nil {
+		log.Error("Error in GetPendingByOrganization: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	pendingInvites := make([]Invitation, len(requests), len(requests))
+	for index, request := range requests {
+		pendingInvites[index] = Invitation{
+			Role: request.Role,
+			User: request.User,
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(pendingInvites)
+}
+
+// Cancel a pending invitation.
+// It is handler for DELETE /organizations/{globalid}/invitations/{username}
+func (api OrganizationsAPI) RemovePendingInvitation(w http.ResponseWriter, r *http.Request) {
+	log.Error("RemovePendingInvitation is not implemented")
+}
+
+// Get the contracts where the organization is 1 of the parties. Order descending by
+// date.
+// It is handler for GET /organizations/{globalid}/contracts
+func (api OrganizationsAPI) GetContracts(w http.ResponseWriter, r *http.Request) {
+	log.Error("GetContracts is not implemented")
+}

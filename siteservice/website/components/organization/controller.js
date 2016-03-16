@@ -76,6 +76,17 @@
                         $window.location.href = "error" + reason.status;
                     }
                 );
+
+                OrganizationService
+                    .getInvitations(globalid)
+                    .then(
+                        function(data) {
+                            vm.invitations = data;
+                        },
+                        function(reason) {
+                            $window.location.href = "error" + reason.status;
+                        }
+                    );
         }
 
 
