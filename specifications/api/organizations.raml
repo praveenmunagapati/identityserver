@@ -58,6 +58,19 @@ types:
     example:
       username: bob
 
+  Invitation:
+    properties:
+        user: string
+        role:
+          type: string
+          enum: [owner, member]
+        created: date
+
+    example:
+      user: bob
+      role: owner
+      created: Sun, 06 Nov 1994 08:49:37 GMT
+
 /organizations:
   post:
     description: Create a new organization. 1 user should be in the owners list. Validation is performed to check if the securityScheme allows management on this user.
@@ -185,3 +198,21 @@ types:
               description: Max page size, useful for paging. Default is `50`.
               required: false
               maximum: 250
+
+    /invitations:
+      get:
+        displayName: GetPendingInvitations
+        description: Get the list of pending invitations for users to join this organization.
+        responses:
+            200:
+              body:
+                application/json:
+                  type: Invitation[]
+
+      /{username}:
+        delete:
+            displayName: RemovePendingInvitation
+            description: Cancel a pending invitation.
+            responses:
+                204:
+                  description: Invitation cancelled
