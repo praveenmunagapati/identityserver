@@ -14,28 +14,24 @@
                 <md-tab>
                     <md-tab-label><i class="fa fa-user"></i>&nbsp;People</md-tab-label>
                     <md-tab-body layout="row">
-                        <div flex>
-                            <md-list>
-                                <md-list-item class="md-2-line">
-                                    <div class="md-list-item-text">
-                                        <p>Owners</p>
-                                        <h4 ng-repeat="owner in vm.organization.owners"> {{ owner }}</h4>
-                                    </div>
-                                </md-list-item>
-                                <md-list-item class="md-2-line">
-                                    <div class="md-list-item-text">
-                                        <p>Members</p>
-                                        <h4 ng-repeat="member in vm.organization.members">{{ member }}</h4>
-                                    </div>
-                                </md-list-item>
-                            </md-list>
-                        </div>
-                        <div flex="10">
-                            <md-button class="md-primary" ng-click="vm.goToInvite()">
-                                <i class="fa fa-user-plus"></i> Invite someone
-                                <md-tooltip ng-cloak>Invite someone to join this organization</md-tooltip>
-                            </md-button>
-                        </div>
+                        <md-list>
+                            <md-list-item class="md-2-line">
+                                <div class="md-list-item-text">
+                                    <p>Owners</p>
+                                    <h4 ng-repeat="owner in vm.organization.owners"> {{ owner }}</h4>
+                                </div>
+                            </md-list-item>
+                            <md-list-item class="md-2-line">
+                                <div class="md-list-item-text">
+                                    <p>Members</p>
+                                    <h4 ng-repeat="member in vm.organization.members">{{ member }}</h4>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                        <md-button class="md-primary" ng-click="vm.goToInvite()">
+                            <i class="fa fa-user-plus"></i> Invite someone
+                            <md-tooltip ng-cloak>Invite someone to join {{vm.organization.globalid}}</md-tooltip>
+                        </md-button>
                     </md-tab-body>
                 </md-tab>
                 <md-tab>
@@ -46,19 +42,38 @@
                 <md-tab>
                     <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
                     <md-tab-body>
+
                         <md-list>
                             <md-list-item class="md-2-line">
                                 <div class="md-list-item-text">
-                                    <p>DNS</p>
+                                    <p>Domain names</p>
                                     <h4 ng-repeat="dns in vm.organization.dns"> {{ dns }}</h4>
                                 </div>
                             </md-list-item>
+                        </md-list>
+
+                        <md-button class="md-primary">
+                            <i class="fa fa-plus"></i> Add domain name
+                            <md-tooltip>Add a domain name owned by {{vm.organization.globalid}}</md-tooltip>
+                        </md-button>
+
+                        <md-list>
                             <md-list-item class="md-2-line">
                                 <div class="md-list-item-text">
-                                    <p>API Access secrets</p>
+                                    <div layout>
+                                        <p flex="initial">API Access secrets<md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip></p>
+                                        <div flex>&nbsp</div>
+                                    </div>
+
+
                                 </div>
                             </md-list-item>
                         </md-list>
+
+                        <md-button class="md-primary">
+                            <i class="fa fa-plus"></i> Add API access secret
+                            <md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip>
+                        </md-button>
                     </md-tab-body>
                 </md-tab>
             </md-tabs>
