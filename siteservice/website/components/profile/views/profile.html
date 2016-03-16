@@ -1,0 +1,164 @@
+<div>
+    <md-content>
+        <div layout>
+            <div flex="80">
+                <h1>{{ vm.username }}</h1>
+            </div>
+            <div flex>
+                <md-button class="md-raised md-primary" title="Invite member" ng-click="vm.goToEdit()">
+                    <i class="fa fa-pencil"></i> Edit
+                    <md-tooltip ng-cloak>Edit profile</md-tooltip>
+                </md-button>
+            </div>
+        </div>
+        <div layout flex>
+            <md-list flex="60">
+                <md-list-item>
+                    <div flex="25"><i class="fa fa-2x fa-envelope-o"></i></div>
+                    <div flex>
+                        <md-list>
+                            <md-list-item class="md-2-line" ng-repeat="(label, email) in vm.user.email">
+                                <div class="md-list-item-text">
+                                    <h4>{{ email }}</h4>
+                                    <p>{{ label }}</p>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                </md-list-item>
+
+                <md-divider></md-divider>
+
+                <md-list-item>
+                    <div flex="25"><i class="fa fa-2x fa-phone"></i></div>
+                    <div flex>
+                        <md-list>
+<!--
+                            <md-list-item ng-show="vm.user.phone === {}">
+                                <h4>
+                                    You have no phone numbers added yet!
+                                    <md-button><i class="fa fa-phone"></i> Add phone</md-button>
+                                </h4>
+                            </md-list-item>
+ -->
+                            <md-list-item class="md-2-line" ng-repeat="(label, phone) in vm.user.phone">
+                                <div class="md-list-item-text">
+                                    <h4>{{ phone }}</h4>
+                                    <p>{{ label }}</p>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                </md-list-item>
+
+                <md-divider></md-divider>
+
+                <md-list-item>
+                    <div flex="25"><i class="fa fa-2x fa-map-marker"></i></div>
+                    <div flex>
+                        <md-list>
+<!--
+                            <md-list-item ng-show="vm.user.address === {}">
+                                <h4>
+                                    You have no addresses added yet!
+                                    <md-button><i class="fa fa-map-marker"></i> Add address</md-button>
+                                </h4>
+                            </md-list-item>
+ -->
+                            <md-list-item class="md-2-line" ng-repeat="(label, address) in vm.user.address">
+                                <div class="md-list-item-text">
+                                    <h4>
+                                        {{ address.nr }} {{ address.street}},
+                                        {{ address.postalcode}} {{address.city}}, {{address.country}}
+                                    </h4>
+                                    <p>{{ label }}</p>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                </md-list-item>
+
+                <md-divider></md-divider>
+
+                <md-list-item>
+                    <div flex="25"><i class="fa fa-2x fa-bank"></i></div>
+                    <div flex>
+                        <md-list>
+<!--
+                            <md-list-item ng-show="vm.user.address === {}">
+                                <h4>
+                                    You have no bank accounts added yet!
+                                    <md-button><i class="fa fa-bank"></i> Add bank</md-button>
+                                </h4>
+                            </md-list-item>
+ -->
+                            <md-list-item class="md-2-line" ng-repeat="(label, bank) in vm.user.bank">
+                                <div class="md-list-item-text">
+                                    <h4 ng-hide="bank.iban === ''"><span>IBAN: </span> {{ bank.iban }}</h4>
+                                    <h4 ng-hide="bank.bic === ''"><span>BIC: </span> {{ bank.bic }}</h4>
+                                    <h4>{{ bank.country }}</h4>
+                                    <p>{{ label }}</p>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                </md-list-item>
+
+                <md-divider></md-divider>
+
+                <md-list-item>
+                    <div flex="25"><i class="fa fa-2x fa-key"></i></div>
+                    <div flex>
+                        <md-list>
+<!--
+                            <md-list-item ng-show="vm.user.publicKeys === {}">
+                                <h4>
+                                    You have no public keys added yet!
+                                    <md-button><i class="fa fa-key"></i> Add key</md-button>
+                                </h4>
+                            </md-list-item>
+ -->
+                            <md-list-item class="md-3-line md-long-text" ng-repeat="key in vm.user.publicKeys">
+                                <div class="md-list-item-text">
+                                    <p class="public-key">{{ key }}</p>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                </md-list-item>
+
+                <md-divider></md-divider>
+
+                <md-list-item>
+                    <div flex="25"><i class="fa fa-2x fa-link"></i></div>
+                    <div flex>
+                        <md-list>
+<!--
+                            <md-list-item ng-show="vm.user.facebook === {}">
+                                <h4>
+                                    You have no social profiles added yet!
+                                    <md-button><i class="fa fa-link"></i> Add key</md-button>
+                                </h4>
+                            </md-list-item>
+ -->
+                            <md-list-item class="md-2-line">
+                                <div class="md-list-item-text">
+                                    <h4 ng-show="vm.user.facebook !== ''">
+                                        <i class="fa fa-lg fa-facebook-official"></i> {{vm.user.facebook}}
+                                    </h4>
+                                    <h4 ng-show="vm.user.github !== ''">
+                                        <i class="fa fa-lg fa-github"></i> {{vm.user.github}}
+                                    </h4>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                </md-list-item>
+
+                <md-divider></md-divider>
+
+            </md-list>
+        </div>
+    </md-content>
+</div>

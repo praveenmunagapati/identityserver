@@ -177,6 +177,7 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 		Role:         invitations.RoleMember,
 		Organization: globalid,
 		User:         m.Username,
+		Status:       invitations.RequestPending,
 	}
 
 	if err := invitationMgr.Save(orgReq); err != nil {
@@ -254,6 +255,7 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 		Role:         invitations.RoleOwner,
 		Organization: globalid,
 		User:         m.Username,
+		Status:       invitations.RequestPending,
 	}
 
 	if err := invitationMgr.Save(orgReq); err != nil {

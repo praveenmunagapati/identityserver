@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	organizationpackage "github.com/itsyouonline/identityserver/identityservice/organization"
 )
@@ -87,12 +89,14 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 		if invitations.RoleOwner == orgRequest.Role {
 			// Accepted Owner role
 			if err := orgMgr.SaveOwner(org, username); err != nil {
+				log.Error("Failed to save owner: ", username)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			// Accepted member role
 			if err := orgMgr.SaveMember(org, username); err != nil {
+				log.Error("Failed to save member: ", username)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
@@ -102,6 +106,7 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	orgRequest.Status = invitations.RequestAccepted
 
 	if err := orgReqMgr.Save(orgRequest); err != nil {
+		log.Error("Failed to update org request status: ", orgRequest.Organization)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -130,9 +135,25 @@ func (api UsersusernameorganizationsAPI) globalidrolesroleDelete(w http.Response
 
 	orgMgr := organizationpackage.NewManager(r)
 
-	if _, err := orgMgr.GetByName(organization); err != nil {
+	if org, err := orgMgr.GetByName(organization); err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
+	} else {
+		if invitations.RoleOwner == orgRequest.Role {
+			// Rejected Owner role
+			if err := orgMgr.RemoveOwner(org, username); err != nil {
+				log.Error("Failed to remove owner: ", username)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+		} else {
+			// Rejected member role
+			if err := orgMgr.RemoveMember(org, username); err != nil {
+				log.Error("Failed to reject member: ", username)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+		}
 	}
 
 	orgRequest.Status = invitations.RequestRejected

@@ -125,3 +125,9 @@ footer { background: #3091BB; color: #FFF; padding: 20px 0; text-align: center; 
 .sign-wrap a { color: #FFF; text-decoration: none;margin: 31px 20px 0 0;display: inline-block;}
 .sign-wrap a:hover { opacity: 0.9}
 .sign-wrap a i {margin: 0 6px 0 0;font-size: 15px;}
+
+/*= PUBLIC KEYS
+--------------------------------------------------------*/
+.public-key {
+  word-break: break-all;
+}
