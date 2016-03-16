@@ -6,13 +6,11 @@
         .module("itsyouonlineApp")
         .controller("OrganizationController", OrganizationController)
         .controller("OrganizationDetailController", OrganizationDetailController)
-        .controller("OrganizationInviteController", OrganizationInviteController);
+        .controller("InvitationDialogController", InvitationDialogController);
 
 
     OrganizationController.$inject = ['$location','OrganizationService','$window'];
-    OrganizationDetailController.$inject = ['$location', '$routeParams', '$window', 'OrganizationService'];
-    OrganizationInviteController.$inject = [
-        '$q', '$location', '$routeParams', '$window', '$mdToast', 'OrganizationService'];
+    OrganizationDetailController.$inject = ['$location', '$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia'];
 
     function OrganizationController($location, OrganizationService, $window) {
         var vm = this;
@@ -53,13 +51,13 @@
         }
     }
 
-    function OrganizationDetailController($location, $routeParams, $window, OrganizationService) {
+    function OrganizationDetailController($location, $routeParams, $window, OrganizationService, $mdDialog, $mdMedia) {
         var vm = this,
             globalid = $routeParams.globalid;
-
+        vm.invitations = [];
         vm.organization = {};
 
-        vm.goToInvite = goToInvite;
+        vm.showInvitationDialog = showInvitationDialog;
 
         activate();
 
@@ -80,78 +78,58 @@
                 );
         }
 
-        function goToInvite() {
-            $location.path("/organizations/" + globalid + '/invite');
+
+        function showInvitationDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            $mdDialog.show({
+                controller: InvitationDialogController,
+                templateUrl: 'components/organization/views/invitationdialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals:
+                    {
+                        OrganizationService: OrganizationService,
+                        organization : vm.organization.globalid,
+                        $window: $window
+                    }
+            })
+            .then(
+                function(answer) {
+                    vm.invitations.push(invitation);
+                });
+        }
+    }
+
+    function InvitationDialogController($scope, $mdDialog, organization, OrganizationService, $window) {
+
+        $scope.role = "member";
+
+        $scope.cancel = cancel;
+        $scope.invite = invite;
+
+        function cancel(){
+            $mdDialog.cancel();
+        }
+
+        function invite(username, role){
+            OrganizationService.invite(organization, username, role).then(
+                function(data){
+                    $mdDialog.hide(data);
+                },
+                function(reason){
+                    if (reason.status == 404 && reason.data.errors && (reason.data.errors.contains("NoSuchUser") || reason.data.errors.contains("Duplicate")){
+                        //Indicate error
+                    }
+                    else
+                    {
+                        $window.location.href = "error" + reason.status;
+                    }
+                }
+            );
+
         }
     }
 
 
-    function OrganizationInviteController($q, $location, $routeParams, $window, $mdToast, OrganizationService) {
-        var vm = this,
-            globalid = $routeParams.globalid;
-
-        vm.organization = {};
-        vm.members = [];
-
-        vm.invite = invite;
-
-        activate();
-
-        function activate() {
-            fetch();
-        }
-
-        function fetch(){
-            OrganizationService
-                .get(globalid)
-                .then(
-                    function(data) {
-                        vm.organization = data;
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
-                    }
-                );
-        }
-
-        function invite() {
-            var invitations = [];
-
-            if (vm.members.length == 0) {
-                return;
-            }
-
-            vm.members.forEach(function(member){
-                invitations.push(inviteMember(member));
-            });
-
-            $q.all(invitations)
-                .then(
-                    function(responses) {
-                        var toast = $mdToast
-                            .simple()
-                            .textContent('Invited ' + responses.length + ' members to ' + globalid)
-                            .hideDelay(4000)
-                            .position('top right')
-                            .action('Go to organization')
-                            .highlightAction(true);
-
-                        // Show toast!
-                        $mdToast
-                            .show(toast)
-                            .then(function(response) {
-                                $location.path("/organizations/" + globalid);
-                            });
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
-                    }
-                );
-        }
-
-        function inviteMember(member) {
-            return OrganizationService.invite(globalid, member);
-        }
-    }
 
 })();

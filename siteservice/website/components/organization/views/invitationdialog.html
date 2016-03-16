@@ -1,0 +1,43 @@
+<md-dialog ng-cloak>
+  <form>
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>Invite someone</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+          </md-button>
+        </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div class="md-dialog-content" layout="column">
+            <div layout>
+                <md-input-container>
+                    <label>Role</label>
+                    <md-select ng-model="role">
+                        <md-option value="owner">Owner</md-option>
+                        <md-option value="member">Member</md-option>
+                    </md-select>
+                </md-input-container>
+                <span flex="5"></span>
+                <md-input-container flex>
+                    <label>Username</label>
+                    <input ng-model="usertoinvite" minlength="2" required type="text" autofocus>
+                </md-input-container>
+            </div>
+        </div>
+        <div style="margin-right:20px;margin-left:20px;">
+            <h3>A request to join this organization will be sent.</h3><h3>The user needs to accept this invitation before actually becoming part of this organization.</h3>
+        </div>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+        <span flex></span>
+        <md-button ng-click="cancel()">
+        Cancel
+        </md-button>
+        <md-button class="md-primary" type="submit" ng-click="invite(usertoinvite,role)" style="margin-right:20px;">
+        Invite
+        </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

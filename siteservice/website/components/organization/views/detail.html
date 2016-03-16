@@ -28,7 +28,7 @@
                                 </div>
                             </md-list-item>
                         </md-list>
-                        <md-button class="md-primary" ng-click="vm.goToInvite()">
+                        <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)">
                             <i class="fa fa-user-plus"></i> Invite someone
                             <md-tooltip ng-cloak>Invite someone to join {{vm.organization.globalid}}</md-tooltip>
                         </md-button>
@@ -62,7 +62,7 @@
                                 <div class="md-list-item-text">
                                     <div layout>
                                         <p flex="initial">API Access secrets<md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip></p>
-                                        <div flex>&nbsp</div>
+                                        <span flex></span>
                                     </div>
 
 

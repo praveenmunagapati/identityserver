@@ -45,8 +45,8 @@
                 );
         }
 
-        function invite(globalid, member) {
-            var url = apiURL + '/' + globalid + '/members';
+        function invite(globalid, member, role) {
+            var url = apiURL + '/' + globalid + '/' + role + 's';
 
             return $http
                 .post(url, {username: member})
