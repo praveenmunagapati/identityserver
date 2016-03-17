@@ -9,13 +9,15 @@
         .controller("InvitationDialogController", InvitationDialogController);
 
 
-    OrganizationController.$inject = ['$location','OrganizationService','$window'];
-    OrganizationDetailController.$inject = ['$location', '$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia'];
+    OrganizationController.$inject = ['$rootScope', '$location','OrganizationService','$window'];
+    OrganizationDetailController.$inject = [
+        '$location', '$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia'];
 
-    function OrganizationController($location, OrganizationService, $window) {
+    function OrganizationController($rootScope, $location, OrganizationService, $window) {
         var vm = this;
         vm.create = create;
 
+        vm.username = $rootScope.user;
         vm.validationerrors = {};
 
         activate();
@@ -34,7 +36,7 @@
             vm.validationerrors = {};
 
             OrganizationService
-                .create(vm.name, dns, "rob")
+                .create(vm.name, dns, vm.username)
                 .then(
                     function(data){
                         $location.path("/organizations/" + vm.name);
