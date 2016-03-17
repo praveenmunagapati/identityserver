@@ -19,6 +19,7 @@
 <body ng-app="itsyouonlineApp">
 
 <header id="header">
+
   <div class="content">
     <div id="logo"><a href="#"> ItsYou.Online </a></div>
 
@@ -40,8 +41,8 @@
              </md-menu-content>
         </md-menu>
 
-        <md-menu md-offset="-5 30">
-            <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-user"></i>
+        <md-menu md-offset="-5 30" ng-cloak>
+            <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-user"> {{ user }}</i>
               <md-tooltip ng-cloak>
                 Your profile
               </md-tooltip>
@@ -53,6 +54,7 @@
         </md-menu>
     </div>
   </div>
+
 </header>
 
 
