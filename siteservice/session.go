@@ -47,13 +47,22 @@ func (service *Service) GetSession(request *http.Request, kind SessionType, name
 }
 
 //SetLoggedInUser creates a session for an authenticated user
-func (service *Service) SetLoggedInUser(request *http.Request, username string) (err error) {
+func (service *Service) SetLoggedInUser(w http.ResponseWriter, request *http.Request, username string) (err error) {
 	authenticatedSession, err := service.GetSession(request, SessionInteractive, "authenticatedsession")
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	authenticatedSession.Values["username"] = username
+
+	// Set user cookie after successful login
+	cookie := &http.Cookie{
+		Name:  "itsyou.online.user",
+		Path:  "/",
+		Value: username,
+	}
+	http.SetCookie(w, cookie)
+
 	return
 }
 

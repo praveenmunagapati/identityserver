@@ -82,7 +82,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	if err := service.SetLoggedInUser(request, username); err != nil {
+	if err := service.SetLoggedInUser(w, request, username); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -98,14 +98,5 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		redirectURL = endpoint + "?" + queryValues.Encode()
 	}
 
-	// Set user cookie after successful login
-	cookie := &http.Cookie{
-		Name:  "itsyou.online.user",
-		Path:  "/",
-		Value: username,
-	}
-	http.SetCookie(w, cookie)
-
 	http.Redirect(w, request, redirectURL, http.StatusFound)
-
 }
