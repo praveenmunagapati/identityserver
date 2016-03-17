@@ -113,7 +113,7 @@ func (service *Service) HomePage(w http.ResponseWriter, request *http.Request) {
 //Logout logs out the user and redirect to the homepage
 //TODO: csrf protection, really important here!
 func (service *Service) Logout(w http.ResponseWriter, request *http.Request) {
-	service.SetLoggedInUser(request, "")
+	service.SetLoggedInUser(w, request, "")
 	sessions.Save(request, w)
 	http.Redirect(w, request, "", http.StatusFound)
 }
