@@ -2,6 +2,8 @@
 title: ItsYouOnline
 version: 0.1
 baseUri: /
+securitySchemes:
+  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
 types:
 
       JoinOrganizationInvitation:
@@ -12,9 +14,9 @@ types:
                 type: string
                 enum: [owner, member]
 
-
-
+securedBy: [ oauth_2_0 ]
 /users/{username}/organizations:
+  securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
   get:
     description: Get the list organizations a user is owner or member of
     responses:

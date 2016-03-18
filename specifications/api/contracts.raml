@@ -2,6 +2,8 @@
 title: ItsYouOnline
 version: 0.1
 baseUri: /
+securitySchemes:
+  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
 
 types:
   Signature:
@@ -44,6 +46,7 @@ types:
 
       signatures: Signature[]
 
+securedBy: [ oauth_2_0 ]
 /contracts:
   post:
     description: Create a new contract.
@@ -57,6 +60,7 @@ types:
 
   /{contractId}:
     get:
+      securedBy: [oauth_2_0: { scopes: [ "contract:read" ] } ]
       description: Get a contract
       responses:
         200:
@@ -65,9 +69,10 @@ types:
               type: Contract
         404:
           description: Not found
-  /{contractId}/signatures:
-    post:
-        description: Sign a contract
-        body:
-          application/json:
-            type: Signature
+      /signatures:
+        post:
+          securedBy: [oauth_2_0: { scopes: [ "contract:participant" ] } ]
+          description: Sign a contract
+          body:
+            application/json:
+              type: Signature

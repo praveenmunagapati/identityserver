@@ -2,6 +2,8 @@
 title: ItsYouOnline
 version: 0.1
 baseUri: /
+securitySchemes:
+  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
 types:
   Company:
     properties:
@@ -38,14 +40,37 @@ types:
   companyview:
         type: Company
 
+securedBy: [ oauth_2_0 ]
 /companies:
   post:
     description: Register a new company
     body:
         application/json:
             type: Company
+  get:
+    displayName: GetCompanyList
+    description: |
+          Get companies. Authorization limits are applied to requesting user.
+    responses:
+          200:
+            body:
+              application/json:
+                type: Company[]
   /{globalId}:
+    get:
+      securedBy: [oauth_2_0: { scopes: [ "company:read", "company:admin" ] } ]
+      description: Get organization info
+      responses:
+        200:
+          body:
+            application/json:
+              type: Company
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
     put:
+      securedBy: [oauth_2_0: { scopes: [ "company:admin" ] } ]
       description: Update existing company. Updating ``globalId`` is not allowed.
       responses:
         200:
@@ -55,6 +80,7 @@ types:
         403:
           description: Updating globalId is Forbidden!
     /info:
+      securedBy: [oauth_2_0: { scopes: [ "company:info" ] } ]
       get:
         responses:
             200:
@@ -69,6 +95,7 @@ types:
 
     /contracts:
       get:
+        securedBy: [oauth_2_0: { scopes: [ "company:admin", "company:contracts:read" ] } ]
         description: Get the contracts where the organization is 1 of the parties. Order descending by date.
         queryParameters:
           includeExpired:

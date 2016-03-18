@@ -17,9 +17,19 @@ describedBy:
     404:
       description: Unauthorized
 settings:
-  authorizationUri: https://itsyou.online/login/oauth/authorize
-  accessTokenUri: https://itsyou.online/login/oauth/access_token
+  authorizationUri: https://itsyou.online/v1/oauth/authorize
+  accessTokenUri: https://itsyou.online/v1/oauth/access_token
   authorizationGrants: [ code ]
   scopes:
-    - user
-    - "user:read"
+    - "user:admin"
+    - "user:info"
+    - "organization:admin"
+    - "organization:read"
+    - "organization:info"
+    - "organization:contracts:read"
+    - "company:admin"
+    - "company:read"
+    - "company:info"
+    - "company:contracts:read"
+    - "contract:read"
+    - "contract:participant"
