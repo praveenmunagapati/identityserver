@@ -3,7 +3,8 @@ title: ItsYouOnline
 version: 0.1
 baseUri: /
 securitySchemes:
-  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
+  - oauth_2_0:
+        !include securitySchemes/oauth_2_0.raml
 
 types:
   Signature:
@@ -69,7 +70,7 @@ securedBy: [ oauth_2_0 ]
               type: Contract
         404:
           description: Not found
-      /signatures:
+    /signatures:
         post:
           securedBy: [oauth_2_0: { scopes: [ "contract:participant" ] } ]
           description: Sign a contract

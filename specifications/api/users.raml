@@ -3,7 +3,8 @@ title: ItsYouOnline
 version: 0.1
 baseUri: /
 securitySchemes:
-  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
+  - oauth_2_0:
+        !include securitySchemes/oauth_2_0.raml
 types:
   Scope:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md

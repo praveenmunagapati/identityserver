@@ -1,3 +1,0 @@
-package specifications
-
-//go:generate go-bindata -pkg specifications -prefix api -o packaged.go api/...

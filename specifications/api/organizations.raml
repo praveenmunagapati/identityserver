@@ -3,7 +3,8 @@ title: ItsYouOnline
 version: 0.1
 baseUri: /
 securitySchemes:
-  - oauth_2_0: !include securitySchemes/oauth_2_0.raml
+  - oauth_2_0:
+        !include securitySchemes/oauth_2_0.raml
 
 types:
   Organization:
@@ -282,3 +283,9 @@ securedBy: [ oauth_2_0 ]
                 description: Renamed
             409:
                 description: New label is already used
+        delete:
+          displayName: DeleteAPISecret
+          description: Removes an API secret
+          responses:
+              204:
+                description: API secret removed

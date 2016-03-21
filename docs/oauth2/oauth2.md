@@ -14,6 +14,12 @@ The authorization code grant type is the most commonly used because it is optimi
 
 ## Authorization Code Flow
 
+### Prerequisite: clientid and client secret
+
+In order to acquire an oauth access token, a client id and client secret are required.
+
+In itsyou.online, organizations map to clients in the oauth2 terminology and the organization's globalid is used as the clientid. Client secrets can be created through the UI or through the `organizations/{globalid}/apisecrets` api.
+
 ### Step 1: Authorization Code Link
 
 First, the user is given an authorization code link that looks like the following:
