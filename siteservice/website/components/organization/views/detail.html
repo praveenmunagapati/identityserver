@@ -1,5 +1,5 @@
-<div>
-    <md-content>
+<div layout-fill>
+    <md-content layout="column" layout-fill>
         <div layout>
             <div flex="80">
                 <p>Organization</p>
@@ -9,96 +9,104 @@
 
             </div>
         </div>
-        <div>
-            <md-tabs md-dynamic-height>
-                <md-tab>
-                    <md-tab-label><i class="fa fa-user"></i>&nbsp;People</md-tab-label>
-                    <md-tab-body layout="row">
-                        <md-list class="md-dense">
-                            <md-subheader class="md-no-sticky">Owners</md-subheader>
-                            <md-list-item class="md-1-line" ng-repeat="owner in vm.organization.owners">
-                                <div class="md-list-item-text">
-                                    <h4 > {{ owner }}</h4>
-                                </div>
-                            </md-list-item>
-                        </md-list>
+        <div flex layout="column">
 
-                        <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
-                            <md-subheader class="md-no-sticky">Members</md-subheader>
-                            <md-list-item class="md-1-line" ng-repeat="member in vm.organization.members">
-                                <div class="md-list-item-text">
-                                    <h4>{{ member }}</h4>
-                                </div>
-                            </md-list-item>
-                        </md-list>
-
-                        <md-list class="md-dense" ng-if="vm.invitations.length > 0">
-                            <md-subheader>Pending invitations</md-subheader>
-                            <md-list-item class="md-1-line" ng-repeat="invite in vm.invitations">
-                                    <h4 flex="30"> {{ invite.user }}</h4><h4 flex class="md-subhead">{{ {member:"Member",owner:"Owner"}[invite.role] }}</h4>
-                            </md-list-item>
-                            </md-list-item>
-                        </md-list>
-
-                        <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)">
-                            <i class="fa fa-user-plus"></i> Invite someone
-                            <md-tooltip ng-cloak>Invite someone to join {{vm.organization.globalid}}</md-tooltip>
-                        </md-button>
-
-                    </md-tab-body>
-                </md-tab>
-                <md-tab>
-                    <md-tab-label><i class="fa fa-file-text-o"></i>&nbsp;Contracts</md-tab-label>
-                    <md-tab-body>
-                    </md-tab-body>
-                </md-tab>
-                <md-tab>
-                    <md-tab-label><i class="fa fa-cubes"></i>&nbsp;Structure</md-tab-label>
-                    <md-tab-body>
-                    </md-tab-body>
-                </md-tab>
-                <md-tab>
-                    <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
-                    <md-tab-body>
-
-                        <md-list>
-                            <md-list-item class="md-2-line">
-                                <div class="md-list-item-text">
-                                    <p>Domain names</p>
-                                    <h4 ng-repeat="dns in vm.organization.dns"> {{ dns }}</h4>
-                                </div>
-                            </md-list-item>
-                        </md-list>
-
-                        <md-button class="md-primary">
-                            <i class="fa fa-plus"></i> Add domain name
-                            <md-tooltip>Add a domain name owned by {{vm.organization.globalid}}</md-tooltip>
-                        </md-button>
+            <md-card flex="100">
+                <md-card-content flex="100" layout="column">
+                    <md-tabs flex="100">
+                        <md-tab>
+                            <md-tab-label><i class="fa fa-user"></i>&nbsp;People</md-tab-label>
+                            <md-tab-body layout="row">
 
 
-                        <md-list class="md-dense">
-                            <md-subheader class="md-no-sticky">
-                                <div layout>
-                                    <p flex="initial">API Access secrets<md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip></p>
-                                    <span flex></span>
-                                </div>
-                            </md-subheader>
-                            <md-list-item class="md-1-line" ng-repeat="label in vm.apisecretlabels">
-                                <a href="" ng-click="vm.showAPISecretDialog($event, label)">
-                                    <i class="fa fa-info"></i>
-                                    <md-tooltip>Show details</md-tooltip>
-                                </a>&nbsp; {{ label }}
-                            </md-list-item>
-                        </md-list>
+                                <md-list class="md-dense">
+                                    <md-subheader class="md-no-sticky">Owners</md-subheader>
+                                    <md-list-item class="md-1-line" ng-repeat="owner in vm.organization.owners">
+                                        <div class="md-list-item-text">
+                                            <h4 > {{ owner }}</h4>
+                                        </div>
+                                    </md-list-item>
+                                </md-list>
+
+                                <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
+                                    <md-subheader class="md-no-sticky">Members</md-subheader>
+                                    <md-list-item class="md-1-line" ng-repeat="member in vm.organization.members">
+                                        <div class="md-list-item-text">
+                                            <h4>{{ member }}</h4>
+                                        </div>
+                                    </md-list-item>
+                                </md-list>
+
+                                <md-list class="md-dense" ng-if="vm.invitations.length > 0">
+                                    <md-subheader>Pending invitations</md-subheader>
+                                    <md-list-item class="md-1-line" ng-repeat="invite in vm.invitations">
+                                            <h4 flex="30"> {{ invite.user }}</h4><h4 flex class="md-subhead">{{ {member:"Member",owner:"Owner"}[invite.role] }}</h4>
+                                    </md-list-item>
+                                    </md-list-item>
+                                </md-list>
+
+                                <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)">
+                                    <i class="fa fa-user-plus"></i> Invite someone
+                                    <md-tooltip ng-cloak>Invite someone to join {{vm.organization.globalid}}</md-tooltip>
+                                </md-button>
+
+                            </md-tab-body>
+                        </md-tab>
+                        <md-tab>
+                            <md-tab-label><i class="fa fa-file-text-o"></i>&nbsp;Contracts</md-tab-label>
+                            <md-tab-body>
+                            </md-tab-body>
+                        </md-tab>
+                        <md-tab>
+                            <md-tab-label><i class="fa fa-cubes"></i>&nbsp;Structure</md-tab-label>
+                            <md-tab-body>
+                            </md-tab-body>
+                        </md-tab>
+                        <md-tab flex="100">
+                            <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
+                            <md-tab-body flex="100">
+
+                                <md-list class="md-dense">
+                                    <md-subheader class="md-no-sticky">
+                                        <div layout>
+                                            <p flex="initial">Domain names</p>
+                                            <span flex></span>
+                                        </div>
+                                    </md-subheader>
+                                    <md-list-item class="md-1-line" ng-repeat="dns in vm.organization.dns" ng-click="vm.showAPISecretDialog($event, label)">
+                                        {{ dns }}
+                                    </md-list-item>
+                                </md-list>
+
+                                <md-button class="md-primary">
+                                    <i class="fa fa-plus"></i> Add domain name
+                                    <md-tooltip>Add a domain name owned by {{vm.organization.globalid}}</md-tooltip>
+                                </md-button>
 
 
-                        <md-button class="md-primary" ng-click="vm.showAPICreationDialog($event)">
-                            <i class="fa fa-plus"></i> Add API access secret
-                            <md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip>
-                        </md-button>
-                    </md-tab-body>
-                </md-tab>
-            </md-tabs>
+                                <md-list class="md-dense">
+                                    <md-subheader class="md-no-sticky">
+                                        <div layout>
+                                            <p flex="initial">API Access secrets<md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip></p>
+                                            <span flex></span>
+                                        </div>
+                                    </md-subheader>
+                                    <md-list-item class="md-1-line" ng-repeat="label in vm.apisecretlabels" ng-click="vm.showAPISecretDialog($event, label)">
+                                        {{ label }}
+                                    </md-list-item>
+                                </md-list>
+
+
+                                <md-button class="md-primary" ng-click="vm.showAPICreationDialog($event)">
+                                    <i class="fa fa-plus"></i> Add API access secret
+                                    <md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip>
+                                </md-button>
+                            </md-tab-body>
+                        </md-tab>
+                    </md-tabs>
+
+                </md-card-content>
+            </md-card flex>
         </div>
     </md-content>
 </div>
