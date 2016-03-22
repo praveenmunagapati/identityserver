@@ -396,19 +396,21 @@ func (api OrganizationsAPI) GetAPISecret(w http.ResponseWriter, r *http.Request)
 func (api OrganizationsAPI) CreateNewAPISecret(w http.ResponseWriter, r *http.Request) {
 	organization := mux.Vars(r)["globalid"]
 
-	body := struct{ label string }{}
+	body := struct {
+		Label string
+	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if !isValidAPISecretLabel(body.label) {
-		log.Debug("Invalid label: ", body.label)
+	if !isValidAPISecretLabel(body.Label) {
+		log.Debug("Invalid label: ", body.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	c := oauthservice.NewOauth2Client(organization, body.label)
+	c := oauthservice.NewOauth2Client(organization, body.Label)
 
 	mgr := oauthservice.NewManager(r)
 	err := mgr.CreateClientSecret(c)
@@ -446,20 +448,21 @@ func (api OrganizationsAPI) UpdateAPISecretLabel(w http.ResponseWriter, r *http.
 	organization := mux.Vars(r)["globalid"]
 	oldlabel := mux.Vars(r)["label"]
 
-	body := struct{ label string }{}
+	log.Debug("Updating APISecret ", oldlabel)
+	body := struct{ Label string }{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if !isValidAPISecretLabel(body.label) {
-		log.Debug("Invalid label: ", body.label)
+	if !isValidAPISecretLabel(body.Label) {
+		log.Debug("Invalid label: ", body.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	mgr := oauthservice.NewManager(r)
-	err := mgr.RenameClientSecret(organization, oldlabel, body.label)
+	err := mgr.RenameClientSecret(organization, oldlabel, body.Label)
 
 	if err != nil && err != db.ErrDuplicate {
 		log.Error("Error renaming api secret label", err.Error())

@@ -51,7 +51,7 @@ func InitModels() {
 	db.EnsureIndex(tokensCollectionName, automaticExpiration)
 
 	index = mgo.Index{
-		Key:    []string{"ClientID", "Label"},
+		Key:    []string{"clientid", "label"},
 		Unique: true,
 	}
 	db.EnsureIndex(clientsCollectionName, index)
@@ -115,8 +115,12 @@ func (m *Manager) GetClientsCollection() *mgo.Collection {
 
 //GetClientSecretLabels returns a list of labels for which there are secrets registered for a specific client
 func (m *Manager) GetClientSecretLabels(clientID string) (labels []string, err error) {
-	labels = []string{}
-	err = m.GetClientsCollection().Find(bson.M{"ClientID": clientID}).Select(bson.M{"Label": 1}).All(labels)
+	results := []struct{ Label string }{}
+	err = m.GetClientsCollection().Find(bson.M{"clientid": clientID}).Select(bson.M{"label": 1}).All(&results)
+	labels = make([]string, len(results), len(results))
+	for i, value := range results {
+		labels[i] = value.Label
+	}
 	return
 }
 
@@ -134,7 +138,7 @@ func (m *Manager) CreateClientSecret(client *Oauth2Client) (err error) {
 //RenameClientSecret changes the label for a client secret
 func (m *Manager) RenameClientSecret(clientID, oldLabel, newLabel string) (err error) {
 
-	_, err = m.GetClientsCollection().UpdateAll(bson.M{"ClientID": clientID, "Label": oldLabel}, bson.M{"$set": bson.M{"Label": newLabel}})
+	_, err = m.GetClientsCollection().UpdateAll(bson.M{"clientid": clientID, "label": oldLabel}, bson.M{"$set": bson.M{"label": newLabel}})
 
 	if err != nil && mgo.IsDup(err) {
 		err = db.ErrDuplicate
@@ -144,14 +148,14 @@ func (m *Manager) RenameClientSecret(clientID, oldLabel, newLabel string) (err e
 
 //DeleteClientSecret removes a client secret by it's clientID and label
 func (m *Manager) DeleteClientSecret(clientID, label string) (err error) {
-	_, err = m.GetClientsCollection().RemoveAll(bson.M{"ClientID": clientID, "Label": label})
+	_, err = m.GetClientsCollection().RemoveAll(bson.M{"clientid": clientID, "label": label})
 	return
 }
 
 //GetClientSecret retrieves a clientsecret given a clientid and a label
 func (m *Manager) GetClientSecret(clientID, label string) (secret string, err error) {
 	c := &Oauth2Client{}
-	err = m.GetClientsCollection().Find(bson.M{"ClientID": clientID, "Label": label}).One(c)
+	err = m.GetClientsCollection().Find(bson.M{"clientid": clientID, "label": label}).One(c)
 	if err == mgo.ErrNotFound {
 		err = nil
 		return

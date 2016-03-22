@@ -75,20 +75,24 @@
                             <md-tooltip>Add a domain name owned by {{vm.organization.globalid}}</md-tooltip>
                         </md-button>
 
-                        <md-list>
-                            <md-list-item class="md-2-line">
-                                <div class="md-list-item-text">
-                                    <div layout>
-                                        <p flex="initial">API Access secrets<md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip></p>
-                                        <span flex></span>
-                                    </div>
 
-
+                        <md-list class="md-dense">
+                            <md-subheader class="md-no-sticky">
+                                <div layout>
+                                    <p flex="initial">API Access secrets<md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip></p>
+                                    <span flex></span>
                                 </div>
+                            </md-subheader>
+                            <md-list-item class="md-1-line" ng-repeat="label in vm.apisecretlabels">
+                                <a href="" ng-click="vm.showAPISecretDialog($event, label)">
+                                    <i class="fa fa-info"></i>
+                                    <md-tooltip>Show details</md-tooltip>
+                                </a>&nbsp; {{ label }}
                             </md-list-item>
                         </md-list>
 
-                        <md-button class="md-primary">
+
+                        <md-button class="md-primary" ng-click="vm.showAPICreationDialog($event)">
                             <i class="fa fa-plus"></i> Add API access secret
                             <md-tooltip>API Access secrets are needed to access the Itsyou.online api using oauth2</md-tooltip>
                         </md-button>

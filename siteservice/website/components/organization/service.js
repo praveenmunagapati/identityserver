@@ -15,7 +15,12 @@
             get: get,
             invite: invite,
             getUserOrganizations: getUserOrganizations,
-            getInvitations: getInvitations
+            getInvitations: getInvitations,
+            createAPISecret: createAPISecret,
+            deleteAPISecret: deleteAPISecret,
+            updateAPISecretLabel: updateAPISecretLabel,
+            getAPISecretLabels: getAPISecretLabels,
+            getAPISecret: getAPISecret
         }
 
         return service;
@@ -93,5 +98,83 @@
                 );
 
         }
+
+        function getAPISecretLabels(globalid){
+            var url = apiURL + '/' + globalid + '/apisecrets';
+
+            return $http
+                .get(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function createAPISecret(globalid, label){
+            var url = apiURL + '/' + globalid + '/apisecrets';
+
+            return $http
+                .post(url, {label: label})
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function updateAPISecretLabel(globalid, oldLabel, newLabel){
+            var url = apiURL + '/' + globalid + '/apisecrets/' + oldLabel;
+
+            return $http
+                .put(url, {label: newLabel})
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function deleteAPISecret(globalid, label){
+            var url = apiURL + '/' + globalid + '/apisecrets/' + label;
+
+            return $http
+                .delete(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+
+        function getAPISecret(globalid, label){
+            var url = apiURL + '/' + globalid + '/apisecrets/' + label;
+
+            return $http
+                .get(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+
     }
 })();

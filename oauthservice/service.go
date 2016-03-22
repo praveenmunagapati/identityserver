@@ -34,4 +34,6 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	service.router = router
 	router.HandleFunc("/v1/oauth/authorize", service.AuthorizeHandler).Methods("GET")
 	router.HandleFunc("/v1/oauth/access_token", service.AccessTokenHandler).Methods("POST")
+
+	InitModels()
 }
