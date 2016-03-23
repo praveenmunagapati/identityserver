@@ -19,7 +19,7 @@ func main() {
 
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 
-	var debugLogging bool
+	var debugLogging, ignoreDevcert bool
 	var bindAddress, dbConnectionString string
 	var tlsCert, tlsKey string
 
@@ -53,6 +53,11 @@ func main() {
 			Value:       "",
 			Destination: &tlsKey,
 		},
+		cli.BoolFlag{
+			Name:        "ignore-devcert, i",
+			Usage:       "Ignore default devcert even if exists",
+			Destination: &ignoreDevcert,
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -72,8 +77,12 @@ func main() {
 		// Get router!
 		r := routes.GetRouter()
 
+		server := https.PrepareHTTP(bindAddress, r)
+		https.PrepareHTTPS(server, tlsCert, tlsKey, ignoreDevcert)
+
 		// Go make magic over HTTPS
-		log.Fatal(https.ListenAndServeTLS(bindAddress, tlsCert, tlsKey, r))
+		log.Info("Listening (https) on ", bindAddress)
+		log.Fatal(server.ListenAndServeTLS("", ""))
 	}
 
 	app.Run(os.Args)

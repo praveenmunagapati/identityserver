@@ -20,7 +20,7 @@ import (
 // This is made by design to generate a new certificate at each server start, if you
 // don't provide one yourself
 func GenerateDefaultTLS(certPath string, keyPath string) (cert []byte, key []byte) {
-	log.Debug("Generating TLS certificate and key")
+	log.Info("Generating TLS certificate and key")
 
 	rootName := "itsyou.online"
 	priv, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
