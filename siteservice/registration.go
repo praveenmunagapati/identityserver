@@ -95,13 +95,13 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 
 	newuser := &user.User{
 		Username: values.Get("login"),
-		Email:    map[string]string{"registration": values.Get("email")},
+		Email:    map[string]string{"main": values.Get("email")},
 	}
 	//TODO: validate newuser
 
 	//validate the username is not taken yet
 	userMgr := user.NewManager(request)
-	//TODO: distributed lock
+	//TODO: distributed lock or just depend on mongo unique index
 	userExists, err := userMgr.Exists(newuser.Username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
