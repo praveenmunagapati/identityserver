@@ -21,7 +21,7 @@
 <header id="header">
 
   <div class="content">
-    <div id="logo"><a href="#"> ItsYou.Online </a></div>
+    <div id="logo"><a href="#/"> ItsYou.Online </a></div>
 
     <div class="sign-wrap">
         <a href="#notifications"><i class="fa fa-bell"></i>
@@ -42,13 +42,9 @@
         </md-menu>
 
         <md-menu md-offset="-5 30" ng-cloak>
-            <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-user"> {{ user }}</i><i class="fa fa-caret-down"></i>
-              <md-tooltip ng-cloak>
-                Your profile
-              </md-tooltip>
-            </a>
+            <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-user"> {{ user }}</i><i class="fa fa-caret-down"></i></a>
             <md-menu-content ng-cloak>
-               <md-menu-item><md-button href="#profile">Profile</md-button></md-menu-item>
+               <md-menu-item><md-button href="#/">Home</md-button></md-menu-item>
                <md-menu-item><md-button href="logout">Signout</md-button></md-menu-item>
              </md-menu-content>
         </md-menu>
@@ -106,18 +102,8 @@
         .config(function($routeProvider) {
             $routeProvider
                 .when('/', {
-                    templateUrl: 'components/notifications/views/notifications.html',
-                    controller: 'NotificationsController',
-                    controllerAs: 'vm'
-                })
-                .when('/profile', {
-                    templateUrl: 'components/profile/views/profile.html',
-                    controller: 'ProfileController',
-                    controllerAs: 'vm'
-                })
-                .when('/profile/edit', {
-                    templateUrl: 'components/profile/views/edit.html',
-                    controller: 'ProfileEditController',
+                    templateUrl: 'components/user/views/home.html',
+                    controller: 'UserHomeController',
                     controllerAs: 'vm'
                 })
                 .when('/neworganization', {
@@ -140,17 +126,15 @@
                     controller: 'CompanyController',
                     controllerAs: 'vm'
                 })
-                .otherwise('/')
+                .otherwise({redirectTo: '/' })
             ;
         })
         .run(function($cookies, $rootScope) {
             $rootScope.user = $cookies.get('itsyou.online.user');
         });
 </script>
-<script src='components/profile/controller.js'></script>
-<script src='components/profile/service.js'></script>
-<script src='components/notifications/controller.js'></script>
-<script src='components/notifications/service.js'></script>
+<script src='components/user/controller.js'></script>
+<script src='components/user/service.js'></script>
 <script src='components/organization/controller.js'></script>
 <script src='components/organization/service.js'></script>
 <script src='components/company/controller.js'></script>

@@ -1,0 +1,213 @@
+<div layout-fill>
+    <md-content layout="column" layout-fill>
+        <div layout>
+            <div flex="80">
+                <p>You</p>
+                <h1>{{ vm.username }}</h1>
+            </div>
+            <div flex>
+            </div>
+        </div>
+        <div flex layout="column">
+
+            <md-card flex="100">
+                <md-card-content flex="100" layout="column">
+                    <md-tabs flex="100">
+                        <md-tab>
+                            <md-tab-label><i class="fa fa-bell"></i>&nbsp;Notifications</md-tab-label>
+                            <md-tab-body layout="column">
+                                <div layout>
+                                    <div layout="column">
+                                        <br/>
+                                        <h3>{{ vm.notificationMessage }}</h3>
+                                        <h3 ng-if="vm.notifications.invitations.length === 0">No unhandled notifications</h3>
+                                    </div>
+                                    <span flex></span>
+                                </div>
+                                <md-list>
+                                    <md-list-item
+                                        ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}"
+                                        class="noright">
+                                            <p><i class="fa fa-users"></i> {{ invitation.organization }}</p>
+                                            <md-checkbox class="md-secondary" ng-model="invitation.selected" aria-label="Select invitation">
+                                            </md-checkbox>
+                                    </md-list-item>
+                                </md-list>
+                                <div layout="row" layout-align="end center"
+                                    ng-show="vm.getPendingCount(vm.notifications.invitations) > 0">
+                                    <md-button
+                                        ng-click="vm.accept()"
+                                        ng-disabled="vm.checkSelected() === false">
+                                        Accept
+                                    </md-button>
+                                    <md-button
+                                        ng-click="vm.reject()"
+                                        ng-disabled="vm.checkSelected() === false">
+                                        Reject
+                                    </md-button>
+                                </div>
+                            </md-tab-body>
+                        </md-tab>
+                        <md-tab>
+                            <md-tab-label><i class="fa fa-users"></i></i>&nbsp;Organizations</md-tab-label>
+                            <md-tab-body>
+                                <div layout>
+                                    <div flex flex-gt-xs="50">
+                                        <md-list>
+                                            <md-subheader>Owner</md-subheader>
+                                            <md-list-item
+                                                ng-repeat="organization in vm.owner" class="noright"
+                                                ng-click="vm.goToOrganization(organization)">
+                                                    <p> {{ organization }}</p>
+                                            </md-list-item>
+                                        </md-list>
+                                    </div>
+                                    <div flex flex-gt-xs="50">
+                                        <md-list>
+                                            <md-subheader>Member</md-subheader>
+                                            <md-list-item
+                                                ng-repeat="organization in vm.member" class="noright"
+                                                ng-click="vm.goToOrganization(organization)">
+                                                    <p> {{ organization }}</p>
+                                            </md-list-item>
+                                        </md-list>
+                                    </div>
+                                </div>
+                            </md-tab-body>
+                        </md-tab>
+
+                        <md-tab>
+                            <md-tab-label><i class="fa fa-ticket"></i>&nbsp;Authorizations</md-tab-label>
+                            <md-tab-body>
+                            </md-tab-body>
+                        </md-tab>
+
+                        <md-tab>
+                            <md-tab-label><i class="fa fa-file-text-o"></i>&nbsp;Contracts</md-tab-label>
+                            <md-tab-body>
+                            </md-tab-body>
+                        </md-tab>
+
+                        <md-tab>
+                            <md-tab-label><i class="fa fa-user"></i>&nbsp;You</md-tab-label>
+                            <md-tab-body>
+
+                                <div layout flex>
+                                    <md-list flex="60">
+                                        <md-list-item>
+                                            <div flex="25"><i class="fa fa-2x fa-envelope-o"></i></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, email) in vm.user.email">
+                                                        <div class="md-list-item-text">
+                                                            <h4>{{ email }}</h4>
+                                                            <p>{{ label }}</p>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider></md-divider>
+
+                                        <md-list-item>
+                                            <div flex="25"><i class="fa fa-2x fa-phone"></i></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, phone) in vm.user.phone">
+                                                        <div class="md-list-item-text">
+                                                            <h4>{{ phone }}</h4>
+                                                            <p>{{ label }}</p>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider></md-divider>
+
+                                        <md-list-item>
+                                            <div flex="25"><i class="fa fa-2x fa-map-marker"></i></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, address) in vm.user.address">
+                                                        <div class="md-list-item-text">
+                                                            <h4>
+                                                                {{ address.nr }} {{ address.street}},
+                                                                {{ address.postalcode}} {{address.city}}, {{address.country}}
+                                                            </h4>
+                                                            <p>{{ label }}</p>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider></md-divider>
+
+                                        <md-list-item>
+                                            <div flex="25"><i class="fa fa-2x fa-bank"></i></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, bank) in vm.user.bank">
+                                                        <div class="md-list-item-text">
+                                                            <h4 ng-hide="bank.iban === ''"><span>IBAN: </span> {{ bank.iban }}</h4>
+                                                            <h4 ng-hide="bank.bic === ''"><span>BIC: </span> {{ bank.bic }}</h4>
+                                                            <h4>{{ bank.country }}</h4>
+                                                            <p>{{ label }}</p>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider></md-divider>
+
+                                        <md-list-item>
+                                            <div flex="25"><i class="fa fa-2x fa-key"></i></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-3-line md-long-text" ng-repeat="key in vm.user.publicKeys">
+                                                        <div class="md-list-item-text">
+                                                            <p class="public-key">{{ key }}</p>
+                                                            <md-divider ng-if="!$last"></md-divider>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider></md-divider>
+
+                                        <md-list-item>
+                                            <div flex="25"><i class="fa fa-2x fa-link"></i></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-2-line">
+                                                        <div class="md-list-item-text">
+                                                            <h4 ng-show="vm.user.facebook !== ''">
+                                                                <i class="fa fa-lg fa-facebook-official"></i> {{vm.user.facebook}}
+                                                            </h4>
+                                                            <h4 ng-show="vm.user.github !== ''">
+                                                                <i class="fa fa-lg fa-github"></i> {{vm.user.github}}
+                                                            </h4>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider></md-divider>
+
+                                    </md-list>
+                                </div>
+                            </md-tab-body>
+                        </md-tab>
+
+                    </md-tabs>
+
+                </md-card-content>
+            </md-card flex>
+        </div>
+    </md-content>
+</div>

@@ -4,13 +4,13 @@
 
     angular
         .module("itsyouonlineApp")
-        .controller("NotificationsController", NotificationsController);
+        .controller("UserHomeController", UserHomeController);
 
 
-    NotificationsController.$inject = [
-        '$q', '$rootScope', '$location', '$window', '$mdToast', 'NotificationService', 'OrganizationService'];
+    UserHomeController.$inject = [
+        '$q', '$rootScope', '$location', '$window', '$mdToast', 'NotificationService', 'OrganizationService', 'UserService'];
 
-    function NotificationsController($q, $rootScope, $location, $window, $mdToast, NotificationService, OrganizationService) {
+    function UserHomeController($q, $rootScope, $location, $window, $mdToast, NotificationService, OrganizationService, UserService) {
         var vm = this;
 
         vm.username = $rootScope.user;
@@ -62,6 +62,18 @@
                     function(data) {
                         vm.owner = data.owner;
                         vm.member = data.member;
+                    },
+                    function(reason) {
+                        $window.location.href = "error" + reason.status;
+                    }
+                );
+
+
+            UserService
+                .get(vm.username)
+                .then(
+                    function(data) {
+                        vm.user = data;
                     },
                     function(reason) {
                         $window.location.href = "error" + reason.status;
