@@ -4,6 +4,11 @@
 
 For development, you can just `go get` or `go build` the identityserver or use the `docker-compose.yml` file in the root of this repository.
 
+Browse to https://dev.itsyou.online:8443
+
+* dev.itsyou.online is a public DNS entry that points to 127.0.0.1 and ::1
+* By default, the self signed development certificate in the `devcert` folder is loaded. If this certificate is not present, a self signed certificate will be generated and the identityserver will be started with that one. This can be forced by specifying the `-ignore-devcert` flag on the commandline.
+
 When building for production usage, a reproducible build and a minimal docker to run it is wanted.
 
 The `build.sh` script builds the identityserver in a docker and places the statically linked binary in the`dist`.

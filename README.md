@@ -18,7 +18,10 @@ identityserver
 
 To see the available options (like changing the default mongo connectionstring), execute `identityserver -h`.
 
-Browse to http://localhost:8080
+Browse to https://dev.itsyou.online:8443
+
+* dev.itsyou.online is a public DNS entry that points to 127.0.0.1 and ::1
+
 
 ### Docker-compose
 
@@ -28,7 +31,7 @@ You can run via [Docker-compose](https://docs.docker.com/compose/install/). You 
 docker-compose up
 ```
 
-then browse to http://localhost:8080
+then browse to https://dev.itsyou.online:8443 (assuming docker runs on localhost)
 
 ## Contribute
 

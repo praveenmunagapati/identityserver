@@ -32,7 +32,7 @@ func main() {
 		cli.StringFlag{
 			Name:        "bind, b",
 			Usage:       "Bind address",
-			Value:       ":8080",
+			Value:       ":8443",
 			Destination: &bindAddress,
 		},
 		cli.StringFlag{
