@@ -17,7 +17,6 @@ const (
 
 //InitModels initialize models in mongo, if required.
 func InitModels() {
-	// TODO: Use model tags to ensure indices/constraints.
 	index := mgo.Index{
 		Key:      []string{"username"},
 		Unique:   true,
@@ -25,6 +24,7 @@ func InitModels() {
 	}
 
 	db.EnsureIndex(mongoCollectionName, index)
+
 }
 
 //Manager is used to store users
@@ -101,20 +101,22 @@ func (m *Manager) Delete(u *User) error {
 }
 
 // SaveEmail save or update email along with its label
-func (m *Manager) SaveEmail(u *User, label string, email string) error {
+func (m *Manager) SaveEmail(username string, label string, email string) error {
+	//TODO: is this safe to do?
 	emailLabel := fmt.Sprintf("email.%s", label)
 
 	return m.collection.Update(
-		bson.M{"username": u.Username},
+		bson.M{"username": username},
 		bson.M{"$set": bson.M{emailLabel: email}})
 }
 
 // RemoveEmail remove email associated with label
-func (m *Manager) RemoveEmail(u *User, label string) error {
+func (m *Manager) RemoveEmail(username string, label string) error {
+	//TODO: is this safe to do?
 	emailLabel := fmt.Sprintf("email.%s", label)
 
 	return m.collection.Update(
-		bson.M{"username": u.Username},
+		bson.M{"username": username},
 		bson.M{"$unset": bson.M{emailLabel: ""}})
 }
 

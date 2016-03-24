@@ -95,7 +95,142 @@ func (api UsersAPI) usernamePut(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&u)
 }
 
-// It is handler for GET /users/{username}/info
+func isValidLabel(label string) (valid bool) {
+	valid = true
+	labelLength := len(label)
+	valid = valid && labelLength > 2 && labelLength < 51
+	return valid
+}
+
+func emailAddressLabelAlreadyUsed(u *User, label string) (used bool) {
+	for l := range u.Email {
+		if label == l {
+			used = true
+		}
+	}
+	return
+}
+
+// RegisterNewEmailAddress is the handler for POST /users/{username}/emailaddresses
+// Register a new email address
+func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	body := struct {
+		Label        string
+		Emailaddress string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !isValidLabel(body.Label) {
+		log.Debug("Invalid label: ", body.Label)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	userMgr := NewManager(r)
+	u, err := userMgr.GetByName(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if emailAddressLabelAlreadyUsed(u, body.Label) {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	if err = userMgr.SaveEmail(username, body.Label, body.Emailaddress); err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(body)
+}
+
+// UpdateEmailAddress is the handler for PUT /users/{username}/emailaddresses/{label}
+// Updates the label and/or value of an email address
+func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	oldlabel := mux.Vars(r)["label"]
+
+	body := struct {
+		Label        string
+		Emailaddress string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !isValidLabel(body.Label) {
+		log.Debug("Invalid label: ", body.Label)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	userMgr := NewManager(r)
+
+	if oldlabel != body.Label {
+		u, err := userMgr.GetByName(username)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if emailAddressLabelAlreadyUsed(u, body.Label) {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
+
+	if err := userMgr.SaveEmail(username, body.Label, body.Emailaddress); err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if err := userMgr.RemoveEmail(username, oldlabel); err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(body)
+}
+
+// DeleteEmailAddress is the handler for DELETE /users/{username}/emailaddresses/{label}
+// Removes an email address
+func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+
+	userMgr := NewManager(r)
+
+	//small TODO: check if this label exists, return a 404 then
+
+	if err := userMgr.RemoveEmail(username, label); err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
+}
+
+// usernameinfoGet is the handler for GET /users/{username}/info
 func (api UsersAPI) usernameinfoGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := NewManager(r)
@@ -134,7 +269,7 @@ func (api UsersAPI) usernameinfoGet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(respBody)
 }
 
-// It is handler for GET /users/{username}/validate
+// usernamevalidateGet is the handler for GET /users/{username}/validate
 func (api UsersAPI) usernamevalidateGet(w http.ResponseWriter, r *http.Request) {
 
 	// token := req.FormValue("token")
@@ -661,10 +796,10 @@ func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Requ
 
 }
 
+// usernameorganizationsGet is the handler for GET /users/{username}/organizations
 // Get the list organizations a user is owner of member of
-// It is handler for GET /users/{username}/organizations
 func (api UsersAPI) usernameorganizationsGet(w http.ResponseWriter, r *http.Request) {}
 
+// usernamescopesGet is the handler for GET /users/{username}/scopes
 // Get the list of authorization scopes
-// It is handler for GET /users/{username}/scopes
 func (api UsersAPI) usernamescopesGet(w http.ResponseWriter, r *http.Request) {}
