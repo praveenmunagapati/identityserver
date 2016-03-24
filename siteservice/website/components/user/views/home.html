@@ -93,9 +93,10 @@
                             <md-tab-body>
 
                                 <div layout flex>
-                                    <md-list flex="60">
+                                    <md-list flex flex-gt-xs="60">
                                         <md-list-item>
-                                            <div flex="25"><i class="fa fa-2x fa-envelope-o"></i></div>
+                                            <span flex-gt-xs="5"></span>
+                                            <div flex="15"><i class="fa fa-2x fa-at"></i><md-tooltip>Email addresses</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
                                                     <md-list-item class="md-2-line" ng-repeat="(label, email) in vm.user.email">
@@ -108,10 +109,11 @@
                                             </div>
                                         </md-list-item>
 
-                                        <md-divider></md-divider>
+                                        <md-divider md-inset></md-divider>
 
                                         <md-list-item>
-                                            <div flex="25"><i class="fa fa-2x fa-phone"></i></div>
+                                            <span flex-gt-xs="5"></span>
+                                            <div flex="15"><i class="fa fa-2x fa-phone"></i><md-tooltip>Phone numbers</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
                                                     <md-list-item class="md-2-line" ng-repeat="(label, phone) in vm.user.phone">
@@ -124,10 +126,45 @@
                                             </div>
                                         </md-list-item>
 
-                                        <md-divider></md-divider>
+                                        <md-divider md-inset></md-divider>
 
                                         <md-list-item>
-                                            <div flex="25"><i class="fa fa-2x fa-map-marker"></i></div>
+                                            <span flex-gt-xs="5"></span>
+                                            <div flex="15"><i class="fa fa-2x fa-facebook-official"></i><md-tooltip>Facebook account</md-tooltip></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-1-line">
+                                                        <div class="md-list-item-text">
+                                                            <h4>
+                                                                {{vm.user.facebook}}
+                                                            </h4>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider md-inset></md-divider>
+
+                                        <md-list-item>
+                                            <span flex-gt-xs="5"></span>
+                                            <div flex="15"><i class="fa fa-2x fa-github"></i><md-tooltip>Github account</md-tooltip></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-1-line">
+                                                        <div class="md-list-item-text">
+                                                            <h4>{{vm.user.github}}</h4>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider md-inset></md-divider>
+
+                                        <md-list-item>
+                                            <span flex-gt-xs="5"></span>
+                                            <div flex="15"><i class="fa fa-2x fa-envelope-o"></i><md-tooltip>Addresses</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
                                                     <md-list-item class="md-2-line" ng-repeat="(label, address) in vm.user.address">
@@ -143,10 +180,29 @@
                                             </div>
                                         </md-list-item>
 
-                                        <md-divider></md-divider>
+                                        <md-divider md-inset></md-divider>
 
                                         <md-list-item>
-                                            <div flex="25"><i class="fa fa-2x fa-bank"></i></div>
+                                            <span flex-gt-xs="5"></span>
+                                            <div flex="15"><i class="fa fa-2x fa-credit-card"></i><md-tooltip>Credit cards</md-tooltip></div>
+                                            <div flex>
+                                                <md-list>
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, creditcard) in vm.user.creditcards">
+                                                        <div class="md-list-item-text">
+                                                            <h4>
+                                                            </h4>
+                                                            <p>{{ label }}</p>
+                                                        </div>
+                                                    </md-list-item>
+                                                </md-list>
+                                            </div>
+                                        </md-list-item>
+
+                                        <md-divider md-inset></md-divider>
+
+                                        <md-list-item>
+                                            <span flex-gt-xs="5"></span>
+                                            <div flex="15"><i class="fa fa-2x fa-bank"></i><md-tooltip>Bank accounts</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
                                                     <md-list-item class="md-2-line" ng-repeat="(label, bank) in vm.user.bank">
@@ -161,43 +217,7 @@
                                             </div>
                                         </md-list-item>
 
-                                        <md-divider></md-divider>
 
-                                        <md-list-item>
-                                            <div flex="25"><i class="fa fa-2x fa-key"></i></div>
-                                            <div flex>
-                                                <md-list>
-                                                    <md-list-item class="md-3-line md-long-text" ng-repeat="key in vm.user.publicKeys">
-                                                        <div class="md-list-item-text">
-                                                            <p class="public-key">{{ key }}</p>
-                                                            <md-divider ng-if="!$last"></md-divider>
-                                                        </div>
-                                                    </md-list-item>
-                                                </md-list>
-                                            </div>
-                                        </md-list-item>
-
-                                        <md-divider></md-divider>
-
-                                        <md-list-item>
-                                            <div flex="25"><i class="fa fa-2x fa-link"></i></div>
-                                            <div flex>
-                                                <md-list>
-                                                    <md-list-item class="md-2-line">
-                                                        <div class="md-list-item-text">
-                                                            <h4 ng-show="vm.user.facebook !== ''">
-                                                                <i class="fa fa-lg fa-facebook-official"></i> {{vm.user.facebook}}
-                                                            </h4>
-                                                            <h4 ng-show="vm.user.github !== ''">
-                                                                <i class="fa fa-lg fa-github"></i> {{vm.user.github}}
-                                                            </h4>
-                                                        </div>
-                                                    </md-list-item>
-                                                </md-list>
-                                            </div>
-                                        </md-list-item>
-
-                                        <md-divider></md-divider>
 
                                     </md-list>
                                 </div>
