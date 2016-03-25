@@ -73,7 +73,10 @@
             get: get,
             registerNewEmailAddress: registerNewEmailAddress,
             updateEmailAddress: updateEmailAddress,
-            deleteEmailAddress: deleteEmailAddress
+            deleteEmailAddress: deleteEmailAddress,
+            registerNewPhonenumber: registerNewPhonenumber,
+            updatePhonenumber: updatePhonenumber,
+            deletePhonenumber: deletePhonenumber
         }
 
         return service;
@@ -140,6 +143,52 @@
 
         function deleteEmailAddress(username, label) {
             var url = apiURL + '/' + username + '/emailaddresses/' + label ;
+
+            return $http
+                .delete(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+
+        function registerNewPhonenumber(username, label, phonenumber) {
+            var url = apiURL + '/' + username + '/phonenumbers';
+
+            return $http
+                .post(url, {label: label, phonenumber: phonenumber})
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function updatePhonenumber(username, oldlabel, newlabel, phonenumber) {
+            var url = apiURL + '/' + username + '/phonenumbers/' + oldlabel ;
+
+            return $http
+                .put(url, {label: newlabel, phonenumber: phonenumber})
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function deletePhonenumber(username, label) {
+            var url = apiURL + '/' + username + '/phonenumbers/' + label ;
 
             return $http
                 .delete(url)

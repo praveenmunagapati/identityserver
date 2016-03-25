@@ -33,6 +33,8 @@
         vm.getPendingCount = getPendingCount;
         vm.showEmailDetailDialog = showEmailDetailDialog;
         vm.showAddEmailDialog = showAddEmailDialog;
+        vm.showPhonenumberDetailDialog = showPhonenumberDetailDialog;
+        vm.showAddPhonenumberDialog = showAddPhonenumberDialog;
 
         activate();
 
@@ -218,6 +220,55 @@
                 });
         }
 
+        function showPhonenumberDetailDialog(ev, label, phonenumber){
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            $mdDialog.show({
+                controller: PhonenumberDetailDialogController,
+                templateUrl: 'components/user/views/phonenumberdialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals:
+                    {
+                        UserService: UserService,
+                        username : vm.username,
+                        $window: $window,
+                        label: label,
+                        phonenumber : phonenumber
+                    }
+            })
+            .then(
+                function(data) {
+                    if (data.newLabel) {
+                        vm.user.phone[data.newLabel] = data.phonenumber;
+                    }
+                    if (!data.newLabel || data.newLabel != data.originalLabel){
+                        delete vm.user.phone[data.originalLabel];
+                    }
+                });
+        }
+
+        function showAddPhonenumberDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            $mdDialog.show({
+                controller: PhonenumberDetailDialogController,
+                templateUrl: 'components/user/views/phonenumberdialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals:
+                    {
+                        UserService: UserService,
+                        username : vm.username,
+                        $window: $window,
+                        label: "",
+                        phonenumber: ""
+                    }
+            })
+            .then(
+                function(data) {
+                    vm.user.phone[data.newLabel] = data.phonenumber;
+                });
+        }
+
     }
 
 
@@ -244,6 +295,7 @@
         }
 
         function create(label, emailaddress){
+            if (Object.keys($scope.emailaddressform.$error).length > 0 ){return;}
             $scope.validationerrors = {};
             UserService.registerNewEmailAddress(username, label, emailaddress).then(
                 function(data){
@@ -262,6 +314,7 @@
         }
 
         function update(oldLabel, newLabel, emailaddress){
+            if (Object.keys($scope.emailaddressform.$error).length > 0 ){return;}
             $scope.validationerrors = {};
             UserService.updateEmailAddress(username, oldLabel, newLabel, emailaddress).then(
                 function(data){
@@ -282,6 +335,80 @@
         function deleteEmailAddress(label){
             $scope.validationerrors = {};
             UserService.deleteEmailAddress(username, label).then(
+                function(data){
+                    $mdDialog.hide({originalLabel: label, newLabel: ""});
+                },
+                function(reason){
+                    $window.location.href = "error" + reason.status;
+                }
+            );
+        }
+
+    }
+
+
+    function PhonenumberDetailDialogController($scope, $mdDialog, username, UserService, $window, label, phonenumber) {
+        //If there is an phonenumber, it is already saved, if not, this means that a new one is being registered.
+
+        $scope.phonenumber = phonenumber;
+
+        $scope.originalLabel = label;
+        $scope.label = label;
+        $scope.username = username;
+
+        $scope.cancel = cancel;
+        $scope.validationerrors = {}
+        $scope.create = create;
+        $scope.update = update;
+        $scope.remove = remove;
+
+
+
+        function cancel(){
+            $mdDialog.cancel();
+        }
+
+        function create(label, phonenumber){
+            if (Object.keys($scope.phonenumberform.$error).length > 0 ){return;}
+            $scope.validationerrors = {};
+            UserService.registerNewPhonenumber(username, label, phonenumber).then(
+                function(data){
+                    $mdDialog.hide({originalLabel: "", newLabel: label, phonenumber: phonenumber});
+                },
+                function(reason){
+                    if (reason.status == 409){
+                        $scope.validationerrors.duplicate = true;
+                    }
+                    else
+                    {
+                        $window.location.href = "error" + reason.status;
+                    }
+                }
+            );
+        }
+
+        function update(oldLabel, newLabel, phonenumber){
+            if (Object.keys($scope.phonenumberform.$error).length > 0 ){return;}
+            $scope.validationerrors = {};
+            UserService.updatePhonenumber(username, oldLabel, newLabel, phonenumber).then(
+                function(data){
+                    $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel, phonenumber: phonenumber});
+                },
+                function(reason){
+                    if (reason.status == 409){
+                        $scope.validationerrors.duplicate = true;
+                    }
+                    else
+                    {
+                        $window.location.href = "error" + reason.status;
+                    }
+                }
+            );
+        }
+
+        function remove(label){
+            $scope.validationerrors = {};
+            UserService.deletePhonenumber(username, label).then(
                 function(data){
                     $mdDialog.hide({originalLabel: label, newLabel: ""});
                 },

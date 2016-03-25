@@ -121,20 +121,22 @@ func (m *Manager) RemoveEmail(username string, label string) error {
 }
 
 // SavePhone save or update phone along with its label
-func (m *Manager) SavePhone(u *User, label string, phonenumber Phonenumber) error {
+func (m *Manager) SavePhone(username string, label string, phonenumber Phonenumber) error {
+	//TODO: is this safe to do?
 	phoneLabel := fmt.Sprintf("phone.%s", label)
 
 	return m.collection.Update(
-		bson.M{"username": u.Username},
+		bson.M{"username": username},
 		bson.M{"$set": bson.M{phoneLabel: phonenumber}})
 }
 
 // RemovePhone remove phone associated with label
-func (m *Manager) RemovePhone(u *User, label string) error {
+func (m *Manager) RemovePhone(username string, label string) error {
+	//TODO: is this safe to do?
 	phoneLabel := fmt.Sprintf("phone.%s", label)
 
 	return m.collection.Update(
-		bson.M{"username": u.Username},
+		bson.M{"username": username},
 		bson.M{"$unset": bson.M{phoneLabel: ""}})
 }
 

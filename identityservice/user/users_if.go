@@ -70,20 +70,20 @@ type UsersInterface interface {
 	// It is handler for GET /users/{username}/phonenumbers
 	usernamephonenumbersGet(http.ResponseWriter, *http.Request)
 
-	// Create new phonenumber
-	// It is handler for POST /users/{username}/phonenumbers
-	usernamephonenumbersPost(http.ResponseWriter, *http.Request)
+	// RegisterNewPhonenumber is the handler for POST /users/{username}/phonenumbers
+	// Register a new phonenumber
+	RegisterNewPhonenumber(http.ResponseWriter, *http.Request)
 
 	// It is handler for GET /users/{username}/phonenumbers/{label}
 	usernamephonenumberslabelGet(http.ResponseWriter, *http.Request)
 
-	// Update or create an existing phonenumber.
-	// It is handler for PUT /users/{username}/phonenumbers/{label}
-	usernamephonenumberslabelPut(http.ResponseWriter, *http.Request)
+	// UpdatePhonenumber is the handler for PUT /users/{username}/phonenumbers/{label}
+	// Update the label and/or value of an existing phonenumber.
+	UpdatePhonenumber(http.ResponseWriter, *http.Request)
 
-	// Delete a phonenumber
-	// It is handler for DELETE /users/{username}/phonenumbers/{label}
-	usernamephonenumberslabelDelete(http.ResponseWriter, *http.Request)
+	// DeletePhonenumber is the handler for DELETE /users/{username}/phonenumbers/{label}
+	// Removes a phonenumber
+	DeletePhonenumber(http.ResponseWriter, *http.Request)
 
 	// It is handler for GET /users/{username}/banks/{label}
 	usernamebankslabelGet(http.ResponseWriter, *http.Request)
@@ -133,10 +133,10 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.HandleFunc("/users/{username}/addresses", i.usernameaddressesGet).Methods("GET")
 	r.HandleFunc("/users/{username}/addresses", i.usernameaddressesPost).Methods("POST")
 	r.HandleFunc("/users/{username}/phonenumbers", i.usernamephonenumbersGet).Methods("GET")
-	r.HandleFunc("/users/{username}/phonenumbers", i.usernamephonenumbersPost).Methods("POST")
+	r.HandleFunc("/users/{username}/phonenumbers", i.RegisterNewPhonenumber).Methods("POST")
 	r.HandleFunc("/users/{username}/phonenumbers/{label}", i.usernamephonenumberslabelGet).Methods("GET")
-	r.HandleFunc("/users/{username}/phonenumbers/{label}", i.usernamephonenumberslabelPut).Methods("PUT")
-	r.HandleFunc("/users/{username}/phonenumbers/{label}", i.usernamephonenumberslabelDelete).Methods("DELETE")
+	r.HandleFunc("/users/{username}/phonenumbers/{label}", i.UpdatePhonenumber).Methods("PUT")
+	r.HandleFunc("/users/{username}/phonenumbers/{label}", i.DeletePhonenumber).Methods("DELETE")
 	r.HandleFunc("/users/{username}/banks/{label}", i.usernamebankslabelGet).Methods("GET")
 	r.HandleFunc("/users/{username}/banks/{label}", i.usernamebankslabelPut).Methods("PUT")
 	r.HandleFunc("/users/{username}/banks/{label}", i.usernamebankslabelDelete).Methods("DELETE")

@@ -102,15 +102,6 @@ func isValidLabel(label string) (valid bool) {
 	return valid
 }
 
-func emailAddressLabelAlreadyUsed(u *User, label string) (used bool) {
-	for l := range u.Email {
-		if label == l {
-			used = true
-		}
-	}
-	return
-}
-
 // RegisterNewEmailAddress is the handler for POST /users/{username}/emailaddresses
 // Register a new email address
 func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +129,8 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if emailAddressLabelAlreadyUsed(u, body.Label) {
+
+	if _, ok := u.Email[body.Label]; ok {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -186,7 +178,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		if emailAddressLabelAlreadyUsed(u, body.Label) {
+		if _, ok := u.Email[body.Label]; ok {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
@@ -226,7 +218,7 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if !emailAddressLabelAlreadyUsed(u, label) {
+	if _, ok := u.Email[label]; !ok {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -293,58 +285,60 @@ func (api UsersAPI) usernamevalidateGet(w http.ResponseWriter, r *http.Request) 
 	// w.Header.Set("key","value")
 }
 
-// Create new phonenumber
-// It is handler for POST /users/{username}/phonenumbers
-func (api UsersAPI) usernamephonenumbersPost(w http.ResponseWriter, r *http.Request) {
+// RegisterNewPhonenumber is the handler for POST /users/{username}/phonenumbers
+// Register a new phonenumber
+func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	u, err := userMgr.GetByName(username)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	var phoneNumber map[string]Phonenumber
+	body := struct {
+		Label       string
+		Phonenumber Phonenumber
+	}{}
 
-	if err := json.NewDecoder(r.Body).Decode(&phoneNumber); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	// Only allow creation of One phone number
-	if len(phoneNumber) > 1 {
+	if !isValidLabel(body.Label) {
+		log.Debug("Invalid label: ", body.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	for label, val := range phoneNumber {
-		if _, ok := user.Phone[label]; ok {
-			// Do not allow creating existing phone label!
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-			return
-		}
+	if !IsValidPhonenumber(body.Phonenumber) {
+		log.Debug("Invalid phonenumber: ", body.Phonenumber)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
-		if !IsValidPhonenumber(val) {
-			http.Error(w, "Invalid phone number!", http.StatusBadRequest)
-			return
-		}
+	//Check if this label is already used
+	if _, ok := u.Phone[body.Label]; ok {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
 
-		if err := userMgr.SavePhone(user, label, val); err != nil {
-			log.Error("ERROR while saving user:\n", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
+	if err := userMgr.SavePhone(username, body.Label, body.Phonenumber); err != nil {
+		log.Error("ERROR while saving a phonenumber - ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 
 	// respond with created phone number.
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(phoneNumber)
+	json.NewEncoder(w).Encode(body)
 }
 
-// It is handler for GET /users/{username}/phonenumbers
+// usernamephonenumbersGet is the handler for GET /users/{username}/phonenumbers
 func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := NewManager(r)
@@ -359,7 +353,7 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(user.Phone)
 }
 
-// It is handler for GET /users/{username}/phonenumbers/{label}
+// usernamephonenumberslabelGet is the handler for GET /users/{username}/phonenumbers/{label}
 func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
@@ -384,54 +378,76 @@ func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(respBody)
 }
 
-// Update or create an existing phonenumber.
-// It is handler for PUT /users/{username}/phonenumbers/{label}
-func (api UsersAPI) usernamephonenumberslabelPut(w http.ResponseWriter, r *http.Request) {
+// UpdatePhonenumber is the handler for PUT /users/{username}/phonenumbers/{label}
+// Update the label and/or value of an existing phonenumber.
+func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	label := mux.Vars(r)["label"]
-	userMgr := NewManager(r)
+	oldlabel := mux.Vars(r)["label"]
 
-	user, err := userMgr.GetByName(username)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
+	body := struct {
+		Label       string
+		Phonenumber Phonenumber
+	}{}
 
-	if _, ok := user.Phone[label]; ok != true {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-
-	var phoneNumber map[string]Phonenumber
-
-	if err := json.NewDecoder(r.Body).Decode(&phoneNumber); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	if _, ok := phoneNumber[label]; ok != true {
+	if !isValidLabel(body.Label) {
+		log.Debug("Invalid label: ", body.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	if !IsValidPhonenumber(phoneNumber[label]) {
+	if !IsValidPhonenumber(body.Phonenumber) {
 		http.Error(w, "Invalid phone number!", http.StatusBadRequest)
 		return
 	}
 
-	if err := userMgr.SavePhone(user, label, phoneNumber[label]); err != nil {
-		log.Error("ERROR while saving user:\n", err)
+	userMgr := NewManager(r)
+
+	u, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if _, ok := u.Phone[oldlabel]; ok != true {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if oldlabel != body.Label {
+		if _, ok := u.Phone[body.Label]; ok {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
+
+	if err = userMgr.SavePhone(username, body.Label, body.Phonenumber); err != nil {
+		log.Error("ERROR while saving phonenumber - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
+	if oldlabel != body.Label {
+		if err := userMgr.RemovePhone(username, oldlabel); err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(phoneNumber)
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(body)
+
 }
 
-// Delete a phonenumber
-// It is handler for DELETE /users/{username}/phonenumbers/{label}
-func (api UsersAPI) usernamephonenumberslabelDelete(w http.ResponseWriter, r *http.Request) {
+// DeletePhonenumber is the handler for DELETE /users/{username}/phonenumbers/{label}
+// Removes a phonenumber
+func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := NewManager(r)
@@ -447,7 +463,7 @@ func (api UsersAPI) usernamephonenumberslabelDelete(w http.ResponseWriter, r *ht
 		return
 	}
 
-	if err := userMgr.RemovePhone(user, label); err != nil {
+	if err := userMgr.RemovePhone(username, label); err != nil {
 		log.Error("ERROR while saving user:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
