@@ -250,7 +250,9 @@ securedBy: [ oauth_2_0 ]
             description: Removes an email address
             responses:
                 204:
-                  description: Email address removed
+                  description: Email address removed.
+                409:
+                  description: The last email address can not be removed.
 
 
   /{username}/info:

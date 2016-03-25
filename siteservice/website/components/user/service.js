@@ -71,6 +71,9 @@
 
         var service = {
             get: get,
+            registerNewEmailAddress: registerNewEmailAddress,
+            updateEmailAddress: updateEmailAddress,
+            deleteEmailAddress: deleteEmailAddress
         }
 
         return service;
@@ -104,5 +107,55 @@
                     }
                 );
         }
+
+        function registerNewEmailAddress(username, label, emailaddress) {
+            var url = apiURL + '/' + username + '/emailaddresses';
+
+            return $http
+                .post(url, {label: label, emailaddress: emailaddress})
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function updateEmailAddress(username, oldlabel, newlabel, emailaddress) {
+            var url = apiURL + '/' + username + '/emailaddresses/' + oldlabel ;
+
+            return $http
+                .put(url, {label: newlabel, emailaddress: emailaddress})
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function deleteEmailAddress(username, label) {
+            var url = apiURL + '/' + username + '/emailaddresses/' + label ;
+
+            return $http
+                .delete(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+
+
+
+
     }
 })();

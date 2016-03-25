@@ -99,13 +99,18 @@
                                             <div flex="15"><i class="fa fa-2x fa-at"></i><md-tooltip>Email addresses</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
-                                                    <md-list-item class="md-2-line" ng-repeat="(label, email) in vm.user.email">
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, email) in vm.user.email" ng-click="vm.showEmailDetailDialog($event, label, email)">
                                                         <div class="md-list-item-text">
                                                             <h4>{{ email }}</h4>
                                                             <p>{{ label }}</p>
                                                         </div>
                                                     </md-list-item>
                                                 </md-list>
+                                            </div>
+                                            <div flex="20">
+                                                <md-button class="md-primary" ng-click="vm.showAddEmailDialog($event)">
+                                                    <i class="fa fa-plus"></i> Add
+                                                </md-button>
                                             </div>
                                         </md-list-item>
 
@@ -116,13 +121,18 @@
                                             <div flex="15"><i class="fa fa-2x fa-phone"></i><md-tooltip>Phone numbers</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
-                                                    <md-list-item class="md-2-line" ng-repeat="(label, phone) in vm.user.phone">
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, phone) in vm.user.phone" ng-click="vm.showPhoneDetailDialog($event, label, phone)">
                                                         <div class="md-list-item-text">
                                                             <h4>{{ phone }}</h4>
                                                             <p>{{ label }}</p>
                                                         </div>
                                                     </md-list-item>
                                                 </md-list>
+                                            </div>
+                                            <div flex="20">
+                                                <md-button class="md-primary" ng-click="vm.showAddPhoneDialog($event)">
+                                                    <i class="fa fa-plus"></i> Add
+                                                </md-button>
                                             </div>
                                         </md-list-item>
 
@@ -178,6 +188,11 @@
                                                     </md-list-item>
                                                 </md-list>
                                             </div>
+                                            <div flex="20">
+                                                <md-button class="md-primary" ng-click="vm.showAddAddressDialog($event)">
+                                                    <i class="fa fa-plus"></i> Add
+                                                </md-button>
+                                            </div>
                                         </md-list-item>
 
                                         <md-divider md-inset></md-divider>
@@ -195,6 +210,11 @@
                                                         </div>
                                                     </md-list-item>
                                                 </md-list>
+                                            </div>
+                                            <div flex="20">
+                                                <md-button class="md-primary" ng-click="vm.showAddCreditCardDialog($event)">
+                                                    <i class="fa fa-plus"></i> Add
+                                                </md-button>
                                             </div>
                                         </md-list-item>
 
@@ -214,6 +234,11 @@
                                                         </div>
                                                     </md-list-item>
                                                 </md-list>
+                                            </div>
+                                            <div flex="20">
+                                                <md-button class="md-primary" ng-click="vm.showAddBankAccountDialog($event)">
+                                                    <i class="fa fa-plus"></i> Add
+                                                </md-button>
                                             </div>
                                         </md-list-item>
 

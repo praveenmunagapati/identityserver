@@ -1,0 +1,49 @@
+<md-dialog ng-cloak>
+  <form name="emailaddressform">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2><span ng-if="!originalLabel">Register e</span><span ng-if="originalLabel">E</span>mail address</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+          </md-button>
+        </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div class="md-dialog-content" layout="column">
+        <div layout>
+            <md-input-container>
+                <label>Label</label>
+                <input ng-model="label" minlength="2" required type="text" autofocus name="labelinput">
+                <div ng-messages="emailaddressform.labelinput.$error">
+                    <div ng-message="minlength">At least 2 characters required</div>
+                </div>
+                <div ng-messages="validationerrors" md-auto-hide="false">
+                    <div ng-message="duplicate">This label is already used</div>
+                </div>
+            </md-input-container>
+            <span flex="5"></span>
+            <md-input-container flex="80">
+                <label>Email address</label>
+                <input ng-model="emailaddress" required type="email">
+            </md-input-container>
+        </div>
+      </div>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+        <md-button class="md-warn" ng-click="deleteEmailAddress(originalLabel)" ng-if="originalLabel && deleteIsPossible">
+        Delete
+        </md-button>
+        <span flex></span>
+        <md-button ng-click="cancel()">
+        Cancel
+        </md-button>
+        <md-button class="md-primary" type="submit" ng-click="create(label, emailaddress)" style="margin-right:20px;" ng-if="!originalLabel">
+        Register
+        </md-button>
+        <md-button class="md-primary" type="submit" ng-click="update(originalLabel, label, emailaddress)" style="margin-right:20px;" ng-if="originalLabel">
+        Save
+        </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

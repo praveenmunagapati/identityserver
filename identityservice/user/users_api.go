@@ -198,10 +198,12 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := userMgr.RemoveEmail(username, oldlabel); err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+	if oldlabel != body.Label {
+		if err := userMgr.RemoveEmail(username, oldlabel); err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -218,9 +220,22 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 
 	userMgr := NewManager(r)
 
-	//small TODO: check if this label exists, return a 404 then
+	u, err := userMgr.GetByName(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !emailAddressLabelAlreadyUsed(u, label) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if len(u.Email) == 1 {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
 
-	if err := userMgr.RemoveEmail(username, label); err != nil {
+	if err = userMgr.RemoveEmail(username, label); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
