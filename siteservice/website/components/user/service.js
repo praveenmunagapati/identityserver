@@ -76,7 +76,11 @@
             deleteEmailAddress: deleteEmailAddress,
             registerNewPhonenumber: registerNewPhonenumber,
             updatePhonenumber: updatePhonenumber,
-            deletePhonenumber: deletePhonenumber
+            deletePhonenumber: deletePhonenumber,
+            registerNewAddress: registerNewAddress,
+            updateAddress: updateAddress,
+            deleteAddress: deleteAddress
+
         }
 
         return service;
@@ -189,6 +193,52 @@
 
         function deletePhonenumber(username, label) {
             var url = apiURL + '/' + username + '/phonenumbers/' + label ;
+
+            return $http
+                .delete(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+
+        function registerNewAddress(username, label, address) {
+            var url = apiURL + '/' + username + '/addresses';
+
+            return $http
+                .post(url, {label: label, address: address})
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function updateAddress(username, oldlabel, newlabel, address) {
+            var url = apiURL + '/' + username + '/addresses/' + oldlabel ;
+
+            return $http
+                .put(url, {label: newlabel, address: address})
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function deleteAddress(username, label) {
+            var url = apiURL + '/' + username + '/addresses/' + label ;
 
             return $http
                 .delete(url)

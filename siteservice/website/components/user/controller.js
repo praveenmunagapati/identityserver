@@ -35,6 +35,8 @@
         vm.showAddEmailDialog = showAddEmailDialog;
         vm.showPhonenumberDetailDialog = showPhonenumberDetailDialog;
         vm.showAddPhonenumberDialog = showAddPhonenumberDialog;
+        vm.showAddressDetailDialog = showAddressDetailDialog;
+        vm.showAddAddressDialog = showAddAddressDialog;
 
         activate();
 
@@ -223,17 +225,19 @@
         function showPhonenumberDetailDialog(ev, label, phonenumber){
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
             $mdDialog.show({
-                controller: PhonenumberDetailDialogController,
+                controller: GenericDetailDialogController,
                 templateUrl: 'components/user/views/phonenumberdialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
                 locals:
                     {
-                        UserService: UserService,
                         username : vm.username,
                         $window: $window,
                         label: label,
-                        phonenumber : phonenumber
+                        data : phonenumber,
+                        createFunction: UserService.registerNewPhonenumber,
+                        updateFunction: UserService.updatePhonenumber,
+                        deleteFunction: UserService.deletePhonenumber
                     }
             })
             .then(
@@ -250,22 +254,78 @@
         function showAddPhonenumberDialog(ev) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
             $mdDialog.show({
-                controller: PhonenumberDetailDialogController,
+                controller: GenericDetailDialogController,
                 templateUrl: 'components/user/views/phonenumberdialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
                 locals:
                     {
-                        UserService: UserService,
                         username : vm.username,
                         $window: $window,
                         label: "",
-                        phonenumber: ""
+                        data: "",
+                        createFunction: UserService.registerNewPhonenumber,
+                        updateFunction: UserService.updatePhonenumber,
+                        deleteFunction: UserService.deletePhonenumber
                     }
             })
             .then(
                 function(data) {
                     vm.user.phone[data.newLabel] = data.phonenumber;
+                });
+        }
+
+
+        function showAddressDetailDialog(ev, label, address){
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            $mdDialog.show({
+                controller: GenericDetailDialogController,
+                templateUrl: 'components/user/views/addressdialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals:
+                    {
+                        username : vm.username,
+                        $window: $window,
+                        label: label,
+                        data : address,
+                        createFunction: UserService.registerNewAddress,
+                        updateFunction: UserService.updateAddress,
+                        deleteFunction: UserService.deleteAddress
+                    }
+            })
+            .then(
+                function(data) {
+                    if (data.newLabel) {
+                        vm.user.address[data.newLabel] = data.address;
+                    }
+                    if (!data.newLabel || data.newLabel != data.originalLabel){
+                        delete vm.user.address[data.originalLabel];
+                    }
+                });
+        }
+
+        function showAddAddressDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            $mdDialog.show({
+                controller: GenericDetailDialogController,
+                templateUrl: 'components/user/views/addressdialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals:
+                    {
+                        username : vm.username,
+                        $window: $window,
+                        label: "",
+                        data: {},
+                        createFunction: UserService.registerNewAddress,
+                        updateFunction: UserService.updateAddress,
+                        deleteFunction: UserService.deleteAddress
+                    }
+            })
+            .then(
+                function(data) {
+                    vm.user.address[data.newLabel] = data.address;
                 });
         }
 
@@ -287,7 +347,6 @@
         $scope.create = create;
         $scope.update = update;
         $scope.deleteEmailAddress = deleteEmailAddress;
-
 
 
         function cancel(){
@@ -347,10 +406,9 @@
     }
 
 
-    function PhonenumberDetailDialogController($scope, $mdDialog, username, UserService, $window, label, phonenumber) {
-        //If there is an phonenumber, it is already saved, if not, this means that a new one is being registered.
+    function GenericDetailDialogController($scope, $mdDialog, username, $window, label, data, createFunction, updateFunction, deleteFunction) {
 
-        $scope.phonenumber = phonenumber;
+        $scope.data = data;
 
         $scope.originalLabel = label;
         $scope.label = label;
@@ -362,18 +420,16 @@
         $scope.update = update;
         $scope.remove = remove;
 
-
-
         function cancel(){
             $mdDialog.cancel();
         }
 
-        function create(label, phonenumber){
-            if (Object.keys($scope.phonenumberform.$error).length > 0 ){return;}
+        function create(label, data){
+            if (Object.keys($scope.dataform.$error).length > 0 ){return;}
             $scope.validationerrors = {};
-            UserService.registerNewPhonenumber(username, label, phonenumber).then(
+            createFunction(username, label, data).then(
                 function(data){
-                    $mdDialog.hide({originalLabel: "", newLabel: label, phonenumber: phonenumber});
+                    $mdDialog.hide({originalLabel: "", newLabel: label, data: data});
                 },
                 function(reason){
                     if (reason.status == 409){
@@ -387,12 +443,12 @@
             );
         }
 
-        function update(oldLabel, newLabel, phonenumber){
+        function update(oldLabel, newLabel, data){
             if (Object.keys($scope.phonenumberform.$error).length > 0 ){return;}
             $scope.validationerrors = {};
-            UserService.updatePhonenumber(username, oldLabel, newLabel, phonenumber).then(
+            updateFunction(username, oldLabel, newLabel, data).then(
                 function(data){
-                    $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel, phonenumber: phonenumber});
+                    $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel, data: data});
                 },
                 function(reason){
                     if (reason.status == 409){
@@ -408,7 +464,7 @@
 
         function remove(label){
             $scope.validationerrors = {};
-            UserService.deletePhonenumber(username, label).then(
+            deleteFunction(username, label).then(
                 function(data){
                     $mdDialog.hide({originalLabel: label, newLabel: ""});
                 },

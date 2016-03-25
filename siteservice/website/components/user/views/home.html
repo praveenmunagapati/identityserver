@@ -177,7 +177,7 @@
                                             <div flex="15"><i class="fa fa-2x fa-envelope-o"></i><md-tooltip>Addresses</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
-                                                    <md-list-item class="md-2-line" ng-repeat="(label, address) in vm.user.address">
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, address) in vm.user.address" ng-click="vm.showAddressDetailDialog($event, label, address)">
                                                         <div class="md-list-item-text">
                                                             <h4>
                                                                 {{ address.nr }} {{ address.street}},
@@ -202,7 +202,7 @@
                                             <div flex="15"><i class="fa fa-2x fa-credit-card"></i><md-tooltip>Credit cards</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
-                                                    <md-list-item class="md-2-line" ng-repeat="(label, creditcard) in vm.user.creditcards">
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, creditcard) in vm.user.creditcards" ng-click="vm.showCreditCardDetailDialog($event, label, creditcard)">
                                                         <div class="md-list-item-text">
                                                             <h4>
                                                             </h4>
@@ -225,7 +225,7 @@
                                             <div flex="15"><i class="fa fa-2x fa-bank"></i><md-tooltip>Bank accounts</md-tooltip></div>
                                             <div flex>
                                                 <md-list>
-                                                    <md-list-item class="md-2-line" ng-repeat="(label, bank) in vm.user.bank">
+                                                    <md-list-item class="md-2-line" ng-repeat="(label, bank) in vm.user.bank" ng-click="vm.showCreditCardDetailDialog($event, label, bank)">
                                                         <div class="md-list-item-text">
                                                             <h4 ng-hide="bank.iban === ''"><span>IBAN: </span> {{ bank.iban }}</h4>
                                                             <h4 ng-hide="bank.bic === ''"><span>BIC: </span> {{ bank.bic }}</h4>

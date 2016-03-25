@@ -1,5 +1,5 @@
 <md-dialog ng-cloak>
-  <form name="phonenumberform">
+  <form name="dataform">
     <md-toolbar>
         <div class="md-toolbar-tools">
           <h2><span ng-if="!originalLabel">Register a p</span><span ng-if="originalLabel">P</span>hone number</h2>
@@ -15,7 +15,7 @@
             <md-input-container>
                 <label>Label</label>
                 <input ng-model="label" minlength="2" required type="text" autofocus name="labelinput">
-                <div ng-messages="phonenumberform.labelinput.$error">
+                <div ng-messages="dataform.labelinput.$error">
                     <div ng-message="minlength">At least 2 characters required</div>
                 </div>
                 <div ng-messages="validationerrors" md-auto-hide="false">
@@ -25,8 +25,8 @@
             <span flex="5"></span>
             <md-input-container flex="80">
                 <label>Phone number</label>
-                <input ng-model="phonenumber" pattern="\+?[0-9]+" required minlength="4" type="text" name="phonenumberinput">
-                <div ng-messages="phonenumberform.phonenumberinput.$error">
+                <input ng-model="data" pattern="\+?[0-9]+" required minlength="4" type="text" name="phonenumberinput">
+                <div ng-messages="dataform.phonenumberinput.$error">
                     <div ng-message="minlength">Not enough digits</div>
                     <div ng-message="pattern">Invalid phonenumber</div>
                 </div>
@@ -42,10 +42,10 @@
         <md-button ng-click="cancel()">
         Cancel
         </md-button>
-        <md-button class="md-primary" type="submit" ng-click="create(label, phonenumber)" style="margin-right:20px;" ng-if="!originalLabel">
+        <md-button class="md-primary" type="submit" ng-click="create(label, data)" style="margin-right:20px;" ng-if="!originalLabel">
         Register
         </md-button>
-        <md-button class="md-primary" type="submit" ng-click="update(originalLabel, label, phonenumber)" style="margin-right:20px;" ng-if="originalLabel">
+        <md-button class="md-primary" type="submit" ng-click="update(originalLabel, label, data)" style="margin-right:20px;" ng-if="originalLabel">
         Save
         </md-button>
     </md-dialog-actions>
