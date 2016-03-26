@@ -99,6 +99,10 @@ func isValidLabel(label string) (valid bool) {
 	valid = true
 	labelLength := len(label)
 	valid = valid && labelLength > 2 && labelLength < 51
+
+	if !valid {
+		log.Debug("Invalid label: ", label)
+	}
 	return valid
 }
 
@@ -117,7 +121,6 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 	}
 
 	if !isValidLabel(body.Label) {
-		log.Debug("Invalid label: ", body.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -164,7 +167,6 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !isValidLabel(body.Label) {
-		log.Debug("Invalid label: ", body.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -308,7 +310,6 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 	}
 
 	if !isValidLabel(body.Label) {
-		log.Debug("Invalid label: ", body.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -395,7 +396,6 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !isValidLabel(body.Label) {
-		log.Debug("Invalid label: ", body.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -626,50 +626,51 @@ func (api UsersAPI) usernamebankslabelDelete(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// Create new address
-// It is handler for POST /users/{username}/addresses
-func (api UsersAPI) usernameaddressesPost(w http.ResponseWriter, r *http.Request) {
+// RegisterNewAddress is the handler for POST /users/{username}/addresses
+// Register a new address
+func (api UsersAPI) RegisterNewAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	body := struct {
+		Label   string
+		Address Address
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Debug("Error while decoding the body: ", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !isValidLabel(body.Label) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	u, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	var address map[string]Address
-
-	if err := json.NewDecoder(r.Body).Decode(&address); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	//Check if this label is already used
+	if _, ok := u.Address[body.Label]; ok {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	// Only allow creation of One address
-	if len(address) > 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	if err := userMgr.SaveAddress(username, body.Label, body.Address); err != nil {
+		log.Error("ERROR while saving address:\n", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
-	}
-
-	for label, val := range address {
-		if _, ok := user.Address[label]; ok {
-			// Do not allow creating existing label!
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-			return
-		}
-
-		if err := userMgr.SaveAddress(user, label, val); err != nil {
-			log.Error("ERROR while saving user:\n", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
 	}
 
 	// respond with created phone number.
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(address)
+	json.NewEncoder(w).Encode(body)
 }
 
 // It is handler for GET /users/{username}/addresses
@@ -712,66 +713,86 @@ func (api UsersAPI) usernameaddresseslabelGet(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(respBody)
 }
 
-// Update or create an existing address.
-// It is handler for PUT /users/{username}/addresses/{label}
-func (api UsersAPI) usernameaddresseslabelPut(w http.ResponseWriter, r *http.Request) {
+// UpdateAddress is the handler for PUT /users/{username}/addresses/{label}
+// Update the label and/or value of an existing address.
+func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	label := mux.Vars(r)["label"]
+	oldlabel := mux.Vars(r)["label"]
+
+	body := struct {
+		Label   string
+		Address Address
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !isValidLabel(body.Label) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
 	userMgr := NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	u, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if _, ok := user.Address[label]; ok != true {
+	if _, ok := u.Address[oldlabel]; ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	var address map[string]Address
-
-	if err := json.NewDecoder(r.Body).Decode(&address); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
+	if oldlabel != body.Label {
+		if _, ok := u.Address[body.Label]; ok {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
 	}
 
-	if _, ok := address[label]; ok != true {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
-	if err := userMgr.SaveAddress(user, label, address[label]); err != nil {
-		log.Error("ERROR while saving user:\n", err)
+	if err = userMgr.SaveAddress(username, body.Label, body.Address); err != nil {
+		log.Error("ERROR while saving address - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
+	if oldlabel != body.Label {
+		if err := userMgr.RemoveAddress(username, oldlabel); err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(address)
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(body)
 }
 
-// Delete an address
-// It is handler for DELETE /users/{username}/addresses/{label}
-func (api UsersAPI) usernameaddresseslabelDelete(w http.ResponseWriter, r *http.Request) {
+// DeleteAddress is the handler for DELETE /users/{username}/addresses/{label}
+// Removes an address
+func (api UsersAPI) DeleteAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	u, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if _, ok := user.Address[label]; ok != true {
+	if _, ok := u.Address[label]; ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if err := userMgr.RemoveAddress(user, label); err != nil {
-		log.Error("ERROR while saving user:\n", err)
+	if err := userMgr.RemoveAddress(username, label); err != nil {
+		log.Error("ERROR while saving address:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

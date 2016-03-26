@@ -24,17 +24,6 @@ type UsersInterface interface {
 	// Removes an email address
 	DeleteEmailAddress(http.ResponseWriter, *http.Request)
 
-	// It is handler for GET /users/{username}/addresses/{label}
-	usernameaddresseslabelGet(http.ResponseWriter, *http.Request)
-
-	// Update or create an existing address.
-	// It is handler for PUT /users/{username}/addresses/{label}
-	usernameaddresseslabelPut(http.ResponseWriter, *http.Request)
-
-	// Delete an address
-	// It is handler for DELETE /users/{username}/addresses/{label}
-	usernameaddresseslabelDelete(http.ResponseWriter, *http.Request)
-
 	// It is handler for GET /users/{username}/banks
 	usernamebanksGet(http.ResponseWriter, *http.Request)
 
@@ -60,14 +49,25 @@ type UsersInterface interface {
 	// It is handler for GET /users/{username}/validate
 	usernamevalidateGet(http.ResponseWriter, *http.Request)
 
-	// It is handler for GET /users/{username}/addresses
+	// usernameaddressesGet is the handler for GET /users/{username}/addresses
 	usernameaddressesGet(http.ResponseWriter, *http.Request)
 
-	// Create new address
-	// It is handler for POST /users/{username}/addresses
-	usernameaddressesPost(http.ResponseWriter, *http.Request)
+	// RegisterNewAddress is the handler for POST /users/{username}/addresses
+	// Register a new address
+	RegisterNewAddress(http.ResponseWriter, *http.Request)
 
-	// It is handler for GET /users/{username}/phonenumbers
+	// usernameaddresseslabelGet is the handler for GET /users/{username}/addresses/{label}
+	usernameaddresseslabelGet(http.ResponseWriter, *http.Request)
+
+	// UpdateAddress is the handler for PUT /users/{username}/addresses/{label}
+	// Update the label and/or value of an existing address.
+	UpdateAddress(http.ResponseWriter, *http.Request)
+
+	// DeleteAddress is the handler for DELETE /users/{username}/addresses/{label}
+	// Removes an address
+	DeleteAddress(http.ResponseWriter, *http.Request)
+
+	// usernamephonenumbersGet is the handler for GET /users/{username}/phonenumber
 	usernamephonenumbersGet(http.ResponseWriter, *http.Request)
 
 	// RegisterNewPhonenumber is the handler for POST /users/{username}/phonenumbers
@@ -121,8 +121,10 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.HandleFunc("/users/{username}/emailaddresses/{label}", i.DeleteEmailAddress).Methods("DELETE")
 
 	r.HandleFunc("/users/{username}/addresses/{label}", i.usernameaddresseslabelGet).Methods("GET")
-	r.HandleFunc("/users/{username}/addresses/{label}", i.usernameaddresseslabelPut).Methods("PUT")
-	r.HandleFunc("/users/{username}/addresses/{label}", i.usernameaddresseslabelDelete).Methods("DELETE")
+	r.HandleFunc("/users/{username}/addresses/{label}", i.UpdateAddress).Methods("PUT")
+	r.HandleFunc("/users/{username}/addresses/{label}", i.DeleteAddress).Methods("DELETE")
+	r.HandleFunc("/users/{username}/addresses", i.usernameaddressesGet).Methods("GET")
+	r.HandleFunc("/users/{username}/addresses", i.RegisterNewAddress).Methods("POST")
 	r.HandleFunc("/users/{username}/banks", i.usernamebanksGet).Methods("GET")
 	r.HandleFunc("/users/{username}/banks", i.usernamebanksPost).Methods("POST")
 	r.HandleFunc("/users/{username}/scopes", i.usernamescopesGet).Methods("GET")
@@ -130,8 +132,6 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.HandleFunc("/users/{username}", i.usernamePut).Methods("PUT")
 	r.HandleFunc("/users/{username}/info", i.usernameinfoGet).Methods("GET")
 	r.HandleFunc("/users/{username}/validate", i.usernamevalidateGet).Methods("GET")
-	r.HandleFunc("/users/{username}/addresses", i.usernameaddressesGet).Methods("GET")
-	r.HandleFunc("/users/{username}/addresses", i.usernameaddressesPost).Methods("POST")
 	r.HandleFunc("/users/{username}/phonenumbers", i.usernamephonenumbersGet).Methods("GET")
 	r.HandleFunc("/users/{username}/phonenumbers", i.RegisterNewPhonenumber).Methods("POST")
 	r.HandleFunc("/users/{username}/phonenumbers/{label}", i.usernamephonenumberslabelGet).Methods("GET")

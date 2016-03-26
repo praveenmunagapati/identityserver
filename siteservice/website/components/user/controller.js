@@ -243,7 +243,7 @@
             .then(
                 function(data) {
                     if (data.newLabel) {
-                        vm.user.phone[data.newLabel] = data.phonenumber;
+                        vm.user.phone[data.newLabel] = data.data;
                     }
                     if (!data.newLabel || data.newLabel != data.originalLabel){
                         delete vm.user.phone[data.originalLabel];
@@ -271,7 +271,7 @@
             })
             .then(
                 function(data) {
-                    vm.user.phone[data.newLabel] = data.phonenumber;
+                    vm.user.phone[data.newLabel] = data.data;
                 });
         }
 
@@ -297,7 +297,7 @@
             .then(
                 function(data) {
                     if (data.newLabel) {
-                        vm.user.address[data.newLabel] = data.address;
+                        vm.user.address[data.newLabel] = data.data;
                     }
                     if (!data.newLabel || data.newLabel != data.originalLabel){
                         delete vm.user.address[data.originalLabel];
@@ -325,7 +325,7 @@
             })
             .then(
                 function(data) {
-                    vm.user.address[data.newLabel] = data.address;
+                    vm.user.address[data.newLabel] = data.data;
                 });
         }
 
@@ -428,7 +428,7 @@
             if (Object.keys($scope.dataform.$error).length > 0 ){return;}
             $scope.validationerrors = {};
             createFunction(username, label, data).then(
-                function(data){
+                function(response){
                     $mdDialog.hide({originalLabel: "", newLabel: label, data: data});
                 },
                 function(reason){
@@ -444,10 +444,10 @@
         }
 
         function update(oldLabel, newLabel, data){
-            if (Object.keys($scope.phonenumberform.$error).length > 0 ){return;}
+            if (Object.keys($scope.dataform.$error).length > 0 ){return;}
             $scope.validationerrors = {};
             updateFunction(username, oldLabel, newLabel, data).then(
-                function(data){
+                function(response){
                     $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel, data: data});
                 },
                 function(reason){
@@ -465,7 +465,7 @@
         function remove(label){
             $scope.validationerrors = {};
             deleteFunction(username, label).then(
-                function(data){
+                function(response){
                     $mdDialog.hide({originalLabel: label, newLabel: ""});
                 },
                 function(reason){

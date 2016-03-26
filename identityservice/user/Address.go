@@ -1,10 +1,10 @@
 package user
 
 type Address struct {
-	City       string `json:"city"`
-	Country    string `json:"country"`
-	Nr         string `json:"nr"`
-	Other      string `json:"other"`
-	Postalcode string `json:"postalcode"`
-	Street     string `json:"street"`
+	City       string `json:"city" validate:"max=30"`
+	Country    string `json:"country" validate:"max=40"`
+	Nr         string `json:"nr" validate:"max=10"`
+	Other      string `json:"other" validate:"max=30"`
+	Postalcode string `json:"postalcode" validate:"max=20"`
+	Street     string `json:"street" validate:"max=50"`
 }
