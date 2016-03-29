@@ -99,14 +99,14 @@
             $mdThemingProvider.theme('default')
                 .primaryPalette('blueish')
         })
-        .factory('authenticationInterceptor',['$q', function($q){
+        .factory('authenticationInterceptor',['$q','$window', function($q, $window){
             return {
                 'request': function(config) {
                     if (config) {
                         var url = config.url;
 
                         if( /(api\/)/i.test(url)){
-                            config.headers["Authorization"] = "token ABCDEFGHIJKLMNOPQ";
+                            config.headers["Authorization"] = "token " + sessionStorage.getItem("oauthToken");
                         }
                     }
                     return config || $q.when(config);
@@ -116,6 +116,10 @@
                 },
 
                'responseError': function(rejection) {
+                    if (rejection.status == 401 || rejection.status == 419){
+              			$window.location = "";
+               	   }
+
                    return $q.reject(rejection);
                 }
             };
@@ -159,7 +163,13 @@
                 .otherwise({redirectTo: '/' })
             ;
         })
-        .run(function($cookies, $rootScope) {
+        .run(function($cookies, $rootScope, $location) {
+            var pathParts = $location.path().split("=");
+            if (pathParts.length == 2 && pathParts[0] == "/token"){
+                sessionStorage.setItem("oauthToken",pathParts[1]);
+                $location.path("/");
+                $location.replace();
+            }
             $rootScope.user = $cookies.get('itsyou.online.user');
         });
 </script>

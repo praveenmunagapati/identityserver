@@ -28,14 +28,14 @@ func InitModels() {
 	//TODO: unique username/clientid combination
 
 	automaticExpiration := mgo.Index{
-		Key:         []string{"CreatedAt"},
+		Key:         []string{"createdat"},
 		ExpireAfter: time.Second * 10,
 		Background:  true,
 	}
 	db.EnsureIndex(requestsCollectionName, automaticExpiration)
 
 	index = mgo.Index{
-		Key:    []string{"AccessToken"},
+		Key:    []string{"accesstoken"},
 		Unique: true,
 	} //Do not drop duplicates since it would hijack another authorizationrequest, better to error out
 
@@ -44,7 +44,7 @@ func InitModels() {
 	//TODO: unique username/clientid combination
 
 	automaticExpiration = mgo.Index{
-		Key:         []string{"CreatedAt"},
+		Key:         []string{"createdat"},
 		ExpireAfter: AccessTokenExpiration,
 		Background:  true,
 	}

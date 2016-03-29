@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/gorilla/sessions"
 	"github.com/itsyouonline/identityserver/credentials/password"
@@ -96,6 +97,11 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 	if endpoint != "" {
 		queryValues.Del("endpoint")
 		redirectURL = endpoint + "?" + queryValues.Encode()
+	} else {
+		parameters := make(url.Values)
+		parameters.Add("client_id", "itsyouonline")
+		parameters.Add("response_type", "token")
+		redirectURL = "v1/oauth/authorize?" + parameters.Encode()
 	}
 
 	http.Redirect(w, request, redirectURL, http.StatusFound)

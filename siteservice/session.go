@@ -54,6 +54,7 @@ func (service *Service) SetLoggedInUser(w http.ResponseWriter, request *http.Req
 	}
 	authenticatedSession.Values["username"] = username
 
+	//TODO: rework this, is not really secure I think
 	// Set user cookie after successful login
 	cookie := &http.Cookie{
 		Name:  "itsyou.online.user",
