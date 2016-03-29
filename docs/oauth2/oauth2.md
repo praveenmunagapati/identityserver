@@ -94,7 +94,7 @@ For example, in curl you can set the Authorization header like this:
 curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/users/bob/info
 ```
 
-**Implicit flow**
+## Implicit flow
 The implicit grant type is used for mobile apps and web applications (i.e. applications that run in a web browser), where the client secret confidentiality is not guaranteed. The implicit grant type is also a redirection-based flow but the access token is given to the user-agent to forward to the application, so it may be exposed to the user and other applications on the user's device. Also, this flow does not authenticate the identity of the application, and relies on the redirect URI (that was registered with the service) to serve this purpose.
 
 The implicit grant type does not support refresh tokens.

@@ -36,6 +36,7 @@ func newAccessToken(username, clientID, scope string) *accessToken {
 	at.Username = username
 	at.ClientID = clientID
 	at.Scope = scope
+	at.Type = "bearer"
 
 	return &at
 }
@@ -88,15 +89,8 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 
 	//TODO: check redirecturl
 	//TODO: check clientID/clientSecret
-
-	at := accessToken{
-		Type:      "bearer",
-		Username:  ar.Username,
-		Scope:     ar.Scope,
-		ClientID:  ar.ClientID,
-		CreatedAt: time.Now(),
-	}
-	mgr.SaveAccessToken(&at)
+	at := newAccessToken(ar.Username, ar.ClientID, ar.Scope)
+	mgr.SaveAccessToken(at)
 
 	response := struct {
 		AccessToken string      `json:"access_token"`

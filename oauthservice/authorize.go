@@ -39,10 +39,18 @@ func newAuthorizationRequest(username, clientID, state string) *authorizationReq
 }
 
 func (service *Service) validateRedirectURI(redirectURI, clientID string) {
-	//TODO:
+	//TODO: validate redirectURI
+	//TODO: seperate case for "itsyouonline"
 }
 
-//AuthorizeHandler is the handler of the /login/oauth/authorize endpoint
+func redirecToLoginPage(w http.ResponseWriter, r *http.Request) {
+	queryvalues := r.URL.Query()
+	queryvalues.Add("endpoint", r.URL.EscapedPath())
+	//TODO: redirect according the the received http method
+	http.Redirect(w, r, "/login?"+queryvalues.Encode(), http.StatusFound)
+}
+
+//AuthorizeHandler is the handler of the /v1/oauth/authorize endpoint
 func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
@@ -53,7 +61,8 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	//Check if the requested authorization grant type is supported
-	if r.Form.Get("response_type") != AuthorizationGrantCodeType {
+	requestedResponseType := r.Form.Get("response_type")
+	if requestedResponseType != AuthorizationGrantCodeType && requestedResponseType != ImplicitGrantCodeType {
 		log.Debug("Invalid authorization grant type requested")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -66,10 +75,8 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if username == "" {
-		queryvalues := r.URL.Query()
-		queryvalues.Add("endpoint", r.URL.EscapedPath())
-		//TODO: redirect according the the received http method
-		http.Redirect(w, r, "/login?"+queryvalues.Encode(), http.StatusFound)
+		redirecToLoginPage(w, r)
+		return
 	}
 
 	//Validate client and redirect_uri
@@ -84,27 +91,79 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 
 	//requestedScopes := r.Form.Get("scope")
 	//TODO: check if the client still has a valid authorization for the requested scope, if not ask the user
+	//TODO: exception for itsyouonline, an authorization is implicit
+
+	switch requestedResponseType {
+	case AuthorizationGrantCodeType:
+		redirectURI, err = handleAuthorizationGrantCodeType(r, username, clientID, redirectURI)
+	case ImplicitGrantCodeType:
+		redirectURI, err = handleImplicitGrantCodeType(r, username, clientID, redirectURI)
+	}
+
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, redirectURI, http.StatusFound)
+
+}
+
+func handleAuthorizationGrantCodeType(r *http.Request, username, clientID, redirectURI string) (correctedRedirectURI string, err error) {
+	correctedRedirectURI = redirectURI
 
 	clientState := r.Form.Get("state")
 	//TODO: validate state (length and stuff)
 
 	ar := newAuthorizationRequest(username, clientID, clientState)
 	mgr := NewManager(r)
-	mgr.SaveAuthorizationRequest(ar)
+	err = mgr.SaveAuthorizationRequest(ar)
+	if err != nil {
+		return
+	}
 
 	parameters := make(url.Values)
 	parameters.Add("code", ar.AuthorizationCode)
 	parameters.Add("state", clientState)
+
 	//Don't parse the redirect url, can only give errors while we don't gain much
-	if !strings.Contains(redirectURI, "?") {
-		redirectURI += "?"
+	if !strings.Contains(correctedRedirectURI, "?") {
+		correctedRedirectURI += "?"
 	} else {
-		if !strings.HasSuffix(redirectURI, "&") {
-			redirectURI += "&"
+		if !strings.HasSuffix(correctedRedirectURI, "&") {
+			correctedRedirectURI += "&"
 		}
 	}
-	redirectURI += parameters.Encode()
+	correctedRedirectURI += parameters.Encode()
+	return
+}
 
-	http.Redirect(w, r, redirectURI, http.StatusFound)
+func handleImplicitGrantCodeType(r *http.Request, username, clientID, redirectURI string) (correctedRedirectURI string, err error) {
 
+	scopes := ""
+	if clientID == "itsyouonline" {
+		scopes = "admin"
+		//hardcoded override the redirect_uri to prevent spoofing
+		redirectURI = "/"
+	}
+	//TODO: scope mapping for other clients
+
+	mgr := NewManager(r)
+
+	at := newAccessToken(username, clientID, scopes)
+	err = mgr.SaveAccessToken(at)
+	if err != nil {
+		return
+	}
+
+	correctedRedirectURI = redirectURI
+	parameters := make(url.Values)
+	parameters.Add("token", at.AccessToken)
+	//Don't parse the redirect url, can only give errors while we don't gain much
+	if !strings.Contains(correctedRedirectURI, "#") {
+		correctedRedirectURI += "#"
+	}
+	correctedRedirectURI += parameters.Encode()
+	return
 }

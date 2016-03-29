@@ -19,8 +19,10 @@ func NewService(siteService *siteservice.Service) *Service {
 }
 
 const (
-	//AuthorizationGrantCodeType is requested response_type for an 'authorization code' oauth2 flow
+	//AuthorizationGrantCodeType is the requested response_type for an 'authorization code' oauth2 flow
 	AuthorizationGrantCodeType = "code"
+	//ImplicitGrantCodeType is the requested response_type for an 'implicit' oauth2 flow
+	ImplicitGrantCodeType = "token"
 )
 
 //GetAuthenticatedUser returns the authenticated user if any or an empty string if not
