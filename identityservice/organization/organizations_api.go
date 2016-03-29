@@ -3,6 +3,7 @@ package organization
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
@@ -13,12 +14,14 @@ import (
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
 
+const itsyouonlineGlobalID = "itsyouonline"
+
+// OrganizationsAPI is the implementation for /organizations root endpoint
 type OrganizationsAPI struct {
 }
 
+// Get is the handler for GET /organizations
 // Get organizations. Authorization limits are applied to requesting user.
-
-// It is handler for GET /organizations
 func (api OrganizationsAPI) Get(w http.ResponseWriter, r *http.Request) {
 	orgMgr := NewManager(r)
 
@@ -34,14 +37,21 @@ func (api OrganizationsAPI) Get(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(respBody)
 }
 
-// Create new organization
-// It is handler for POST /organizations
-func (api OrganizationsAPI) Post(w http.ResponseWriter, r *http.Request) {
+// CreateNewOrganization is the handler for POST /organizations
+// Create a new organization. 1 user should be in the owners list. Validation is performed
+// to check if the securityScheme allows management on this user.
+func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http.Request) {
 	var org Organization
 
 	if err := json.NewDecoder(r.Body).Decode(&org); err != nil {
 		log.Debug("Error decoding the organization:", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if strings.TrimSpace(org.Globalid) == itsyouonlineGlobalID {
+		log.Debug("Duplicate organization")
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 

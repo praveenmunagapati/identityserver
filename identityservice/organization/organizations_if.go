@@ -13,10 +13,10 @@ import (
 type OrganizationsInterface interface { // Get is the handler for GET /organizations
 	// Get organizations. Authorization limits are applied to requesting user.
 	Get(http.ResponseWriter, *http.Request)
-	// Post is the handler for POST /organizations
+	// CreateNewOrganization is the handler for POST /organizations
 	// Create a new organization. 1 user should be in the owners list. Validation is performed
 	// to check if the securityScheme allows management on this user.
-	Post(http.ResponseWriter, *http.Request)
+	CreateNewOrganization(http.ResponseWriter, *http.Request)
 	// globalidGet is the handler for GET /organizations/{globalid}
 	// Get organization info
 	globalidGet(http.ResponseWriter, *http.Request)
@@ -65,7 +65,7 @@ type OrganizationsInterface interface { // Get is the handler for GET /organizat
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
 func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.Get))).Methods("GET")
-	r.Handle("/organizations", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.Post))).Methods("POST")
+	r.Handle("/organizations", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.CreateNewOrganization))).Methods("POST")
 	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:read", "organization:admin"}).Handler).Then(http.HandlerFunc(i.globalidGet))).Methods("GET")
 	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:admin"}).Handler).Then(http.HandlerFunc(i.globalidPut))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/members", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:admin"}).Handler).Then(http.HandlerFunc(i.globalidmembersPost))).Methods("POST")

@@ -73,6 +73,7 @@ types:
 securedBy: [ oauth_2_0 ]
 /organizations:
   post:
+    displayName: CreateNewOrganization
     description: Create a new organization. 1 user should be in the owners list. Validation is performed to check if the securityScheme allows management on this user.
     body:
       application/json:
