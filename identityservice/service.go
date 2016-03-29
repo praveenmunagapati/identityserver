@@ -37,7 +37,7 @@ func (service *Service) AddRoutes(router *mux.Router) {
 
 	// Organization API
 	organization.OrganizationsInterfaceRoutes(router, organization.OrganizationsAPI{})
-	userorganization.UserorganizationsInterfaceRoutes(router, userorganization.UsersusernameorganizationsAPI{})
+	userorganization.UsersusernameorganizationsInterfaceRoutes(router, userorganization.UsersusernameorganizationsAPI{})
 	organization.InitModels()
 
 }

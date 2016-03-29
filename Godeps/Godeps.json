@@ -41,6 +41,10 @@
 			"Rev": "38f86955cc6459714c4a5945fc6dfbacdb30b624"
 		},
 		{
+			"ImportPath": "github.com/justinas/alice",
+			"Rev": "29a850317649fc021f42f80ec29552f9a3156ee9"
+		},
+		{
 			"ImportPath": "gopkg.in/mgo.v2",
 			"Comment": "r2015.06.03-5-g22287ba",
 			"Rev": "22287bab4379e1fbf6002fb4eb769888f3fb224c"

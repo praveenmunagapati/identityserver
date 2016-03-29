@@ -99,6 +99,36 @@
             $mdThemingProvider.theme('default')
                 .primaryPalette('blueish')
         })
+        .factory('authenticationInterceptor',['$q', function($q){
+            return {
+                'request': function(config) {
+                    if (config) {
+                        var url = config.url;
+
+                        if( /(api\/)/i.test(url)){
+                            config.headers["Authorization"] = "token ABCDEFGHIJKLMNOPQ";
+                        }
+                    }
+                    return config || $q.when(config);
+        	    },
+        	    'response': function(response) {
+                    return response || $q.when(response);
+                },
+
+               'responseError': function(rejection) {
+                   return $q.reject(rejection);
+                }
+            };
+    	}])
+        .config(['$httpProvider',function($httpProvider) {
+            $httpProvider.interceptors.push('authenticationInterceptor');
+            //initialize get if not there
+            if (!$httpProvider.defaults.headers.get) {
+                $httpProvider.defaults.headers.get = {};
+            }
+            //disable IE ajax request caching
+            $httpProvider.defaults.headers.get['If-Modified-Since'] = '0';
+        }])
         .config(function($routeProvider) {
             $routeProvider
                 .when('/', {

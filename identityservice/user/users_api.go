@@ -239,8 +239,8 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// usernameinfoGet is the handler for GET /users/{username}/info
-func (api UsersAPI) usernameinfoGet(w http.ResponseWriter, r *http.Request) {
+// GetUserInformation is the handler for GET /users/{username}/info
+func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := NewManager(r)
 

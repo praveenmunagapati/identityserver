@@ -105,14 +105,24 @@ func (api CompaniesAPI) globalIdinfoGet(w http.ResponseWriter, r *http.Request) 
 
 // It is handler for GET /companies/{globalid}/validate
 func (api CompaniesAPI) globalIdvalidateGet(w http.ResponseWriter, r *http.Request) {
-
-	// token := req.FormValue("token")
-
-	// uncomment below line to add header
-	// w.Header.Set("key","value")
+	log.Error("globalIdvalidateGet is not implemented")
 }
 
 // Get the contracts where the organization is 1 of the parties. Order descending by
 // date.
 // It is handler for GET /companies/{globalId}/contracts
-func (api CompaniesAPI) globalIdcontractsGet(w http.ResponseWriter, r *http.Request) {}
+func (api CompaniesAPI) globalIdcontractsGet(w http.ResponseWriter, r *http.Request) {
+	log.Error("globalIdcontractsGet is not implemented")
+}
+
+// GetCompanyList is the handler for GET /companies
+// Get companies. Authorization limits are applied to requesting user.
+func (api CompaniesAPI) GetCompanyList(w http.ResponseWriter, r *http.Request) {
+	log.Error("GetCompanyList is not implemented")
+}
+
+// globalIdGet is the handler for GET /companies/{globalId}
+// Get organization info
+func (api CompaniesAPI) globalIdGet(w http.ResponseWriter, r *http.Request) {
+	log.Error("globalIdGet is not implemented")
+}

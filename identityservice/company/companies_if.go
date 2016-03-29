@@ -5,34 +5,40 @@ package company
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
 	"net/http"
 )
 
-type CompaniesInterface interface {
+// CompaniesInterface is interface for /companies root endpoint
+type CompaniesInterface interface { // GetCompanyList is the handler for GET /companies
+	// Get companies. Authorization limits are applied to requesting user.
+	GetCompanyList(http.ResponseWriter, *http.Request)
+	// Post is the handler for POST /companies
 	// Register a new company
-	// It is handler for POST /companies
 	Post(http.ResponseWriter, *http.Request)
-
+	// globalIdGet is the handler for GET /companies/{globalId}
+	// Get organization info
+	globalIdGet(http.ResponseWriter, *http.Request)
+	// globalIdPut is the handler for PUT /companies/{globalId}
 	// Update existing company. Updating ``globalId`` is not allowed.
-	// It is handler for PUT /companies/{globalId}
 	globalIdPut(http.ResponseWriter, *http.Request)
-
-	// It is handler for GET /companies/{globalId}/validate
+	// globalIdinfoGet is the handler for GET /companies/{globalId}/info
+	globalIdinfoGet(http.ResponseWriter, *http.Request)
+	// globalIdvalidateGet is the handler for GET /companies/{globalId}/validate
 	globalIdvalidateGet(http.ResponseWriter, *http.Request)
-
+	// globalIdcontractsGet is the handler for GET /companies/{globalId}/contracts
 	// Get the contracts where the organization is 1 of the parties. Order descending by
 	// date.
-	// It is handler for GET /companies/{globalId}/contracts
 	globalIdcontractsGet(http.ResponseWriter, *http.Request)
-
-	// It is handler for GET /companies/{globalId}/info
-	globalIdinfoGet(http.ResponseWriter, *http.Request)
 }
 
+// CompaniesInterfaceRoutes is routing for /companies root endpoint
 func CompaniesInterfaceRoutes(r *mux.Router, i CompaniesInterface) {
-	r.HandleFunc("/companies", i.Post).Methods("POST")
-	r.HandleFunc("/companies/{globalId}", i.globalIdPut).Methods("PUT")
-	r.HandleFunc("/companies/{globalId}/validate", i.globalIdvalidateGet).Methods("GET")
-	r.HandleFunc("/companies/{globalId}/contracts", i.globalIdcontractsGet).Methods("GET")
-	r.HandleFunc("/companies/{globalId}/info", i.globalIdinfoGet).Methods("GET")
+	r.Handle("/companies", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.GetCompanyList))).Methods("GET")
+	r.Handle("/companies", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.Post))).Methods("POST")
+	r.Handle("/companies/{globalId}", alice.New(newOauth2oauth_2_0Middleware([]string{"company:read", "company:admin"}).Handler).Then(http.HandlerFunc(i.globalIdGet))).Methods("GET")
+	r.Handle("/companies/{globalId}", alice.New(newOauth2oauth_2_0Middleware([]string{"company:admin"}).Handler).Then(http.HandlerFunc(i.globalIdPut))).Methods("PUT")
+	r.Handle("/companies/{globalId}/info", alice.New(newOauth2oauth_2_0Middleware([]string{"company:info"}).Handler).Then(http.HandlerFunc(i.globalIdinfoGet))).Methods("GET")
+	r.Handle("/companies/{globalId}/validate", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.globalIdvalidateGet))).Methods("GET")
+	r.Handle("/companies/{globalId}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"company:admin", "company:contracts:read"}).Handler).Then(http.HandlerFunc(i.globalIdcontractsGet))).Methods("GET")
 }

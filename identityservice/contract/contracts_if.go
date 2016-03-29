@@ -5,25 +5,25 @@ package contract
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
 	"net/http"
 )
 
-type ContractsInterface interface {
+// ContractsInterface is interface for /contracts root endpoint
+type ContractsInterface interface { // Post is the handler for POST /contracts
 	// Create a new contract.
-	// It is handler for POST /contracts
 	Post(http.ResponseWriter, *http.Request)
-
+	// contractIdGet is the handler for GET /contracts/{contractId}
 	// Get a contract
-	// It is handler for GET /contracts/{contractId}
 	contractIdGet(http.ResponseWriter, *http.Request)
-
+	// contractIdsignaturesPost is the handler for POST /contracts/{contractId}/signatures
 	// Sign a contract
-	// It is handler for POST /contracts/{contractId}/signatures
 	contractIdsignaturesPost(http.ResponseWriter, *http.Request)
 }
 
+// ContractsInterfaceRoutes is routing for /contracts root endpoint
 func ContractsInterfaceRoutes(r *mux.Router, i ContractsInterface) {
-	r.HandleFunc("/contracts", i.Post).Methods("POST")
-	r.HandleFunc("/contracts/{contractId}", i.contractIdGet).Methods("GET")
-	r.HandleFunc("/contracts/{contractId}/signatures", i.contractIdsignaturesPost).Methods("POST")
+	r.Handle("/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.Post))).Methods("POST")
+	r.Handle("/contracts/{contractId}", alice.New(newOauth2oauth_2_0Middleware([]string{"contract:read"}).Handler).Then(http.HandlerFunc(i.contractIdGet))).Methods("GET")
+	r.Handle("/contracts/{contractId}/signatures", alice.New(newOauth2oauth_2_0Middleware([]string{"contract:participant"}).Handler).Then(http.HandlerFunc(i.contractIdsignaturesPost))).Methods("POST")
 }
