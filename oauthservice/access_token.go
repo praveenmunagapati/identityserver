@@ -13,7 +13,8 @@ import (
 //AccessTokenExpiration is the time in seconds an access token expires
 var AccessTokenExpiration = time.Second * 3600
 
-type accessToken struct {
+//AccessToken is an oauth2 accesstoken together with the access information it stands for
+type AccessToken struct {
 	AccessToken string
 	Type        string
 	Username    string
@@ -22,12 +23,18 @@ type accessToken struct {
 	CreatedAt   time.Time
 }
 
-func (at *accessToken) IsExpiredAt(testtime time.Time) bool {
+//IsExpiredAt checks if the token is expired at a specific time
+func (at *AccessToken) IsExpiredAt(testtime time.Time) bool {
 	return testtime.After(at.CreatedAt.Add(AccessTokenExpiration))
 }
 
-func newAccessToken(username, clientID, scope string) *accessToken {
-	var at accessToken
+//IsExpired is a convenience method for IsExpired(time.Now())
+func (at *AccessToken) IsExpired() bool {
+	return at.IsExpiredAt(time.Now())
+}
+
+func newAccessToken(username, clientID, scope string) *AccessToken {
+	var at AccessToken
 
 	randombytes := make([]byte, 21) //Multiple of 3 to make sure no padding is added
 	rand.Read(randombytes)
@@ -90,7 +97,7 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 	//TODO: check redirecturl
 	//TODO: check clientID/clientSecret
 	at := newAccessToken(ar.Username, ar.ClientID, ar.Scope)
-	mgr.SaveAccessToken(at)
+	mgr.saveAccessToken(at)
 
 	response := struct {
 		AccessToken string      `json:"access_token"`

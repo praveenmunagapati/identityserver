@@ -118,7 +118,7 @@ func handleAuthorizationGrantCodeType(r *http.Request, username, clientID, redir
 
 	ar := newAuthorizationRequest(username, clientID, clientState)
 	mgr := NewManager(r)
-	err = mgr.SaveAuthorizationRequest(ar)
+	err = mgr.saveAuthorizationRequest(ar)
 	if err != nil {
 		return
 	}
@@ -152,7 +152,7 @@ func handleImplicitGrantCodeType(r *http.Request, username, clientID, redirectUR
 	mgr := NewManager(r)
 
 	at := newAccessToken(username, clientID, scopes)
-	err = mgr.SaveAccessToken(at)
+	err = mgr.saveAccessToken(at)
 	if err != nil {
 		return
 	}

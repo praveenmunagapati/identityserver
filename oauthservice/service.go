@@ -4,18 +4,23 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/itsyouonline/identityserver/siteservice"
 )
+
+//SessionService declares a context where you can have a logged in user
+type SessionService interface {
+	//GetLoggedInUser returns an authenticated user, or an empty string if there is none
+	GetLoggedInUser(request *http.Request) (username string, err error)
+}
 
 //Service is the oauthserver http service
 type Service struct {
-	siteService *siteservice.Service
-	router      *mux.Router
+	sessionService SessionService
+	router         *mux.Router
 }
 
 //NewService creates and initializes a Service
-func NewService(siteService *siteservice.Service) *Service {
-	return &Service{siteService: siteService}
+func NewService(sessionService SessionService) *Service {
+	return &Service{sessionService: sessionService}
 }
 
 const (
@@ -27,7 +32,7 @@ const (
 
 //GetAuthenticatedUser returns the authenticated user if any or an empty string if not
 func (service *Service) GetAuthenticatedUser(r *http.Request) (username string, err error) {
-	username, err = service.siteService.GetLoggedInUser(r)
+	username, err = service.sessionService.GetLoggedInUser(r)
 	return
 }
 

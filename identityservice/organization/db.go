@@ -56,6 +56,20 @@ func (m *Manager) All() ([]Organization, error) {
 	return organizations, nil
 }
 
+//IsOwner checks if a specific user is in the owners list of an organization
+func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
+	matches, err := m.collection.Find(bson.M{"globalid": globalID, "owners": username}).Count()
+	isowner = (matches > 0)
+	return
+}
+
+//IsMember checks if a specific user is in the members list of an organization
+func (m *Manager) IsMember(globalID, username string) (isowner bool, err error) {
+	matches, err := m.collection.Find(bson.M{"globalid": globalID, "members": username}).Count()
+	isowner = (matches > 0)
+	return
+}
+
 // AllByUser get organizations for certain user.
 func (m *Manager) AllByUser(username string) ([]Organization, error) {
 	var organizations []Organization

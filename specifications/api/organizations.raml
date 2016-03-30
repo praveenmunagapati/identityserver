@@ -96,7 +96,7 @@ securedBy: [ oauth_2_0 ]
 
   /{globalid}:
     get:
-      securedBy: [oauth_2_0: { scopes: [ "organization:read", "organization:admin" ] } ]
+      securedBy: [oauth_2_0: { scopes: [ "organization:member", "organization:owner" ] } ]
       description: Get organization info
       responses:
         200:
@@ -108,7 +108,7 @@ securedBy: [ oauth_2_0 ]
         404:
           description: Not found
     put:
-      securedBy: [oauth_2_0: { scopes: [ "organization:admin" ] } ]
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       description: Update organization info
       body:
         application/json:
@@ -125,7 +125,7 @@ securedBy: [ oauth_2_0 ]
 
     /members:
       post:
-        securedBy: [oauth_2_0: { scopes: [ "organization:admin" ] } ]
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Assign a member to organization.
         body:
           application/json:
@@ -143,7 +143,7 @@ securedBy: [ oauth_2_0 ]
 
       /{username}:
         delete:
-          securedBy: [oauth_2_0: { scopes: [ "organization:admin" ] } ]
+          securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
           description: Remove a member from organization
           responses:
             204:
@@ -157,7 +157,7 @@ securedBy: [ oauth_2_0 ]
 
     /owners:
       post:
-        securedBy: [oauth_2_0: { scopes: [ "organization:admin" ] } ]
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Invite a user to become owner of an organization.
         body:
             application/json:
@@ -177,7 +177,7 @@ securedBy: [ oauth_2_0 ]
 
       /{username}:
           delete:
-            securedBy: [oauth_2_0: { scopes: [ "organization:admin" ] } ]
+            securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
             description: Remove an owner from organization
             responses:
               204:
@@ -187,9 +187,8 @@ securedBy: [ oauth_2_0 ]
               404:
                 description: Not found
 
-
     /contracts:
-      securedBy: [oauth_2_0: { scopes: [ "organization:admin", "organization:contracts:read" ] } ]
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner", "organization:contracts:read" ] } ]
       get:
         displayName: GetContracts
         description: Get the contracts where the organization is 1 of the parties. Order descending by date.
@@ -209,7 +208,7 @@ securedBy: [ oauth_2_0 ]
               maximum: 250
 
     /invitations:
-      securedBy: [oauth_2_0: { scopes: [ "organization:admin" ] } ]
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       get:
         displayName: GetPendingInvitations
         description: Get the list of pending invitations for users to join this organization.
@@ -229,7 +228,7 @@ securedBy: [ oauth_2_0 ]
 
     /apisecrets:
       description: API secrets are the oauth2 client secrets needed to access the api.
-      securedBy: [oauth_2_0: { scopes: [ "organization:admin" ] } ]
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       get:
         displayName: GetAPISecretLabels
         description: Get the list of labels that are defined for active api secrets. The secrets themselves are not included.

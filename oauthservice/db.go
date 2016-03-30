@@ -71,13 +71,13 @@ func NewManager(r *http.Request) *Manager {
 	}
 }
 
-//GetAuthorizationRequestCollection returns the mongo collection for the authorizationRequests
-func (m *Manager) GetAuthorizationRequestCollection() *mgo.Collection {
+//getAuthorizationRequestCollection returns the mongo collection for the authorizationRequests
+func (m *Manager) getAuthorizationRequestCollection() *mgo.Collection {
 	return db.GetCollection(m.session, requestsCollectionName)
 }
 
-//GetAccessTokenCollection returns the mongo collection for the accessTokens
-func (m *Manager) GetAccessTokenCollection() *mgo.Collection {
+//getAccessTokenCollection returns the mongo collection for the accessTokens
+func (m *Manager) getAccessTokenCollection() *mgo.Collection {
 	return db.GetCollection(m.session, tokensCollectionName)
 }
 
@@ -85,38 +85,61 @@ func (m *Manager) GetAccessTokenCollection() *mgo.Collection {
 func (m *Manager) Get(authorizationcode string) (*authorizationRequest, error) {
 	var ar authorizationRequest
 
-	err := m.GetAuthorizationRequestCollection().Find(bson.M{"authorizationcode": authorizationcode}).One(&ar)
+	err := m.getAuthorizationRequestCollection().Find(bson.M{"authorizationcode": authorizationcode}).One(&ar)
 
 	return &ar, err
 }
 
-// SaveAuthorizationRequest stores an authorizationRequest, only adding new authorizationRequests is allowed, updating is not
-func (m *Manager) SaveAuthorizationRequest(ar *authorizationRequest) (err error) {
+// saveAuthorizationRequest stores an authorizationRequest, only adding new authorizationRequests is allowed, updating is not
+func (m *Manager) saveAuthorizationRequest(ar *authorizationRequest) (err error) {
 	// TODO: Validation!
 
-	err = m.GetAuthorizationRequestCollection().Insert(ar)
+	err = m.getAuthorizationRequestCollection().Insert(ar)
 
 	return
 }
 
-// SaveAccessToken stores an accessToken, only adding new accessTokens is allowed, updating is not
-func (m *Manager) SaveAccessToken(at *accessToken) (err error) {
+// saveAccessToken stores an accessToken, only adding new accessTokens is allowed, updating is not
+func (m *Manager) saveAccessToken(at *AccessToken) (err error) {
 	// TODO: Validation!
 
-	err = m.GetAccessTokenCollection().Insert(at)
+	err = m.getAccessTokenCollection().Insert(at)
 
 	return
 }
 
-//GetClientsCollection returns the mongo collection for the clients
-func (m *Manager) GetClientsCollection() *mgo.Collection {
+//GetAccessToken gets an access token by it's actual token string
+// If the token is not found or is expired, nil is returned
+func (m *Manager) GetAccessToken(token string) (at *AccessToken, err error) {
+	at = &AccessToken{}
+
+	err = m.getAccessTokenCollection().Find(bson.M{"accesstoken": token}).One(at)
+	if err != nil && err == mgo.ErrNotFound {
+		at = nil
+		err = nil
+		return
+	}
+	if err != nil {
+		at = nil
+		return
+	}
+	if at.IsExpired() {
+		at = nil
+		err = nil
+	}
+
+	return
+}
+
+//getClientsCollection returns the mongo collection for the clients
+func (m *Manager) getClientsCollection() *mgo.Collection {
 	return db.GetCollection(m.session, clientsCollectionName)
 }
 
 //GetClientSecretLabels returns a list of labels for which there are secrets registered for a specific client
 func (m *Manager) GetClientSecretLabels(clientID string) (labels []string, err error) {
 	results := []struct{ Label string }{}
-	err = m.GetClientsCollection().Find(bson.M{"clientid": clientID}).Select(bson.M{"label": 1}).All(&results)
+	err = m.getClientsCollection().Find(bson.M{"clientid": clientID}).Select(bson.M{"label": 1}).All(&results)
 	labels = make([]string, len(results), len(results))
 	for i, value := range results {
 		labels[i] = value.Label
@@ -127,7 +150,7 @@ func (m *Manager) GetClientSecretLabels(clientID string) (labels []string, err e
 //CreateClientSecret saves an Oauth2 client secret
 func (m *Manager) CreateClientSecret(client *Oauth2Client) (err error) {
 
-	err = m.GetClientsCollection().Insert(client)
+	err = m.getClientsCollection().Insert(client)
 
 	if err != nil && mgo.IsDup(err) {
 		err = db.ErrDuplicate
@@ -138,7 +161,7 @@ func (m *Manager) CreateClientSecret(client *Oauth2Client) (err error) {
 //RenameClientSecret changes the label for a client secret
 func (m *Manager) RenameClientSecret(clientID, oldLabel, newLabel string) (err error) {
 
-	_, err = m.GetClientsCollection().UpdateAll(bson.M{"clientid": clientID, "label": oldLabel}, bson.M{"$set": bson.M{"label": newLabel}})
+	_, err = m.getClientsCollection().UpdateAll(bson.M{"clientid": clientID, "label": oldLabel}, bson.M{"$set": bson.M{"label": newLabel}})
 
 	if err != nil && mgo.IsDup(err) {
 		err = db.ErrDuplicate
@@ -148,14 +171,14 @@ func (m *Manager) RenameClientSecret(clientID, oldLabel, newLabel string) (err e
 
 //DeleteClientSecret removes a client secret by it's clientID and label
 func (m *Manager) DeleteClientSecret(clientID, label string) (err error) {
-	_, err = m.GetClientsCollection().RemoveAll(bson.M{"clientid": clientID, "label": label})
+	_, err = m.getClientsCollection().RemoveAll(bson.M{"clientid": clientID, "label": label})
 	return
 }
 
 //GetClientSecret retrieves a clientsecret given a clientid and a label
 func (m *Manager) GetClientSecret(clientID, label string) (secret string, err error) {
 	c := &Oauth2Client{}
-	err = m.GetClientsCollection().Find(bson.M{"clientid": clientID, "label": label}).One(c)
+	err = m.getClientsCollection().Find(bson.M{"clientid": clientID, "label": label}).One(c)
 	if err == mgo.ErrNotFound {
 		err = nil
 		return

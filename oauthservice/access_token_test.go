@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccessTokenExpiration(t *testing.T) {
-	ar := &accessToken{CreatedAt: time.Now()}
+	ar := &AccessToken{CreatedAt: time.Now()}
 
 	assert.True(t, ar.IsExpiredAt(ar.CreatedAt.Add(AccessTokenExpiration).Add(time.Second)))
 	assert.False(t, ar.IsExpiredAt(ar.CreatedAt.Add(AccessTokenExpiration)))

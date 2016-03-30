@@ -2,6 +2,9 @@ package contract
 
 import (
 	"net/http"
+	"strings"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
@@ -50,13 +53,16 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		} else if om.describedBy == "headers" {
 			accessToken = r.Header.Get(om.field)
 		}
+		//Get the actual token out of the header (accept 'token ABCD' as well as just 'ABCD' and ignore some possible whitespace)
+		accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
 		if accessToken == "" {
 			w.WriteHeader(401)
 			return
 		}
 
 		// TODO: WRITE codes to check user's scopes for this contract
-		scopes := []string{"contract:read", "contract:participant"}
+		scopes := []string{}
+		log.Debug("Available scopes: ", scopes)
 
 		// check scopes
 		if !om.CheckScopes(scopes) {

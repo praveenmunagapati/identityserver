@@ -1,5 +1,7 @@
 package userorganization
 
+//The reason this api is not in the user package is because this would cause circular imports
+
 import (
 	"encoding/json"
 	"net/http"
