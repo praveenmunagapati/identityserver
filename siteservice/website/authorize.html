@@ -29,36 +29,24 @@
             You have no open requests
             </md-tooltip>
         </a>
-        <md-menu md-offset="-5 30">
-            <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-plus"></i><i class="fa fa-caret-down"></i>
-              <md-tooltip ng-cloak>
-                Create new...
-              </md-tooltip>
-            </a>
-            <md-menu-content ng-cloak>
-               <md-menu-item><md-button href="#neworganization">New organization</md-button></md-menu-item>
-               <md-menu-item><md-button href="#newcompany">New company</md-button></md-menu-item>
-             </md-menu-content>
-        </md-menu>
-
         <md-menu md-offset="-5 30" ng-cloak>
             <a href="" ng-click="$mdOpenMenu($event)"><i class="fa fa-user"> {{ user }}</i><i class="fa fa-caret-down"></i></a>
             <md-menu-content ng-cloak>
-               <md-menu-item><md-button href="#/">Home</md-button></md-menu-item>
+               <md-menu-item><md-button href="/">Home</md-button></md-menu-item>
                <md-menu-item><md-button href="logout">Signout</md-button></md-menu-item>
              </md-menu-content>
         </md-menu>
     </div>
   </div>
-
 </header>
 
 
 <div class="fullscreenform">
     <div flex layout="row" layout-fill style="padding-top: 100px;">
         <div flex></div>
-        <div layout="column" flex-gt-xs="80" flex-xs="100" layout-fill>
-            <div ng-view layout-fill></div>
+        <div layout="column" flex-gt-xs="80" flex-xs="100" layout-fill ng-controller="AuthorizeController as vm">
+            <form ng-cloak method="post" action="authorize" layout="column" name="authorizeform" >
+            </form>
         </div>
         <div flex></div>
     </div>
@@ -117,7 +105,7 @@
 
                'responseError': function(rejection) {
                     if (rejection.status == 401 || rejection.status == 403 || rejection.status == 419){
-              			$window.location.href = "";
+              			$window.location.href = "/";
                	   }
 
                    return $q.reject(rejection);
@@ -133,51 +121,15 @@
             //disable IE ajax request caching
             $httpProvider.defaults.headers.get['If-Modified-Since'] = '0';
         }])
-        .config(function($routeProvider) {
-            $routeProvider
-                .when('/', {
-                    templateUrl: 'components/user/views/home.html',
-                    controller: 'UserHomeController',
-                    controllerAs: 'vm'
-                })
-                .when('/neworganization', {
-                    templateUrl: 'components/organization/views/new.html',
-                    controller: 'OrganizationController',
-                    controllerAs: 'vm'
-                })
-                .when('/organizations/:globalid', {
-                    templateUrl: 'components/organization/views/detail.html',
-                    controller: 'OrganizationDetailController',
-                    controllerAs: 'vm'
-                })
-                .when('/newcompany', {
-                    templateUrl: 'components/company/views/new.html',
-                    controller: 'CompanyController',
-                    controllerAs: 'vm'
-                })
-                .when('/companies/:globalid', {
-                    templateUrl: 'components/company/views/detail.html',
-                    controller: 'CompanyController',
-                    controllerAs: 'vm'
-                })
-                .otherwise({redirectTo: '/' })
-            ;
-        })
         .run(function($cookies, $rootScope, $location) {
-            var pathParts = $location.path().split("=");
-            if (pathParts.length == 2 && pathParts[0] == "/token"){
-                sessionStorage.setItem("oauthToken",pathParts[1]);
-                $location.path("/");
-                $location.replace();
-            }
             $rootScope.user = $cookies.get('itsyou.online.user');
-        });
+            var at = $cookies.get('itsyou.online.apitoken')
+            if (at){
+                sessionStorage.setItem("oauthToken",at);
+            }
+        });;
 </script>
-<script src='components/user/controller.js'></script>
+<script src='components/user/authorizeController.js'></script>
 <script src='components/user/service.js'></script>
-<script src='components/organization/controller.js'></script>
-<script src='components/organization/service.js'></script>
-<script src='components/company/controller.js'></script>
-<script src='components/company/service.js'></script>
 </body>
 </html>

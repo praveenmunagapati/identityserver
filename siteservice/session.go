@@ -66,6 +66,20 @@ func (service *Service) SetLoggedInUser(w http.ResponseWriter, request *http.Req
 	return
 }
 
+//SetAPIAccessToken sets the api access token in a cookie
+//TODO: is not safe to do. Now there are also two ways of passing tokens to the client
+func (service *Service) SetAPIAccessToken(w http.ResponseWriter, token string) (err error) {
+	// Set token cookie
+	cookie := &http.Cookie{
+		Name:  "itsyou.online.apitoken",
+		Path:  "/",
+		Value: token,
+	}
+	http.SetCookie(w, cookie)
+
+	return
+}
+
 //GetLoggedInUser returns an authenticated user, or an empty string if there is none
 func (service *Service) GetLoggedInUser(request *http.Request) (username string, err error) {
 	authenticatedSession, err := service.GetSession(request, SessionInteractive, "authenticatedsession")

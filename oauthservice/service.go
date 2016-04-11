@@ -10,6 +10,8 @@ import (
 type SessionService interface {
 	//GetLoggedInUser returns an authenticated user, or an empty string if there is none
 	GetLoggedInUser(request *http.Request) (username string, err error)
+	//SetAPIAccessToken sets the api access token for this session
+	SetAPIAccessToken(w http.ResponseWriter, token string) (err error)
 }
 
 //Service is the oauthserver http service

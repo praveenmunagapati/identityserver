@@ -50,6 +50,23 @@ func redirecToLoginPage(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login?"+queryvalues.Encode(), http.StatusFound)
 }
 
+func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request) {
+	queryvalues := r.URL.Query()
+	queryvalues.Add("endpoint", r.URL.EscapedPath())
+	//TODO: redirect according the the received http method
+	http.Redirect(w, r, "/authorize?"+queryvalues.Encode(), http.StatusFound)
+}
+
+func validAuthorizationForScopes(username, clientID, requestedScopes string) (valid bool, err error) {
+
+	//TODO: check if the client still has a valid authorization for the requested scope, if not ask the user
+
+	if clientID == "itsyouonline" {
+		valid = true
+	}
+	return
+}
+
 //AuthorizeHandler is the handler of the /v1/oauth/authorize endpoint
 func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -89,9 +106,24 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 	clientID := r.Form.Get("client_id")
 	service.validateRedirectURI(redirectURI, clientID)
 
-	//requestedScopes := r.Form.Get("scope")
-	//TODO: check if the client still has a valid authorization for the requested scope, if not ask the user
-	//TODO: exception for itsyouonline, an authorization is implicit
+	requestedScopes := r.Form.Get("scope")
+	validAuthorization, err := validAuthorizationForScopes(username, clientID, requestedScopes)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !validAuthorization {
+		token, err := service.createItsYouOnlineAdminToken(username, r)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		service.sessionService.SetAPIAccessToken(w, token)
+		redirectToScopeRequestPage(w, r)
+		return
+	}
 
 	switch requestedResponseType {
 	case AuthorizationGrantCodeType:

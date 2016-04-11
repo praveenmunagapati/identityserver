@@ -118,3 +118,14 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(&response)
 	w.Header().Set("Content-type", "application/json")
 }
+
+func (service *Service) createItsYouOnlineAdminToken(username string, r *http.Request) (token string, err error) {
+	at := newAccessToken(username, "itsyouonline", "admin")
+
+	mgr := NewManager(r)
+	err = mgr.saveAccessToken(at)
+	if err == nil {
+		token = at.AccessToken
+	}
+	return
+}
