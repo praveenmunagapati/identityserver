@@ -52,49 +52,6 @@ func (api UsersAPI) usernameGet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-// Update an existing user. Updating ``username`` is not allowed. The labelled lists
-// can not be updated this way, the normal properties can (like github and facebook account).
-// It is handler for PUT /users/{username}
-func (api UsersAPI) usernamePut(w http.ResponseWriter, r *http.Request) {
-	username := mux.Vars(r)["username"]
-
-	var u User
-
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
-	userMgr := NewManager(r)
-
-	oldUser, uerr := userMgr.GetByName(username)
-	if uerr != nil {
-		log.Debug(uerr)
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-
-	if u.Username != username || u.getID() != oldUser.getID() {
-		http.Error(w, "Changing username or id is Forbidden!", http.StatusForbidden)
-		return
-	}
-
-	// Update only selected fields!
-	// Other fields should be update explicitly via their own handlers.
-	oldUser.Facebook = u.Facebook
-	oldUser.Github = u.Github
-	oldUser.PublicKeys = u.PublicKeys
-
-	if err := userMgr.Save(oldUser); err != nil {
-		log.Error("ERROR while saving user:\n", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&u)
-}
-
 func isValidLabel(label string) (valid bool) {
 	valid = true
 	labelLength := len(label)
@@ -237,6 +194,52 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+// UpdateGithubAccount is the handler for PUT /users/{username}/github
+// Update the associated github account
+func (api UsersAPI) UpdateGithubAccount(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	var githubaccount string
+
+	if err := json.NewDecoder(r.Body).Decode(&githubaccount); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	userMgr := NewManager(r)
+	err := userMgr.updateGithubAccount(username, githubaccount)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+// UpdateFacebookAccount is the handler for PUT /users/{username}/facebook
+// Update the associated facebook account
+func (api UsersAPI) UpdateFacebookAccount(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	var facebookaccount string
+
+	if err := json.NewDecoder(r.Body).Decode(&facebookaccount); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	userMgr := NewManager(r)
+	err := userMgr.updateFacebookAccount(username, facebookaccount)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 // GetUserInformation is the handler for GET /users/{username}/info

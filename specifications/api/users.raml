@@ -200,18 +200,9 @@ securedBy: [ oauth_2_0 ]
                 body:
                     application/json:
                         type: User
-    put:
-      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-      description: Update an existing user. Updating ``username`` is not allowed. The labelled lists can not be updated this way, the normal properties can (like github and facebook account).
-      responses:
-        200:
-          body:
-            application/json:
-              type: User
-        403:
-          description: Updating username is Forbidden!
+
     /emailaddresses:
-      securedBy: [oauth_2_0: { scopes: [ "organization:admin" ] } ]
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       post:
           displayName: RegisterNewEmailAddress
           description: Register a new email address
@@ -253,6 +244,29 @@ securedBy: [ oauth_2_0 ]
                 409:
                   description: The last email address can not be removed.
 
+    /github:
+      put:
+        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+        displayName: UpdateGithubAccount
+        description: Update the associated github account
+        body:
+            application/json:
+              type: string
+        responses:
+          201:
+              description: Updated
+
+    /facebook:
+      put:
+        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+        displayName: UpdateFacebookAccount
+        description: Update the associated facebook account
+        body:
+              application/json:
+                type: string
+        responses:
+            201:
+                description: Updated
 
   /{username}/info:
     get:

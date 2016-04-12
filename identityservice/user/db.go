@@ -178,6 +178,16 @@ func (m *Manager) RemoveBank(u *User, label string) error {
 		bson.M{"$unset": bson.M{bankLabel: ""}})
 }
 
+func (m *Manager) updateGithubAccount(username, githubaccount string) (err error) {
+	_, err = m.collection.UpdateAll(bson.M{"username": username}, bson.M{"$set": bson.M{"github": githubaccount}})
+	return
+}
+
+func (m *Manager) updateFacebookAccount(username, facebookaccount string) (err error) {
+	_, err = m.collection.UpdateAll(bson.M{"username": username}, bson.M{"$set": bson.M{"facebook": facebookaccount}})
+	return
+}
+
 func (u *User) getID() string {
 	return u.Id.Hex()
 }
