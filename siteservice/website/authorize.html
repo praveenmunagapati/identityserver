@@ -45,7 +45,31 @@
     <div flex layout="row" layout-fill style="padding-top: 100px;">
         <div flex></div>
         <div layout="column" flex-gt-xs="80" flex-xs="100" layout-fill ng-controller="AuthorizeController as vm">
-            <form ng-cloak method="post" action="authorize" layout="column" name="authorizeform" >
+            <div layout ng-cloak>
+                <div flex="80">
+                    <h1>{{ vm.requestingorganization }}</h1>
+                    <p>Requests authorization to see some of your information</p>
+                </div>
+            </div>
+
+            <form ng-cloak method="post" action="authorize" layout="column" name="authorizeform"   style="margin: 0px 0px 0px 0px;" >
+                <div layout="column">
+                    <md-list flex flex-gt-sm="60">
+                        <md-list-item>
+
+                            <div><i class="fa fa-user"></i>&nbsp;<md-tooltip>Username</md-tooltip></div>
+                            <div flex>
+                                Username
+                            </div>
+                        </md-list-item>
+
+                    </md-list>
+                    <div flex layout style="margin-top: 10px;">
+                        <md-button class="md-raised">Deny</md-button>
+                        <md-button type="submit" class="md-raised md-primary">Authorize</md-button>
+                        <span flex></span>
+                    </div>
+                </div>
             </form>
         </div>
         <div flex></div>
@@ -131,5 +155,6 @@
 </script>
 <script src='components/user/authorizeController.js'></script>
 <script src='components/user/service.js'></script>
+<script src='thirdpartyassets/URI.js'></script>
 </body>
 </html>

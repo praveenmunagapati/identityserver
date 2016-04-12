@@ -13,6 +13,10 @@
     function AuthorizeController($q, $rootScope, $location, $window, UserService) {
         var vm = this;
 
+        var queryParams = URI($location.absUrl()).search(true);
+        vm.requestingorganization = queryParams["client_id"];
+        vm.requestedScopes = queryParams["scope"];
+
         vm.username = $rootScope.user;
 
         vm.user = {};
@@ -35,6 +39,8 @@
                         //$window.location.href = "error" + reason.status;
                     }
                 );
+
+
         }
 
     }
