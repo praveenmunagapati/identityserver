@@ -808,18 +808,6 @@ func (api UsersAPI) DeleteAddress(w http.ResponseWriter, r *http.Request) {
 func (api UsersAPI) usernamecontractsGet(w http.ResponseWriter, r *http.Request) {
 }
 
-// Get a specific authorization
-// It is handler for GET /users/{username}/scopes/{grantedTo}
-func (api UsersAPI) usernamescopesgrantedToGet(w http.ResponseWriter, r *http.Request) {}
-
-// Update a Scope
-// It is handler for PUT /users/{username}/scopes/{grantedTo}
-func (api UsersAPI) usernamescopesgrantedToPut(w http.ResponseWriter, r *http.Request) {}
-
-// Remove a Scope, the granted organization will no longer have access the user's information.
-// It is handler for DELETE /users/{username}/scopes/{grantedTo}
-func (api UsersAPI) usernamescopesgrantedToDelete(w http.ResponseWriter, r *http.Request) {}
-
 // Get the list of notifications, these are pending invitations or approvals
 // It is handler for GET /users/{username}/notifications
 func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Request) {
@@ -853,8 +841,90 @@ func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Requ
 
 // usernameorganizationsGet is the handler for GET /users/{username}/organizations
 // Get the list organizations a user is owner of member of
-func (api UsersAPI) usernameorganizationsGet(w http.ResponseWriter, r *http.Request) {}
+func (api UsersAPI) usernameorganizationsGet(w http.ResponseWriter, r *http.Request) {
 
-// usernamescopesGet is the handler for GET /users/{username}/scopes
-// Get the list of authorization scopes
-func (api UsersAPI) usernamescopesGet(w http.ResponseWriter, r *http.Request) {}
+}
+
+// GetAllAuthorizations is the handler for GET /users/{username}/authorizations
+// Get the list of authorizations.
+func (api UsersAPI) GetAllAuthorizations(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	userMgr := NewManager(r)
+
+	authorizations, err := userMgr.GetAuthorizationsByUser(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	json.NewEncoder(w).Encode(authorizations)
+
+}
+
+// GetAuthorization is the handler for GET /users/{username}/authorizations/{grantedTo}
+// Get the authorization for a specific organization.
+func (api UsersAPI) GetAuthorization(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	grantedTo := mux.Vars(r)["grantedTo"]
+
+	userMgr := NewManager(r)
+
+	authorization, err := userMgr.GetAuthorization(username, grantedTo)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if authorization == nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-type", "application/json")
+	json.NewEncoder(w).Encode(authorization)
+}
+
+// UpdateAuthorization is the handler for PUT /users/{username}/authorizations/{grantedTo}
+// Modify which information an organization is able to see.
+func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	grantedTo := mux.Vars(r)["grantedTo"]
+
+	authorization := &Authorization{}
+
+	if err := json.NewDecoder(r.Body).Decode(authorization); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	authorization.Username = username
+	authorization.GrantedTo = grantedTo
+
+	userMgr := NewManager(r)
+
+	err := userMgr.UpdateAuthorization(authorization)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(authorization)
+}
+
+// DeleteAuthorization is the handler for DELETE /users/{username}/authorizations/{grantedTo}
+// Remove the authorization for an organization, the granted organization will no longer
+// have access the user's information.
+func (api UsersAPI) DeleteAuthorization(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	grantedTo := mux.Vars(r)["grantedTo"]
+
+	userMgr := NewManager(r)
+
+	err := userMgr.DeleteAuthorization(username, grantedTo)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

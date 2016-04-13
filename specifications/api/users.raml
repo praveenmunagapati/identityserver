@@ -11,7 +11,7 @@ types:
     maxLength: 50
     minLength: 2
 
-  Scope:
+  Authorization:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
     properties:
         username: string
@@ -464,25 +464,31 @@ securedBy: [ oauth_2_0 ]
             required: false
             maximum: 250
 
-  /{username}/scopes:
+  /{username}/authorizations:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
-        description: Get the list of authorization scopes
+        displayName: GetAllAuthorizations
+        description: Get the list of authorizations.
         responses:
             200:
                 body:
                     application/json:
-                        type: Scope[]
-  /{username}/scopes/{grantedTo}:
-    securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-    get:
-        description: Get a specific authorization
+                        type: Authorization[]
+    /{grantedTo}:
+      get:
+        displayName: GetAuthorization
+        description: Get the authorization for a specific organization.
         responses:
             200:
                 body:
                     application/json:
-                        type: Scope
-    delete:
-        description: Remove a Scope, the granted organization will no longer have access the user's information.
-    put:
-        description: Update a Scope
+                        type: Authorization
+      delete:
+        displayName: DeleteAuthorization
+        description: Remove the authorization for an organization, the granted organization will no longer have access the user's information.
+      put:
+        displayName: UpdateAuthorization
+        description: Modify which information an organization is able to see.
+        body:
+            application/json:
+                type: Authorization
