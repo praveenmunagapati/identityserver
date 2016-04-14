@@ -128,7 +128,9 @@
                'responseError': function(rejection) {
                     if (rejection.status == 401 || rejection.status == 403 || rejection.status == 419){
               			$window.location.href = "/";
-               	   }
+                    } else {
+                        $window.location.href = "error" + reason.status;
+                    }
 
                    return $q.reject(rejection);
                 }

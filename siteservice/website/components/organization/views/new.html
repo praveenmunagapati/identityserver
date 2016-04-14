@@ -1,17 +1,22 @@
 <div>
-    <form layout="column" ng-submit="vm.create()">
+    <form layout="column" ng-submit="vm.create()" name="newOrganizationForm">
         <h1>Create a new organization</h1>
         <br/>
         <md-input-container>
             <label>Organization name</label>
-            <input ng-model="vm.name" minlength="3" required type="text" autofocus></input>
-            <div ng-messages="vm.validationerrors" md-auto-hide="false">
+            <input ng-model="vm.name" required type="text" autofocus name="name"
+                   ng-change="vm.clearErrors()"
+                   ng-pattern="/^[a-zA-Z0-9 ]+$/" ng-minlength="3">
+            <div ng-messages="newOrganizationForm.name.$error">
                 <div ng-message="duplicate">This name is already taken</div>
+                <div ng-message="pattern">Invalid organization name. Only characters a-z, 0-9 and space are allowed
+                </div>
+                <div ng-message="minlength">The organization name should be at least 3 characters long</div>
             </div>
         </md-input-container>
         <md-input-container>
             <label>Primary DNS</label>
-            <input ng-model="vm.dns" type="text"></input>
+            <input ng-model="vm.dns" type="text">
         </md-input-container>
         <div layout="row">
             <md-button type="submit" class="md-raised md-primary">Create</md-button>

@@ -65,7 +65,8 @@
                 <div layout="column" flex="60">
                     <md-input-container>
                         <label>2-Factor authentication code</label>
-                        <input ng-model="totpcode" md-maxlength="6" minlength="6" required name="totpcode">
+                        <input ng-model="totpcode" md-maxlength="6" minlength="6" required name="totpcode"
+                               autocomplete="off">
                         <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
                           <div ng-message="invalidtotpcode">An invalid code was given</div>
                         </div>

@@ -7,6 +7,8 @@
 
     OrganizationService.$inject = ['$http','$q'];
 
+    // https://docs.angularjs.org/api/ngResource/service/$resource could reduce the amount of code here
+
     function OrganizationService($http, $q) {
         var apiURL =  'api/organizations';
 
@@ -20,13 +22,17 @@
             deleteAPISecret: deleteAPISecret,
             updateAPISecretLabel: updateAPISecretLabel,
             getAPISecretLabels: getAPISecretLabels,
-            getAPISecret: getAPISecret
-        }
+            getAPISecret: getAPISecret,
+            getOrganizationTree: getOrganizationTree
+        };
 
         return service;
 
-        function create(name, dns, owner){
+        function create(name, dns, owner, parentOrganization) {
             var url = apiURL;
+            if (parentOrganization) {
+                name = parentOrganization + '.' + name;
+            }
             return $http.post(url, {globalid:name,dns:dns,owners:[owner]}).then(
                 function(response) {
                     return response.data;
@@ -163,6 +169,20 @@
         function getAPISecret(globalid, label){
             var url = apiURL + '/' + globalid + '/apisecrets/' + label;
 
+            return $http
+                .get(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function getOrganizationTree(globalid) {
+            var url = apiURL + '/' + globalid + '/tree';
             return $http
                 .get(url)
                 .then(

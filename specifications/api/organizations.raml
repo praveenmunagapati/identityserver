@@ -48,6 +48,13 @@ types:
       includes:
         - admin.greenitglobe.com
 
+  OrganizationTreeItem:
+    properties:
+      globalid:
+        type: string
+      children:
+        "[]": OrganizationTreeItem
+
   member:
     properties:
       username:
@@ -289,3 +296,12 @@ securedBy: [ oauth_2_0 ]
           responses:
               204:
                 description: API secret removed
+    /tree:
+      get:
+        displayName: GetOrganizationTree
+        response:
+          200:
+            body:
+              application/json:
+                properties:
+                  "[]": OrganizationTreeItem

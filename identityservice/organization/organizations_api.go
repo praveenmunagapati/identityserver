@@ -12,6 +12,7 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 	"github.com/itsyouonline/identityserver/oauthservice"
+	"sort"
 )
 
 const itsyouonlineGlobalID = "itsyouonline"
@@ -26,7 +27,7 @@ func (api OrganizationsAPI) Get(w http.ResponseWriter, r *http.Request) {
 	orgMgr := NewManager(r)
 
 	// TODO: extract user to apply auth filters.
-	respBody, err := orgMgr.All()
+	respBody, err := orgMgr.AllRoot()
 	if err != nil {
 		log.Error("Error retrieving organizations,", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -35,6 +36,24 @@ func (api OrganizationsAPI) Get(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(respBody)
+}
+
+// Get is the handler for GET /organizations/{globalid}/tree
+// Get organization tree.
+func (api OrganizationsAPI) GetOrganizationTree(w http.ResponseWriter, r *http.Request) {
+	var rootOrganization = mux.Vars(r)["globalid"]
+	orgMgr := NewManager(r)
+	organizations, err := orgMgr.AllByRoot(rootOrganization)
+	// todo: format as a tree
+
+	if err != nil {
+		log.Error("Error retrieving organizations,", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(organizations)
 }
 
 // CreateNewOrganization is the handler for POST /organizations
@@ -75,6 +94,34 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 		log.Debug("Duplicate organization")
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
+	}
+
+	// if org.globalid is a new suborganization, add it to the `includes` property of the parent organization
+	if strings.Contains(org.Globalid, ".") {
+		var splitted = strings.Split(org.Globalid, ".")
+		var parentOrganizationGlobalid string = strings.Join(splitted[:len(splitted) - 1], "")
+		var parentOrganization, err = orgMgr.GetByName(parentOrganizationGlobalid)
+		if err != nil {
+			log.Error("Error saving organizations:", err.Error())
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}else {
+			// Check if parentOrganization.Includes already contains the globalid
+			if sort.SearchStrings(parentOrganization.Includes, org.Globalid) == len(parentOrganization.Includes) {
+				parentOrganization.Includes = append(parentOrganization.Includes, org.Globalid)
+				if err := orgMgr.Save(parentOrganization); err != nil {
+					log.Error("Error saving organizations:", err.Error())
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+			}else {
+				log.Error("Error saving parent organization, it already has this organization:", org.Globalid)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+
+		}
+
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -58,9 +58,6 @@
                             vm.notificationMessage = '';
                         }
 
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
 
@@ -70,9 +67,6 @@
                     function(data) {
                         vm.owner = data.owner;
                         vm.member = data.member;
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
 
@@ -82,9 +76,6 @@
                 .then(
                     function(data) {
                         vm.user = data;
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
         }
