@@ -57,13 +57,17 @@ func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/authorize?"+queryvalues.Encode(), http.StatusFound)
 }
 
-func validAuthorizationForScopes(username, clientID, requestedScopes string) (valid bool, err error) {
-
-	//TODO: check if the client still has a valid authorization for the requested scope, if not ask the user
+func (service *Service) validAuthorizationForScopes(r *http.Request, username, clientID, requestedScopes string) (valid bool, err error) {
 
 	if clientID == "itsyouonline" {
 		valid = true
+		return
 	}
+	valid, err = service.identityService.ValidAuthorizationForScopes(r, username, clientID, requestedScopes)
+
+	//TODO: check if the client still has a valid authorization for the requested scope
+	//TODO: how to request explicit confirmation?
+
 	return
 }
 
@@ -107,7 +111,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 	service.validateRedirectURI(redirectURI, clientID)
 
 	requestedScopes := r.Form.Get("scope")
-	validAuthorization, err := validAuthorizationForScopes(username, clientID, requestedScopes)
+	validAuthorization, err := service.validAuthorizationForScopes(r, username, clientID, requestedScopes)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

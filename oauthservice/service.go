@@ -14,15 +14,22 @@ type SessionService interface {
 	SetAPIAccessToken(w http.ResponseWriter, token string) (err error)
 }
 
+//IdentityService provides some basic knowledge about authorizations required for the oauthservice
+type IdentityService interface {
+	//ValidAuthorizationForScopes checks if there is a valid authorization for the requested scopes
+	ValidAuthorizationForScopes(r *http.Request, username string, grantedTo string, scopes string) (valid bool, err error)
+}
+
 //Service is the oauthserver http service
 type Service struct {
-	sessionService SessionService
-	router         *mux.Router
+	sessionService  SessionService
+	identityService IdentityService
+	router          *mux.Router
 }
 
 //NewService creates and initializes a Service
-func NewService(sessionService SessionService) *Service {
-	return &Service{sessionService: sessionService}
+func NewService(sessionService SessionService, identityService IdentityService) *Service {
+	return &Service{sessionService: sessionService, identityService: identityService}
 }
 
 const (

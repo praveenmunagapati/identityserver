@@ -198,10 +198,10 @@ func (m *Manager) GetAuthorizationsByUser(username string) (authorizations []Aut
 	return
 }
 
-//GetAuthorization returns the authorization for a specific organization, nil of so auhorization exists
+//GetAuthorization returns the authorization for a specific organization, nil if no such auhorization exists
 func (m *Manager) GetAuthorization(username, organization string) (authorization *Authorization, err error) {
 	authorization = &Authorization{}
-	err = m.getAuthorizationCollection().Find(bson.M{"username": username, "grantedTo": organization}).One(authorization)
+	err = m.getAuthorizationCollection().Find(bson.M{"username": username, "grantedto": organization}).One(authorization)
 	if err != nil {
 		authorization = nil
 		if err == mgo.ErrNotFound {
@@ -213,13 +213,13 @@ func (m *Manager) GetAuthorization(username, organization string) (authorization
 
 //UpdateAuthorization inserts or updates an authorization
 func (m *Manager) UpdateAuthorization(authorization *Authorization) (err error) {
-	_, err = m.getAuthorizationCollection().Upsert(bson.M{"username": authorization.Username, "grantedTo": authorization.GrantedTo}, authorization)
+	_, err = m.getAuthorizationCollection().Upsert(bson.M{"username": authorization.Username, "grantedto": authorization.GrantedTo}, authorization)
 	return
 }
 
 //DeleteAuthorization removes an authorization
 func (m *Manager) DeleteAuthorization(username, organization string) (err error) {
-	_, err = m.getAuthorizationCollection().RemoveAll(bson.M{"username": username, "grantedTo": organization})
+	_, err = m.getAuthorizationCollection().RemoveAll(bson.M{"username": username, "grantedto": organization})
 	return
 }
 

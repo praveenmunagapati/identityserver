@@ -1,6 +1,8 @@
 package identityservice
 
 import (
+	"net/http"
+
 	"github.com/gorilla/mux"
 
 	"github.com/itsyouonline/identityserver/db"
@@ -60,7 +62,7 @@ func generateCookieSecret(s int) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), err
 }
 
-// Get secret cookie from mongodb if exists otherwise, generate a new one and save it
+// GetCookieSecret gets the cookie secret from mongodb if it exists otherwise, generate a new one and save it
 func GetCookieSecret() string {
 	session := db.GetSession()
 	defer session.Close()
@@ -96,4 +98,12 @@ func GetCookieSecret() string {
 	log.Debug("Cookie secret: ", cookie.Value)
 
 	return cookie.Value
+}
+
+//ValidAuthorizationForScopes checks if there is a valid authorization for the requested scopes
+func (service *Service) ValidAuthorizationForScopes(r *http.Request, username string, grantedTo string, scopes string) (valid bool, err error) {
+	authorization, err := user.NewManager(r).GetAuthorization(username, grantedTo)
+	valid = (authorization != nil)
+	//TODO: actually check the authorization versus scopes
+	return
 }

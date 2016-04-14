@@ -52,7 +52,7 @@
                 </div>
             </div>
 
-            <form ng-cloak method="post" action="authorize" layout="column" name="authorizeform"   style="margin: 0px 0px 0px 0px;" >
+            <form ng-cloak method="post" layout="column" name="authorizeform" ng-submit="vm.authorize()"  style="margin: 0px 0px 0px 0px;" >
                 <div layout="column">
                     <md-list flex flex-gt-sm="60">
                         <md-list-item>
@@ -63,7 +63,7 @@
                         </md-list-item>
                     </md-list>
                     <div flex layout style="margin-top: 10px;">
-                        <md-button class="md-raised">Deny</md-button>
+                        <!-- <md-button class="md-raised">Deny</md-button> -->
                         <md-button type="submit" class="md-raised md-primary">Authorize</md-button>
                         <span flex></span>
                     </div>

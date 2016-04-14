@@ -18,13 +18,14 @@ func GetRouter() http.Handler {
 
 	cookieSecret := identityservice.GetCookieSecret()
 
-	siteservice := siteservice.NewService(cookieSecret)
-	siteservice.AddRoutes(r)
+	sc := siteservice.NewService(cookieSecret)
+	sc.AddRoutes(r)
 
 	apiRouter := r.PathPrefix("/api").Subrouter()
-	identityservice.NewService().AddRoutes(apiRouter)
+	is := identityservice.NewService()
+	is.AddRoutes(apiRouter)
 
-	oauthservice.NewService(siteservice).AddRoutes(r)
+	oauthservice.NewService(sc, is).AddRoutes(r)
 
 	// Add middlewares
 	router := NewRouter(r)

@@ -21,7 +21,7 @@
         return service;
 
         function get(username) {
-            var url = apiURL + '/' + username + '/notifications';
+            var url = apiURL + '/' + encodeURIComponent(username) + '/notifications';
 
             return $http
                 .get(url)
@@ -36,7 +36,7 @@
         }
 
         function accept(invitation) {
-            var url = apiURL + '/' + invitation.user + '/organizations/' + invitation.organization + '/roles/' + invitation.role ;
+            var url = apiURL + '/' + encodeURIComponent(invitation.user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role) ;
 
             return $http
                 .post(url, invitation)
@@ -51,7 +51,7 @@
         }
 
         function reject(invitation) {
-            var url = apiURL + '/' + invitation.user + '/organizations/' + invitation.organization + '/roles/' + invitation.role ;
+            var url = apiURL + '/' + encodeURIComponent(invitation.user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role) ;
 
             return $http
                 .delete(url)
@@ -79,181 +79,103 @@
             deletePhonenumber: deletePhonenumber,
             registerNewAddress: registerNewAddress,
             updateAddress: updateAddress,
-            deleteAddress: deleteAddress
+            deleteAddress: deleteAddress,
+            saveAuthorization: saveAuthorization,
+            deleteAuthorization: deleteAuthorization
 
         }
 
         return service;
 
-        function get(username) {
-            var url = apiURL + '/' + username;
+        function genericHttpCall(httpFunction, url, data) {
+            if (data){
+                return httpFunction(url, data)
+                    .then(
+                        function(response) {
+                            return response.data;
+                        },
+                        function(reason) {
+                            return $q.reject(reason);
+                        }
+                    );
+            }
+            else {
+                return httpFunction(url)
+                    .then(
+                        function(response) {
+                            return response.data;
+                        },
+                        function(reason) {
+                            return $q.reject(reason);
+                        }
+                    );
+            }
+        }
 
-            return $http
-                .get(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+        function get(username) {
+            var url = apiURL + '/' + encodeURIComponent(username);
+            return genericHttpCall($http.get, url);
         }
 
         function update(username, user) {
-            var url = apiURL + '/' + username;
-
-            return $http
-                .put(url, user)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username);
+            return genericHttpCall($http.put, url, user);
         }
 
         function registerNewEmailAddress(username, label, emailaddress) {
-            var url = apiURL + '/' + username + '/emailaddresses';
-
-            return $http
-                .post(url, {label: label, emailaddress: emailaddress})
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses';
+            return genericHttpCall($http.post, url, {label: label, emailaddress: emailaddress});
         }
 
         function updateEmailAddress(username, oldlabel, newlabel, emailaddress) {
-            var url = apiURL + '/' + username + '/emailaddresses/' + oldlabel ;
-
-            return $http
-                .put(url, {label: newlabel, emailaddress: emailaddress})
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(oldlabel) ;
+            return genericHttpCall($http.put, url, {label: newlabel, emailaddress: emailaddress});
         }
 
         function deleteEmailAddress(username, label) {
-            var url = apiURL + '/' + username + '/emailaddresses/' + label ;
-
-            return $http
-                .delete(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(label) ;
+            return genericHttpCall($http.delete, url);
         }
 
-
         function registerNewPhonenumber(username, label, phonenumber) {
-            var url = apiURL + '/' + username + '/phonenumbers';
-
-            return $http
-                .post(url, {label: label, phonenumber: phonenumber})
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers';
+            return genericHttpCall($http.post, url, {label: label, phonenumber: phonenumber});
         }
 
         function updatePhonenumber(username, oldlabel, newlabel, phonenumber) {
-            var url = apiURL + '/' + username + '/phonenumbers/' + oldlabel ;
-
-            return $http
-                .put(url, {label: newlabel, phonenumber: phonenumber})
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(oldlabel) ;
+            return genericHttpCall($http.put, url, {label: newlabel, phonenumber: phonenumber});
         }
 
         function deletePhonenumber(username, label) {
-            var url = apiURL + '/' + username + '/phonenumbers/' + label ;
-
-            return $http
-                .delete(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(label) ;
+            return genericHttpCall($http.delete, url);
         }
 
-
         function registerNewAddress(username, label, address) {
-            var url = apiURL + '/' + username + '/addresses';
-
-            return $http
-                .post(url, {label: label, address: address})
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/addresses';
+            return genericHttpCall($http.post, url, {label: label, address: address});
         }
 
         function updateAddress(username, oldlabel, newlabel, address) {
-            var url = apiURL + '/' + username + '/addresses/' + oldlabel ;
-
-            return $http
-                .put(url, {label: newlabel, address: address})
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/addresses/' + encodeURIComponent(oldlabel) ;
+            return genericHttpCall($http.put, url, {label: newlabel, address: address});
         }
 
         function deleteAddress(username, label) {
-            var url = apiURL + '/' + username + '/addresses/' + label ;
-
-            return $http
-                .delete(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var url = apiURL + '/' + encodeURIComponent(username) + '/addresses/' + encodeURIComponent(label) ;
+            return genericHttpCall($http.delete, url);
         }
 
+        function saveAuthorization(authorization) {
+            var url = apiURL + '/' +  encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo);
+            return genericHttpCall($http.put, url, authorization);
+        }
 
-
+        function deleteAuthorization(username, grantedTo) {
+            var url = apiURL + '/' +  encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo)
+            return genericHttpCall($http.delete, url);
+        }
 
 
     }

@@ -21,6 +21,10 @@
 
         vm.user = {};
 
+
+        vm.authorize = authorize;
+
+
         activate();
 
         function activate() {
@@ -36,12 +40,30 @@
                         vm.user = data;
                     },
                     function(reason) {
-                        //$window.location.href = "error" + reason.status;
+                        $window.location.href = "error" + reason.status;
                     }
                 );
-
-
         }
+
+        function authorize() {
+            UserService
+                .saveAuthorization({username:vm.username, grantedTo:vm.requestingorganization})
+                .then(
+                    function(data) {
+                        var u = URI($location.absUrl());
+                        var queryParams = u.search(true);
+                        var endpoint = queryParams["endpoint"];
+                        delete queryParams.endpoint;
+                        u.pathname(endpoint);
+                        u.search(queryParams);
+                        $window.location.href = u.toString();
+                    },
+                    function(reason) {
+                        $window.location.href = "error" + reason.status;
+                    }
+                );
+        }
+
 
     }
 
