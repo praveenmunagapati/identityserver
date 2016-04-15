@@ -3,7 +3,7 @@
         <div layout>
             <div flex="80">
                 <p>Organization</p>
-                <h1>{{ vm.organization.globalid }}</h1>
+                <h1>{{ ::vm.getOrganizationDisplayname(vm.organization.globalid) }}</h1>
             </div>
             <div flex>
 
@@ -14,7 +14,7 @@
             <md-card flex="100">
                 <md-card-content flex="100" layout="column">
                     <md-tabs flex="100">
-                        <md-tab>
+                        <md-tab md-on-select="vm.fetchInvitations()">
                             <md-tab-label><i class="fa fa-user"></i>&nbsp;People</md-tab-label>
                             <md-tab-body layout="row">
 
@@ -37,15 +37,15 @@
                                     </md-list-item>
                                 </md-list>
 
-                                <md-list class="md-dense" ng-if="vm.invitations.length > 0">
+                                <md-list class="md-dense" ng-if="vm.hasEditPermission && vm.invitations.length > 0">
                                     <md-subheader>Pending invitations</md-subheader>
                                     <md-list-item class="md-1-line" ng-repeat="invite in vm.invitations">
                                             <h4 flex="30"> {{ invite.user }}</h4><h4 flex class="md-subhead">{{ {member:"Member",owner:"Owner"}[invite.role] }}</h4>
                                     </md-list-item>
-                                    </md-list-item>
                                 </md-list>
 
-                                <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)">
+                                <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)"
+                                           ng-if="vm.hasEditPermission">
                                     <i class="fa fa-user-plus"></i> Invite someone
                                     <md-tooltip ng-cloak>Invite someone to join
                                         {{::vm.getOrganizationDisplayname(vm.organization.globalid)}}
@@ -62,20 +62,19 @@
                         <md-tab>
                             <md-tab-label><i class="fa fa-sitemap"></i>&nbsp;Structure</md-tab-label>
                             <md-tab-body>
-                                <md-button class="md-raised md-primary"
+                                <div layout="row" layout-align="end start">
+                                    <md-button class="md-primary"
                                            ng-href="#/neworganization/{{ ::vm.getOrganizationDisplayname(vm.organization.globalid) }}">
                                     <i class="fa fa-plus"></i> Create suborganization
                                 </md-button>
-                                <span ng-if="vm.creating">
-                                    Click on the organization which you want to create a suborganization for
-                                </span>
+                                </div>
                                 <div class="tree">
                                     <ng-include src="'/components/organization/views/treeItem.html'"
                                                 onload="tree = vm.organizationTree;"></ng-include>
                                 </div>
                             </md-tab-body>
                         </md-tab>
-                        <md-tab flex="100">
+                        <md-tab flex="100" ng-if="vm.hasEditPermission" md-on-select="vm.fetchAPISecretLabels()">
                             <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
                             <md-tab-body flex="100">
 

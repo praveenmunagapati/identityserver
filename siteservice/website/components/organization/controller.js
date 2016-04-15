@@ -9,7 +9,7 @@
 
     OrganizationController.$inject = ['$rootScope', '$location', '$routeParams', 'OrganizationService', '$window', '$scope'];
     OrganizationDetailController.$inject = [
-        '$location', '$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia'];
+        '$location', '$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia', '$rootScope'];
 
     function OrganizationController($rootScope, $location, $routeParams, OrganizationService, $window, $scope) {
         var vm = this;
@@ -56,19 +56,22 @@
         }
     }
 
-    function OrganizationDetailController($location, $routeParams, $window, OrganizationService, $mdDialog, $mdMedia) {
+    function OrganizationDetailController($location, $routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope) {
         var vm = this,
             globalid = $routeParams.globalid;
         vm.invitations = [];
         vm.apisecretlabels = [];
         vm.organization = {};
         vm.organizationTree = {};
+        vm.userDetails = {};
+        vm.hasEditPermission = false;
 
         vm.showInvitationDialog = showInvitationDialog;
         vm.showAPICreationDialog = showAPICreationDialog;
         vm.showAPISecretDialog = showAPISecretDialog;
         vm.getOrganizationDisplayname = getOrganizationDisplayname;
-
+        vm.fetchInvitations = fetchInvitations;
+        vm.fetchAPISecretLabels = fetchAPISecretLabels;
         activate();
 
         function activate() {
@@ -81,22 +84,14 @@
                 .then(
                     function(data) {
                         vm.organization = data;
+                        vm.hasEditPermission = vm.organization.owners.indexOf($rootScope.user) !== -1;
+                        fetchInvitations();
                     },
                     function(reason) {
                         $window.location.href = "error" + reason.status;
                     }
                 );
 
-            OrganizationService
-                .getInvitations(globalid)
-                .then(
-                    function(data) {
-                        vm.invitations = data;
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
-                    }
-                );
             // TODO: Create GetOrganizationTree handler on server
             // OrganizationService.getOrganizationTree(globalid)
             //     .then(function (data) {
@@ -120,11 +115,29 @@
                     }
                 ]
             }];
-            fetchAPISecretLabels();
         }
 
-        function fetchAPISecretLabels(){
+        function fetchInvitations() {
+            if (!vm.hasEditPermission || vm.invitations.length) {
+                return;
+            }
+            OrganizationService
+                .getInvitations(globalid)
+                .then(
+                    function (data) {
+                        vm.invitations = data;
+                    },
+                    function (reason) {
+                        $window.location.href = "error" + reason.status;
+                    }
+                );
+        }
 
+
+        function fetchAPISecretLabels(){
+            if (!vm.hasEditPermission || vm.apisecretlabels.length) {
+                return;
+            }
             OrganizationService
                 .getAPISecretLabels(globalid)
                 .then(
