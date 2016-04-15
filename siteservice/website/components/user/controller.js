@@ -26,6 +26,8 @@
 
         vm.user = {};
 
+        vm.loaded = {};
+
         vm.checkSelected = checkSelected;
         vm.accept = accept;
         vm.reject = reject;
@@ -38,17 +40,18 @@
         vm.showAddressDetailDialog = showAddressDetailDialog;
         vm.showAddAddressDialog = showAddAddressDialog;
 
-        activate();
+        vm.loadNotifications = loadNotifications;
+        vm.loadOrganizations = loadOrganizations;
+        vm.loadUser = loadUser;
 
-        function activate() {
-            fetch();
-        }
-
-        function fetch() {
+        function loadNotifications() {
+            if (vm.loaded.notifications) {
+                return;
+            }
             NotificationService
                 .get(vm.username)
                 .then(
-                    function(data) {
+                    function (data) {
                         vm.notifications = data;
                         var count = getPendingCount(data.invitations);
 
@@ -57,25 +60,37 @@
                         } else {
                             vm.notificationMessage = '';
                         }
+                        vm.loaded.notifications = true;
 
                     }
                 );
+        }
 
+        function loadOrganizations() {
+            if (vm.loaded.organizations) {
+                return;
+            }
             OrganizationService
                 .getUserOrganizations(vm.username)
                 .then(
-                    function(data) {
+                    function (data) {
                         vm.owner = data.owner;
                         vm.member = data.member;
+                        vm.loaded.organizations = true;
                     }
                 );
+        }
 
-
+        function loadUser() {
+            if (vm.loaded.user) {
+                return;
+            }
             UserService
                 .get(vm.username)
                 .then(
-                    function(data) {
+                    function (data) {
                         vm.user = data;
+                        vm.loaded.user = true;
                     }
                 );
         }
