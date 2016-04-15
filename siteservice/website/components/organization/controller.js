@@ -1,7 +1,5 @@
 (function() {
     'use strict';
-
-
     angular
         .module("itsyouonlineApp")
         .controller("OrganizationController", OrganizationController)
@@ -9,17 +7,17 @@
         .controller("InvitationDialogController", InvitationDialogController);
 
 
-    OrganizationController.$inject = ['$rootScope', '$location','OrganizationService','$window'];
+    OrganizationController.$inject = ['$rootScope', '$location', '$routeParams', 'OrganizationService', '$window', '$scope'];
     OrganizationDetailController.$inject = [
         '$location', '$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia'];
 
-    function OrganizationController($rootScope, $location, OrganizationService, $window) {
+    function OrganizationController($rootScope, $location, $routeParams, OrganizationService, $window, $scope) {
         var vm = this;
         vm.create = create;
+        var parentOrganization = $routeParams.globalid;
 
         vm.username = $rootScope.user;
-        vm.validationerrors = {};
-
+        vm.clearErrors = clearErrors;
         activate();
 
         function activate() {
@@ -27,29 +25,34 @@
         }
 
         function create(){
-            var dns = []
+            if (!$scope.newOrganizationForm.$valid) {
+                return;
+            }
+            var dns = [];
 
             if (vm.dns) {
-                dns.push(vm.dns)
+                dns.push(vm.dns);
             }
 
-            vm.validationerrors = {};
-
             OrganizationService
-                .create(vm.name, dns, vm.username)
+                .create(vm.name, dns, vm.username, parentOrganization)
                 .then(
                     function(data){
                         $location.path("/organizations/" + vm.name);
                     },
                     function(reason){
                         if (reason.status == 409) {
-                             vm.validationerrors = {duplicate: true};
+                            $scope.newOrganizationForm.name.$setValidity('duplicate', false);
                         }
                         else{
                             $window.location.href = "error" + reason.status;
                         }
                     }
                 );
+        }
+
+        function clearErrors() {
+            $scope.newOrganizationForm.name.$setValidity('duplicate', true);
         }
     }
 
@@ -59,10 +62,12 @@
         vm.invitations = [];
         vm.apisecretlabels = [];
         vm.organization = {};
+        vm.organizationTree = {};
 
         vm.showInvitationDialog = showInvitationDialog;
         vm.showAPICreationDialog = showAPICreationDialog;
         vm.showAPISecretDialog = showAPISecretDialog;
+        vm.getOrganizationDisplayname = getOrganizationDisplayname;
 
         activate();
 
@@ -92,6 +97,29 @@
                         $window.location.href = "error" + reason.status;
                     }
                 );
+            // TODO: Create GetOrganizationTree handler on server
+            // OrganizationService.getOrganizationTree(globalid)
+            //     .then(function (data) {
+            //         vm.organizationTree = data;
+            //     }, function (error) {
+            //         $window.location.href = "error" + error.status;
+            //     });
+            vm.organizationTree = [{
+                "globalid": "Root organization 1",
+                "children": [
+                    {
+                        "globalid": "Root organization 1.Suborganization 1"
+                    },
+                    {
+                        "globalid": "Root organization 1.Suborganization 2",
+                        "children": [
+                            {
+                                "globalid": 'Root organization 1.Suborganization 2.sub-suborganization 1'
+                            }
+                        ]
+                    }
+                ]
+            }];
             fetchAPISecretLabels();
         }
 
@@ -110,7 +138,7 @@
         }
 
         function showInvitationDialog(ev) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
                 controller: InvitationDialogController,
                 templateUrl: 'components/organization/views/invitationdialog.html',
@@ -133,7 +161,7 @@
 
 
         function showAPICreationDialog(ev) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
                 controller: APISecretDialogController,
                 templateUrl: 'components/organization/views/apisecretdialog.html',
@@ -192,6 +220,12 @@
                 });
         }
 
+        function getOrganizationDisplayname(globalid) {
+            if (globalid) {
+                var splitted = globalid.split('.');
+                return splitted[splitted.length - 1];
+            }
+        }
     }
 
     function InvitationDialogController($scope, $mdDialog, organization, OrganizationService, $window) {

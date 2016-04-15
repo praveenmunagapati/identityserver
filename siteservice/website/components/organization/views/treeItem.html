@@ -1,0 +1,10 @@
+<ul>
+    <li ng-repeat="child in tree track by child.globalid"
+        ng-class="{'active-organization': vm.organization.globalid === child.globalid}">
+        <a ng-href="#/organizations/{{ ::child.globalid }}">{{ ::vm.getOrganizationDisplayname(child.globalid) }}
+        </a>
+        <ng-include ng-if="child.children.length"
+                    src="'/components/organization/views/treeItem.html'"
+                    onload="tree = child.children;"></ng-include>
+    </li>
+</ul>

@@ -44,12 +44,24 @@ func NewManager(r *http.Request) *Manager {
 	}
 }
 
-// All get all organizations.
+// AllRoot get all root organizations.
 // TODO: this method can take username(i.e. owner or members?) as filtering parameter.
-func (m *Manager) All() ([]Organization, error) {
+func (m *Manager) AllRoot() ([]Organization, error) {
 	organizations := []Organization{}
+	//query in mongodb shell: db.organizations.find({"globalid": {"$not":/\./}})
+	var qry = bson.M{"globalid":  bson.M{"$not":bson.RegEx{`/\./`, ""}}}
+	if err := m.collection.Find(qry).All(&organizations); err != nil {
+		return nil, err
+	}
 
-	if err := m.collection.Find(nil).All(&organizations); err != nil {
+	return organizations, nil
+}
+
+// AllByRoot returns all organizations which have {globalID} as parent
+func (m *Manager) AllByRoot(globalID string) ([]Organization, error) {
+	organizations := []Organization{}
+	var qry = bson.M{"globalid":  bson.M{"$regex":bson.RegEx{"/^(" + globalID + ").*/", ""}}}
+	if err := m.collection.Find(qry).All(&organizations); err != nil {
 		return nil, err
 	}
 

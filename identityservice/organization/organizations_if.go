@@ -13,6 +13,9 @@ import (
 type OrganizationsInterface interface { // Get is the handler for GET /organizations
 	// Get organizations. Authorization limits are applied to requesting user.
 	Get(http.ResponseWriter, *http.Request)
+	// GetOrganizationTree is the handler for GET /organizations/{globalid}/tree
+	// Get organizations tree
+	GetOrganizationTree(http.ResponseWriter, *http.Request)
 	// CreateNewOrganization is the handler for POST /organizations
 	// Create a new organization. 1 user should be in the owners list. Validation is performed
 	// to check if the securityScheme allows management on this user.
@@ -80,4 +83,5 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetAPISecret))).Methods("GET")
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateAPISecretLabel))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteAPISecret))).Methods("DELETE")
+	r.Handle("/organizations/{globalid}/tree", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetOrganizationTree))).Methods("GET")
 }

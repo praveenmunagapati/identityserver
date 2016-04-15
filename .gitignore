@@ -26,3 +26,4 @@ identityserver
 
 node_modules
 siteservice/apiconsole/dist
+.idea

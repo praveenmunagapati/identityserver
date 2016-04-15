@@ -47,7 +47,9 @@
 
                                 <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)">
                                     <i class="fa fa-user-plus"></i> Invite someone
-                                    <md-tooltip ng-cloak>Invite someone to join {{vm.organization.globalid}}</md-tooltip>
+                                    <md-tooltip ng-cloak>Invite someone to join
+                                        {{::vm.getOrganizationDisplayname(vm.organization.globalid)}}
+                                    </md-tooltip>
                                 </md-button>
 
                             </md-tab-body>
@@ -60,6 +62,17 @@
                         <md-tab>
                             <md-tab-label><i class="fa fa-sitemap"></i>&nbsp;Structure</md-tab-label>
                             <md-tab-body>
+                                <md-button class="md-raised md-primary"
+                                           ng-href="#/neworganization/{{ ::vm.getOrganizationDisplayname(vm.organization.globalid) }}">
+                                    <i class="fa fa-plus"></i> Create suborganization
+                                </md-button>
+                                <span ng-if="vm.creating">
+                                    Click on the organization which you want to create a suborganization for
+                                </span>
+                                <div class="tree">
+                                    <ng-include src="'/components/organization/views/treeItem.html'"
+                                                onload="tree = vm.organizationTree;"></ng-include>
+                                </div>
                             </md-tab-body>
                         </md-tab>
                         <md-tab flex="100">
@@ -80,7 +93,9 @@
 
                                 <md-button class="md-primary">
                                     <i class="fa fa-plus"></i> Add domain name
-                                    <md-tooltip>Add a domain name owned by {{vm.organization.globalid}}</md-tooltip>
+                                    <md-tooltip>Add a domain name owned by
+                                        {{::vm.getOrganizationDisplayname(vm.organization.globalid)}}
+                                    </md-tooltip>
                                 </md-button>
 
 
