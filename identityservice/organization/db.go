@@ -7,6 +7,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/db"
 )
 
@@ -44,23 +45,22 @@ func NewManager(r *http.Request) *Manager {
 	}
 }
 
-// AllRoot get all root organizations.
-// TODO: this method can take username(i.e. owner or members?) as filtering parameter.
-func (m *Manager) AllRoot() ([]Organization, error) {
-	organizations := []Organization{}
-	//query in mongodb shell: db.organizations.find({"globalid": {"$not":/\./}})
-	var qry = bson.M{"globalid":  bson.M{"$not":bson.RegEx{`/\./`, ""}}}
-	if err := m.collection.Find(qry).All(&organizations); err != nil {
-		return nil, err
-	}
+// GetOrganizations gets a list of organizations.
+func (m *Manager) GetOrganizations(organizationIDs []string) ([]Organization, error) {
+	var organizations []Organization
 
-	return organizations, nil
+	err := m.collection.Find(bson.M{"globalid": bson.M{"$in": organizationIDs}}).All(&organizations)
+
+	return organizations, err
 }
 
-// AllByRoot returns all organizations which have {globalID} as parent
-func (m *Manager) AllByRoot(globalID string) ([]Organization, error) {
-	organizations := []Organization{}
-	var qry = bson.M{"globalid":  bson.M{"$regex":bson.RegEx{"/^(" + globalID + ").*/", ""}}}
+// GetSubOrganizations returns all organizations which have {globalID} as parent (including the organization with {globalID} as globalid)
+//TODO: validate globalID since it is appended in the query
+//TODO: put an index on the globalid field
+func (m *Manager) GetSubOrganizations(globalID string) ([]Organization, error) {
+	var organizations = make([]Organization, 0, 0)
+	logrus.Debug("Fetching suborganizations for ", globalID)
+	var qry = bson.M{"globalid": bson.M{"$regex": bson.RegEx{"^" + globalID + `\.`, ""}}}
 	if err := m.collection.Find(qry).All(&organizations); err != nil {
 		return nil, err
 	}
@@ -132,7 +132,6 @@ func (m *Manager) Exists(globalID string) bool {
 func (m *Manager) Create(organization *Organization) error {
 	// TODO: Validation!
 
-	organization.Id = bson.NewObjectId()
 	err := m.collection.Insert(organization)
 	if mgo.IsDup(err) {
 		return db.ErrDuplicate
@@ -146,15 +145,6 @@ func (m *Manager) Save(organization *Organization) error {
 
 	// TODO: Save
 	return errors.New("Save is not implemented yet")
-}
-
-// Delete a organization.
-func (m *Manager) Delete(organization *Organization) error {
-	if organization.Id == "" {
-		return errors.New("organization not stored")
-	}
-
-	return m.collection.RemoveId(organization.Id)
 }
 
 // SaveDNS save or update DNS
@@ -197,8 +187,4 @@ func (m *Manager) RemoveOwner(organization *Organization, owner string) error {
 	return m.collection.Update(
 		bson.M{"globalid": organization.Globalid},
 		bson.M{"$pull": bson.M{"owners": owner}})
-}
-
-func (o *Organization) GetId() string {
-	return o.Id.Hex()
 }

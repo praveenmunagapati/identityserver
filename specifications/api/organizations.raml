@@ -52,8 +52,7 @@ types:
     properties:
       globalid:
         type: string
-      children:
-        "[]": OrganizationTreeItem
+      children: OrganizationTreeItem[]
 
   member:
     properties:
@@ -92,15 +91,6 @@ securedBy: [ oauth_2_0 ]
             type: Organization
       401:
         description: Unauthorized
-  get:
-    description: |
-      Get organizations. Authorization limits are applied to requesting user.
-    responses:
-      200:
-        body:
-          application/json:
-            type: Organization[]
-
   /{globalid}:
     get:
       securedBy: [oauth_2_0: { scopes: [ "organization:member", "organization:owner" ] } ]
@@ -129,7 +119,20 @@ securedBy: [ oauth_2_0 ]
           description: Unauthorized
         404:
           description: Not found
-
+    post:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+      displayName: CreateNewSubOrganization
+      description: Create a new suborganization.
+      body:
+          application/json:
+            type: Organization
+      responses:
+          201:
+            body:
+              application/json:
+                type: Organization
+          401:
+            description: Unauthorized
     /members:
       post:
         securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

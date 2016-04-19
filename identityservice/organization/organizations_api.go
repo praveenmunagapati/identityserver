@@ -8,11 +8,12 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 
+	"sort"
+
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 	"github.com/itsyouonline/identityserver/oauthservice"
-	"sort"
 )
 
 const itsyouonlineGlobalID = "itsyouonline"
@@ -21,39 +22,69 @@ const itsyouonlineGlobalID = "itsyouonline"
 type OrganizationsAPI struct {
 }
 
-// Get is the handler for GET /organizations
-// Get organizations. Authorization limits are applied to requesting user.
-func (api OrganizationsAPI) Get(w http.ResponseWriter, r *http.Request) {
-	orgMgr := NewManager(r)
+// byGlobalID implements sort.Interface for []Organization based on
+// the GlobalID field.
+type byGlobalID []Organization
 
-	// TODO: extract user to apply auth filters.
-	respBody, err := orgMgr.AllRoot()
-	if err != nil {
-		log.Error("Error retrieving organizations,", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
+func (a byGlobalID) Len() int           { return len(a) }
+func (a byGlobalID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byGlobalID) Less(i, j int) bool { return a[i].Globalid < a[j].Globalid }
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(respBody)
-}
-
-// Get is the handler for GET /organizations/{globalid}/tree
+// GetOrganizationTree is the handler for GET /organizations/{globalid}/tree
 // Get organization tree.
 func (api OrganizationsAPI) GetOrganizationTree(w http.ResponseWriter, r *http.Request) {
-	var rootOrganization = mux.Vars(r)["globalid"]
+	var requestedOrganization = mux.Vars(r)["globalid"]
+	//TODO: validate input
+	parentGlobalID := ""
+	var parentGlobalIDs = make([]string, 0, 1)
+	for _, localParentID := range strings.Split(requestedOrganization, ".") {
+		if parentGlobalID == "" {
+			parentGlobalID = localParentID
+		} else {
+			parentGlobalID = parentGlobalID + "." + localParentID
+		}
+
+		parentGlobalIDs = append(parentGlobalIDs, parentGlobalID)
+	}
+
 	orgMgr := NewManager(r)
-	organizations, err := orgMgr.AllByRoot(rootOrganization)
-	// todo: format as a tree
+
+	parentOrganizations, err := orgMgr.GetOrganizations(parentGlobalIDs)
 
 	if err != nil {
-		log.Error("Error retrieving organizations,", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
+	suborganizations, err := orgMgr.GetSubOrganizations(requestedOrganization)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	allOrganizations := append(parentOrganizations, suborganizations...)
+
+	sort.Sort(byGlobalID(allOrganizations))
+
+	//Build a treestructure
+	var orgTree *OrganizationTreeItem
+	orgTreeIndex := make(map[string]OrganizationTreeItem)
+	for _, org := range allOrganizations {
+		newTreeItem := OrganizationTreeItem{GlobalID: org.Globalid, Children: make([]OrganizationTreeItem, 0, 0)}
+		orgTreeIndex[org.Globalid] = newTreeItem
+		if orgTree == nil {
+			orgTree = &newTreeItem
+		} else {
+			path := strings.Split(org.Globalid, ".")
+			localName := path[len(path)-1]
+			parentTreeItem := orgTreeIndex[strings.TrimSuffix(org.Globalid, "."+localName)]
+			parentTreeItem.Children = append(parentTreeItem.Children, newTreeItem)
+		}
+
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(organizations)
+	json.NewEncoder(w).Encode(orgTree)
 }
 
 // CreateNewOrganization is the handler for POST /organizations
@@ -67,6 +98,47 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+
+	if strings.Contains(org.Globalid, ".") {
+		log.Debug("globalid contains a '.'")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	api.actualOrganizationCreation(org, w, r)
+
+}
+
+// CreateNewSubOrganization is the handler for POST /organizations/{globalid}
+// Create a new suborganization.
+func (api OrganizationsAPI) CreateNewSubOrganization(w http.ResponseWriter, r *http.Request) {
+	parent := mux.Vars(r)["globalid"]
+	var org Organization
+
+	if err := json.NewDecoder(r.Body).Decode(&org); err != nil {
+		log.Debug("Error decoding the organization:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !strings.HasPrefix(org.Globalid, parent+".") {
+		log.Debug("GlobalID does not start with the parent globalID")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	localid := strings.TrimPrefix(org.Globalid, parent+".")
+	if strings.Contains(localid, ".") {
+		log.Debug("localid contains a '.'")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	api.actualOrganizationCreation(org, w, r)
+
+}
+
+func (api OrganizationsAPI) actualOrganizationCreation(org Organization, w http.ResponseWriter, r *http.Request) {
 
 	if strings.TrimSpace(org.Globalid) == itsyouonlineGlobalID {
 		log.Debug("Duplicate organization")
@@ -85,7 +157,7 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 	err := orgMgr.Create(&org)
 
 	if err != nil && err != db.ErrDuplicate {
-		log.Error("Error saving organizations:", err.Error())
+		log.Error(err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -94,34 +166,6 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 		log.Debug("Duplicate organization")
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
-	}
-
-	// if org.globalid is a new suborganization, add it to the `includes` property of the parent organization
-	if strings.Contains(org.Globalid, ".") {
-		var splitted = strings.Split(org.Globalid, ".")
-		var parentOrganizationGlobalid string = strings.Join(splitted[:len(splitted) - 1], "")
-		var parentOrganization, err = orgMgr.GetByName(parentOrganizationGlobalid)
-		if err != nil {
-			log.Error("Error saving organizations:", err.Error())
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}else {
-			// Check if parentOrganization.Includes already contains the globalid
-			if sort.SearchStrings(parentOrganization.Includes, org.Globalid) == len(parentOrganization.Includes) {
-				parentOrganization.Includes = append(parentOrganization.Includes, org.Globalid)
-				if err := orgMgr.Save(parentOrganization); err != nil {
-					log.Error("Error saving organizations:", err.Error())
-					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-					return
-				}
-			}else {
-				log.Error("Error saving parent organization, it already has this organization:", org.Globalid)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
-
-		}
-
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -166,14 +210,14 @@ func (api OrganizationsAPI) globalidPut(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if org.Globalid != globalid || org.GetId() != oldOrg.GetId() {
+	if org.Globalid != globalid {
 		http.Error(w, "Changing globalid or id is Forbidden!", http.StatusForbidden)
 		return
 	}
 
 	// Update only certain fields
 	oldOrg.PublicKeys = org.PublicKeys
-	oldOrg.Dns = org.Dns
+	oldOrg.DNS = org.DNS
 
 	if err := orgMgr.Save(oldOrg); err != nil {
 		log.Error("Error while saving organization: ", err.Error())
@@ -351,8 +395,8 @@ func (api OrganizationsAPI) globalidownersusernameDelete(w http.ResponseWriter, 
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// GetPendingInvitations is the handler for GET /organizations/{globalid}/invitations
 // Get the list of pending invitations for users to join this organization.
-// It is handler for GET /organizations/{globalid}/invitations
 func (api OrganizationsAPI) GetPendingInvitations(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
@@ -378,15 +422,15 @@ func (api OrganizationsAPI) GetPendingInvitations(w http.ResponseWriter, r *http
 	json.NewEncoder(w).Encode(pendingInvites)
 }
 
+// RemovePendingInvitation is the handler for DELETE /organizations/{globalid}/invitations/{username}
 // Cancel a pending invitation.
-// It is handler for DELETE /organizations/{globalid}/invitations/{username}
 func (api OrganizationsAPI) RemovePendingInvitation(w http.ResponseWriter, r *http.Request) {
 	log.Error("RemovePendingInvitation is not implemented")
 }
 
+// GetContracts is the handler for GET /organizations/{globalid}/contracts
 // Get the contracts where the organization is 1 of the parties. Order descending by
 // date.
-// It is handler for GET /organizations/{globalid}/contracts
 func (api OrganizationsAPI) GetContracts(w http.ResponseWriter, r *http.Request) {
 	log.Error("GetContracts is not implemented")
 }

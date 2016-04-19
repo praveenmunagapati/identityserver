@@ -1,15 +1,11 @@
 package organization
 
-import "gopkg.in/mgo.v2/bson"
-
 type Organization struct {
-	Id         bson.ObjectId `json:"-" bson:"_id,omitempty"`
-	Dns        []string      `json:"dns"`
-	Globalid   string        `json:"globalid"`
-	Includes   []string      `json:"includes"`
-	Members    []string      `json:"members"`
-	Owners     []string      `json:"owners"`
-	PublicKeys []string      `json:"publicKeys"`
+	DNS        []string `json:"dns"`
+	Globalid   string   `json:"globalid"`
+	Members    []string `json:"members"`
+	Owners     []string `json:"owners"`
+	PublicKeys []string `json:"publicKeys"`
 }
 
 // IsValid performs basic validation on the content of an organizations fields

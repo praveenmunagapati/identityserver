@@ -10,19 +10,16 @@ import (
 )
 
 // OrganizationsInterface is interface for /organizations root endpoint
-type OrganizationsInterface interface { // Get is the handler for GET /organizations
-	// Get organizations. Authorization limits are applied to requesting user.
-	Get(http.ResponseWriter, *http.Request)
-	// GetOrganizationTree is the handler for GET /organizations/{globalid}/tree
-	// Get organizations tree
-	GetOrganizationTree(http.ResponseWriter, *http.Request)
-	// CreateNewOrganization is the handler for POST /organizations
+type OrganizationsInterface interface { // CreateNewOrganization is the handler for POST /organizations
 	// Create a new organization. 1 user should be in the owners list. Validation is performed
 	// to check if the securityScheme allows management on this user.
 	CreateNewOrganization(http.ResponseWriter, *http.Request)
 	// globalidGet is the handler for GET /organizations/{globalid}
 	// Get organization info
 	globalidGet(http.ResponseWriter, *http.Request)
+	// CreateNewSubOrganization is the handler for POST /organizations/{globalid}
+	// Create a new suborganization.
+	CreateNewSubOrganization(http.ResponseWriter, *http.Request)
 	// globalidPut is the handler for PUT /organizations/{globalid}
 	// Update organization info
 	globalidPut(http.ResponseWriter, *http.Request)
@@ -63,13 +60,15 @@ type OrganizationsInterface interface { // Get is the handler for GET /organizat
 	// DeleteAPISecret is the handler for DELETE /organizations/{globalid}/apisecrets/{label}
 	// Removes an API secret
 	DeleteAPISecret(http.ResponseWriter, *http.Request)
+	// GetOrganizationTree is the handler for GET /organizations/{globalid}/tree
+	GetOrganizationTree(http.ResponseWriter, *http.Request)
 }
 
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
 func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
-	r.Handle("/organizations", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.Get))).Methods("GET")
 	r.Handle("/organizations", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.CreateNewOrganization))).Methods("POST")
 	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:member", "organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidGet))).Methods("GET")
+	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateNewSubOrganization))).Methods("POST")
 	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidPut))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/members", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidmembersPost))).Methods("POST")
 	r.Handle("/organizations/{globalid}/members/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidmembersusernameDelete))).Methods("DELETE")
@@ -83,5 +82,5 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetAPISecret))).Methods("GET")
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateAPISecretLabel))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteAPISecret))).Methods("DELETE")
-	r.Handle("/organizations/{globalid}/tree", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetOrganizationTree))).Methods("GET")
+	r.Handle("/organizations/{globalid}/tree", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.GetOrganizationTree))).Methods("GET")
 }
