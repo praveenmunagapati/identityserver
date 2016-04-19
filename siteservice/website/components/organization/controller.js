@@ -62,7 +62,7 @@
         vm.invitations = [];
         vm.apisecretlabels = [];
         vm.organization = {};
-        vm.organizationTree = {};
+        vm.organizationRoot = {};
         vm.userDetails = {};
         vm.hasEditPermission = false;
 
@@ -92,29 +92,13 @@
                     }
                 );
 
-            // TODO: Create GetOrganizationTree handler on server
-            // OrganizationService.getOrganizationTree(globalid)
-            //     .then(function (data) {
-            //         vm.organizationTree = data;
-            //     }, function (error) {
-            //         $window.location.href = "error" + error.status;
-            //     });
-            vm.organizationTree = [{
-                "globalid": "Root organization 1",
-                "children": [
-                    {
-                        "globalid": "Root organization 1.Suborganization 1"
-                    },
-                    {
-                        "globalid": "Root organization 1.Suborganization 2",
-                        "children": [
-                            {
-                                "globalid": 'Root organization 1.Suborganization 2.sub-suborganization 1'
-                            }
-                        ]
-                    }
-                ]
-            }];
+            OrganizationService.getOrganizationTree(globalid)
+                .then(function (data) {
+                    vm.organizationRoot.children = [];
+                    vm.organizationRoot.children.push(data);
+                }, function (error) {
+                    $window.location.href = "error" + error.status;
+                });
         }
 
         function fetchInvitations() {

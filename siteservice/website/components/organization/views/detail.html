@@ -69,8 +69,9 @@
                                 </md-button>
                                 </div>
                                 <div class="tree">
-                                    <ng-include src="'/components/organization/views/treeItem.html'"
-                                                onload="tree = vm.organizationTree;"></ng-include>
+                                    <ul ng-repeat="tree in vm.organizationRoot.children">
+                                        <ng-include src="'/components/organization/views/treeItem.html'"></ng-include>
+                                    </ul>
                                 </div>
                             </md-tab-body>
                         </md-tab>
