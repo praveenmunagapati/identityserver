@@ -196,51 +196,38 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// UpdateGithubAccount is the handler for PUT /users/{username}/github
-// Update the associated github account
-func (api UsersAPI) UpdateGithubAccount(w http.ResponseWriter, r *http.Request) {
+// DeleteGithubAccount is the handler for DELETE /users/{username}/github
+// Delete the associated Github account.
+func (api UsersAPI) DeleteGithubAccount(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-
-	var githubaccount string
-
-	if err := json.NewDecoder(r.Body).Decode(&githubaccount); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
 	userMgr := NewManager(r)
-	err := userMgr.updateGithubAccount(username, githubaccount)
+	err := userMgr.DeleteGithubAccount(username)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusNoContent)
 }
 
-// UpdateFacebookAccount is the handler for PUT /users/{username}/facebook
-// Update the associated facebook account
-func (api UsersAPI) UpdateFacebookAccount(w http.ResponseWriter, r *http.Request) {
+
+// Delete FacebookAccount is the handler for DELETE /users/{username}/facebook
+// Delete the associated facebook account
+func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
-	var facebookaccount string
-
-	if err := json.NewDecoder(r.Body).Decode(&facebookaccount); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
 	userMgr := NewManager(r)
-	err := userMgr.updateFacebookAccount(username, facebookaccount)
+	err := userMgr.DeleteFacebookAccount(username)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusNoContent)
 }
+
 
 // GetUserInformation is the handler for GET /users/{username}/info
 func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
@@ -481,45 +468,45 @@ func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := NewManager(r)
 
+	body := struct {
+		Label string
+		Bank  BankAccount
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Error("Error while decoding the body: ", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !isValidLabel(body.Label) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
 	user, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	var bank map[string]BankAccount
-
-	if err := json.NewDecoder(r.Body).Decode(&bank); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	//Check if this label is already used
+	if _, ok := user.Bank[body.Label]; ok {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	// Only allow creation of One bank account
-	if len(bank) > 1 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	if err := userMgr.SaveBank(user, body.Label, body.Bank); err != nil {
+		log.Error("ERROR while saving address:\n", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	for label, val := range bank {
-		if _, ok := user.Bank[label]; ok {
-			// Do not allow creating existing label!
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-			return
-		}
-
-		if err := userMgr.SaveBank(user, label, val); err != nil {
-			log.Error("ERROR while saving user:\n", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-	}
-
-	// respond with created phone number.
+	// respond with created bank account
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(bank)
+	json.NewEncoder(w).Encode(body.Bank)
 }
 
 // It is handler for GET /users/{username}/banks
@@ -562,12 +549,27 @@ func (api UsersAPI) usernamebankslabelGet(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(respBody)
 }
 
-// Update or create an existing bankaccount.
+// Update an existing bankaccount and label.
 // It is handler for PUT /users/{username}/banks/{label}
 func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	label := mux.Vars(r)["label"]
+	oldlabel := mux.Vars(r)["label"]
 	userMgr := NewManager(r)
+
+	body := struct {
+		Label string
+		Bank  BankAccount
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !isValidLabel(body.Label) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -575,31 +577,34 @@ func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if _, ok := user.Bank[label]; ok != true {
+	if _, ok := user.Bank[oldlabel]; ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	var bank map[string]BankAccount
-
-	if err := json.NewDecoder(r.Body).Decode(&bank); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
+	if oldlabel != body.Label {
+		if _, ok := user.Bank[body.Label]; ok {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
 	}
 
-	if _, ok := bank[label]; ok != true {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
-	if err := userMgr.SaveBank(user, label, bank[label]); err != nil {
-		log.Error("ERROR while saving user:\n", err)
+	if err = userMgr.SaveBank(user, body.Label, body.Bank); err != nil {
+		log.Error("ERROR while saving bank - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
+	if oldlabel != body.Label {
+		if err := userMgr.RemoveBank(user, oldlabel); err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(bank)
+	json.NewEncoder(w).Encode(body.Bank)
 }
 
 // Delete a BankAccount

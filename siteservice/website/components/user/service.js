@@ -16,7 +16,7 @@
             get: get,
             accept: accept,
             reject: reject
-        }
+        };
 
         return service;
 
@@ -81,9 +81,13 @@
             updateAddress: updateAddress,
             deleteAddress: deleteAddress,
             saveAuthorization: saveAuthorization,
-            deleteAuthorization: deleteAuthorization
-
-        }
+            deleteAuthorization: deleteAuthorization,
+            registerNewBankAccount: registerNewBankAccount,
+            updateBankAccount: updateBankAccount,
+            deleteBankAccount: deleteBankAccount,
+            deleteFacebookAccount: deleteFacebookAccount,
+            deleteGithubAccount: deleteGithubAccount
+        };
 
         return service;
 
@@ -167,6 +171,21 @@
             return genericHttpCall($http.delete, url);
         }
 
+        function registerNewBankAccount(username, label, bankAccount) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/banks';
+            return genericHttpCall($http.post, url, {label: label, bank: bankAccount});
+        }
+
+        function updateBankAccount(username, oldLabel, label, bankAccount) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/banks/' + encodeURIComponent(oldLabel);
+            return genericHttpCall($http.put, url, {label: label, bank: bankAccount});
+        }
+
+        function deleteBankAccount(username, label) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/banks/' + encodeURIComponent(label);
+            return genericHttpCall($http.delete, url);
+        }
+
         function saveAuthorization(authorization) {
             var url = apiURL + '/' +  encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo);
             return genericHttpCall($http.put, url, authorization);
@@ -177,6 +196,14 @@
             return genericHttpCall($http.delete, url);
         }
 
+        function deleteFacebookAccount(username) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/facebook';
+            return genericHttpCall($http.delete, url);
+        }
 
+        function deleteGithubAccount(username) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/github';
+            return genericHttpCall($http.delete, url);
+        }
     }
 })();

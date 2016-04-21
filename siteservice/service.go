@@ -40,6 +40,10 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("POST").Path("/login").HandlerFunc(service.ProcessLoginForm)
 	//Authorize form
 	router.Methods("GET").Path("/authorize").HandlerFunc(service.ShowAuthorizeForm)
+	//Facebook callback
+	router.Methods("GET").Path("/facebook_callback").HandlerFunc(service.FacebookCallback)
+	//Github callback
+	router.Methods("GET").Path("/github_callback").HandlerFunc(service.GithubCallback)
 	//Logout link
 	router.Methods("GET").Path("/logout").HandlerFunc(service.Logout)
 	//Error page

@@ -181,13 +181,23 @@ func (m *Manager) RemoveBank(u *User, label string) error {
 		bson.M{"$unset": bson.M{bankLabel: ""}})
 }
 
-func (m *Manager) updateGithubAccount(username, githubaccount string) (err error) {
+func (m *Manager) UpdateGithubAccount(username string, githubaccount GithubAccount) (err error) {
 	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": bson.M{"github": githubaccount}})
 	return
 }
 
-func (m *Manager) updateFacebookAccount(username, facebookaccount string) (err error) {
+func (m *Manager) DeleteGithubAccount(username string) (err error) {
+	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": bson.M{"github": bson.M{}}})
+	return
+}
+
+func (m *Manager) UpdateFacebookAccount(username string, facebookaccount FacebookAccount) (err error) {
 	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": bson.M{"facebook": facebookaccount}})
+	return
+}
+
+func (m *Manager) DeleteFacebookAccount(username string) (err error) {
+	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": bson.M{"facebook": bson.M{}}})
 	return
 }
 
