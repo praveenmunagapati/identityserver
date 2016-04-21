@@ -5,7 +5,7 @@
         <br/>
         <md-input-container>
             <label>Organization name</label>
-            <input ng-model="vm.name" required type="text" autofocus name="name"
+            <input ng-model="vm.name" required type="text" md-autofocus="true" name="name"
                    ng-change="vm.clearErrors()"
                    ng-pattern="/^[a-zA-Z0-9 ]+$/" ng-minlength="3">
             <div ng-messages="newOrganizationForm.name.$error">

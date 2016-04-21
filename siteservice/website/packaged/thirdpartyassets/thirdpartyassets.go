@@ -86,7 +86,7 @@ func uriJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "URI.js", size: 40335, mode: os.FileMode(420), modTime: time.Unix(1460378143, 0)}
+	info := bindataFileInfo{name: "URI.js", size: 40335, mode: os.FileMode(436), modTime: time.Unix(1460547626, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -106,7 +106,7 @@ func angularQrcodeAngularQrcodeJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "angular-qrcode/angular-qrcode.js", size: 5267, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
+	info := bindataFileInfo{name: "angular-qrcode/angular-qrcode.js", size: 5267, mode: os.FileMode(436), modTime: time.Unix(1460547626, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -126,7 +126,7 @@ func qrcodeGeneratorJsQrcodeJs() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "qrcode-generator/js/qrcode.js", size: 39634, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
+	info := bindataFileInfo{name: "qrcode-generator/js/qrcode.js", size: 39634, mode: os.FileMode(436), modTime: time.Unix(1460547626, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -146,7 +146,7 @@ func qrcodeGeneratorJsQrcode_utf8Js() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "qrcode-generator/js/qrcode_UTF8.js", size: 1943, mode: os.FileMode(420), modTime: time.Unix(1457973973, 0)}
+	info := bindataFileInfo{name: "qrcode-generator/js/qrcode_UTF8.js", size: 1943, mode: os.FileMode(436), modTime: time.Unix(1460547626, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

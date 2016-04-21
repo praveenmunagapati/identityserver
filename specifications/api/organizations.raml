@@ -299,6 +299,58 @@ securedBy: [ oauth_2_0 ]
           responses:
               204:
                 description: API secret removed
+    /dns:
+      description: Manage domain names linked to an organization.
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+      /{dnsname}:
+        post:
+          displayName: CreateDns
+          description: Creates a new DNS name associated with an organization
+          body:
+            application/json:
+              properties:
+                name:
+                  type: string
+                  minlength: 4
+                  maxlength: 250
+          responses:
+            409:
+                description: DNS name is already used.
+            201:
+              body:
+                application/json:
+                    properties:
+                       name: string
+        put:
+          displayName: UpdateDnsName
+          description: Updates an existing DNS name associated with an organization
+          body:
+            application/json:
+              properties:
+                oldname:
+                  type: string
+                  minlength: 4
+                  maxlength: 250
+                newname:
+                  type: string
+                  minlength: 4
+                  maxlength: 250
+          responses:
+              201:
+                  description: Renamed
+              409:
+                  description: New DNS name is already used
+              404:
+                description: DNS Name not found
+        delete:
+          displayName: DeleteDNSName
+          description: Removes a DNS name
+          responses:
+              204:
+                description: DNS name removed
+              404:
+                description: DNS Name not found
+
     /tree:
       get:
         displayName: GetOrganizationTree
