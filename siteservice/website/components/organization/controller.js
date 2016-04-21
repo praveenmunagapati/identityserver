@@ -13,14 +13,16 @@
     function OrganizationController($rootScope, $location, $routeParams, OrganizationService, $window, $scope) {
         var vm = this;
         vm.create = create;
+        vm.childOrganizationNames = [];
         vm.parentOrganization = $routeParams.globalid;
 
         vm.username = $rootScope.user;
         vm.clearErrors = clearErrors;
+        vm.getOrganizationDisplayname = getOrganizationDisplayname;
         activate();
 
         function activate() {
-
+            vm.childOrganizationNames = getChildOrganizations(vm.parentOrganization);
         }
 
         function create(){
@@ -64,6 +66,7 @@
         vm.organizationRoot = {};
         vm.userDetails = {};
         vm.hasEditPermission = false;
+        vm.childOrganizationNames = [];
 
         vm.showInvitationDialog = showInvitationDialog;
         vm.showAPICreationDialog = showAPICreationDialog;
@@ -84,6 +87,7 @@
                 .then(
                     function(data) {
                         vm.organization = data;
+                        vm.childOrganizationNames = getChildOrganizations(vm.organization.globalid);
                         vm.hasEditPermission = vm.organization.owners.indexOf($rootScope.user) !== -1;
                         fetchInvitations();
                     },
@@ -240,13 +244,12 @@
                         }
                     });
         }
+    }
 
-
-        function getOrganizationDisplayname(globalid) {
-            if (globalid) {
-                var splitted = globalid.split('.');
-                return splitted[splitted.length - 1];
-            }
+    function getOrganizationDisplayname(globalid) {
+        if (globalid) {
+            var splitted = globalid.split('.');
+            return splitted[splitted.length - 1];
         }
     }
 
@@ -447,6 +450,16 @@
             );
         }
 
+        function getChildOrganizations(organization) {
+            var children = [];
+            for (var i = 0, splitted = organization.split('.'); i < splitted.length; i++) {
+                var parents = splitted.slice(0, i + 1);
+                children.push({
+                    name: splitted[i],
+                    url: '#/organizations/' + parents.join('.')
+                });
+            }
+            return children;
+        }
     }
-
 })();
