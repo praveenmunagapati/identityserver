@@ -1,6 +1,7 @@
 <div>
-    <form layout="column" ng-submit="vm.create()" name="newOrganizationForm">
-        <h1>Create a new organization</h1>
+    <form layout="column" ng-submit="vm.create()" name="newOrganizationForm" style="margin: 0px 0px 0px 0px;">
+        <h1 ng-if="vm.parentOrganization">Create a suborganization in {{ vm.parentOrganization}}</h1>
+        <h1 ng-if="!vm.parentOrganization">Create a new organization</h1>
         <br/>
         <md-input-container>
             <label>Organization name</label>

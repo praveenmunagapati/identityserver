@@ -68,19 +68,18 @@ func (api OrganizationsAPI) GetOrganizationTree(w http.ResponseWriter, r *http.R
 
 	//Build a treestructure
 	var orgTree *OrganizationTreeItem
-	orgTreeIndex := make(map[string]OrganizationTreeItem)
+	orgTreeIndex := make(map[string]*OrganizationTreeItem)
 	for _, org := range allOrganizations {
-		newTreeItem := OrganizationTreeItem{GlobalID: org.Globalid, Children: make([]OrganizationTreeItem, 0, 0)}
+		newTreeItem := &OrganizationTreeItem{GlobalID: org.Globalid, Children: make([]*OrganizationTreeItem, 0, 0)}
 		orgTreeIndex[org.Globalid] = newTreeItem
 		if orgTree == nil {
-			orgTree = &newTreeItem
+			orgTree = newTreeItem
 		} else {
 			path := strings.Split(org.Globalid, ".")
 			localName := path[len(path)-1]
 			parentTreeItem := orgTreeIndex[strings.TrimSuffix(org.Globalid, "."+localName)]
 			parentTreeItem.Children = append(parentTreeItem.Children, newTreeItem)
 		}
-
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -109,7 +108,7 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 
 }
 
-// CreateNewSubOrganization is the handler for POST /organizations/{globalid}
+// CreateNewSubOrganization is the handler for POST /organizations/{globalid}/suborganizations
 // Create a new suborganization.
 func (api OrganizationsAPI) CreateNewSubOrganization(w http.ResponseWriter, r *http.Request) {
 	parent := mux.Vars(r)["globalid"]

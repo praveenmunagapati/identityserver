@@ -1,10 +1,10 @@
 <li
     ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
-    <a ng-href="#/organizations/{{ ::tree.globalid }}">{{ ::vm.getOrganizationDisplayname(tree.globalid) }}
+    <a ng-href="#/organizations/{{ tree.globalid }}">{{ vm.getOrganizationDisplayname(tree.globalid) }}
     </a>
-    <ul ng-if="len(tree.children) > 0">
-        <ng-repeat ng-repeat="tree in tree.children">
+    <ul ng-if="tree.children.length > 0">
+        <div ng-repeat="tree in tree.children">
             <ng-include src="'/components/organization/views/treeItem.html'"></ng-include>
-        </ng-repeat>
+        </div>
     </ul>
 </li>

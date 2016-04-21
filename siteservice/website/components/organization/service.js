@@ -30,7 +30,8 @@
 
         function create(name, dns, owner, parentOrganization) {
             var url = apiURL;
-            if (parentOrganization) {
+            if (parentOrganization){
+                url += '/' + encodeURIComponent(parentOrganization) + '/suborganizations';
                 name = parentOrganization + '.' + name;
             }
             return $http.post(url, {globalid:name,dns:dns,owners:[owner]}).then(

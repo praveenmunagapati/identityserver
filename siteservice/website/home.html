@@ -138,7 +138,12 @@
                     controller: 'UserHomeController',
                     controllerAs: 'vm'
                 })
-                .when('/neworganization/:globalid?', {
+                .when('/neworganization', {
+                    templateUrl: 'components/organization/views/new.html',
+                    controller: 'OrganizationController',
+                    controllerAs: 'vm'
+                })
+                .when('/organizations/:globalid/newsuborganization', {
                     templateUrl: 'components/organization/views/new.html',
                     controller: 'OrganizationController',
                     controllerAs: 'vm'

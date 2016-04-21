@@ -3,7 +3,7 @@
         <div layout>
             <div flex="80">
                 <p>Organization</p>
-                <h1>{{ ::vm.getOrganizationDisplayname(vm.organization.globalid) }}</h1>
+                <h1>{{ vm.organization.globalid }}</h1>
             </div>
             <div flex>
 
@@ -64,7 +64,7 @@
                             <md-tab-body>
                                 <div layout="row" layout-align="end start">
                                     <md-button class="md-primary"
-                                           ng-href="#/neworganization/{{ ::vm.getOrganizationDisplayname(vm.organization.globalid) }}">
+                                           ng-href="#/organizations/{{ vm.organization.globalid }}/newsuborganization">
                                     <i class="fa fa-plus"></i> Create suborganization
                                 </md-button>
                                 </div>

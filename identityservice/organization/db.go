@@ -7,7 +7,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/db"
 )
 
@@ -59,7 +58,6 @@ func (m *Manager) GetOrganizations(organizationIDs []string) ([]Organization, er
 //TODO: put an index on the globalid field
 func (m *Manager) GetSubOrganizations(globalID string) ([]Organization, error) {
 	var organizations = make([]Organization, 0, 0)
-	logrus.Debug("Fetching suborganizations for ", globalID)
 	var qry = bson.M{"globalid": bson.M{"$regex": bson.RegEx{"^" + globalID + `\.`, ""}}}
 	if err := m.collection.Find(qry).All(&organizations); err != nil {
 		return nil, err

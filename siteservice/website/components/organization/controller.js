@@ -14,7 +14,7 @@
     function OrganizationController($rootScope, $location, $routeParams, OrganizationService, $window, $scope) {
         var vm = this;
         vm.create = create;
-        var parentOrganization = $routeParams.globalid;
+        vm.parentOrganization = $routeParams.globalid;
 
         vm.username = $rootScope.user;
         vm.clearErrors = clearErrors;
@@ -35,10 +35,10 @@
             }
 
             OrganizationService
-                .create(vm.name, dns, vm.username, parentOrganization)
+                .create(vm.name, dns, vm.username, vm.parentOrganization)
                 .then(
                     function(data){
-                        $location.path("/organizations/" + vm.name);
+                        $location.path("/organizations/" + data.globalid);
                     },
                     function(reason){
                         if (reason.status == 409) {
