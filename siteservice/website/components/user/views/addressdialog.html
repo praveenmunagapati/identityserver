@@ -14,7 +14,7 @@
           <div layout>
               <md-input-container>
                   <label>Label</label>
-                  <input ng-model="label" minlength="2" required type="text" autofocus name="labelinput">
+                  <input ng-model="label" minlength="2" required type="text" md-autofocus="true" name="labelinput">
                   <div ng-messages="dataform.labelinput.$error">
                       <div ng-message="minlength">At least 2 characters required</div>
                   </div>

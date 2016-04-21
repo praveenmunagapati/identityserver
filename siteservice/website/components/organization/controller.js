@@ -8,8 +8,7 @@
 
 
     OrganizationController.$inject = ['$rootScope', '$location', '$routeParams', 'OrganizationService', '$window', '$scope'];
-    OrganizationDetailController.$inject = [
-        '$location', '$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia', '$rootScope'];
+    OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia', '$rootScope'];
 
     function OrganizationController($rootScope, $location, $routeParams, OrganizationService, $window, $scope) {
         var vm = this;
@@ -56,7 +55,7 @@
         }
     }
 
-    function OrganizationDetailController($location, $routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope) {
+    function OrganizationDetailController($routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope) {
         var vm = this,
             globalid = $routeParams.globalid;
         vm.invitations = [];
@@ -69,6 +68,7 @@
         vm.showInvitationDialog = showInvitationDialog;
         vm.showAPICreationDialog = showAPICreationDialog;
         vm.showAPISecretDialog = showAPISecretDialog;
+        vm.showDNSDialog = showDNSDialog;
         vm.getOrganizationDisplayname = getOrganizationDisplayname;
         vm.fetchInvitations = fetchInvitations;
         vm.fetchAPISecretLabels = fetchAPISecretLabels;
@@ -155,8 +155,6 @@
         }
 
 
-
-
         function showAPICreationDialog(ev) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
@@ -182,7 +180,7 @@
 
 
         function showAPISecretDialog(ev, label) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
                 controller: APISecretDialogController,
                 templateUrl: 'components/organization/views/apisecretdialog.html',
@@ -216,6 +214,33 @@
                     }
                 });
         }
+
+
+        function showDNSDialog(ev, dnsName) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            $mdDialog.show({
+                controller: DNSDialogController,
+                templateUrl: 'components/organization/views/dnsDialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals: {
+                    OrganizationService: OrganizationService,
+                    organization: vm.organization.globalid,
+                    $window: $window,
+                    dnsName: dnsName
+                }
+            })
+                .then(
+                    function (data) {
+                        if (data.originalDns) {
+                            vm.organization.dns.splice(vm.organization.dns.indexOf(data.originalDns), 1);
+                        }
+                        if (data.newDns) {
+                            vm.organization.dns.push(data.newDns);
+                        }
+                    });
+        }
+
 
         function getOrganizationDisplayname(globalid) {
             if (globalid) {
@@ -284,7 +309,7 @@
         $scope.organization = organization;
 
         $scope.cancel = cancel;
-        $scope.validationerrors = {}
+        $scope.validationerrors = {};
         $scope.create = create;
         $scope.update = update;
         $scope.deleteAPISecret = deleteAPISecret;
@@ -354,6 +379,74 @@
 
     }
 
+    function DNSDialogController($scope, $mdDialog, organization, OrganizationService, $window, dnsName) {
+        $scope.organization = organization;
+        $scope.dnsName = dnsName;
+        $scope.newDnsName = dnsName;
 
+        $scope.cancel = cancel;
+        $scope.validationerrors = {};
+        $scope.create = create;
+        $scope.update = update;
+        $scope.remove = remove;
+
+        function cancel() {
+            $mdDialog.cancel();
+        }
+
+        function create(dnsName) {
+            if (!$scope.form.$valid) {
+                return;
+            }
+            $scope.validationerrors = {};
+            OrganizationService.createDNS(organization, dnsName).then(
+                function (data) {
+                    $mdDialog.hide({originalDns: "", newDns: data.name});
+                },
+                function (reason) {
+                    if (reason.status == 409) {
+                        $scope.validationerrors.duplicate = true;
+                    }
+                    else {
+                        $window.location.href = "error" + reason.status;
+                    }
+                }
+            );
+        }
+
+        function update(oldDns, newDns) {
+            if (!$scope.form.$valid) {
+                return;
+            }
+            $scope.validationerrors = {};
+            OrganizationService.updateDNS(organization, oldDns, newDns).then(
+                function (data) {
+                    $mdDialog.hide({originalDns: oldDns, newDns: data.name});
+                },
+                function (reason) {
+                    if (reason.status == 409) {
+                        $scope.validationerrors.duplicate = true;
+                    }
+                    else {
+                        $window.location.href = "error" + reason.status;
+                    }
+                }
+            );
+        }
+
+
+        function remove(dnsName) {
+            $scope.validationerrors = {};
+            OrganizationService.deleteDNS(organization, dnsName).then(
+                function () {
+                    $mdDialog.hide({originalDns: dnsName, newDns: ""});
+                },
+                function (reason) {
+                    $window.location.href = "error" + reason.status;
+                }
+            );
+        }
+
+    }
 
 })();

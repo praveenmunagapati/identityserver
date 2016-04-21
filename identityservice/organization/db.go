@@ -145,19 +145,6 @@ func (m *Manager) Save(organization *Organization) error {
 	return errors.New("Save is not implemented yet")
 }
 
-// SaveDNS save or update DNS
-func (m *Manager) SaveDNS(organization *Organization, dns string) error {
-	return m.collection.Update(
-		bson.M{"globalid": organization.Globalid},
-		bson.M{"$addToSet": bson.M{"dns": dns}})
-}
-
-// RemoveDNS remove DNS
-func (m *Manager) RemoveDNS(organization *Organization, dns string) error {
-	return m.collection.Update(
-		bson.M{"globalid": organization.Globalid},
-		bson.M{"$pull": bson.M{"dns": dns}})
-}
 
 // SaveMember save or update member
 func (m *Manager) SaveMember(organization *Organization, username string) error {
@@ -185,4 +172,29 @@ func (m *Manager) RemoveOwner(organization *Organization, owner string) error {
 	return m.collection.Update(
 		bson.M{"globalid": organization.Globalid},
 		bson.M{"$pull": bson.M{"owners": owner}})
+}
+
+func (m *Manager) AddDNS(organization *Organization, dnsName string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$addToSet": bson.M{"dns": dnsName}})
+}
+
+func (m *Manager) UpdateDNS(organization *Organization, oldDNSName string, newDNSName string) error {
+	err := m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$pull": bson.M{"dns": oldDNSName}})
+	if err != nil {
+		return err
+	}
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$addToSet": bson.M{"dns": newDNSName}})
+}
+
+// RemoveDNS remove DNS
+func (m *Manager) RemoveDNS(organization *Organization, dns string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$pull": bson.M{"dns": dns}})
 }

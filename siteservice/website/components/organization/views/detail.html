@@ -70,7 +70,8 @@
                                 </div>
                                 <div class="tree">
                                     <ul ng-repeat="tree in vm.organizationRoot.children">
-                                        <ng-include src="'/components/organization/views/treeItem.html'"></ng-include>
+                                        <ng-include
+                                                src="'/components/organization/views/treeItem.html'"></ng-include>
                                     </ul>
                                 </div>
                             </md-tab-body>
@@ -86,18 +87,20 @@
                                             <span flex></span>
                                         </div>
                                     </md-subheader>
-                                    <md-list-item class="md-1-line" ng-repeat="dns in vm.organization.dns" ng-click="vm.showAPISecretDialog($event, label)">
-                                        {{ dns }}
+                                    <md-list-item class="md-1-line" ng-repeat="dns in vm.organization.dns"
+                                                  ng-click="vm.showDNSDialog($event, dns)" aria-label="{{ ::dns }}">
+                                        <div class="md-list-item-text" layout="column">
+                                            <h3 ng-bind="dns"></h3>
+                                        </div>
                                     </md-list-item>
                                 </md-list>
 
-                                <md-button class="md-primary">
+                                <md-button class="md-primary" ng-click="vm.showDNSDialog($event)">
                                     <i class="fa fa-plus"></i> Add domain name
                                     <md-tooltip>Add a domain name owned by
                                         {{::vm.getOrganizationDisplayname(vm.organization.globalid)}}
                                     </md-tooltip>
                                 </md-button>
-
 
                                 <md-list class="md-dense">
                                     <md-subheader class="md-no-sticky">
@@ -106,8 +109,12 @@
                                             <span flex></span>
                                         </div>
                                     </md-subheader>
-                                    <md-list-item class="md-1-line" ng-repeat="label in vm.apisecretlabels" ng-click="vm.showAPISecretDialog($event, label)">
-                                        {{ label }}
+                                    <md-list-item class="md-1-line" ng-repeat="label in vm.apisecretlabels"
+                                                  ng-click="vm.showAPISecretDialog($event, label)"
+                                                  aria-label="{{ ::label }}">
+                                        <div class="md-list-item-text" layout="column">
+                                            <h3 ng-bind="label"></h3>
+                                        </div>
                                     </md-list-item>
                                 </md-list>
 

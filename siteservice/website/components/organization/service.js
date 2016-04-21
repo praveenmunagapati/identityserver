@@ -7,12 +7,10 @@
 
     OrganizationService.$inject = ['$http','$q'];
 
-    // https://docs.angularjs.org/api/ngResource/service/$resource could reduce the amount of code here
-
     function OrganizationService($http, $q) {
         var apiURL =  'api/organizations';
 
-        var service = {
+        return {
             create: create,
             get: get,
             invite: invite,
@@ -23,10 +21,11 @@
             updateAPISecretLabel: updateAPISecretLabel,
             getAPISecretLabels: getAPISecretLabels,
             getAPISecret: getAPISecret,
-            getOrganizationTree: getOrganizationTree
+            getOrganizationTree: getOrganizationTree,
+            createDNS: createDNS,
+            updateDNS: updateDNS,
+            deleteDNS: deleteDNS
         };
-
-        return service;
 
         function create(name, dns, owner, parentOrganization) {
             var url = apiURL;
@@ -196,6 +195,50 @@
                 );
         }
 
+        function createDNS(globalid, dnsName) {
+            var url = apiURL + '/' + globalid + '/dns/' + dnsName;
+
+            return $http
+                .post(url)
+                .then(
+                    function (response) {
+                        return response.data;
+                    },
+                    function (reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function updateDNS(globalid, oldDnsName, newDnsName) {
+            var url = apiURL + '/' + globalid + '/dns/' + oldDnsName;
+
+            return $http
+                .put(url, {name: newDnsName})
+                .then(
+                    function (response) {
+                        return response.data;
+                    },
+                    function (reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
+
+        function deleteDNS(globalid, dnsName) {
+            var url = apiURL + '/' + globalid + '/dns/' + dnsName;
+
+            return $http
+                .delete(url)
+                .then(
+                    function (response) {
+                        return response.data;
+                    },
+                    function (reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
 
     }
 })();

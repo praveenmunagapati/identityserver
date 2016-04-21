@@ -61,6 +61,15 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// DeleteAPISecret is the handler for DELETE /organizations/{globalid}/apisecrets/{label}
 	// Removes an API secret
 	DeleteAPISecret(http.ResponseWriter, *http.Request)
+	// CreateDns is the handler for POST /organizations/{globalid}/dns
+	// Creates a new DNS name associated with an organization
+	CreateDns(http.ResponseWriter, *http.Request)
+	// UpdateDns is the handler for PUT /organizations/{globalid}/dns/{dnsname}
+	// Updates an existing DNS name associated with an organization
+	UpdateDns(http.ResponseWriter, *http.Request)
+	// DeleteDNS is the handler for DELETE /organizations/{globalid}/dns/{dnsname}
+	// Removes a DNS name
+	DeleteDns(http.ResponseWriter, *http.Request)
 	// GetOrganizationTree is the handler for GET /organizations/{globalid}/tree
 	GetOrganizationTree(http.ResponseWriter, *http.Request)
 }
@@ -83,5 +92,8 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetAPISecret))).Methods("GET")
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateAPISecretLabel))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/apisecrets/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteAPISecret))).Methods("DELETE")
+	r.Handle("/organizations/{globalid}/dns/{dnsname}", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.CreateDns))).Methods("POST")
+	r.Handle("/organizations/{globalid}/dns/{dnsname}", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.UpdateDns))).Methods("PUT")
+	r.Handle("/organizations/{globalid}/dns/{dnsname}", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.DeleteDns))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/tree", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.GetOrganizationTree))).Methods("GET")
 }
