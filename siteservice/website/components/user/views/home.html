@@ -3,7 +3,7 @@
         <div layout>
             <div flex="80">
                 <p>You</p>
-                <h1>{{ vm.username }}</h1>
+                <h1 ng-bind="vm.username"></h1>
             </div>
             <div flex>
             </div>
@@ -12,13 +12,13 @@
 
             <md-card flex="100">
                 <md-card-content flex="100" layout="column">
-                    <md-tabs flex="100">
+                    <md-tabs flex="100" md-selected="vm.selectedTabIndex">
                         <md-tab md-on-select="vm.loadNotifications()">
                             <md-tab-label><i class="fa fa-bell"></i>&nbsp;Notifications</md-tab-label>
                             <md-tab-body layout="column">
-                                <div layout="row" layout-align="center center" ng-show="!vm.loaded.notifications">
+                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.notifications">
                                     <md-progress-circular md-mode="indeterminate"
-                                                          md-diameter="100"></md-progress-circular>
+                                                          md-diameter="40"></md-progress-circular>
                                 </div>
                                 <div layout="row">
                                     <div layout="column">
@@ -58,9 +58,9 @@
                         <md-tab md-on-select="vm.loadOrganizations()">
                             <md-tab-label><i class="fa fa-users"></i>&nbsp;Organizations</md-tab-label>
                             <md-tab-body>
-                                <div layout="row" layout-align="center center" ng-show="!vm.loaded.organizations">
+                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.organizations">
                                     <md-progress-circular md-mode="indeterminate"
-                                                          md-diameter="100"></md-progress-circular>
+                                                          md-diameter="40"></md-progress-circular>
                                 </div>
                                 <div layout ng-show="vm.loaded.organizations">
                                     <div flex flex-gt-xs="50">
@@ -102,16 +102,16 @@
                         <md-tab md-on-select="vm.loadUser()">
                             <md-tab-label><i class="fa fa-user"></i>&nbsp;You</md-tab-label>
                             <md-tab-body>
-                                <div layout="row" layout-align="center center" ng-show="!vm.loaded.user">
+                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.user">
                                     <md-progress-circular md-mode="indeterminate"
-                                                          md-diameter="100"></md-progress-circular>
+                                                          md-diameter="40"></md-progress-circular>
                                 </div>
                                 <div layout="row" flex ng-show="vm.loaded.user">
                                     <md-list flex flex-gt-sm="60">
                                         <md-list-item>
                                             <span flex-gt-xs="5"></span>
                                             <div flex="15"><i class="fa fa-2x fa-at"></i><md-tooltip>Email addresses</md-tooltip></div>
-                                            <div flex>
+                                            <div flex="60" flex-gt-xs="65">
                                                 <md-list>
                                                     <md-list-item class="md-2-line" ng-repeat="(label, email) in vm.user.email" ng-click="vm.showEmailDetailDialog($event, label, email)">
                                                         <div class="md-list-item-text">
@@ -121,7 +121,7 @@
                                                     </md-list-item>
                                                 </md-list>
                                             </div>
-                                            <div flex="20">
+                                            <div flex="20" layout="row" layout-align="center center">
                                                 <md-button class="md-primary" ng-click="vm.showAddEmailDialog($event)">
                                                     <i class="fa fa-plus"></i> Add
                                                 </md-button>
@@ -133,7 +133,7 @@
                                         <md-list-item>
                                             <span flex-gt-xs="5"></span>
                                             <div flex="15"><i class="fa fa-2x fa-phone"></i><md-tooltip>Phone numbers</md-tooltip></div>
-                                            <div flex>
+                                            <div flex="60" flex-gt-xs="65">
                                                 <md-list>
                                                     <md-list-item class="md-2-line" ng-repeat="(label, phone) in vm.user.phone" ng-click="vm.showPhonenumberDetailDialog($event, label, phone)">
                                                         <div class="md-list-item-text">
@@ -143,7 +143,7 @@
                                                     </md-list-item>
                                                 </md-list>
                                             </div>
-                                            <div flex="20">
+                                            <div flex="20" layout="row" layout-align="center center">
                                                 <md-button class="md-primary" ng-click="vm.showAddPhonenumberDialog($event)">
                                                     <i class="fa fa-plus"></i> Add
                                                 </md-button>
@@ -155,16 +155,27 @@
                                         <md-list-item>
                                             <span flex-gt-xs="5"></span>
                                             <div flex="15"><i class="fa fa-2x fa-facebook-official"></i><md-tooltip>Facebook account</md-tooltip></div>
-                                            <div flex>
+                                            <div flex="60" flex-gt-xs="65">
                                                 <md-list>
-                                                    <md-list-item class="md-1-line">
-                                                        <div class="md-list-item-text">
-                                                            <h4>
-                                                                {{vm.user.facebook}}
-                                                            </h4>
+                                                    <md-list-item class="md-1-line"
+                                                                  ng-click="vm.showFacebookDialog($event)"
+                                                                  ng-if="vm.user.facebook.id"
+                                                                  aria-label="{{ vm.user.facebook.name }}">
+                                                        <img ng-src="{{vm.user.facebook.picture}}" class="md-avatar"
+                                                             alt="{{vm.user.facebook.name}}"
+                                                             ng-if="vm.user.facebook.id"/>
+
+                                                        <div class="md-list-item-text" layout="column">
+                                                            <h3 ng-bind="vm.user.facebook.name"></h3>
                                                         </div>
                                                     </md-list-item>
                                                 </md-list>
+                                            </div>
+                                            <div flex="20" layout="row" layout-align="center center">
+                                                <md-button ng-if="! vm.user.facebook.id"
+                                                           ng-click="vm.addFacebookAccount()"
+                                                           class="md-primary"><i class="fa fa-plus"></i> Add
+                                                </md-button>
                                             </div>
                                         </md-list-item>
 
@@ -173,14 +184,24 @@
                                         <md-list-item>
                                             <span flex-gt-xs="5"></span>
                                             <div flex="15"><i class="fa fa-2x fa-github"></i><md-tooltip>Github account</md-tooltip></div>
-                                            <div flex>
+                                            <div flex="60" flex-gt-xs="65">
                                                 <md-list>
-                                                    <md-list-item class="md-1-line">
+                                                    <md-list-item class="md-1-line" ng-if="vm.user.github.id"
+                                                                  ng-click="vm.showGithubDialog($event)">
+                                                        <img ng-src="{{vm.user.github.avatar_url}}" class="md-avatar"
+                                                             alt="{{vm.user.github.login}}"/>
                                                         <div class="md-list-item-text">
-                                                            <h4>{{vm.user.github}}</h4>
+                                                            <h3><span ng-bind="vm.user.github.name"></span> (<span
+                                                                    ng-bind="vm.user.github.login"></span>)</h3>
                                                         </div>
                                                     </md-list-item>
                                                 </md-list>
+                                            </div>
+                                            <div flex="20" layout="row" layout-align="center center">
+                                                <md-button ng-if="!vm.user.github.id" class="md-primary"
+                                                           ng-click="vm.addGithubAccount()"><i
+                                                        class="fa fa-plus"></i> Add
+                                                </md-button>
                                             </div>
                                         </md-list-item>
 
@@ -189,7 +210,7 @@
                                         <md-list-item>
                                             <span flex-gt-xs="5"></span>
                                             <div flex="15"><i class="fa fa-2x fa-envelope-o"></i><md-tooltip>Addresses</md-tooltip></div>
-                                            <div flex>
+                                            <div flex="60" flex-gt-xs="65">
                                                 <md-list>
                                                     <md-list-item class="md-2-line" ng-repeat="(label, address) in vm.user.address" ng-click="vm.showAddressDetailDialog($event, label, address)">
                                                         <div class="md-list-item-text">
@@ -202,7 +223,7 @@
                                                     </md-list-item>
                                                 </md-list>
                                             </div>
-                                            <div flex="20">
+                                            <div flex="20" layout="row" layout-align="center center">
                                                 <md-button class="md-primary" ng-click="vm.showAddAddressDialog($event)">
                                                     <i class="fa fa-plus"></i> Add
                                                 </md-button>
@@ -213,58 +234,35 @@
 
                                         <md-list-item>
                                             <span flex-gt-xs="5"></span>
-                                            <div flex="15"><i class="fa fa-2x fa-credit-card"></i><md-tooltip>Credit cards</md-tooltip></div>
-                                            <div flex>
-                                                <md-list>
-                                                    <md-list-item class="md-2-line" ng-repeat="(label, creditcard) in vm.user.creditcards" ng-click="vm.showCreditCardDetailDialog($event, label, creditcard)">
-                                                        <div class="md-list-item-text">
-                                                            <h4>
-                                                            </h4>
-                                                            <p>{{ label }}</p>
-                                                        </div>
-                                                    </md-list-item>
-                                                </md-list>
+                                            <div flex="15"><i class="fa fa-2x fa-bank"></i>
+                                                <md-tooltip>Bank accounts</md-tooltip>
                                             </div>
-                                            <div flex="20">
-                                                <md-button class="md-primary" ng-click="vm.showAddCreditCardDialog($event)">
-                                                    <i class="fa fa-plus"></i> Add
-                                                </md-button>
-                                            </div>
-                                        </md-list-item>
-
-                                        <md-divider md-inset></md-divider>
-
-                                        <md-list-item>
-                                            <span flex-gt-xs="5"></span>
-                                            <div flex="15"><i class="fa fa-2x fa-bank"></i><md-tooltip>Bank accounts</md-tooltip></div>
-                                            <div flex>
+                                            <div flex="60" flex-gt-xs="65">
                                                 <md-list>
-                                                    <md-list-item class="md-2-line" ng-repeat="(label, bank) in vm.user.bank" ng-click="vm.showCreditCardDetailDialog($event, label, bank)">
+                                                    <md-list-item class="md-3-line"
+                                                                  ng-repeat="(label, bank) in vm.user.bank"
+                                                                  ng-click="vm.showBankAccountDialog($event, label, bank)">
                                                         <div class="md-list-item-text">
                                                             <h4 ng-hide="bank.iban === ''"><span>IBAN: </span> {{ bank.iban }}</h4>
                                                             <h4 ng-hide="bank.bic === ''"><span>BIC: </span> {{ bank.bic }}</h4>
-                                                            <h4>{{ bank.country }}</h4>
-                                                            <p>{{ label }}</p>
+                                                            <h4 ng-bind="bank.country"></h4>
+                                                            <p ng-bind="label"></p>
                                                         </div>
                                                     </md-list-item>
                                                 </md-list>
                                             </div>
-                                            <div flex="20">
-                                                <md-button class="md-primary" ng-click="vm.showAddBankAccountDialog($event)">
+                                            <div flex="20" layout="row" layout-align="center center">
+                                                <md-button class="md-primary"
+                                                           ng-click="vm.showBankAccountDialog($event)">
                                                     <i class="fa fa-plus"></i> Add
                                                 </md-button>
                                             </div>
                                         </md-list-item>
-
-
-
                                     </md-list>
                                 </div>
                             </md-tab-body>
                         </md-tab>
-
                     </md-tabs>
-
                 </md-card-content>
             </md-card flex>
         </div>

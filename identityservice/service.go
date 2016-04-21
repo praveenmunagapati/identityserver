@@ -107,3 +107,37 @@ func (service *Service) ValidAuthorizationForScopes(r *http.Request, username st
 	//TODO: actually check the authorization versus scopes
 	return
 }
+
+
+// getOauthSecret gets the oauth secret from mongodb for a specified service. If it doesn't exist, an error gets logged.
+func GetOauthSecret(service string) (string, error) {
+	session := db.GetSession()
+	defer session.Close()
+
+	config := globalconfig.NewManager()
+	globalconfig.InitModels()
+	secretModel, err := config.GetByKey(service + "-secret")
+	if err != nil {
+		log.Errorf("No Oauth secret found for %s. Please insert it into the collection globalconfig with key %s-secret",
+			service, service)
+	}
+	return secretModel.Value, err
+}
+
+
+// getOauthSecret gets the oauth secret from mongodb for a specified service. If it doesn't exist, an error gets logged.
+func GetOauthClientId(service string) (string, error) {
+	session := db.GetSession()
+	defer session.Close()
+
+	config := globalconfig.NewManager()
+	globalconfig.InitModels()
+
+	clientIdModel, err := config.GetByKey(service + "-clientid")
+	log.Warn(clientIdModel.Value)
+	if err != nil {
+		log.Errorf("No Oauth client id found for %s. Please insert it into the collection globalconfig with key %s-clientid",
+			service, service)
+	}
+	return clientIdModel.Value, err
+}

@@ -80,6 +80,30 @@ types:
         postalcode:
             type: string
             maxLength: 20
+  FacebookAccount:
+    properties:
+      id:
+       type: int
+      name:
+        type: string
+      picture:
+        type: string
+      link:
+        type: string
+
+  GithubAccount:
+    properties:
+      login:
+        type: string
+      id:
+        type: int
+      avatar_url:
+        type: string
+      html_url:
+        type: string
+      name:
+        type: string
+
   User:
     properties:
         username:
@@ -105,11 +129,9 @@ types:
             "[]":
               type: BankAccount
         facebook?:
-            type: string
-            maxLength: 40
+            type: FacebookAccount
         github?:
-            type: string
-            maxLength: 50
+            type: GithubAccount
 
     example:
         username: bob
@@ -164,11 +186,9 @@ types:
             "[]":
               type: BankAccount
         facebook?:
-            type: string
-            maxLength: 40
+            type: FacebookAccount
         github?:
-            type: string
-            maxLength: 50
+            type: GithubAccount
         organizations: string[]
 
   JoinOrganizationInvitation:
@@ -245,28 +265,21 @@ securedBy: [ oauth_2_0 ]
                   description: The last email address can not be removed.
 
     /github:
-      put:
-        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-        displayName: UpdateGithubAccount
-        description: Update the associated github account
-        body:
-            application/json:
-              type: string
+      delete:
+        displayName: DeleteGithubAccount
+        description: Unlink Github Account
         responses:
-          201:
-              description: Updated
+            204:
+              description: Account unlinked
 
     /facebook:
-      put:
+      delete:
         securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-        displayName: UpdateFacebookAccount
-        description: Update the associated facebook account
-        body:
-              application/json:
-                type: string
+        displayName: DeleteFacebookAccount
+        description: Delete the associated facebook account
         responses:
-            201:
-                description: Updated
+            204:
+                description: Deleted facebook account
 
   /{username}/info:
     get:
@@ -426,7 +439,7 @@ securedBy: [ oauth_2_0 ]
                     application/json:
                         type: BankAccount
     put:
-        description: Update or create an existing bankaccount.
+        description: Update an existing bankaccount and label.
         body:
             application/json:
                 type: BankAccount

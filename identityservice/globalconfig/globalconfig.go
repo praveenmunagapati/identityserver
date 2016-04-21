@@ -47,7 +47,7 @@ func NewManager() *Manager {
 	}
 }
 
-// GetByGet return a config key/value from key name
+// GetByKey return a config key/value from key name
 func (m *Manager) GetByKey(key string) (*GlobalConfig, error) {
 	var config GlobalConfig
 

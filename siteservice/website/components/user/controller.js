@@ -8,9 +8,11 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$location', '$window', '$mdToast', '$mdMedia', '$mdDialog', 'NotificationService', 'OrganizationService', 'UserService'];
+        '$q', '$rootScope', '$location', '$routeParams', '$window', '$mdToast', '$mdMedia', '$mdDialog', 'NotificationService',
+        'OrganizationService', 'UserService'];
 
-    function UserHomeController($q, $rootScope, $location, $window, $mdToast, $mdMedia, $mdDialog, NotificationService, OrganizationService, UserService) {
+    function UserHomeController($q, $rootScope, $location, $routeParams, $window, $mdToast, $mdMedia, $mdDialog,
+                                NotificationService, OrganizationService, UserService) {
         var vm = this;
 
         vm.username = $rootScope.user;
@@ -27,6 +29,7 @@
         vm.user = {};
 
         vm.loaded = {};
+        vm.selectedTabIndex = 0;
 
         vm.checkSelected = checkSelected;
         vm.accept = accept;
@@ -39,10 +42,19 @@
         vm.showAddPhonenumberDialog = showAddPhonenumberDialog;
         vm.showAddressDetailDialog = showAddressDetailDialog;
         vm.showAddAddressDialog = showAddAddressDialog;
-
+        vm.showBankAccountDialog = showBankAccountDialog;
+        vm.showFacebookDialog = showFacebookDialog;
+        vm.showGithubDialog = showGithubDialog;
+        vm.addFacebookAccount = addFacebookAccount;
+        vm.addGithubAccount = addGithubAccount;
         vm.loadNotifications = loadNotifications;
         vm.loadOrganizations = loadOrganizations;
         vm.loadUser = loadUser;
+        init();
+
+        function init() {
+            vm.selectedTabIndex = parseInt($routeParams.tab) || 0;
+        }
 
         function loadNotifications() {
             if (vm.loaded.notifications) {
@@ -335,6 +347,96 @@
                 });
         }
 
+        function showBankAccountDialog(ev, label, bank) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            $mdDialog.show({
+                controller: GenericDetailDialogController,
+                templateUrl: 'components/user/views/bankAccountDialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals: {
+                    username: vm.username,
+                    $window: $window,
+                    label: label,
+                    data: bank,
+                    createFunction: UserService.registerNewBankAccount,
+                    updateFunction: UserService.updateBankAccount,
+                    deleteFunction: UserService.deleteBankAccount
+                }
+            })
+                .then(
+                    function (data) {
+                        if (data.originalLabel || !data.newLabel) {
+                            delete vm.user.bank[data.originalLabel];
+                        }
+                        if (data.newLabel) {
+                            vm.user.bank[data.newLabel] = data.data;
+                        }
+                    });
+        }
+
+        function showFacebookDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+
+            function doNothing() {
+            }
+
+            $mdDialog.show({
+                controller: GenericDetailDialogController,
+                templateUrl: 'components/user/views/facebookDialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals: {
+                    username: vm.username,
+                    $window: $window,
+                    label: "",
+                    data: vm.user.facebook,
+                    createFunction: doNothing,
+                    updateFunction: doNothing,
+                    deleteFunction: UserService.deleteFacebookAccount
+                }
+            })
+                .then(
+                    function () {
+                        vm.user.facebook = {};
+                    });
+        }
+
+        function showGithubDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+
+            function doNothing() {
+            }
+
+            $mdDialog.show({
+                controller: GenericDetailDialogController,
+                templateUrl: 'components/user/views/githubDialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals: {
+                    username: vm.username,
+                    $window: $window,
+                    label: "",
+                    data: vm.user.github,
+                    createFunction: doNothing,
+                    updateFunction: doNothing,
+                    deleteFunction: UserService.deleteGithubAccount
+                }
+            })
+                .then(
+                    function () {
+                        vm.user.github = {};
+                    });
+        }
+
+        function addFacebookAccount() {
+            $window.location.href = 'https://www.facebook.com/dialog/oauth?client_id=271068306559344&response_type=code&redirect_uri=' + $window.location.origin + '/facebook_callback';
+        }
+
+        function addGithubAccount() {
+            $window.location.href = 'https://github.com/login/oauth/authorize/?client_id=81daef7649d8958cae6e';
+        }
+
     }
 
 
@@ -421,7 +523,7 @@
         $scope.username = username;
 
         $scope.cancel = cancel;
-        $scope.validationerrors = {}
+        $scope.validationerrors = {};
         $scope.create = create;
         $scope.update = update;
         $scope.remove = remove;
