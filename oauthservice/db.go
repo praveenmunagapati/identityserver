@@ -136,8 +136,8 @@ func (m *Manager) getClientsCollection() *mgo.Collection {
 	return db.GetCollection(m.session, clientsCollectionName)
 }
 
-//GetClientSecretLabels returns a list of labels for which there are secrets registered for a specific client
-func (m *Manager) GetClientSecretLabels(clientID string) (labels []string, err error) {
+//GetClientLabels returns a list of labels for which there are apikeys registered for a specific client
+func (m *Manager) GetClientLabels(clientID string) (labels []string, err error) {
 	results := []struct{ Label string }{}
 	err = m.getClientsCollection().Find(bson.M{"clientid": clientID}).Select(bson.M{"label": 1}).All(&results)
 	labels = make([]string, len(results), len(results))
@@ -147,8 +147,8 @@ func (m *Manager) GetClientSecretLabels(clientID string) (labels []string, err e
 	return
 }
 
-//CreateClientSecret saves an Oauth2 client secret
-func (m *Manager) CreateClientSecret(client *Oauth2Client) (err error) {
+//CreateClient saves an Oauth2 client
+func (m *Manager) CreateClient(client *Oauth2Client) (err error) {
 
 	err = m.getClientsCollection().Insert(client)
 
@@ -158,10 +158,10 @@ func (m *Manager) CreateClientSecret(client *Oauth2Client) (err error) {
 	return
 }
 
-//RenameClientSecret changes the label for a client secret
-func (m *Manager) RenameClientSecret(clientID, oldLabel, newLabel string) (err error) {
+//UpdateClient updates the label, callbackurl and clientCredentialsGrantType properties of a client
+func (m *Manager) UpdateClient(clientID, oldLabel, newLabel string, callbackURL string, clientcredentialsGrantType bool) (err error) {
 
-	_, err = m.getClientsCollection().UpdateAll(bson.M{"clientid": clientID, "label": oldLabel}, bson.M{"$set": bson.M{"label": newLabel}})
+	_, err = m.getClientsCollection().UpdateAll(bson.M{"clientid": clientID, "label": oldLabel}, bson.M{"$set": bson.M{"label": newLabel, "callbackurl": callbackURL, "clientcredentialsgranttype": clientcredentialsGrantType}})
 
 	if err != nil && mgo.IsDup(err) {
 		err = db.ErrDuplicate
@@ -169,20 +169,20 @@ func (m *Manager) RenameClientSecret(clientID, oldLabel, newLabel string) (err e
 	return
 }
 
-//DeleteClientSecret removes a client secret by it's clientID and label
-func (m *Manager) DeleteClientSecret(clientID, label string) (err error) {
+//DeleteClient removes a client secret by it's clientID and label
+func (m *Manager) DeleteClient(clientID, label string) (err error) {
 	_, err = m.getClientsCollection().RemoveAll(bson.M{"clientid": clientID, "label": label})
 	return
 }
 
-//GetClientSecret retrieves a clientsecret given a clientid and a label
-func (m *Manager) GetClientSecret(clientID, label string) (secret string, err error) {
-	c := &Oauth2Client{}
-	err = m.getClientsCollection().Find(bson.M{"clientid": clientID, "label": label}).One(c)
+//GetClient retrieves a client given a clientid and a label
+func (m *Manager) GetClient(clientID, label string) (client *Oauth2Client, err error) {
+	client = &Oauth2Client{}
+	err = m.getClientsCollection().Find(bson.M{"clientid": clientID, "label": label}).One(client)
 	if err == mgo.ErrNotFound {
 		err = nil
+		client = nil
 		return
 	}
-	secret = c.Secret
 	return
 }

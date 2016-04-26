@@ -89,7 +89,7 @@ func indexHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "index.html", size: 3216, mode: os.FileMode(509), modTime: time.Unix(1460547626, 0)}
+	info := bindataFileInfo{name: "index.html", size: 3216, mode: os.FileMode(493), modTime: time.Unix(1457982012, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -109,7 +109,7 @@ func registrationHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "registration.html", size: 5554, mode: os.FileMode(436), modTime: time.Unix(1460714727, 0)}
+	info := bindataFileInfo{name: "registration.html", size: 5554, mode: os.FileMode(420), modTime: time.Unix(1460708681, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -129,7 +129,7 @@ func loginHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "login.html", size: 3878, mode: os.FileMode(436), modTime: time.Unix(1460714727, 0)}
+	info := bindataFileInfo{name: "login.html", size: 3878, mode: os.FileMode(420), modTime: time.Unix(1460708681, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -149,7 +149,7 @@ func homeHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "home.html", size: 7842, mode: os.FileMode(436), modTime: time.Unix(1461244502, 0)}
+	info := bindataFileInfo{name: "home.html", size: 7842, mode: os.FileMode(420), modTime: time.Unix(1461231504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -169,7 +169,7 @@ func errorHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "error.html", size: 1462, mode: os.FileMode(436), modTime: time.Unix(1460547626, 0)}
+	info := bindataFileInfo{name: "error.html", size: 1462, mode: os.FileMode(420), modTime: time.Unix(1457983046, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -189,7 +189,7 @@ func apidocumentationHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "apidocumentation.html", size: 2687, mode: os.FileMode(436), modTime: time.Unix(1460547626, 0)}
+	info := bindataFileInfo{name: "apidocumentation.html", size: 2687, mode: os.FileMode(420), modTime: time.Unix(1457983065, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -209,7 +209,7 @@ func authorizeHtml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "authorize.html", size: 6563, mode: os.FileMode(436), modTime: time.Unix(1460714727, 0)}
+	info := bindataFileInfo{name: "authorize.html", size: 6563, mode: os.FileMode(420), modTime: time.Unix(1460708681, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

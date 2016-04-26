@@ -16,15 +16,16 @@
             invite: invite,
             getUserOrganizations: getUserOrganizations,
             getInvitations: getInvitations,
-            createAPISecret: createAPISecret,
-            deleteAPISecret: deleteAPISecret,
-            updateAPISecretLabel: updateAPISecretLabel,
-            getAPISecretLabels: getAPISecretLabels,
-            getAPISecret: getAPISecret,
+            createAPIKey: createAPIKey,
+            deleteAPIKey: deleteAPIKey,
+            updateAPIKey: updateAPIKey,
+            getAPIKeyLabels: getAPIKeyLabels,
+            getAPIKey: getAPIKey,
             getOrganizationTree: getOrganizationTree,
             createDNS: createDNS,
             updateDNS: updateDNS,
             deleteDNS: deleteDNS
+
         };
 
         function create(name, dns, owner, parentOrganization) {
@@ -44,7 +45,7 @@
         }
 
         function get(globalid) {
-            var url = apiURL + '/' + globalid;
+            var url = apiURL + '/' + encodeURIComponent(globalid);
 
             return $http
                 .get(url)
@@ -59,7 +60,7 @@
         }
 
         function invite(globalid, member, role) {
-            var url = apiURL + '/' + globalid + '/' + role + 's';
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + encodeURIComponent(role) + 's';
 
             return $http
                 .post(url, {username: member})
@@ -74,7 +75,7 @@
         }
 
         function getUserOrganizations(username) {
-            var url = '/api/users/' + username + '/organizations';
+            var url = '/api/users/' + encodeURIComponent(username) + '/organizations';
 
             return $http
                 .get(url)
@@ -90,7 +91,7 @@
 
 
         function getInvitations(globalid){
-            var url = apiURL + '/' + globalid + '/invitations';
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/invitations';
 
             return $http
                 .get(url)
@@ -105,8 +106,8 @@
 
         }
 
-        function getAPISecretLabels(globalid){
-            var url = apiURL + '/' + globalid + '/apisecrets';
+        function getAPIKeyLabels(globalid){
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys';
 
             return $http
                 .get(url)
@@ -120,11 +121,11 @@
                 );
         }
 
-        function createAPISecret(globalid, label){
-            var url = apiURL + '/' + globalid + '/apisecrets';
+        function createAPIKey(globalid, apiKey){
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys';
 
             return $http
-                .post(url, {label: label})
+                .post(url, apiKey)
                 .then(
                     function(response) {
                         return response.data;
@@ -135,11 +136,11 @@
                 );
         }
 
-        function updateAPISecretLabel(globalid, oldLabel, newLabel){
-            var url = apiURL + '/' + globalid + '/apisecrets/' + oldLabel;
-
+        function updateAPIKey(globalid, oldLabel, newLabel, apikey){
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys/' + encodeURIComponent(oldLabel);
+            apikey.label = newLabel;
             return $http
-                .put(url, {label: newLabel})
+                .put(url, apikey)
                 .then(
                     function(response) {
                         return response.data;
@@ -150,8 +151,8 @@
                 );
         }
 
-        function deleteAPISecret(globalid, label){
-            var url = apiURL + '/' + globalid + '/apisecrets/' + label;
+        function deleteAPIKey(globalid, label){
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys/' + encodeURIComponent(label);
 
             return $http
                 .delete(url)
@@ -166,8 +167,8 @@
         }
 
 
-        function getAPISecret(globalid, label){
-            var url = apiURL + '/' + globalid + '/apisecrets/' + label;
+        function getAPIKey(globalid, label){
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys/' + encodeURIComponent(label);
 
             return $http
                 .get(url)
@@ -182,7 +183,7 @@
         }
 
         function getOrganizationTree(globalid) {
-            var url = apiURL + '/' + globalid + '/tree';
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/tree';
             return $http
                 .get(url)
                 .then(
@@ -196,7 +197,7 @@
         }
 
         function createDNS(globalid, dnsName) {
-            var url = apiURL + '/' + globalid + '/dns/' + dnsName;
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns/' + encodeURIComponent(dnsName);
 
             return $http
                 .post(url)
@@ -211,7 +212,7 @@
         }
 
         function updateDNS(globalid, oldDnsName, newDnsName) {
-            var url = apiURL + '/' + globalid + '/dns/' + oldDnsName;
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns/' + encodeURIComponent(oldDnsName);
 
             return $http
                 .put(url, {name: newDnsName})
@@ -226,7 +227,7 @@
         }
 
         function deleteDNS(globalid, dnsName) {
-            var url = apiURL + '/' + globalid + '/dns/' + dnsName;
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns/' + encodeURIComponent(dnsName);
 
             return $http
                 .delete(url)

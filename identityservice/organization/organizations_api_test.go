@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAPISecretLabelValidation(t *testing.T) {
+func TestAPIKeyLabelValidation(t *testing.T) {
 	type testcase struct {
 		label string
 		valid bool
@@ -20,6 +20,6 @@ func TestAPISecretLabelValidation(t *testing.T) {
 		testcase{label: strings.Repeat("1", 51), valid: false},
 	}
 	for _, test := range testcases {
-		assert.Equal(t, test.valid, isValidAPISecretLabel(test.label), test.label)
+		assert.Equal(t, test.valid, isValidAPIKeyLabel(test.label), test.label)
 	}
 }

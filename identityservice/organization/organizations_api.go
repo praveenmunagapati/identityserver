@@ -434,14 +434,13 @@ func (api OrganizationsAPI) GetContracts(w http.ResponseWriter, r *http.Request)
 	log.Error("GetContracts is not implemented")
 }
 
-// GetAPISecretLabels gets the list of labels that are defined for active api secrets. The secrets themselves
-// are not included.
-// It is handler for GET /organizations/{globalid}/apisecrets
-func (api OrganizationsAPI) GetAPISecretLabels(w http.ResponseWriter, r *http.Request) {
+// GetAPIKeyLabels is the handler for GET /organizations/{globalid}/apikeys
+// Get the list of active api keys. The secrets themselves are not included.
+func (api OrganizationsAPI) GetAPIKeyLabels(w http.ResponseWriter, r *http.Request) {
 	organization := mux.Vars(r)["globalid"]
 
 	mgr := oauthservice.NewManager(r)
-	labels, err := mgr.GetClientSecretLabels(organization)
+	labels, err := mgr.GetClientLabels(organization)
 	if err != nil {
 		log.Error("Error getting a client secret labels: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -453,7 +452,7 @@ func (api OrganizationsAPI) GetAPISecretLabels(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(labels)
 }
 
-func isValidAPISecretLabel(label string) (valid bool) {
+func isValidAPIKeyLabel(label string) (valid bool) {
 	valid = true
 	labelLength := len(label)
 	valid = valid && labelLength > 2 && labelLength < 51
@@ -467,133 +466,120 @@ func isValidDNSName(label string) (valid bool) {
 	return valid
 }
 
-// GetAPISecret is the handler for GET /organizations/{globalid}/apisecrets/{label}
-func (api OrganizationsAPI) GetAPISecret(w http.ResponseWriter, r *http.Request) {
+// GetAPIKey is the handler for GET /organizations/{globalid}/apikeys/{label}
+func (api OrganizationsAPI) GetAPIKey(w http.ResponseWriter, r *http.Request) {
 	organization := mux.Vars(r)["globalid"]
 	label := mux.Vars(r)["label"]
 
 	mgr := oauthservice.NewManager(r)
-	secret, err := mgr.GetClientSecret(organization, label)
+	client, err := mgr.GetClient(organization, label)
 	if err != nil {
-		log.Error("Error getting a client secret: ", err.Error())
+		log.Error("Error getting a client: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	if secret == "" {
+	if client == nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	response := struct {
-		Label  string `json:"label"`
-		Secret string `json:"secret"`
-	}{
-		Label:  label,
-		Secret: secret,
-	}
+	apiKey := FromOAuthClient(client)
 
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(apiKey)
 }
 
-// CreateNewAPISecret creates a new API Secret
-// It is handler for POST /organizations/{globalid}/apisecrets
-func (api OrganizationsAPI) CreateNewAPISecret(w http.ResponseWriter, r *http.Request) {
+// CreateNewAPIKey is the handler for POST /organizations/{globalid}/apikeys
+// Create a new API Key, a secret itself should not be provided, it will be generated
+// serverside.
+func (api OrganizationsAPI) CreateNewAPIKey(w http.ResponseWriter, r *http.Request) {
 	organization := mux.Vars(r)["globalid"]
 
-	body := struct {
-		Label string
-	}{}
+	apiKey := APIKey{}
 
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&apiKey); err != nil {
+		log.Debug("Error decoding apikey: ", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if !isValidAPISecretLabel(body.Label) {
-		log.Debug("Invalid label: ", body.Label)
+	//TODO: validate key, not just the label property
+	if !isValidAPIKeyLabel(apiKey.Label) {
+		log.Debug("Invalid label: ", apiKey.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	c := oauthservice.NewOauth2Client(organization, body.Label)
+	log.Debug("Creating apikey:", apiKey)
+	c := oauthservice.NewOauth2Client(organization, apiKey.Label, apiKey.CallbackURL, apiKey.ClientCredentialsGrantType)
 
 	mgr := oauthservice.NewManager(r)
-	err := mgr.CreateClientSecret(c)
-
-	if err != nil && err != db.ErrDuplicate {
+	err := mgr.CreateClient(c)
+	if db.IsDup(err) {
+		log.Debug("Duplicate label")
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if err != nil {
 		log.Error("Error creating api secret label", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	if err == db.ErrDuplicate {
-		log.Debug("Duplicate label")
-		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-		return
-	}
-
-	response := struct {
-		Label  string `json:"label"`
-		Secret string `json:"secret"`
-	}{
-		Label:  c.Label,
-		Secret: c.Secret,
-	}
+	apiKey.Secret = c.Secret
 
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(apiKey)
 
 }
 
-// UpdateAPISecretLabel updates the label of the secret
-// It is handler for PUT /organizations/{globalid}/apisecrets/{label}
-func (api OrganizationsAPI) UpdateAPISecretLabel(w http.ResponseWriter, r *http.Request) {
+// UpdateAPIKey is the handler for PUT /organizations/{globalid}/apikeys/{label}
+// Updates the label or other properties of a key.
+func (api OrganizationsAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
 	organization := mux.Vars(r)["globalid"]
 	oldlabel := mux.Vars(r)["label"]
 
-	log.Debug("Updating APISecret ", oldlabel)
-	body := struct{ Label string }{}
+	apiKey := APIKey{}
 
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&apiKey); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if !isValidAPISecretLabel(body.Label) {
-		log.Debug("Invalid label: ", body.Label)
+	if !isValidAPIKeyLabel(apiKey.Label) {
+		log.Debug("Invalid label: ", apiKey.Label)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	mgr := oauthservice.NewManager(r)
-	err := mgr.RenameClientSecret(organization, oldlabel, body.Label)
+	err := mgr.UpdateClient(organization, oldlabel, apiKey.Label, apiKey.CallbackURL, apiKey.ClientCredentialsGrantType)
 
-	if err != nil && err != db.ErrDuplicate {
+	if err != nil && db.IsDup(err) {
+		log.Debug("Duplicate label")
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	if err != nil {
 		log.Error("Error renaming api secret label", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	if err == db.ErrDuplicate {
-		log.Debug("Duplicate label")
-		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-		return
-	}
-
 	w.WriteHeader(http.StatusCreated)
 }
 
-// DeleteAPISecret removes an API secret
-// It is handler for DELETE /organizations/{globalid}/apisecrets/{label}
-func (api OrganizationsAPI) DeleteAPISecret(w http.ResponseWriter, r *http.Request) {
+// DeleteAPIKey is the handler for DELETE /organizations/{globalid}/apikeys/{label}
+// Removes an API key
+func (api OrganizationsAPI) DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
 	organization := mux.Vars(r)["globalid"]
 	label := mux.Vars(r)["label"]
 
 	mgr := oauthservice.NewManager(r)
-	mgr.DeleteClientSecret(organization, label)
+	mgr.DeleteClient(organization, label)
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -621,7 +607,7 @@ func (api OrganizationsAPI) CreateDns(w http.ResponseWriter, r *http.Request) {
 	response := struct {
 		Name string `json:"name"`
 	}{
-		Name:  dnsName,
+		Name: dnsName,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -696,4 +682,3 @@ func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
-

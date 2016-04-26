@@ -76,6 +76,24 @@ types:
       role: owner
       created: Sun, 06 Nov 1994 08:49:37 GMT
 
+  APIKey:
+    properties:
+      label:
+        type: string
+        maxLength: 50
+        minLength: 2
+      callbackURL?:
+        type: string
+        maxLength: 250
+        minLength: 5
+      clientCredentialsGrantType?:
+        description: Indicates if this key may be used in a client credentials oauth2 flow.
+        type: boolean
+        default: false
+      secret?:
+        type: string
+        maxLength: 250
+
 securedBy: [ oauth_2_0 ]
 /organizations:
   post:
@@ -236,69 +254,58 @@ securedBy: [ oauth_2_0 ]
                 204:
                   description: Invitation cancelled
 
-    /apisecrets:
-      description: API secrets are the oauth2 client secrets needed to access the api.
+    /apikeys:
+      description: API keys are the oauth2 client secrets and callbacks needed to access the api.
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       get:
-        displayName: GetAPISecretLabels
-        description: Get the list of labels that are defined for active api secrets. The secrets themselves are not included.
+        displayName: GetAPIKeyLabels
+        description: Get the list of active api keys.
         responses:
             200:
               body:
                 application/json:
                     type: string[]
       post:
-        displayName: CreateNewAPISecret
-        description: Create a new API Secret
+        displayName: CreateNewAPIKey
+        description: Create a new API Key, a secret itself should not be provided, it will be generated serverside.
         body:
           application/json:
-            properties:
-              label:
-                type: string
-                maxLength: 50
-                minLength: 2
+            type: APIKey
         responses:
             201:
               body:
                 application/json:
-                    properties:
-                       label: string
-                       secret: string
+                    type: APIKey
             409:
                 description: Label is already used.
       /{label}:
         get:
-          displayName: GetAPISecret
+          displayName: GetAPIKey
           responses:
             200:
                 body:
                     application/json:
-                     properties:
-                        label: string
-                        secret: string
+                     type: APIKey
             404:
                 description: Not found
         put:
-          displayName: UpdateAPISecretLabel
-          description: Updates the label of the secret
+          displayName: UpdateAPIKey
+          description: Updates the label or other properties of a key.
           body:
             application/json:
               properties:
-                label:
-                  type: string
-                  maxLength: 50
-                  minLength: 2
+                type: APIKey
           responses:
             201:
-                description: Renamed
+                description: Updated
             409:
                 description: New label is already used
         delete:
-          displayName: DeleteAPISecret
-          description: Removes an API secret
+          displayName: DeleteAPIKey
+          description: Removes an API key
           responses:
               204:
-                description: API secret removed
+                description: API key removed
     /dns:
       description: Manage domain names linked to an organization.
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

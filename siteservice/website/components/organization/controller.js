@@ -59,19 +59,19 @@
         var vm = this,
             globalid = $routeParams.globalid;
         vm.invitations = [];
-        vm.apisecretlabels = [];
+        vm.apikeylabels = [];
         vm.organization = {};
         vm.organizationRoot = {};
         vm.userDetails = {};
         vm.hasEditPermission = false;
 
         vm.showInvitationDialog = showInvitationDialog;
-        vm.showAPICreationDialog = showAPICreationDialog;
-        vm.showAPISecretDialog = showAPISecretDialog;
+        vm.showAPIKeyCreationDialog = showAPIKeyCreationDialog;
+        vm.showAPIKeyDialog = showAPIKeyDialog;
         vm.showDNSDialog = showDNSDialog;
         vm.getOrganizationDisplayname = getOrganizationDisplayname;
         vm.fetchInvitations = fetchInvitations;
-        vm.fetchAPISecretLabels = fetchAPISecretLabels;
+        vm.fetchAPIKeyLabels = fetchAPIKeyLabels;
         activate();
 
         function activate() {
@@ -118,15 +118,15 @@
         }
 
 
-        function fetchAPISecretLabels(){
-            if (!vm.hasEditPermission || vm.apisecretlabels.length) {
+        function fetchAPIKeyLabels(){
+            if (!vm.hasEditPermission || vm.apikeylabels.length) {
                 return;
             }
             OrganizationService
-                .getAPISecretLabels(globalid)
+                .getAPIKeyLabels(globalid)
                 .then(
                     function(data) {
-                        vm.apisecretlabels = data;
+                        vm.apikeylabels = data;
                     },
                     function(reason) {
                         $window.location.href = "error" + reason.status;
@@ -155,11 +155,13 @@
         }
 
 
-        function showAPICreationDialog(ev) {
+
+
+        function showAPIKeyCreationDialog(ev) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: APISecretDialogController,
-                templateUrl: 'components/organization/views/apisecretdialog.html',
+                controller: APIKeyDialogController,
+                templateUrl: 'components/organization/views/apikeydialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
                 locals:
@@ -173,17 +175,17 @@
             .then(
                 function(data) {
                     if (data.newLabel) {
-                        vm.apisecretlabels.push(data.newLabel);
+                        vm.apikeylabels.push(data.newLabel);
                     }
                 });
         }
 
 
-        function showAPISecretDialog(ev, label) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+        function showAPIKeyDialog(ev, label) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
             $mdDialog.show({
-                controller: APISecretDialogController,
-                templateUrl: 'components/organization/views/apisecretdialog.html',
+                controller: APIKeyDialogController,
+                templateUrl: 'components/organization/views/apikeydialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
                 locals:
@@ -200,16 +202,16 @@
                         if (data.originalLabel) {
                             if (data.newLabel){
                                 //replace
-                                vm.apisecretlabels[vm.apisecretlabels.indexOf(data.originalLabel)] = data.newLabel;
+                                vm.apikeylabels[vm.apikeylabels.indexOf(data.originalLabel)] = data.newLabel;
                             }
                             else {
                                 //remove
-                                vm.apisecretlabels.splice(vm.apisecretlabels.indexOf(data.originalLabel),1);
+                                vm.apikeylabels.splice(vm.apikeylabels.indexOf(data.originalLabel),1);
                             }
                         }
                         else {
                             //add
-                            vm.apisecretlabels.push(data.newLabel);
+                            vm.apikeylabels.push(data.newLabel);
                         }
                     }
                 });
@@ -286,16 +288,16 @@
         }
     }
 
-    function APISecretDialogController($scope, $mdDialog, organization, OrganizationService, $window, label) {
-        //If there is a secret, it is already saved, if not, this means that a new secret is being created.
+    function APIKeyDialogController($scope, $mdDialog, organization, OrganizationService, $window, label) {
+        //If there is a key, it is already saved, if not, this means that a new secret is being created.
 
-        $scope.secret = "";
+        $scope.apikey = {secret: ""};
 
         if (label) {
             $scope.secret = "-- Loading --";
-            OrganizationService.getAPISecret(organization, label).then(
+            OrganizationService.getAPIKey(organization, label).then(
                 function(data){
-                    $scope.secret = data.secret;
+                    $scope.apikey = data;
                 },
                 function(reason){
                     $window.location.href = "error" + reason.status;
@@ -312,7 +314,7 @@
         $scope.validationerrors = {};
         $scope.create = create;
         $scope.update = update;
-        $scope.deleteAPISecret = deleteAPISecret;
+        $scope.deleteAPIKey = deleteAPIKey;
 
         $scope.modified = false;
 
@@ -326,12 +328,13 @@
             }
         }
 
-        function create(label){
+        function create(label, apiKey){
             $scope.validationerrors = {};
-            OrganizationService.createAPISecret(organization, label).then(
+            apiKey.label = label;
+            OrganizationService.createAPIKey(organization, apiKey).then(
                 function(data){
                     $scope.modified = true;
-                    $scope.secret = data.secret;
+                    $scope.apikey = data;
                     $scope.savedLabel = data.label;
                 },
                 function(reason){
@@ -348,7 +351,7 @@
 
         function update(oldLabel, newLabel){
             $scope.validationerrors = {};
-            OrganizationService.updateAPISecretLabel(organization, oldLabel, newLabel).then(
+            OrganizationService.updateAPIKey(organization, oldLabel, newLabel, $scope.apikey).then(
                 function(data){
                     $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel});
                 },
@@ -365,9 +368,9 @@
         }
 
 
-        function deleteAPISecret(label){
+        function deleteAPIKey(label){
             $scope.validationerrors = {};
-            OrganizationService.deleteAPISecret(organization, label).then(
+            OrganizationService.deleteAPIKey(organization, label).then(
                 function(data){
                     $mdDialog.hide({originalLabel: label, newLabel: ""});
                 },
