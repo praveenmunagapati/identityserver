@@ -186,3 +186,15 @@ func (m *Manager) GetClient(clientID, label string) (client *Oauth2Client, err e
 	}
 	return
 }
+
+//GetClientByCredentials retrieves a client given a clientid and a secret
+func (m *Manager) getClientByCredentials(clientID, secret string) (client *Oauth2Client, err error) {
+	client = &Oauth2Client{}
+	err = m.getClientsCollection().Find(bson.M{"clientid": clientID, "secret": secret}).One(client)
+	if err == mgo.ErrNotFound {
+		err = nil
+		client = nil
+		return
+	}
+	return
+}

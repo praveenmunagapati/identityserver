@@ -452,17 +452,18 @@
                 }
             );
         }
+    }
 
-        function getChildOrganizations(organization) {
-            var children = [];
-            for (var i = 0, splitted = organization.split('.'); i < splitted.length; i++) {
-                var parents = splitted.slice(0, i + 1);
-                children.push({
-                    name: splitted[i],
-                    url: '#/organizations/' + parents.join('.')
-                });
-            }
-            return children;
+    function getChildOrganizations(organization) {
+        var children = [];
+        for (var i = 0, splitted = organization.split('.'); i < splitted.length; i++) {
+            var parents = splitted.slice(0, i + 1);
+            children.push({
+                name: splitted[i],
+                url: '#/organizations/' + parents.join('.')
+            });
         }
+        return children;
+
     }
 })();

@@ -78,29 +78,34 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			return
 		}
 
-		orgMgr := NewManager(r)
-		isOwner, err := orgMgr.IsOwner(protectedOrganization, at.Username)
-		if err != nil {
-			log.Error(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		if isOwner && at.ClientID == "itsyouonline" && at.Scope == "admin" {
-			scopes = []string{"organization:owner"}
+		if at.GlobalID == protectedOrganization {
+			scopes = []string{at.Scope}
 		} else {
-			isMember, err := orgMgr.IsMember(protectedOrganization, at.Username)
+			orgMgr := NewManager(r)
+			isOwner, err := orgMgr.IsOwner(protectedOrganization, at.Username)
 			if err != nil {
 				log.Error(err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
-			if isMember && at.ClientID == "itsyouonline" && at.Scope == "admin" {
-				scopes = []string{"organization:member"}
+
+			if isOwner && at.ClientID == "itsyouonline" && at.Scope == "admin" {
+				scopes = []string{"organization:owner"}
+			} else {
+				isMember, err := orgMgr.IsMember(protectedOrganization, at.Username)
+				if err != nil {
+					log.Error(err)
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+				if isMember && at.ClientID == "itsyouonline" && at.Scope == "admin" {
+					scopes = []string{"organization:member"}
+				}
 			}
 		}
 
 		//TODO: scopes "organization:info", "organization:contracts:read"
+
 		log.Debug("Available scopes: ", scopes)
 
 		// check scopes

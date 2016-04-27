@@ -7,7 +7,7 @@ OAuth2 defines four grant types, each of which is useful in different cases:
 3. Resource Owner Password Credentials: used with trusted Applications, such as those owned by the service itself
 4. Client Credentials: used with Applications API access
 
-Currently the **authorization code** and **implicit** grant types are supported.
+Currently the **authorization code**, **implicit** and **client credentials** grant types are supported.
 
 
 ## Authorization Code Flow
@@ -17,7 +17,7 @@ The authorization code grant type is the most commonly used because it is optimi
 
 In order to acquire an oauth access token, a client id and client secret are required.
 
-In itsyou.online, organizations map to clients in the oauth2 terminology and the organization's globalid is used as the clientid. Client secrets can be created through the UI or through the `organizations/{globalid}/apisecrets` api.
+In itsyou.online, organizations map to clients in the oauth2 terminology and the organization's globalid is used as the clientid. Client secrets can be created through the UI or through the `organizations/{globalid}/apikeys` api.
 
 ### Step 1: Authorization Code Link
 
@@ -133,3 +133,45 @@ The application returns a webpage that contains a script that can extract the ac
 The user-agent executes the provided script and passes the extracted access token to the application.
 
 Now the application is authorized! It may use the token to access the user's account via the itsyou.online API, limited to the scope of access, until the token expires or is revoked.
+
+
+
+## Client Credentials Flow
+The client credentials grant type provides an application linked to an organization to access its own account. Examples of when this might be useful include if an application wants to invite someone to an organization or access other organization data via the API.
+
+### Prerequisite: clientid and client secret
+
+In order to acquire an oauth access token, a client id and client secret are required.
+
+In itsyou.online, organizations map to clients in the oauth2 terminology and the organization's globalid is used as the clientid. Client secrets can be created through the UI or through the `organizations/{globalid}/apikeys` api.
+
+Being able to use an apikey in a client credentials flow, this must be explicitely enabled.
+
+### Acquire an access token
+
+The application requests an access token by sending its credentials, its client ID and client secret, to the authorization server. An example POST request might look like the following:
+
+```
+https://itsyou.online/v1/oauth/access_token?grant_type=client_credentials&client_id=CLIENT_ID&client_secret=CLIENT_SECRET
+```
+
+* client_id=CLIENT_ID
+
+    the application's client ID (organization name)
+
+* client_secret=CLIENT_SECRET
+
+    the api key secret
+
+* grant_type=client_credentials
+
+    specifies that your application is requesting an access token though a client credentials flow
+
+
+
+If the application credentials check out, the authorization server returns an access token to the application.
+
+
+### Use the access token to access the API
+
+The access token allows you to make requests to the API like described in the authorization code grant type above but on a behalf of the organization instead of on behalf of a user.

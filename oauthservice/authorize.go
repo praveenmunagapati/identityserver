@@ -187,7 +187,7 @@ func handleImplicitGrantCodeType(r *http.Request, username, clientID, redirectUR
 
 	mgr := NewManager(r)
 
-	at := newAccessToken(username, clientID, scopes)
+	at := newAccessToken(username, "", clientID, scopes)
 	err = mgr.saveAccessToken(at)
 	if err != nil {
 		return

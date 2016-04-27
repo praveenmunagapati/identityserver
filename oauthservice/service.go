@@ -37,6 +37,8 @@ const (
 	AuthorizationGrantCodeType = "code"
 	//ImplicitGrantCodeType is the requested response_type for an 'implicit' oauth2 flow
 	ImplicitGrantCodeType = "token"
+	//ClientCredentialsGrantCodeType is the requested grant_type for a 'client credentials' oauth2 flow
+	ClientCredentialsGrantCodeType = "client_credentials"
 )
 
 //GetAuthenticatedUser returns the authenticated user if any or an empty string if not
