@@ -145,7 +145,7 @@ In order to acquire an oauth access token, a client id and client secret are req
 
 In itsyou.online, organizations map to clients in the oauth2 terminology and the organization's globalid is used as the clientid. Client secrets can be created through the UI or through the `organizations/{globalid}/apikeys` api.
 
-Being able to use an apikey in a client credentials flow, this must be explicitely enabled.
+In order to use an apikey in a client credentials flow, *enable client credentials flow* must be set on the apikey (through the api or in the apikey detail dialog in the UI).
 
 ### Acquire an access token
 
