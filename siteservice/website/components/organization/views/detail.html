@@ -2,12 +2,16 @@
     <md-content layout="column" layout-fill>
         <div layout>
             <div flex="80">
-                <p>Organization</p>
-                <h1>{{ vm.organization.globalid }}</h1>
+                <p ng-if="vm.childOrganizationNames.length === 0">Organization</p>
+                <p ng-if="vm.childOrganizationNames.length !== 0">
+                    <span ng-repeat="org in vm.childOrganizationNames">
+                        <a class="breadcrumb-link" ng-href="{{ ::org.url }}">{{ ::org.name }}</a>
+                        <span ng-if="!$last">&raquo; </span>
+                    </span>
+                </p>
+                <h1 ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></h1>
             </div>
-            <div flex>
-
-            </div>
+            <div flex></div>
         </div>
         <div flex layout="column">
 
@@ -70,7 +74,11 @@
                                 </div>
                                 <div class="tree">
                                     <ul ng-repeat="tree in vm.organizationRoot.children">
+                                        <li ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
+                                            <a ng-href="#/organizations/{{ ::tree.globalid }}"
+                                               ng-bind="::vm.getOrganizationDisplayname(tree.globalid)"> </a>
                                         <ng-include src="'/components/organization/views/treeItem.html'"></ng-include>
+                                        </li>
                                     </ul>
                                 </div>
                             </md-tab-body>

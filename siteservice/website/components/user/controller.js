@@ -144,7 +144,8 @@
                 .then(
                     function(responses) {
                         toast('Accepted ' + responses.length + ' invitations!');
-                        fetch();
+                        vm.loaded.notifications = false;
+                        loadNotifications();
                     },
                     function(reason) {
                         $window.location.href = "error" + reason.status;
@@ -166,7 +167,8 @@
                 .then(
                     function(responses) {
                         toast('Rejected ' + responses.length + ' invitations!');
-                        fetch();
+                        vm.loaded.notifications = false;
+                        loadNotifications();
                     },
                     function(reason) {
                         $window.location.href = "error" + reason.status;

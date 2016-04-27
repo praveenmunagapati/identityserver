@@ -261,3 +261,12 @@ footer { background: #3091BB; color: #FFF; padding: 20px 0; text-align: center; 
     background: rgba(255, 165, 0, 0.3);
     color: #000000;
 }
+
+.breadcrumb-link {
+    color: #000000;
+    text-decoration: none;
+}
+
+.breadcrumb-link:hover, .breadcrumb-link:active {
+    text-decoration: underline;
+}
