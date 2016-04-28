@@ -2,6 +2,7 @@ package identityservice
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -103,13 +104,51 @@ func GetCookieSecret() string {
 //ValidAuthorizationForScopes checks if there is a valid authorization for the requested scopes
 func (service *Service) ValidAuthorizationForScopes(r *http.Request, username string, grantedTo string, scopes string) (valid bool, err error) {
 	authorization, err := user.NewManager(r).GetAuthorization(username, grantedTo)
-	valid = (authorization != nil)
-	//TODO: actually check the authorization versus scopes
+	if authorization == nil || err != nil {
+		valid = false
+		return
+	}
+
+	valid = authorization.ScopesAreAuthorized(scopes)
+
 	return
 }
 
+//FilterPossibleScopes filters the requestedScopes to the relevant ones that are possible
+// For example, a `user:memberof:orgid1` is not possible if the user is not a member the `orgid1` organization
+func (service *Service) FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes string) (possibleScopes string, err error) {
+	rawscopes := strings.Split(requestedScopes, ",")
+	orgmgr := organization.NewManager(r)
+	for _, rawscope := range rawscopes {
+		scope := strings.TrimSpace(rawscope)
+		if strings.HasPrefix(scope, "user:memberof:") {
+			orgid := strings.TrimPrefix(scope, "user:memberof:")
+			isMember, err := orgmgr.IsMember(orgid, username)
+			if err != nil {
+				return "", err
+			}
+			if isMember {
+				possibleScopes += "," + scope
+				continue
+			}
+			isOwner, err := orgmgr.IsOwner(orgid, username)
+			if err != nil {
+				return "", err
+			}
+			if isOwner {
+				possibleScopes += "," + scope
+			}
+		} else {
+			possibleScopes += "," + scope
+		}
+	}
+	if len(possibleScopes) > 0 {
+		possibleScopes = strings.TrimPrefix(possibleScopes, ",")
+	}
+	return
+}
 
-// getOauthSecret gets the oauth secret from mongodb for a specified service. If it doesn't exist, an error gets logged.
+// GetOauthSecret gets the oauth secret from mongodb for a specified service. If it doesn't exist, an error gets logged.
 func GetOauthSecret(service string) (string, error) {
 	session := db.GetSession()
 	defer session.Close()
@@ -124,20 +163,19 @@ func GetOauthSecret(service string) (string, error) {
 	return secretModel.Value, err
 }
 
-
-// getOauthSecret gets the oauth secret from mongodb for a specified service. If it doesn't exist, an error gets logged.
-func GetOauthClientId(service string) (string, error) {
+// GetOauthClientID gets the oauth secret from mongodb for a specified service. If it doesn't exist, an error gets logged.
+func GetOauthClientID(service string) (string, error) {
 	session := db.GetSession()
 	defer session.Close()
 
 	config := globalconfig.NewManager()
 	globalconfig.InitModels()
 
-	clientIdModel, err := config.GetByKey(service + "-clientid")
-	log.Warn(clientIdModel.Value)
+	clientIDModel, err := config.GetByKey(service + "-clientid")
+	log.Warn(clientIDModel.Value)
 	if err != nil {
 		log.Errorf("No Oauth client id found for %s. Please insert it into the collection globalconfig with key %s-clientid",
 			service, service)
 	}
-	return clientIdModel.Value, err
+	return clientIDModel.Value, err
 }

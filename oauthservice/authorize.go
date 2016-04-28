@@ -50,8 +50,9 @@ func redirecToLoginPage(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login?"+queryvalues.Encode(), http.StatusFound)
 }
 
-func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request) {
+func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request, possibleScopes string) {
 	queryvalues := r.URL.Query()
+	queryvalues.Set("scope", possibleScopes)
 	queryvalues.Add("endpoint", r.URL.EscapedPath())
 	//TODO: redirect according the the received http method
 	http.Redirect(w, r, "/authorize?"+queryvalues.Encode(), http.StatusFound)
@@ -65,9 +66,15 @@ func (service *Service) validAuthorizationForScopes(r *http.Request, username, c
 	}
 	valid, err = service.identityService.ValidAuthorizationForScopes(r, username, clientID, requestedScopes)
 
-	//TODO: check if the client still has a valid authorization for the requested scope
 	//TODO: how to request explicit confirmation?
 
+	return
+}
+
+func (service *Service) filterPossibleScopes(r *http.Request, username, clientID, requestedScopes string) (possibleScopes string, err error) {
+	possibleScopes, err = service.identityService.FilterPossibleScopes(r, username, clientID, requestedScopes)
+	log.Debug("Requested scopes: ", requestedScopes, " - Possible scopes: ", possibleScopes)
+	//TODO: how to request required scopes, they should not just be ignored?
 	return
 }
 
@@ -111,7 +118,13 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 	service.validateRedirectURI(redirectURI, clientID)
 
 	requestedScopes := r.Form.Get("scope")
-	validAuthorization, err := service.validAuthorizationForScopes(r, username, clientID, requestedScopes)
+	possibleScopes, err := service.filterPossibleScopes(r, username, clientID, requestedScopes)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	validAuthorization, err := service.validAuthorizationForScopes(r, username, clientID, possibleScopes)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -125,7 +138,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 			return
 		}
 		service.sessionService.SetAPIAccessToken(w, token)
-		redirectToScopeRequestPage(w, r)
+		redirectToScopeRequestPage(w, r, possibleScopes)
 		return
 	}
 

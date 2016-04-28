@@ -61,6 +61,12 @@
                                 Username
                             </div>
                         </md-list-item>
+                        <md-list-item ng-repeat="organization in vm.requestedorganizations">
+                            <div><i class="fa fa-users"></i>&nbsp<md-tooltip>Organization membership</md-tooltip></div>
+                            <div flex>
+                                Member of {{ organization }}
+                            </div>
+                        <md-list-item>
                     </md-list>
                     <div flex layout style="margin-top: 10px;">
                         <!-- <md-button class="md-raised">Deny</md-button> -->

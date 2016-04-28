@@ -1,23 +1,24 @@
 package siteservice
 
 import (
-	"net/http"
-	log "github.com/Sirupsen/logrus"
 	"encoding/json"
-	"github.com/itsyouonline/identityserver/identityservice/user"
 	"fmt"
+	"net/http"
+
+	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/identityservice"
+	"github.com/itsyouonline/identityserver/identityservice/user"
 )
 
 func (service *Service) FacebookCallback(w http.ResponseWriter, request *http.Request) {
 	var code = request.URL.Query().Get("code")
 	var redirectUri = "https://dev.itsyou.online:8443/facebook_callback"
-	clientId, err := identityservice.GetOauthClientId("facebook");
+	clientId, err := identityservice.GetOauthClientID("facebook")
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	clientSecret, err := identityservice.GetOauthSecret("facebook");
+	clientSecret, err := identityservice.GetOauthSecret("facebook")
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -83,14 +84,14 @@ func (service *Service) FacebookCallback(w http.ResponseWriter, request *http.Re
 func (service *Service) GithubCallback(w http.ResponseWriter, request *http.Request) {
 	var code = request.URL.Query().Get("code")
 	// Get GitHub access token
-	clientId, err := identityservice.GetOauthClientId("github");
+	clientId, err := identityservice.GetOauthClientID("github")
 	log.Info("clientId")
 	log.Info(clientId)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	clientSecret, err := identityservice.GetOauthSecret("github");
+	clientSecret, err := identityservice.GetOauthSecret("github")
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

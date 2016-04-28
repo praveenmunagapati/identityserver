@@ -16,7 +16,7 @@
         var queryParams = URI($location.absUrl()).search(true);
         vm.requestingorganization = queryParams["client_id"];
         vm.requestedScopes = queryParams["scope"];
-
+        vm.requestedorganizations = [];
         vm.username = $rootScope.user;
 
         vm.user = {};
@@ -29,6 +29,7 @@
 
         function activate() {
             fetch();
+            parseScopes();
         }
 
         function fetch() {
@@ -45,9 +46,21 @@
                 );
         }
 
+        function parseScopes() {
+            if (vm.requestedScopes) {
+                var splitScopes = vm.requestedScopes.split(",");
+                for (let scope of splitScopes) {
+                    if (scope.startsWith("user:memberof:")) {
+                        var a = scope.split(":")
+                        vm.requestedorganizations.push(a[a.length - 1])
+                    }
+                }
+            }
+        }
+
         function authorize() {
             UserService
-                .saveAuthorization({username:vm.username, grantedTo:vm.requestingorganization})
+                .saveAuthorization({username:vm.username, grantedTo:vm.requestingorganization, organizations:vm.requestedorganizations})
                 .then(
                     function(data) {
                         var u = URI($location.absUrl());

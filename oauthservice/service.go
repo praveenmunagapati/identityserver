@@ -18,6 +18,9 @@ type SessionService interface {
 type IdentityService interface {
 	//ValidAuthorizationForScopes checks if there is a valid authorization for the requested scopes
 	ValidAuthorizationForScopes(r *http.Request, username string, grantedTo string, scopes string) (valid bool, err error)
+	//FilterPossibleScopes filters the requestedScopes to the relevant ones that are possible
+	// For example, a `user:memberof:orgid1` is not possible if the user is not a member the `orgid1` organization
+	FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes string) (possibleScopes string, err error)
 }
 
 //Service is the oauthserver http service

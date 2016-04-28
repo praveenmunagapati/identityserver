@@ -9,6 +9,7 @@ type Organization struct {
 }
 
 // IsValid performs basic validation on the content of an organizations fields
+//TODO: globalid should not contain ':,.'
 func (c *Organization) IsValid() (valid bool) {
 	valid = true
 	globalIDLength := len(c.Globalid)
