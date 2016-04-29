@@ -38,9 +38,41 @@ func newAuthorizationRequest(username, clientID, state string) *authorizationReq
 	return &ar
 }
 
-func (service *Service) validateRedirectURI(redirectURI, clientID string) {
-	//TODO: validate redirectURI
-	//TODO: seperate case for "itsyouonline"
+func validateRedirectURI(mgr ClientManager, redirectURI string, clientID string) (valid bool, err error) {
+	u, err := url.Parse(redirectURI)
+	if err != nil {
+		err = nil
+		return
+	}
+
+	valid = true
+	//A redirect to itsyou.online can not do harm but it is not normal either
+	valid = valid && (u.Scheme != "")
+	lowercaseHost := strings.ToLower(u.Host)
+	valid = valid && (lowercaseHost != "")
+	valid = valid && (!strings.HasSuffix(lowercaseHost, "itsyou.online"))
+	valid = valid && (!strings.Contains(lowercaseHost, "itsyou.online:"))
+
+	if !valid {
+		return
+	}
+
+	//For now, just check if the redirectURI is registered in 'a' apikey
+	//The redirect_uri is saved in the authorization request and during
+	// the access_token request when the secret is available, check again against the known value
+	clients, err := mgr.AllByClientID(clientID)
+	if err != nil {
+		valid = false
+		return
+	}
+
+	match := false
+	for _, client := range clients {
+		match = match || strings.HasPrefix(redirectURI, client.CallbackURL)
+	}
+	valid = valid && match
+
+	return
 }
 
 func redirecToLoginPage(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +147,8 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	clientID := r.Form.Get("client_id")
-	service.validateRedirectURI(redirectURI, clientID)
+	mgr := NewManager(r)
+	validateRedirectURI(mgr, redirectURI, clientID)
 
 	requestedScopes := r.Form.Get("scope")
 	possibleScopes, err := service.filterPossibleScopes(r, username, clientID, requestedScopes)
@@ -144,6 +177,12 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 
 	switch requestedResponseType {
 	case AuthorizationGrantCodeType:
+		if clientID == "itsyouonline" {
+			log.Warn("HACK attempt, someone tried to get a token as the 'itsyouonline' client")
+			//TODO: log the entire request and everything we know
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
 		redirectURI, err = handleAuthorizationGrantCodeType(r, username, clientID, redirectURI)
 	case ImplicitGrantCodeType:
 		redirectURI, err = handleImplicitGrantCodeType(r, username, clientID, redirectURI)

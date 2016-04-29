@@ -58,7 +58,7 @@ func InitModels() {
 
 }
 
-//Manager is used to store users
+//Manager is used to store
 type Manager struct {
 	session *mgo.Session
 }
@@ -69,6 +69,12 @@ func NewManager(r *http.Request) *Manager {
 	return &Manager{
 		session: session,
 	}
+}
+
+//ClientManager defines a client persistence interface
+type ClientManager interface {
+	//AllByClientID retrieves all clients with a given ID
+	AllByClientID(clientID string) ([]*Oauth2Client, error)
 }
 
 //getAuthorizationRequestCollection returns the mongo collection for the authorizationRequests
@@ -184,6 +190,14 @@ func (m *Manager) GetClient(clientID, label string) (client *Oauth2Client, err e
 		client = nil
 		return
 	}
+	return
+}
+
+//AllByClientID retrieves all clients with a given ID
+func (m *Manager) AllByClientID(clientID string) (clients []*Oauth2Client, err error) {
+	clients = make([]*Oauth2Client, 0)
+
+	err = m.getClientsCollection().Find(bson.M{"clientid": clientID}).All(clients)
 	return
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -80,7 +81,8 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 			httpStatusCode = http.StatusBadRequest
 		}
 	} else {
-		at, httpStatusCode = convertCodeToAccessTokenHandler(code, clientID, clientSecret, r)
+		redirectURI := r.FormValue("redirect_uri")
+		at, httpStatusCode = convertCodeToAccessTokenHandler(code, clientID, clientSecret, redirectURI, r)
 	}
 
 	if httpStatusCode != http.StatusOK {
@@ -128,7 +130,7 @@ func clientCredentialsTokenHandler(clientID string, secret string, r *http.Reque
 	return
 }
 
-func convertCodeToAccessTokenHandler(code string, clientID string, secret string, r *http.Request) (at *AccessToken, httpStatusCode int) {
+func convertCodeToAccessTokenHandler(code string, clientID string, secret string, redirectURI string, r *http.Request) (at *AccessToken, httpStatusCode int) {
 	httpStatusCode = http.StatusOK
 
 	mgr := NewManager(r)
@@ -146,8 +148,8 @@ func convertCodeToAccessTokenHandler(code string, clientID string, secret string
 
 	state := r.FormValue("state")
 
-	if ar.ClientID != clientID || ar.State != state {
-		log.Info("Bad client or hacking attempt, state or client_id is different from the original authorization request")
+	if ar.ClientID != clientID || ar.State != state || ar.RedirectURL != redirectURI {
+		log.Info("Bad client or hacking attempt, state, client_id or redirect_uri is different from the original authorization request")
 		httpStatusCode = http.StatusBadRequest
 		return
 	}
@@ -169,7 +171,12 @@ func convertCodeToAccessTokenHandler(code string, clientID string, secret string
 		return
 	}
 
-	//TODO: check redirecturl
+	if !strings.HasPrefix(redirectURI, client.CallbackURL) {
+		log.Debug("return_uri does not match the callback uri")
+		httpStatusCode = http.StatusBadRequest
+		return
+	}
+
 	at = newAccessToken(ar.Username, "", ar.ClientID, ar.Scope)
 	mgr.saveAccessToken(at)
 	return

@@ -33,7 +33,10 @@ https://itsyou.online/v1/oauth/authorize?response_type=code&client_id=CLIENT_ID&
     the application's client ID
 * redirect_uri=CALLBACK_URL
 
-    The redirect_uri parameter is optional. If left out, the users will redirected to the callback URL configured in the OAuth Application settings. If provided, the redirect URL's host and port must exactly match the callback URL. The redirect URL's path must reference a subdirectory of the callback URL.
+    The redirect_uri parameter is required. The redirect URL's host and port must exactly match the callback URL and the redirect URL's path must reference a subdirectory of the callback URL.
+    The redirect_uri *must* start with a scheme indicator (`scheme://`).
+
+
 * response_type=code
 
     specifies that your application is requesting an authorization code grant
@@ -66,6 +69,10 @@ The application requests an access token from the API, by passing the authorizat
 POST https://itsyou.online/v1/oauth/access_token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&code=AUTHORIZATION_CODE&redirect_uri=CALLBACK_URL
 ```
 
+The redirect_uri must match the redirect_uri passed in the access_code request and the callback URI registered in the api key. The redirect URL's host and port must exactly match the callback URL and the redirect URL's path must reference a subdirectory of the callback URL.
+
+* response_type=code
+
 ### Step 5: Application Receives Access Token
 
 If the authorization is valid, the API will send a response containing the access token (and optionally, a refresh token) to the application. The entire response will look something like this:
@@ -73,7 +80,9 @@ If the authorization is valid, the API will send a response containing the acces
 ```
 {"access_token":"ACCESS_TOKEN","token_type":"bearer","expires_in":2592000,"refresh_token":"REFRESH_TOKEN","scope":"read","info":{"username":"bob"}}
 ```
-Now the application is authorized! It may use the token to access the user's account via the service API, limited to the scope of access, until the token expires or is revoked. If a refresh token was issued, it may be used to request new access tokens if the original token has expired.
+Now the application is authorized.
+It may use the token to access the user's account via the service API, limited to the scope of access, until the token expires or is revoked.
+If a refresh token was issued, it may be used to request new access tokens if the original token has expired.
 
 
 ### Use the access token to access the API
@@ -132,12 +141,14 @@ The application returns a webpage that contains a script that can extract the ac
 
 The user-agent executes the provided script and passes the extracted access token to the application.
 
-Now the application is authorized! It may use the token to access the user's account via the itsyou.online API, limited to the scope of access, until the token expires or is revoked.
+Now the application is authorized.
+It may use the token to access the user's account via the itsyou.online API, limited to the scope of access, until the token expires or is revoked.
 
 
 
 ## Client Credentials Flow
-The client credentials grant type provides an application linked to an organization to access its own account. Examples of when this might be useful include if an application wants to invite someone to an organization or access other organization data via the API.
+The client credentials grant type provides an application linked to an organization to access its own account.
+Examples of when this might be useful include if an application wants to invite someone to an organization or access other organization data using the API.
 
 ### Prerequisite: clientid and client secret
 

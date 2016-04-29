@@ -24,3 +24,36 @@ func TestNewAuthorizationRequest(t *testing.T) {
 	assert.Equal(t, "state2", ar.State)
 	assert.Equal(t, "client1", ar.ClientID)
 }
+
+type testClientManager struct {
+	clients []*Oauth2Client
+}
+
+//AllByClientID just returns the all the clients, is only usefull for testing off course
+func (m *testClientManager) AllByClientID(clientID string) (clients []*Oauth2Client, err error) {
+	clients = m.clients
+	return
+}
+
+func TestValidateRedirectURI(t *testing.T) {
+	type testcase struct {
+		redirectURI string
+		valid       bool
+	}
+	mgr := &testClientManager{
+		clients: []*Oauth2Client{&Oauth2Client{CallbackURL: "http://www.url.com/callback"}},
+	}
+	testcases := []testcase{
+		testcase{redirectURI: "", valid: false},
+		testcase{redirectURI: "test.com", valid: false},
+		testcase{redirectURI: "https://itsyou.online", valid: false},
+		testcase{redirectURI: "https://test.itsyou.online", valid: false},
+		testcase{redirectURI: "https://test.itsyou.online:443", valid: false},
+		testcase{redirectURI: "http://www.url.com/callback/subpath", valid: true},
+	}
+	for i, test := range testcases {
+		valid, err := validateRedirectURI(mgr, test.redirectURI, "clientID")
+		assert.NoError(t, err, i)
+		assert.Equal(t, test.valid, valid, i)
+	}
+}
