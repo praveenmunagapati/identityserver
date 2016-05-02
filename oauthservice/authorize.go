@@ -25,7 +25,7 @@ func (ar *authorizationRequest) IsExpiredAt(testtime time.Time) bool {
 	return testtime.After(ar.CreatedAt.Add(time.Second * 10))
 }
 
-func newAuthorizationRequest(username, clientID, state string) *authorizationRequest {
+func newAuthorizationRequest(username, clientID, state, scope, redirectURI string) *authorizationRequest {
 	var ar authorizationRequest
 	randombytes := make([]byte, 21) //Multiple of 3 to make sure no padding is added
 	rand.Read(randombytes)
@@ -34,11 +34,18 @@ func newAuthorizationRequest(username, clientID, state string) *authorizationReq
 	ar.Username = username
 	ar.ClientID = clientID
 	ar.State = state
+	ar.Scope = scope
+	ar.RedirectURL = redirectURI
 
 	return &ar
 }
 
 func validateRedirectURI(mgr ClientManager, redirectURI string, clientID string) (valid bool, err error) {
+	log.Debug("Validating redirect URI for ", clientID)
+	if clientID == "itsyouonline" {
+		valid = true
+		return
+	}
 	u, err := url.Parse(redirectURI)
 	if err != nil {
 		err = nil
@@ -68,10 +75,12 @@ func validateRedirectURI(mgr ClientManager, redirectURI string, clientID string)
 
 	match := false
 	for _, client := range clients {
+		log.Debug("Possible redirect_uri: ", client.Label, "\n ", client.CallbackURL)
 		match = match || strings.HasPrefix(redirectURI, client.CallbackURL)
 	}
 	valid = valid && match
 
+	log.Debug("Redirect URI is valid: ", valid)
 	return
 }
 
@@ -91,7 +100,7 @@ func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request, possible
 }
 
 func (service *Service) validAuthorizationForScopes(r *http.Request, username, clientID, requestedScopes string) (valid bool, err error) {
-
+	log.Debug("Validating authorizations for scopes")
 	if clientID == "itsyouonline" {
 		valid = true
 		return
@@ -104,8 +113,9 @@ func (service *Service) validAuthorizationForScopes(r *http.Request, username, c
 }
 
 func (service *Service) filterPossibleScopes(r *http.Request, username, clientID, requestedScopes string) (possibleScopes string, err error) {
+	log.Debug("Filtering requested scopes: ", requestedScopes)
 	possibleScopes, err = service.identityService.FilterPossibleScopes(r, username, clientID, requestedScopes)
-	log.Debug("Requested scopes: ", requestedScopes, " - Possible scopes: ", possibleScopes)
+	log.Debug("Possible scopes: ", possibleScopes)
 	//TODO: how to request required scopes, they should not just be ignored?
 	return
 }
@@ -148,7 +158,16 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 	}
 	clientID := r.Form.Get("client_id")
 	mgr := NewManager(r)
-	validateRedirectURI(mgr, redirectURI, clientID)
+	valid, err := validateRedirectURI(mgr, redirectURI, clientID)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !valid {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	requestedScopes := r.Form.Get("scope")
 	possibleScopes, err := service.filterPossibleScopes(r, username, clientID, requestedScopes)
@@ -157,6 +176,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
 	validAuthorization, err := service.validAuthorizationForScopes(r, username, clientID, possibleScopes)
 	if err != nil {
 		log.Error(err)
@@ -183,7 +203,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		redirectURI, err = handleAuthorizationGrantCodeType(r, username, clientID, redirectURI)
+		redirectURI, err = handleAuthorizationGrantCodeType(r, username, clientID, redirectURI, possibleScopes)
 	case ImplicitGrantCodeType:
 		redirectURI, err = handleImplicitGrantCodeType(r, username, clientID, redirectURI)
 	}
@@ -198,13 +218,13 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 
 }
 
-func handleAuthorizationGrantCodeType(r *http.Request, username, clientID, redirectURI string) (correctedRedirectURI string, err error) {
+func handleAuthorizationGrantCodeType(r *http.Request, username, clientID, redirectURI, scopes string) (correctedRedirectURI string, err error) {
 	correctedRedirectURI = redirectURI
 
 	clientState := r.Form.Get("state")
 	//TODO: validate state (length and stuff)
 
-	ar := newAuthorizationRequest(username, clientID, clientState)
+	ar := newAuthorizationRequest(username, clientID, clientState, scopes, redirectURI)
 	mgr := NewManager(r)
 	err = mgr.saveAuthorizationRequest(ar)
 	if err != nil {

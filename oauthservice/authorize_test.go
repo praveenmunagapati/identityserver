@@ -16,13 +16,15 @@ func TestAuthorizationRequestExpiration(t *testing.T) {
 }
 
 func TestNewAuthorizationRequest(t *testing.T) {
-	ar := newAuthorizationRequest("user1", "client1", "state2")
+	ar := newAuthorizationRequest("user1", "client1", "state2", "scope3", "https://localhost")
 	assert.NotEmpty(t, ar.AuthorizationCode)
 	assert.False(t, strings.HasSuffix(ar.AuthorizationCode, "="))
 	assert.NotEqual(t, time.Time{}, ar.CreatedAt)
 	assert.Equal(t, "user1", ar.Username)
 	assert.Equal(t, "state2", ar.State)
 	assert.Equal(t, "client1", ar.ClientID)
+	assert.Equal(t, "scope3", ar.Scope)
+	assert.Equal(t, "https://localhost", ar.RedirectURL)
 }
 
 type testClientManager struct {

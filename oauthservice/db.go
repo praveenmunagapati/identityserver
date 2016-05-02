@@ -197,7 +197,7 @@ func (m *Manager) GetClient(clientID, label string) (client *Oauth2Client, err e
 func (m *Manager) AllByClientID(clientID string) (clients []*Oauth2Client, err error) {
 	clients = make([]*Oauth2Client, 0)
 
-	err = m.getClientsCollection().Find(bson.M{"clientid": clientID}).All(clients)
+	err = m.getClientsCollection().Find(bson.M{"clientid": clientID}).All(&clients)
 	return
 }
 
