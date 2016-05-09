@@ -318,8 +318,8 @@ securedBy: [ oauth_2_0 ]
               properties:
                 name:
                   type: string
-                  minlength: 4
-                  maxlength: 250
+                  minLength: 4
+                  maxLength: 250
           responses:
             409:
                 description: DNS name is already used.
@@ -336,12 +336,12 @@ securedBy: [ oauth_2_0 ]
               properties:
                 oldname:
                   type: string
-                  minlength: 4
-                  maxlength: 250
+                  minLength: 4
+                  maxLength: 250
                 newname:
                   type: string
-                  minlength: 4
-                  maxlength: 250
+                  minLength: 4
+                  maxLength: 250
           responses:
               201:
                   description: Renamed
@@ -361,7 +361,7 @@ securedBy: [ oauth_2_0 ]
     /tree:
       get:
         displayName: GetOrganizationTree
-        response:
+        responses:
           200:
             body:
               application/json:
