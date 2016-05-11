@@ -31,6 +31,7 @@
 <div class="fullscreenform">
     <form ng-cloak method="post" action="register" layout="column" name="signupform" >
     <div ng-init='signupform.serversidevalidationerrors = {"invalidsomething": true}'></div>
+    <div ng-init='vm.twoFAMethod = "sms"'></div>
     <div flex layout="row"  layout-xs="column">
         <div flex="50" layout="column">
             <md-input-container>
@@ -62,16 +63,39 @@
         <div flex layout="column">
             <div flex layout="row">
                 <span flex></span>
-                <div layout="column" flex="60">
+                <div layout="column" flex="70">
                     <md-input-container>
-                        <label>2-Factor authentication code</label>
-                        <input ng-model="totpcode" md-maxlength="6" minlength="6" required name="totpcode"
-                               autocomplete="off">
-                        <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
-                          <div ng-message="invalidtotpcode">An invalid code was given</div>
-                        </div>
+                        <label>2-Factor authentication method</label>
+                        <md-select name="twoFAMethod" ng-model="vm.twoFAMethod" required>
+                            <md-option value="sms">sms</md-option>
+                            <md-option value="totp">Authenticator application</md-option>
+                        </md-select>
                     </md-input-container>
-                    <qrcode version="6" error-correction-level="M" size="200" data="otpauth://totp/ItsYou.online?secret=1234123412341234&issuer=ItsYou.Online" href="otpauth://totp/ItsYou.online:?secret=1234123412341234&issuer=ItsYou.Online"></qrcode>
+                    <div style="margin-left: 20px;" flex layout="column" ng-show="vm.twoFAMethod == 'sms'">
+                        <md-input-container>
+                            <label>Phone number</label>
+                            <input ng-model="sms" minlength="4" ng-required="vm.twoFAMethod == 'sms'" name="phonenumber"
+                                   autocomplete="off">
+                            <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
+                              <div ng-message="invalidphonenumber">An invalid phone number was given</div>
+                            </div>
+                        </md-input-container>
+                    </div>
+                    <div style="margin-left: 20px;" flex layout="column" ng-show="vm.twoFAMethod == 'totp'">
+                        <md-input-container>
+                            <label>2-Factor authentication code</label>
+                            <input ng-model="totpcode" md-maxlength="6" minlength="6" ng-required="vm.twoFAMethod == 'totp'" name="totpcode"
+                                   autocomplete="off">
+                            <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
+                              <div ng-message="invalidtotpcode">An invalid code was given</div>
+                            </div>
+                        </md-input-container>
+                        <md-input-container>
+                        <qrcode version="6" error-correction-level="M" size="200" data="otpauth://totp/ItsYou.online?secret=1234123412341234&issuer=ItsYou.Online">
+                        </qrcode>
+                        <md-tooltip>Scan this image with the 2-Factor authentication app on your phone</md-tooltip>
+                        </md-input-container>
+                    </div>
                 </div>
                 <span flex></span>
             </div>

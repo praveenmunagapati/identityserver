@@ -73,6 +73,14 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	validationErrors := make([]string, 0, 0)
 
 	values := request.Form
+	log.Debug("ROB REMOVE THIS LOGLINE, registration values: ", values)
+	twoFAMethod := values.Get(".twoFAMethod")
+	log.Debug("Registering user with 2fa method: ", twoFAMethod)
+	if twoFAMethod == "sms" {
+
+	} else {
+
+	}
 
 	totpsession, err := service.GetSession(request, SessionForRegistration, "totp")
 	if err != nil {
