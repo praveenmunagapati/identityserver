@@ -7,5 +7,5 @@ First things first, let's link your work phone number to your identity.
 
 ![Link phone number to identity](LinkToPhoneNumber.svg)
 
-Cool, but just anyone can link the same phone number to it's identity, you want someone to validate it so you can prove this is your phone number.
+This is easy but anyone can link the same phone number to it's identity, you want someone to validate it so you can prove this is your phone number.
 Ask a phone number validation service (reallycoolphonenumbervalidationservice) to validate your phone number. Reallycoolphonenumbervalidationservice is a proper service that does it's best in what it does, validating phone numbers. You  send it a validation request and sign it with your identity private key. The phone number validation service validates the phone number, possibly by asking you some information related to your identity and signs the link between your identity and your phonenumber.
