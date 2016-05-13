@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-	   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-       <title>Log in - It's You Online</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Log in - It's You Online</title>
 
-       <link rel='stylesheet prefetch' href='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css'>
-       <link rel="stylesheet" href="assets/css/style.css"/>
-       <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
-       <link href='https://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-        <style>
-
-            [ng\:cloak], [ng-cloak], .ng-cloak {
-                display: none;
-            }
-        </style>
+      <link rel='stylesheet prefetch'
+            href='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.7/angular-material.min.css'>
+      <link rel="stylesheet" href="assets/css/style.css"/>
+      <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
+      <link href='https://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet'
+            type='text/css'>
+      <style>
+          [ng\:cloak], [ng-cloak], .ng-cloak {
+              display: none;
+          }
+      </style>
  </head>
 
 <body ng-app="loginApp">
@@ -33,10 +35,10 @@
     <div ng-init='loginform.serversidevalidationerrors = {"invalidsomething": true}'></div>
     <div flex layout="row">
         <div flex></div>
-        <div layout="column" flex-gt-xs="40" flex-xs="100">
+        <div layout="column" flex="100" flex-gt-sm="40">
             <md-input-container>
                 <label>Username</label>
-                <input ng-model="login" minlength="2" required name="login" type="text" autofocus>
+                <input ng-model="login" ng-minlength="2" required name="login" type="text" autofocus>
             </md-input-container>
 
             <md-input-container>
@@ -46,7 +48,13 @@
 
             <md-input-container>
                 <label>2-Factor authentication code</label>
-                <input ng-model="totpcode" md-maxlength="6" minlength="6" required name="totpcode" autocomplete="off">
+                <input ng-model="totpcode" ng-maxlength="6" ng-minlength="6" required name="totpcode"
+                       autocomplete="off">
+
+                <div ng-messages="loginform.totpcode.$error">
+                    <div ng-message="maxlength">Invalid format. This code must be exactly 6 numbers long.</div>
+                    <div ng-message="minlength">Invalid format. This code must be exactly 6 numbers long.</div>
+                </div>
             </md-input-container>
         </div>
         <div flex></div>
@@ -67,11 +75,11 @@
 </div>
 
 
-<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.js'></script>
-<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js'></script>
-<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js'></script>
-<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js'></script>
-<script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.7/angular-material.min.js'></script>
 <script>
     angular.module('loginApp', ['ngMaterial','ngMessages'])
         .config(function($mdThemingProvider) {
@@ -93,8 +101,9 @@
                 'contrastDefaultColor': 'light',
                 'contrastDarkColors': '50 100 200 300 400 A100 A200 A400'
             });
-            $mdThemingProvider.theme('default')
-                .primaryPalette('blueish')
+            $mdThemingProvider
+                    .theme('default')
+                    .primaryPalette('blueish');
         });
 </script>
 </body>
