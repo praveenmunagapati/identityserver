@@ -13,10 +13,10 @@
             <label>Organization name</label>
             <input ng-model="vm.name" required type="text" md-autofocus="true" name="name"
                    ng-change="vm.clearErrors()"
-                   ng-pattern="/^[a-zA-Z0-9 ]+$/" ng-minlength="3">
+                   ng-pattern="/^[a-zA-Z0-9 -_]+$/" ng-minlength="3">
             <div ng-messages="newOrganizationForm.name.$error">
                 <div ng-message="duplicate">This name is already taken</div>
-                <div ng-message="pattern">Invalid organization name. Only characters a-z, 0-9 and space are allowed
+                <div ng-message="pattern">Invalid organization name. Only characters a-z, 0-9, dashes, underscores and space are allowed
                 </div>
                 <div ng-message="minlength">The organization name should be at least 3 characters long</div>
             </div>
