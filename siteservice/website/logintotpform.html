@@ -21,9 +21,6 @@
 <header id="header">
   <div class="content">
     <div id="logo"><a href="./"> ItsYou.Online </a></div>
-    <div class="sign-wrap">
-      <a href="register"><i class="fa fa-user-plus"></i>Register</a>
-    </div>
   </div>
 </header>
 
@@ -33,15 +30,11 @@
     <div ng-init='loginform.serversidevalidationerrors = {"invalidsomething": true}'></div>
     <div flex layout="row">
         <div flex></div>
-        <div layout="column" flex-gt-xs="40" flex-xs="100">
+        <div layout="column" flex-gt-xs="50" flex-xs="100">
+            <div>Fill in the 6 digit code from the authenticator application on your phone.</div>
             <md-input-container>
-                <label>Username</label>
-                <input ng-model="login" minlength="2" required name="login" type="text" autofocus>
-            </md-input-container>
-
-            <md-input-container>
-                <label>Password</label>
-                <input ng-model="password" required name="password" type="password">
+                <label>2-Factor authentication code</label>
+                <input ng-model="totpcode" md-maxlength="6" minlength="6" required name="totpcode" autocomplete="off">
             </md-input-container>
 
         </div>
@@ -51,9 +44,9 @@
         <div layout="row">
             <span flex></span>
             <div layout="column">
-                <md-button type="submit" class="md-raised md-primary">Log in</md-button>
+                <md-button type="submit" class="md-raised md-primary">Submit</md-button>
                 <div ng-messages="loginform.serversidevalidationerrors" md-auto-hide="false" class="error">
-                    <div ng-message="invalidcredentials">Invalid credentials</div>
+                    <div ng-message="invalidcredentials">Invalid 2 factor authentication code</div>
                 </div>
             </div>
             <span flex></span>

@@ -75,9 +75,12 @@
                         <md-input-container>
                             <label>Phone number</label>
                             <input ng-model="sms" minlength="4" ng-required="vm.twoFAMethod == 'sms'" name="phonenumber"
-                                   autocomplete="off">
+                                   autocomplete="off" ng-pattern="'\\+?[0-9]*'">
                             <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
                               <div ng-message="invalidphonenumber">An invalid phone number was given</div>
+                            </div>
+                            <div ng-messages="signupform.phonenumber.$error">
+                                <div ng-message="pattern">Invalid phone number</div>
                             </div>
                         </md-input-container>
                     </div>

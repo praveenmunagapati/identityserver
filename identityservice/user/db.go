@@ -82,25 +82,25 @@ func (m *Manager) Exists(username string) (bool, error) {
 func (m *Manager) Save(u *User) error {
 	// TODO: Validation!
 
-	if u.Id == "" {
+	if u.ID == "" {
 		// New Doc!
-		u.Id = bson.NewObjectId()
+		u.ID = bson.NewObjectId()
 		err := m.getUserCollection().Insert(u)
 		return err
 	}
 
-	_, err := m.getUserCollection().UpsertId(u.Id, u)
+	_, err := m.getUserCollection().UpsertId(u.ID, u)
 
 	return err
 }
 
 // Delete a user.
 func (m *Manager) Delete(u *User) error {
-	if u.Id == "" {
+	if u.ID == "" {
 		return errors.New("User not stored")
 	}
 
-	return m.getUserCollection().RemoveId(u.Id)
+	return m.getUserCollection().RemoveId(u.ID)
 }
 
 // SaveEmail save or update email along with its label
@@ -234,5 +234,5 @@ func (m *Manager) DeleteAuthorization(username, organization string) (err error)
 }
 
 func (u *User) getID() string {
-	return u.Id.Hex()
+	return u.ID.Hex()
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/siteservice/apiconsole"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/assets"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/components"
@@ -19,14 +20,20 @@ import (
 
 //Service is the identityserver http service
 type Service struct {
-	Sessions map[SessionType]*sessions.CookieStore
+	Sessions   map[SessionType]*sessions.CookieStore
+	smsService *communication.SMSService
 }
 
 //NewService creates and initializes a Service
-func NewService(cookieSecret string) (service *Service) {
-	service = &Service{}
+func NewService(cookieSecret string, smsService *communication.SMSService) (service *Service) {
+	service = &Service{smsService: smsService}
 	service.initializeSessions(cookieSecret)
 	return
+}
+
+//InitModels initialize persistance models
+func (service *Service) InitModels() {
+	service.initLoginModels()
 }
 
 //AddRoutes registers the http routes with the router
@@ -35,9 +42,13 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	//Registration form
 	router.Methods("GET").Path("/register").HandlerFunc(service.ShowRegistrationForm)
 	router.Methods("POST").Path("/register").HandlerFunc(service.ProcessRegistrationForm)
-	//Login form
+	//Login forms
 	router.Methods("GET").Path("/login").HandlerFunc(service.ShowLoginForm)
 	router.Methods("POST").Path("/login").HandlerFunc(service.ProcessLoginForm)
+	router.Methods("GET").Path("/logintotpconfirmation").HandlerFunc(service.ShowTOTPConfirmationForm)
+	router.Methods("POST").Path("/logintotpconfirmation").HandlerFunc(service.ProcessTOTPConfirmation)
+	router.Methods("GET").Path("/loginsmsconfirmation").HandlerFunc(service.ShowSMSConfirmationForm)
+	router.Methods("POST").Path("/loginsmsconfirmation").HandlerFunc(service.ProcessSMSConfirmation)
 	//Authorize form
 	router.Methods("GET").Path("/authorize").HandlerFunc(service.ShowAuthorizeForm)
 	//Facebook callback

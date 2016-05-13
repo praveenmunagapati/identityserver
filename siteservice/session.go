@@ -15,28 +15,27 @@ const (
 	SessionForRegistration SessionType = iota
 	//SessionInteractive is the session of an authenticated user on the itsyou.online website
 	SessionInteractive SessionType = iota
+	//SessionLogin is the session during the login flow
+	SessionLogin SessionType = iota
 )
+
+//initializeSessionStore creates a cookieStore
+// mageAge is the maximum age in seconds
+func initializeSessionStore(cookieSecret string, maxAge int) (sessionStore *sessions.CookieStore) {
+	sessionStore = sessions.NewCookieStore([]byte(cookieSecret))
+	sessionStore.Options.HttpOnly = true
+
+	sessionStore.Options.Secure = true
+	sessionStore.Options.MaxAge = 10 * 60 //10 minutes
+	return
+}
 
 func (service *Service) initializeSessions(cookieSecret string) {
 	service.Sessions = make(map[SessionType]*sessions.CookieStore)
 
-	cookieStoreSecret := cookieSecret
-
-	registrationSessionStore := sessions.NewCookieStore([]byte(cookieStoreSecret))
-	registrationSessionStore.Options.HttpOnly = true
-	//TODO: enable this when we have automatic https
-	//registrationSessionStore.Options.Secure = true
-	registrationSessionStore.Options.MaxAge = 10 * 60 //10 minutes
-
-	service.Sessions[SessionForRegistration] = registrationSessionStore
-
-	interactiveSessionStore := sessions.NewCookieStore([]byte(cookieStoreSecret))
-	interactiveSessionStore.Options.HttpOnly = true
-	//TODO: enable this when we have automatic https
-	//registrationSessionStore.Options.Secure = true
-	interactiveSessionStore.Options.MaxAge = 10 * 60 //10 minutes
-
-	service.Sessions[SessionInteractive] = registrationSessionStore
+	service.Sessions[SessionForRegistration] = initializeSessionStore(cookieSecret, 10*60)
+	service.Sessions[SessionInteractive] = initializeSessionStore(cookieSecret, 10*60)
+	service.Sessions[SessionLogin] = initializeSessionStore(cookieSecret, 5*60)
 
 }
 
