@@ -12,7 +12,7 @@ import (
 
 func (service *Service) FacebookCallback(w http.ResponseWriter, request *http.Request) {
 	var code = request.URL.Query().Get("code")
-	var redirectUri = "https://dev.itsyou.online:8443/facebook_callback"
+	var redirectUri = "https://" + request.Host + "/facebook_callback"
 	clientId, err := identityservice.GetOauthClientID("facebook")
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -96,8 +96,9 @@ func (service *Service) GithubCallback(w http.ResponseWriter, request *http.Requ
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	var oauthUrl = fmt.Sprintf("https://github.com/login/oauth/access_token?&client_id=%s&client_secret=%s&code=%s",
-		clientId, clientSecret, code)
+	redirect_uri := "https://" + request.Host + "/github_callback"
+	var oauthUrl = fmt.Sprintf("https://github.com/login/oauth/access_token?&client_id=%s&client_secret=%s&code=%s&redirect_uri=%s",
+		clientId, clientSecret, code, redirect_uri)
 	var githubUserInfo user.GithubAccount
 	httpClient := &http.Client{}
 	req, _ := http.NewRequest("POST", oauthUrl, nil)
