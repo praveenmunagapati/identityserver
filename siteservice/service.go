@@ -49,6 +49,8 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("POST").Path("/logintotpconfirmation").HandlerFunc(service.ProcessTOTPConfirmation)
 	router.Methods("GET").Path("/loginsmsconfirmation").HandlerFunc(service.ShowSMSConfirmationForm)
 	router.Methods("POST").Path("/loginsmsconfirmation").HandlerFunc(service.ProcessSMSConfirmation)
+	router.Methods("GET").Path("/sc").HandlerFunc(service.MobileSMSConfirmation)
+	router.Methods("GET").Path("/loginsmsconfirmed").HandlerFunc(service.CheckSMSConfirmation)
 	//Authorize form
 	router.Methods("GET").Path("/authorize").HandlerFunc(service.ShowAuthorizeForm)
 	//Facebook callback

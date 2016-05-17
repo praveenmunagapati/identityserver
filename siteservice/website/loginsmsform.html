@@ -25,8 +25,8 @@
 </header>
 
 
-<div class="fullscreenform">
-    <form ng-cloak method="post" action="login" layout="column" name="loginform" >
+<div class="fullscreenform" ng-controller="logincontroller">
+    <form ng-cloak method="post" action="login" layout="column" name="loginform" id="loginform">
     <div ng-init='loginform.serversidevalidationerrors = {"invalidsomething": true}'></div>
     <div flex layout="row">
         <div flex></div>
@@ -34,7 +34,7 @@
             <div>Click the link in the sms sent to your phone or enter the code from the sms here if you are unable to</div>
             <md-input-container>
                 <label>Code sent by sms</label>
-                <input ng-model="smscode" md-maxlength="6" minlength="6" required name="smscode" autocomplete="off">
+                <input ng-model="smscode" md-maxlength="6" minlength="6" ng-required="!smsconfirmation.confirmed" name="smscode" autocomplete="off">
             </md-input-container>
         </div>
         <div flex></div>
@@ -83,6 +83,22 @@
             });
             $mdThemingProvider.theme('default')
                 .primaryPalette('blueish')
+        })
+        .controller('logincontroller', function($scope, $http,  $timeout){
+            $scope.smsconfirmation = {confirmed: false};
+            $timeout(checkconfirmation, 1000);
+            function checkconfirmation(){
+                $http.get("loginsmsconfirmed").then(
+                    function success(response) {
+                        $scope.smsconfirmation = response.data;
+                        if (!response.data.confirmed){
+                            $timeout(checkconfirmation, 1000);
+                        } else {
+                            document.getElementById('loginform').submit();
+                        }
+                    }
+                )
+            }
         });
 </script>
 </body>
