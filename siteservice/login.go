@@ -97,7 +97,7 @@ func (service *Service) renderSMSConfirmationPage(w http.ResponseWriter, request
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	text := "Confirmed, you should be logged in on your computer in the next seconds"
+	text := "You should be logged in on your computer in a few seconds"
 
 	if !succeeded {
 		text = "Invalid or expired link"
@@ -169,7 +169,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		loginSession.Values["sessionkey"] = sessionInfo.SessionKey
 		mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 		mgoCollection.Insert(sessionInfo)
-		smsmessage := fmt.Sprintf("https://%s/sc?c=%s&k=%s or enter the code %s in the form", request.Host, sessionInfo.SMSCode, sessionInfo.SessionKey, sessionInfo.SMSCode)
+		smsmessage := fmt.Sprintf("https://%s/sc?c=%s&k=%s or enter the code %s in the form", request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey), sessionInfo.SMSCode)
 		//TODO: check which phonenumber to use
 		phonenumber := u.Phone["main"]
 		go service.smsService.Send(string(phonenumber), smsmessage)
@@ -313,16 +313,20 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 		return
 	}
 
-	validsmscode = (smscode != sessionInfo.SMSCode)
+	validsmscode = (smscode == sessionInfo.SMSCode)
 
 	if !validsmscode { //TODO: limit to 3 failed attempts
-		service.renderSMSConfirmationPage(w, request, true)
+		service.renderSMSConfirmationPage(w, request, false)
 		return
 	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
-	sessionInfo = &loginSessionInformation{}
 
 	_, err = mgoCollection.UpdateAll(bson.M{"sessionkey": sessionKey}, bson.M{"$set": bson.M{"confirmed": true}})
+	if err != nil {
+		log.Error("Error while confirming sms 2fa - ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 	service.renderSMSConfirmationPage(w, request, true)
 }
 
@@ -376,7 +380,7 @@ func (service *Service) ProcessSMSConfirmation(w http.ResponseWriter, request *h
 		return
 	}
 	if !sessionInfo.Confirmed { //Already confirmed on the phone
-		validsmscode := (smscode != sessionInfo.SMSCode)
+		validsmscode := (smscode == sessionInfo.SMSCode)
 
 		if !validsmscode { //TODO: limit to 3 failed attempts
 			service.renderLoginForm(w, request, smsFormFileName, true, request.RequestURI)

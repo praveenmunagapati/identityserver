@@ -96,6 +96,9 @@
                         } else {
                             document.getElementById('loginform').submit();
                         }
+                    },
+                    function failed(response){
+                        $timeout(checkconfirmation, 1000);
                     }
                 )
             }
