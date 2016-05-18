@@ -90,7 +90,7 @@ If a refresh token was issued, it may be used to request new access tokens if th
 The access token allows you to make requests to the API on a behalf of a user.
 
 ```
-GET https://itsyou.online/users/bob/info?access_token=...
+GET https://itsyou.online/api/users/bob/info?access_token=...
 ```
 You can pass the token in the query params like shown above, but a cleaner approach is to include it in the Authorization header
 
@@ -100,7 +100,7 @@ Authorization: token OAUTH-TOKEN
 For example, in curl you can set the Authorization header like this:
 
 ```
-curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/users/bob/info
+curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/api/users/bob/info
 ```
 
 ## Implicit flow

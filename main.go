@@ -6,9 +6,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 
+	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/https"
+	"github.com/itsyouonline/identityserver/identityservice"
+	"github.com/itsyouonline/identityserver/oauthservice"
 	"github.com/itsyouonline/identityserver/routes"
+	"github.com/itsyouonline/identityserver/siteservice"
 )
 
 func main() {
@@ -22,6 +26,7 @@ func main() {
 	var debugLogging, ignoreDevcert bool
 	var bindAddress, dbConnectionString string
 	var tlsCert, tlsKey string
+	var twilioAccountSID, twilioAuthToken, twilioMessagingServiceSID string
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
@@ -58,6 +63,21 @@ func main() {
 			Usage:       "Ignore default devcert even if exists",
 			Destination: &ignoreDevcert,
 		},
+		cli.StringFlag{
+			Name:        "twilio-AccountSID",
+			Usage:       "Twilio AccountSID",
+			Destination: &twilioAccountSID,
+		},
+		cli.StringFlag{
+			Name:        "twilio-AuthToken",
+			Usage:       "Twilio AuthToken",
+			Destination: &twilioAuthToken,
+		},
+		cli.StringFlag{
+			Name:        "twilio-MsgSvcSID",
+			Usage:       "Twilio MessagingServiceSID",
+			Destination: &twilioMessagingServiceSID,
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -74,8 +94,21 @@ func main() {
 		go db.Connect(dbConnectionString)
 		defer db.Close()
 
+		cookieSecret := identityservice.GetCookieSecret()
+		var smsService *communication.SMSService
+		if twilioAccountSID != "" {
+			smsService = &communication.SMSService{
+				AccountSID:          twilioAccountSID,
+				AuthToken:           twilioAuthToken,
+				MessagingServiceSID: twilioMessagingServiceSID,
+			}
+		}
+		sc := siteservice.NewService(cookieSecret, smsService)
+		is := identityservice.NewService()
+		oauthsc := oauthservice.NewService(sc, is)
+
 		// Get router!
-		r := routes.GetRouter()
+		r := routes.GetRouter(sc, is, oauthsc)
 
 		server := https.PrepareHTTP(bindAddress, r)
 		https.PrepareHTTPS(server, tlsCert, tlsKey, ignoreDevcert)

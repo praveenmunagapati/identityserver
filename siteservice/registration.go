@@ -74,6 +74,13 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 
 	values := request.Form
 
+	twoFAMethod := values.Get(".twoFAMethod")
+	if twoFAMethod != "sms" && twoFAMethod != "totp" {
+		log.Info("Invalid 2fa method during registration: ", twoFAMethod)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
 	totpsession, err := service.GetSession(request, SessionForRegistration, "totp")
 	if err != nil {
 		log.Error("EROR while getting the totp registration session", err)
@@ -114,21 +121,37 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		return
 	}
 
-	totpcode := values.Get("totpcode")
+	if twoFAMethod == "sms" {
+		phonenumber := user.Phonenumber(values.Get("phonenumber"))
+		if !phonenumber.IsValid() {
+			log.Debug("Invalid phone number")
+			validationErrors = append(validationErrors, "invalidphonenumber")
+			service.renderRegistrationFrom(w, request, validationErrors, totpsecret)
+			return
+		}
+		newuser.Phone["main"] = phonenumber
+	} else {
+		totpcode := values.Get("totpcode")
 
-	token := totp.TokenFromSecret(totpsecret)
-	if !token.Validate(totpcode) {
-		log.Debug("Invalid totp code")
-		validationErrors = append(validationErrors, "invalidtotpcode")
-		service.renderRegistrationFrom(w, request, validationErrors, totpsecret)
-		return
+		token := totp.TokenFromSecret(totpsecret)
+		if !token.Validate(totpcode) {
+			log.Debug("Invalid totp code")
+			validationErrors = append(validationErrors, "invalidtotpcode")
+			service.renderRegistrationFrom(w, request, validationErrors, totpsecret)
+			return
+		}
 	}
 
 	userMgr.Save(newuser)
 	passwdMgr := password.NewManager(request)
 	passwdMgr.Save(newuser.Username, values.Get("password"))
-	totpMgr := totp.NewManager(request)
-	totpMgr.Save(newuser.Username, totpsecret)
+
+	if twoFAMethod == "sms" {
+		//TODO: validate phonenumber
+	} else {
+		totpMgr := totp.NewManager(request)
+		totpMgr.Save(newuser.Username, totpsecret)
+	}
 
 	log.Debugf("Registered %s", newuser.Username)
 

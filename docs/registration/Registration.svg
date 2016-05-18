@@ -345,33 +345,42 @@
     </g>
     <path
        id="path5266"
-       d="m 354.21015,343.44545 0.31831,117.18605"
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5289)" />
+       d="m 353.18025,337.68601 0.34112,88.74028"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.90084368px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5289)" />
     <path
        id="path5341"
-       d="M 427.02784,244.94977 C 525.32543,229.06403 588.46785,169.7513 641.29613,97.697581"
+       d="M 427.02784,244.94977 641.29613,97.697581"
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5351)" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.11395574px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5415)"
-       d="m 445.26788,294.31409 c 186.59255,15.2172 215.1476,-76.3477 204.10625,-194.666924"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.14674795px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker5415)"
+       d="M 449.37478,320.62519 638.27681,97.72422"
        id="path5343" />
     <text
        id="text5489"
-       y="252.3214"
-       x="539.72601"
+       y="233.12849"
+       x="502.35037"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          id="tspan5491"
-         x="539.72601"
-         y="252.3214">Follow link in SMS</tspan></text>
+         x="502.35037"
+         y="233.12849">Follow link in SMS</tspan></text>
     <text
        id="text5493"
-       y="188.64117"
-       x="486.0661"
+       y="175.50919"
+       x="454.75137"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          id="tspan5495"
-         x="486.0661"
-         y="188.64117">Code in SMS</tspan></text>
+         x="454.75137"
+         y="175.50919">Code in SMS</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="326.34018"
+       y="384.61078"
+       id="text6134"><tspan
+         y="384.61078"
+         x="326.34018"
+         id="tspan6136">Timeout</tspan></text>
   </g>
 </svg>

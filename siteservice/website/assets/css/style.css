@@ -104,11 +104,6 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     margin: 130px 50px 0 50px;
 }
 
-md-content {
-    margin: 100px 50px 0px 50px;
-    background-color: transparent !important;
-}
-
 .md-subheader{
     background-color: transparent !important;
 }

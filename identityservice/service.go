@@ -7,8 +7,8 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/globalconfig"
 	"github.com/itsyouonline/identityserver/identityservice/company"
-	"github.com/itsyouonline/identityserver/identityservice/globalconfig"
 	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 	"github.com/itsyouonline/identityserver/identityservice/userorganization"

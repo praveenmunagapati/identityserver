@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+       <title>Log in - It's You Online</title>
+
+       <link rel='stylesheet prefetch' href='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css'>
+       <link rel="stylesheet" href="assets/css/style.css"/>
+       <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
+       <link href='https://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <style>
+
+            [ng\:cloak], [ng-cloak], .ng-cloak {
+                display: none;
+            }
+        </style>
+ </head>
+
+<body ng-app="loginApp">
+
+<header id="header">
+  <div class="content">
+    <div id="logo"><a href="./"> ItsYou.Online </a></div>
+  </div>
+</header>
+
+
+<div class="fullscreenform">
+    <form ng-cloak method="post" action="login" layout="column" name="loginform" >
+    <div ng-init='loginform.serversidevalidationerrors = {"invalidsomething": true}'></div>
+    <div flex layout="row">
+        <div flex></div>
+        <div layout="column" flex-gt-xs="50" flex-xs="100">
+            <div>Fill in the 6 digit code from the authenticator application on your phone.</div>
+            <md-input-container>
+                <label>2-Factor authentication code</label>
+                <input ng-model="totpcode" md-maxlength="6" minlength="6" required name="totpcode" autocomplete="off">
+            </md-input-container>
+
+        </div>
+        <div flex></div>
+    </div>
+
+        <div layout="row">
+            <span flex></span>
+            <div layout="column">
+                <md-button type="submit" class="md-raised md-primary">Submit</md-button>
+                <div ng-messages="loginform.serversidevalidationerrors" md-auto-hide="false" class="error">
+                    <div ng-message="invalidcredentials">Invalid 2 factor authentication code</div>
+                </div>
+            </div>
+            <span flex></span>
+        </div>
+
+    </form>
+</div>
+
+
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js'></script>
+<script>
+    angular.module('loginApp', ['ngMaterial','ngMessages'])
+        .config(function($mdThemingProvider) {
+            $mdThemingProvider.definePalette('blueish', {
+                '50': '#f7fbfd',
+                '100': '#badeed',
+                '200': '#8ec8e2',
+                '300': '#55add3',
+                '400': '#3ca1cd',
+                '500': '#3091bb',
+                '600': '#2a7ea3',
+                '700': '#236b8a',
+                '800': '#1d5872',
+                '900': '#17455a',
+                'A100': '#f7fbfd',
+                'A200': '#badeed',
+                'A400': '#3ca1cd',
+                'A700': '#236b8a',
+                'contrastDefaultColor': 'light',
+                'contrastDarkColors': '50 100 200 300 400 A100 A200 A400'
+            });
+            $mdThemingProvider.theme('default')
+                .primaryPalette('blueish')
+        });
+</script>
+</body>
+</html>

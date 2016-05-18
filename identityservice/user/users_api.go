@@ -211,7 +211,6 @@ func (api UsersAPI) DeleteGithubAccount(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-
 // Delete FacebookAccount is the handler for DELETE /users/{username}/facebook
 // Delete the associated facebook account
 func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request) {
@@ -227,7 +226,6 @@ func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
 
 // GetUserInformation is the handler for GET /users/{username}/info
 func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
@@ -304,7 +302,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if !IsValidPhonenumber(body.Phonenumber) {
+	if !body.Phonenumber.IsValid() {
 		log.Debug("Invalid phonenumber: ", body.Phonenumber)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -390,8 +388,8 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !IsValidPhonenumber(body.Phonenumber) {
-		http.Error(w, "Invalid phone number!", http.StatusBadRequest)
+	if !body.Phonenumber.IsValid() {
+		http.Error(w, "Invalid phone number", http.StatusBadRequest)
 		return
 	}
 

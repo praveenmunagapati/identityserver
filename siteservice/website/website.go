@@ -9,4 +9,4 @@ package website
 //go:generate go-bindata -pkg components -prefix components -o ./packaged/components/components.go components/...
 
 //package the html files
-//go:generate go-bindata -pkg html -o ./packaged/html/html.go index.html registration.html login.html home.html error.html apidocumentation.html authorize.html
+//go:generate go-bindata -pkg html -o ./packaged/html/html.go index.html registration.html login.html home.html error.html apidocumentation.html authorize.html loginsms2falink.html loginsmsform.html logintotpform.html

@@ -46,16 +46,6 @@
                 <input ng-model="password" required name="password" type="password">
             </md-input-container>
 
-            <md-input-container>
-                <label>2-Factor authentication code</label>
-                <input ng-model="totpcode" ng-maxlength="6" ng-minlength="6" required name="totpcode"
-                       autocomplete="off">
-
-                <div ng-messages="loginform.totpcode.$error">
-                    <div ng-message="maxlength">Invalid format. This code must be exactly 6 numbers long.</div>
-                    <div ng-message="minlength">Invalid format. This code must be exactly 6 numbers long.</div>
-                </div>
-            </md-input-container>
         </div>
         <div flex></div>
     </div>

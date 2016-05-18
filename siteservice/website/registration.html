@@ -54,30 +54,50 @@
                     <input ng-model="password" required name="password" type="password">
                 </md-input-container>
 
+            <md-input-container>
+                <label>Password confirmation</label>
+                <input ng-model="passwordvalidation" required name="passwordvalidation" ng-pattern="password" type="password">
+                <div ng-messages="signupform.passwordvalidation.$error">
+                    <div ng-message="pattern">This does not match the password</div>
+                </div>
+            </md-input-container>
+        </div>
+        <div flex="100" flex-gt-sm="40" flex-offset-gt-sm="10" layout="column">
+            <md-input-container>
+                <label>2-Factor authentication method</label>
+                <md-select name="twoFAMethod" ng-model="vm.twoFAMethod" required>
+                    <md-option value="sms">sms</md-option>
+                    <md-option value="totp">Authenticator application</md-option>
+                </md-select>
+            </md-input-container>
+            <div style="margin-left: 20px;" flex layout="column" ng-show="vm.twoFAMethod == 'sms'">
                 <md-input-container>
-                    <label>Password confirmation</label>
-                    <input ng-model="passwordvalidation" required name="passwordvalidation" ng-pattern="password"
-                           type="password">
-                    <div ng-messages="signupform.passwordvalidation.$error">
-                        <div ng-message="pattern">This does not match the password</div>
+                    <label>Phone number</label>
+                    <input ng-model="sms" minlength="4" ng-required="vm.twoFAMethod == 'sms'" name="phonenumber"
+                           autocomplete="off" ng-pattern="'\\+?[0-9]*'">
+                    <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
+                      <div ng-message="invalidphonenumber">An invalid phone number was given</div>
+                    </div>
+                    <div ng-messages="signupform.phonenumber.$error">
+                        <div ng-message="pattern">Invalid phone number</div>
                     </div>
                 </md-input-container>
             </div>
-
-            <div flex="100" flex-gt-sm="40" flex-offset-gt-sm="10" layout="column">
+            <div style="margin-left: 20px;" flex layout="column" ng-show="vm.twoFAMethod == 'totp'">
                 <md-input-container>
-                        <label>2-Factor authentication code</label>
-                        <input ng-model="totpcode" md-maxlength="6" minlength="6" required name="totpcode"
-                               autocomplete="off">
-                        <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
-                            <div ng-message="invalidtotpcode">An invalid code was given</div>
-                        </div>
-                    </md-input-container>
-                <qrcode version="6" error-correction-level="M" size="200"
-                        data="otpauth://totp/ItsYou.online?secret=1234123412341234&issuer=ItsYou.Online"
-                        href="otpauth://totp/ItsYou.online:?secret=1234123412341234&issuer=ItsYou.Online"></qrcode>
+                    <label>2-Factor authentication code</label>
+                    <input ng-model="totpcode" md-maxlength="6" minlength="6" ng-required="vm.twoFAMethod == 'totp'" name="totpcode"
+                           autocomplete="off">
+                    <div ng-messages="signupform.serversidevalidationerrors" md-auto-hide="false">
+                      <div ng-message="invalidtotpcode">An invalid code was given</div>
+                    </div>
+                </md-input-container>
+                <md-input-container>
+                    <qrcode version="6" error-correction-level="M" size="200" data="otpauth://totp/ItsYou.online?secret=1234123412341234&issuer=ItsYou.Online">
+                    </qrcode>
+                    <md-tooltip>Scan this image with the 2-Factor authentication app on your phone</md-tooltip>
+                </md-input-container>
             </div>
-
         </div>
         <div layout="row" layout-align="center" class="signupbtn">
             <span flex></span>

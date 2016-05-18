@@ -13,19 +13,16 @@ import (
 )
 
 //GetRouter contructs the router hierarchy and registers all handlers and middleware
-func GetRouter() http.Handler {
+func GetRouter(sc *siteservice.Service, is *identityservice.Service, oauthsc *oauthservice.Service) http.Handler {
 	r := mux.NewRouter().StrictSlash(true)
 
-	cookieSecret := identityservice.GetCookieSecret()
-
-	sc := siteservice.NewService(cookieSecret)
 	sc.AddRoutes(r)
+	sc.InitModels()
 
 	apiRouter := r.PathPrefix("/api").Subrouter()
-	is := identityservice.NewService()
 	is.AddRoutes(apiRouter)
 
-	oauthservice.NewService(sc, is).AddRoutes(r)
+	oauthsc.AddRoutes(r)
 
 	// Add middlewares
 	router := NewRouter(r)
