@@ -6,7 +6,7 @@ The token you acquired might give access to a lot more information that you want
 
 For these use cases, itsyou.online supports JWT [RFC7519](https://tools.ietf.org/html/rfc7519) creation where the JWT's claimset is a subset of the oauth token's scopes.
 
-Suppose you have an oauth token OAUTH_TOKEN with the following scopes:
+Suppose you have an oauth token OAUTH-TOKEN with the following scopes:
 
 - user:memberOf:org1
 - user:memberOf:org2
@@ -23,26 +23,31 @@ The `scope` parameter can be a comma seperated list of scopes. Instead of a quer
 
 The response will be a JWT with:
 * Header
+
     ```
     {
       "alg": "ES384",
       "typ": "JWT"
     }
     ```
+
 * Data
+
     ```
     {
       "username": "bob",
       "scope": "user:memberOf:org1",
       "iss": "itsyouonline",
       "aud": "CLIENTID",
-      "exp": 1463554314,
+      "exp": 1463554314
     }
     ```
 
     - iss: Issuer, in this case "itsyouonline"
     - exp: Expiration time in seconds since the epoch. This is set to the same time as the expiration time of the oauth token used to acquire this JWT.
     - aud: The `client_id` of the oauth token used to acquire this JWT
+
+    If the oauth token is not for a user but for an organization application that authenticated using the client credentials flow, the `username` field is replaced with a `globalid` field containing the globalid of the organization.
 
 * Signature
 
