@@ -1,8 +1,10 @@
 package oauthservice
 
 import (
+	"crypto/ecdsa"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 )
 
@@ -28,11 +30,17 @@ type Service struct {
 	sessionService  SessionService
 	identityService IdentityService
 	router          *mux.Router
+	jwtSigningKey   *ecdsa.PrivateKey
 }
 
 //NewService creates and initializes a Service
-func NewService(sessionService SessionService, identityService IdentityService) *Service {
-	return &Service{sessionService: sessionService, identityService: identityService}
+func NewService(sessionService SessionService, identityService IdentityService, jwtSigningKey []byte) (service *Service, err error) {
+	ecdsaKey, err := jwt.ParseECPrivateKeyFromPEM(jwtSigningKey)
+	if err != nil {
+		return
+	}
+	service = &Service{sessionService: sessionService, identityService: identityService, jwtSigningKey: ecdsaKey}
+	return
 }
 
 const (
@@ -55,6 +63,6 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	service.router = router
 	router.HandleFunc("/v1/oauth/authorize", service.AuthorizeHandler).Methods("GET")
 	router.HandleFunc("/v1/oauth/access_token", service.AccessTokenHandler).Methods("POST")
-
+	router.HandleFunc("/v1/oauth/jwt", service.JWTHandler).Methods("POST", "GET")
 	InitModels()
 }

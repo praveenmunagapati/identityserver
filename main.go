@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
@@ -8,6 +10,7 @@ import (
 
 	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/globalconfig"
 	"github.com/itsyouonline/identityserver/https"
 	"github.com/itsyouonline/identityserver/identityservice"
 	"github.com/itsyouonline/identityserver/oauthservice"
@@ -105,8 +108,37 @@ func main() {
 		}
 		sc := siteservice.NewService(cookieSecret, smsService)
 		is := identityservice.NewService()
-		oauthsc := oauthservice.NewService(sc, is)
 
+		config := globalconfig.NewManager()
+
+		//TODO: fall back on devkey when not present
+		var jwtKey []byte
+		var err error
+		exists, err := config.Exists("jwtkey")
+		if err == nil && exists {
+			var jwtKeyConfig *globalconfig.GlobalConfig
+			jwtKeyConfig, err = config.GetByKey("jwtkey")
+			fmt.Println(jwtKeyConfig.Value)
+			jwtKey = []byte(jwtKeyConfig.Value)
+		} else {
+			if err == nil {
+				if _, err := os.Stat("devcerts/jwt_key.pem"); err == nil {
+					log.Warning("===============================================================================")
+					log.Warning("This instance uses a development JWT signing key, don't do this in production !")
+					log.Warning("===============================================================================")
+
+					jwtKey, err = ioutil.ReadFile("devcerts/jwt_key.pem")
+				}
+			}
+		}
+
+		if err != nil {
+			log.Fatal("Unable to load a valid key for signing JWT's: ", err)
+		}
+		oauthsc, err := oauthservice.NewService(sc, is, jwtKey)
+		if err != nil {
+			log.Fatal("Unable to create the oauthservice: ", err)
+		}
 		// Get router!
 		r := routes.GetRouter(sc, is, oauthsc)
 

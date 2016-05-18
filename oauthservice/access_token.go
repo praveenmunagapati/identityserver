@@ -19,20 +19,25 @@ type AccessToken struct {
 	AccessToken string
 	Type        string
 	Username    string
-	GlobalID    string
+	GlobalID    string //The organization that granted the token (in case of a client credentials flow)
 	Scope       string
-	ClientID    string
+	ClientID    string //The client_id of the organization that was granted the token
 	CreatedAt   time.Time
 }
 
 //IsExpiredAt checks if the token is expired at a specific time
 func (at *AccessToken) IsExpiredAt(testtime time.Time) bool {
-	return testtime.After(at.CreatedAt.Add(AccessTokenExpiration))
+	return testtime.After(at.ExpirationTime())
 }
 
 //IsExpired is a convenience method for IsExpired(time.Now())
 func (at *AccessToken) IsExpired() bool {
 	return at.IsExpiredAt(time.Now())
+}
+
+//ExpirationTime return the time at which this token expires
+func (at *AccessToken) ExpirationTime() time.Time {
+	return at.CreatedAt.Add(AccessTokenExpiration)
 }
 
 func newAccessToken(username, globalID, clientID, scope string) *AccessToken {
