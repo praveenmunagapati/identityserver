@@ -129,7 +129,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 			service.renderRegistrationFrom(w, request, validationErrors, totpsecret)
 			return
 		}
-		newuser.Phone["main"] = phonenumber
+		newuser.Phone = map[string]user.Phonenumber{"main": phonenumber}
 	} else {
 		totpcode := values.Get("totpcode")
 
@@ -154,9 +154,5 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 
 	log.Debugf("Registered %s", newuser.Username)
-
-	service.SetLoggedInUser(w, request, newuser.Username)
-	sessions.Save(request, w)
-
-	http.Redirect(w, request, "/", http.StatusFound)
+	service.loginUser(w, request, newuser.Username)
 }

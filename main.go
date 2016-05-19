@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -118,7 +117,6 @@ func main() {
 		if err == nil && exists {
 			var jwtKeyConfig *globalconfig.GlobalConfig
 			jwtKeyConfig, err = config.GetByKey("jwtkey")
-			fmt.Println(jwtKeyConfig.Value)
 			jwtKey = []byte(jwtKeyConfig.Value)
 		} else {
 			if err == nil {
