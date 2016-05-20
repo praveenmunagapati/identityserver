@@ -110,7 +110,6 @@ func main() {
 
 		config := globalconfig.NewManager()
 
-		//TODO: fall back on devkey when not present
 		var jwtKey []byte
 		var err error
 		exists, err := config.Exists("jwtkey")
@@ -120,12 +119,12 @@ func main() {
 			jwtKey = []byte(jwtKeyConfig.Value)
 		} else {
 			if err == nil {
-				if _, err := os.Stat("devcerts/jwt_key.pem"); err == nil {
+				if _, err := os.Stat("devcert/jwt_key.pem"); err == nil {
 					log.Warning("===============================================================================")
 					log.Warning("This instance uses a development JWT signing key, don't do this in production !")
 					log.Warning("===============================================================================")
 
-					jwtKey, err = ioutil.ReadFile("devcerts/jwt_key.pem")
+					jwtKey, err = ioutil.ReadFile("devcert/jwt_key.pem")
 				}
 			}
 		}
