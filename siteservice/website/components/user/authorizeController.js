@@ -49,10 +49,10 @@
         function parseScopes() {
             if (vm.requestedScopes) {
                 var splitScopes = vm.requestedScopes.split(",");
-                for (let scope of splitScopes) {
-                    if (scope.startsWith("user:memberof:")) {
-                        var a = scope.split(":")
-                        vm.requestedorganizations.push(a[a.length - 1])
+                for (var i = 0; i < splitScopes.length; i++) {
+                    if (splitScopes[i].startsWith("user:memberof:")) {
+                        var a = splitScopes[i].split(":");
+                        vm.requestedorganizations.push(a[a.length - 1]);
                     }
                 }
             }
