@@ -34,6 +34,7 @@
 <div class="fullscreenform">
     <form ng-cloak method="post" action="register" layout="column" name="signupform" layout-align="center">
         <div ng-init="signupform.serversidevalidationerrors = {'invalidsomething': true}"></div>
+        <div ng-init='vm.twoFAMethod = "sms"'></div>
         <div layout="column" layout-gt-sm="row">
             <div flex="100" flex-gt-sm="40" flex-offset-gt-sm="10" layout="column">
                 <md-input-container>
