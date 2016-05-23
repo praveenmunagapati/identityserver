@@ -8,18 +8,42 @@ import (
 
 func TestScopesAreAuthorized(t *testing.T) {
 	type testcase struct {
-		authorization Authorization
-		scopes        string
-		authorized    bool
+		a          Authorization
+		s          string
+		authorized bool
 	}
 	testcases := []testcase{
-		testcase{authorization: Authorization{}, scopes: "user:memberof:orgid1", authorized: false},
-		testcase{authorization: Authorization{Organizations: []string{"orgid"}}, scopes: "user:memberof:orgid", authorized: true},
-		testcase{authorization: Authorization{Organizations: []string{"orgid.suborg"}}, scopes: "user:memberof:orgid.suborg", authorized: true},
-		testcase{authorization: Authorization{Organizations: []string{"orgid1", "orgid2"}}, scopes: "user:memberof:orgid1, user:memberof:orgid2", authorized: true},
-		testcase{authorization: Authorization{Organizations: []string{"orgid1", "orgid3"}}, scopes: "user:memberof:orgid1, user:memberof:orgid2", authorized: false},
+		testcase{a: Authorization{}, s: "user:memberof:orgid1", authorized: false},
+		testcase{a: Authorization{Organizations: []string{"orgid"}}, s: "user:memberof:orgid", authorized: true},
+		testcase{a: Authorization{Organizations: []string{"orgid.suborg"}}, s: "user:memberof:orgid.suborg", authorized: true},
+		testcase{a: Authorization{Organizations: []string{"orgid1", "orgid2"}}, s: "user:memberof:orgid1, user:memberof:orgid2", authorized: true},
+		testcase{a: Authorization{Organizations: []string{"orgid1", "orgid3"}}, s: "user:memberof:orgid1, user:memberof:orgid2", authorized: false},
+		testcase{a: Authorization{}, s: "user:github", authorized: false},
+		testcase{a: Authorization{Github: true}, s: "user:github", authorized: true},
+		testcase{a: Authorization{}, s: "user:facebook", authorized: false},
+		testcase{a: Authorization{Facebook: true}, s: "user:facebook", authorized: true},
+
+		testcase{a: Authorization{Address: map[string]string{"billing": "home"}}, s: "user:address:billing", authorized: true},
+		testcase{a: Authorization{Address: map[string]string{"billing": "home"}}, s: "user:address:home", authorized: false},
+		testcase{a: Authorization{Address: map[string]string{"billing": "home"}}, s: "user:address", authorized: true},
+		testcase{a: Authorization{Address: map[string]string{"": "home"}}, s: "user:address", authorized: true},
+
+		testcase{a: Authorization{Bank: map[string]string{"billing": "home"}}, s: "user:bankaccount:billing", authorized: true},
+		testcase{a: Authorization{Bank: map[string]string{"billing": "home"}}, s: "user:bankaccount:home", authorized: false},
+		testcase{a: Authorization{Bank: map[string]string{"billing": "home"}}, s: "user:bankaccount", authorized: true},
+		testcase{a: Authorization{Bank: map[string]string{"": "home"}}, s: "user:bankaccount", authorized: true},
+
+		testcase{a: Authorization{Email: map[string]string{"main": "home"}}, s: "user:email:main", authorized: true},
+		testcase{a: Authorization{Email: map[string]string{"main": "home"}}, s: "user:email:home", authorized: false},
+		testcase{a: Authorization{Email: map[string]string{"main": "home"}}, s: "user:email", authorized: true},
+		testcase{a: Authorization{Email: map[string]string{"": "home"}}, s: "user:email", authorized: true},
+
+		testcase{a: Authorization{Phone: map[string]string{"main": "home"}}, s: "user:phone:main", authorized: true},
+		testcase{a: Authorization{Phone: map[string]string{"main": "home"}}, s: "user:phone:home", authorized: false},
+		testcase{a: Authorization{Phone: map[string]string{"main": "home"}}, s: "user:phone:main", authorized: true},
+		testcase{a: Authorization{Phone: map[string]string{"": "home"}}, s: "user:phone", authorized: true},
 	}
 	for _, test := range testcases {
-		assert.Equal(t, test.authorized, test.authorization.ScopesAreAuthorized(test.scopes), test.scopes)
+		assert.Equal(t, test.authorized, test.a.ScopesAreAuthorized(test.s), test.s)
 	}
 }
