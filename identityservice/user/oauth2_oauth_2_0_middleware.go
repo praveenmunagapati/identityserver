@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
@@ -63,7 +64,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		}
 
 		log.Debug("Access Token: ", accessToken)
-		var scopes []string
+		scopes := []string{}
 		//TODO: cache
 		oauthMgr := oauthservice.NewManager(r)
 		at, err := oauthMgr.GetAccessToken(accessToken)
@@ -80,11 +81,16 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		protectedUsername := mux.Vars(r)["username"]
 
 		if protectedUsername == at.Username && at.ClientID == "itsyouonline" && at.Scope == "admin" {
-			scopes = []string{"user:admin"}
+			scopes = append(scopes, "user:admin")
 		}
-		// TODO: "user:info" scope
+		if strings.HasPrefix(at.Scope, "user:") {
+			scopes = append(scopes, "user:info")
+		}
 
 		log.Debug("Available scopes: ", scopes)
+
+		context.Set(r, "client_id", at.ClientID)
+		context.Set(r, "availablescopes", at.Scope)
 
 		// check scopes
 		if !om.CheckScopes(scopes) {

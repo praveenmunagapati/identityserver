@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
@@ -238,28 +239,62 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addresses := map[string]Address{}
-	emails := map[string]string{}
-	phones := map[string]Phonenumber{}
-
-	// TODO: apply authorization limits and scope mapping.
-	for label, address := range user.Address {
-		addresses[label] = address
+	requestingClient, validClient := context.Get(r, "client_id").(string)
+	if !validClient {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 
-	for label, email := range user.Email {
-		emails[label] = email
-	}
-
-	for label, phone := range user.Phone {
-		phones[label] = phone
-	}
+	authorization, err := userMgr.GetAuthorization(username, requestingClient)
 
 	respBody := &userview{
-		Address:  addresses,
-		Email:    emails,
-		Phone:    phones,
 		Username: user.Username,
+	}
+
+	if authorization.Github {
+		respBody.Github = user.Github.Name
+	}
+	if authorization.Facebook {
+		respBody.Facebook = user.Facebook.Name
+	}
+	if authorization.Address != nil {
+		respBody.Address = make(map[string]Address)
+
+		for requestedLabel, realLabel := range authorization.Address {
+			if value, found := user.Address[realLabel]; found {
+				respBody.Address[requestedLabel] = value
+			}
+		}
+	}
+
+	if authorization.Email != nil {
+		respBody.Email = make(map[string]string)
+
+		for requestedLabel, realLabel := range authorization.Email {
+			if value, found := user.Email[realLabel]; found {
+				respBody.Email[requestedLabel] = value
+			}
+		}
+	}
+
+	if authorization.Phone != nil {
+		respBody.Phone = make(map[string]Phonenumber)
+
+		for requestedLabel, realLabel := range authorization.Phone {
+			if value, found := user.Phone[realLabel]; found {
+				respBody.Phone[requestedLabel] = value
+			}
+		}
+	}
+
+	if authorization.Bank != nil {
+		respBody.Bank = make(map[string]BankAccount)
+
+		for requestedLabel, realLabel := range authorization.Bank {
+			if value, found := user.Bank[realLabel]; found {
+				respBody.Bank[requestedLabel] = value
+			}
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
