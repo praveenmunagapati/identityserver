@@ -93,6 +93,7 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner", "organization:contracts:read"}).Handler).Then(http.HandlerFunc(i.GetContracts))).Methods("GET")
 	r.Handle("/organizations/{globalid}/invitations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetPendingInvitations))).Methods("GET")
 	r.Handle("/organizations/{globalid}/invitations/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemovePendingInvitation))).Methods("DELETE")
+	r.Handle("/organizations/{globalid}/suborganizations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateNewSubOrganization))).Methods("POST")
 	r.Handle("/organizations/{globalid}/dns/{dnsname}", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.CreateDns))).Methods("POST")
 	r.Handle("/organizations/{globalid}/dns/{dnsname}", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.UpdateDns))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/dns/{dnsname}", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.DeleteDns))).Methods("DELETE")
