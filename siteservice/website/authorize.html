@@ -65,12 +65,48 @@
                             </div>
                             <div flex>Your username</div>
                         </md-list-item>
-                        <md-list-item ng-repeat="organization in vm.requestedorganizations">
+                        <md-list-item ng-repeat="requestedLabel in vm.requestedorganizations">
                             <div><i class="fa fa-users"></i>&nbsp<md-tooltip>Organization membership</md-tooltip></div>
                             <div flex>
-                                Member of {{ organization }}
+                                Member of {{ requestedLabel }}
                             </div>
-                        <md-list-item>
+                        </md-list-item>
+                        <md-list-item ng-repeat="requestedLabel in vm.requestedEmails">
+                            <div><i class="fa fa-at"></i>&nbsp<md-tooltip>Email address</md-tooltip></div>
+                            <div flex>
+                                Email address <span ng-if="requestedLabel != '' && requestedLabel != 'main'">for {{ requestedLabel }}</span>
+                            </div>
+                        </md-list-item>
+                        <md-list-item ng-repeat="requestedLabel in vm.requestedPhones">
+                            <div><i class="fa fa-phone"></i>&nbsp<md-tooltip>Phone number</md-tooltip></div>
+                            <div flex>
+                                Phone number <span ng-if="requestedLabel != '' && requestedLabel != 'main'">for {{ requestedLabel }}</span>
+                            </div>
+                        </md-list-item>
+                        <md-list-item ng-repeat="requestedLabel in vm.requestedAddresses">
+                            <div><i class="fa fa-envelope-o"></i>&nbsp<md-tooltip>Address</md-tooltip></div>
+                            <div flex>
+                                Address for <span ng-if="requestedLabel != '' && requestedLabel != 'main'">{{ requestedLabel }}</span>
+                            </div>
+                        </md-list-item>
+                        <md-list-item ng-repeat="requestedLabel in vm.requestedBankaccounts">
+                            <div><i class="fa fa-bank"></i>&nbsp<md-tooltip>Bank account</md-tooltip></div>
+                            <div flex>
+                                Bank account <span ng-if="requestedLabel != '' && requestedLabel != 'main'">for {{ requestedLabel }}</span>
+                            </div>
+                        </md-list-item>
+                        <md-list-item ng-show="vm.requestedGithub">
+                            <div><i class="fa fa-github"></i>&nbsp<md-tooltip>Github account</md-tooltip></div>
+                            <div flex>
+                                Your Github account
+                            </div>
+                        </md-list-item>
+                        <md-list-item ng-if="vm.requestedFacebook">
+                            <div><i class="fa fa-fa-facebook-official"></i>&nbsp<md-tooltip>Facebook account</md-tooltip></div>
+                            <div flex>
+                                Your Facebook account
+                            </div>
+                        </md-list-item>
                     </md-list>
                     <div flex layout style="margin-top: 10px;">
                         <!-- <md-button class="md-raised">Deny</md-button> -->

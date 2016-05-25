@@ -17,10 +17,15 @@
         vm.requestingorganization = queryParams["client_id"];
         vm.requestedScopes = queryParams["scope"];
         vm.requestedorganizations = [];
+        vm.requestedGithub = false
+        vm.requestedFacebook = false
+        vm.requestedAddresses = [];
+        vm.requestedPhones = [];
+        vm.requestedEmails = [];
+        vm.requestedBankaccounts = [];
         vm.username = $rootScope.user;
 
         vm.user = {};
-
 
         vm.authorize = authorize;
 
@@ -50,9 +55,32 @@
             if (vm.requestedScopes) {
                 var splitScopes = vm.requestedScopes.split(",");
                 for (var i = 0; i < splitScopes.length; i++) {
+                    //TODO: make sure if the same scope is requested multiple times, it is only added to the lists ones
                     if (splitScopes[i].startsWith("user:memberof:")) {
                         var a = splitScopes[i].split(":");
                         vm.requestedorganizations.push(a[a.length - 1]);
+                    }
+                    if (splitScopes[i].startsWith("user:address:")) {
+                        var a = splitScopes[i].split(":");
+                        vm.requestedAddresses.push(a[a.length - 1]);
+                    }
+                    if (splitScopes[i].startsWith("user:email:")) {
+                        var a = splitScopes[i].split(":");
+                        vm.requestedEmails.push(a[a.length - 1]);
+                    }
+                    if (splitScopes[i].startsWith("user:phone:")) {
+                        var a = splitScopes[i].split(":");
+                        vm.requestedPhones.push(a[a.length - 1]);
+                    }
+                    if (splitScopes[i].startsWith("user:bankaccount:")) {
+                        var a = splitScopes[i].split(":");
+                        vm.requestedBankaccounts.push(a[a.length - 1]);
+                    }
+                    if (splitScopes[i] == "user:github") {
+                        vm.requestedGithub = true;
+                    }
+                    if (splitScopes[i] == "user:facebook") {
+                        vm.requestedFacebook = true;
                     }
                 }
             }
