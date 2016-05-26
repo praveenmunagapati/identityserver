@@ -12,7 +12,7 @@ import (
 )
 
 //AccessTokenExpiration is the time in seconds an access token expires
-var AccessTokenExpiration = time.Second * 3600
+var AccessTokenExpiration = time.Second * 3600 * 24 //Tokens expire after 1 day
 
 //AccessToken is an oauth2 accesstoken together with the access information it stands for
 type AccessToken struct {
