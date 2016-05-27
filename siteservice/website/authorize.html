@@ -62,107 +62,7 @@
             <form ng-cloak method="post" layout="column" name="authorizeform" ng-submit="vm.authorize()">
                 <div layout="row">
                     <md-list flex="100" flex-gt-sm="80" flex-gt-md="60">
-                        <md-list-item>
-                            <p>
-                                <i class="fa fa-user">
-                                    <md-tooltip>Your username</md-tooltip>
-                                </i>
-                                Your username
-                            </p>
-                        </md-list-item>
-                        <md-list-item ng-repeat="(label, value) in vm.requested.organizations">
-                            <p><i class="fa fa-users">
-                                <md-tooltip>Organization membership</md-tooltip>
-                            </i>
-                                Member of {{ ::label }}
-                            </p>
-                            <md-checkbox class="md-secondary"
-                                         ng-model="vm.requested.organizations[label]"></md-checkbox>
-                        </md-list-item>
-                        <md-list-item ng-repeat="label in vm.requested.email">
-                            <p>
-                                <i class="fa fa-at">
-                                    <md-tooltip>Email address</md-tooltip>
-                                </i>
-                                Email address<span ng-if="label && label !== 'main'">
-                                for {{ ::label }}</span>
-                            </p>
-                            <md-input-container>
-                                <label>Email</label>
-                                <md-select ng-model="vm.authorizations.email[label]">
-                                    <md-option ng-repeat="(label, email) in vm.user.email" value="{{::label}}"
-                                               ng-bind="::email"></md-option>
-                                </md-select>
-                            </md-input-container>
-                        </md-list-item>
-                        <md-list-item ng-repeat="label in vm.requested.phone">
-                            <p><i class="fa fa-phone">
-                                <md-tooltip>Phone number</md-tooltip>
-                            </i> Phone number <span ng-if="label && label !== 'main'">
-                                for {{ ::label }}</span>
-                            </p>
-                            <md-input-container>
-                                <label>Phone number</label>
-                                <md-select ng-model="vm.authorizations.phone[label]">
-                                    <md-option ng-repeat="(label, phone) in vm.user.phone" value="{{::label}}">
-                                        {{ ::label + ' - ' + phone }}
-                                    </md-option>
-                                </md-select>
-                            </md-input-container>
-                        </md-list-item>
-                        <md-list-item ng-repeat="label in vm.requested.address">
-                            <p><i class="fa fa-envelope-o">
-                                <md-tooltip>Address</md-tooltip>
-                            </i> Address <span ng-if="label && label !== 'main'">
-                                for {{ ::label }}</span>
-                            </p>
-                            <md-input-container>
-                                <label>Address</label>
-                                <md-select ng-model="vm.authorizations.address[label]">
-                                    <md-option ng-repeat="(label, address) in vm.user.address" value="{{::label}}">
-                                        {{ ::label + ' - ' + address.street
-                                        + (address.nr? ' ' + address.nr : '')
-                                        + (address.city? ' ' + address.city : '')
-                                        }}
-                                    </md-option>
-                                </md-select>
-                            </md-input-container>
-                        </md-list-item>
-                        <md-list-item ng-repeat="label in vm.requested.bank">
-                            <p><i class="fa fa-bank">
-                                <md-tooltip>Bank account</md-tooltip>
-                            </i>
-                                Bank account <span ng-if="label != '' && label != 'main'">
-                                    for {{ ::label }}</span>
-                            </p>
-                            <md-input-container>
-                                <label>Bank account</label>
-                                <md-select ng-model="vm.authorizations.bank[label]">
-                                    <md-option ng-repeat="(label, bank) in vm.user.bank" value="{{::label}}">
-                                        {{ ::label + ' - ' + bank.bic + ', ' + bank.iban + ', ' + bank.country }}
-                                    </md-option>
-                                </md-select>
-                            </md-input-container>
-                        </md-list-item>
-                        <md-list-item ng-if="vm.requested.github">
-                            <p><i class="fa fa-github">
-                                <md-tooltip>Github account</md-tooltip>
-                            </i>
-                                Your Github account
-                            </p>
-                            <md-checkbox class="md-secondary"
-                                         ng-model="vm.authorizations.facebook"></md-checkbox>
-                        </md-list-item>
-                        <md-list-item ng-if="vm.requested.github">
-                            <p><i class="fa fa-facebook-official">
-                                <md-tooltip>Facebook account</md-tooltip>
-                            </i>
-                                Your Facebook account
-                            </p>
-                            <md-checkbox class="md-secondary"
-                                         ng-model="vm.authorizations.github"></md-checkbox>
-                        </md-list-item>
-                    </md-list>
+                        <authorization-details></authorization-details>
                     <div flex></div>
                 </div>
                 <div style="margin-top: 10px;">
@@ -258,6 +158,7 @@
         });
 </script>
 <script src='components/user/authorizeController.js'></script>
+<script src='components/user/directives/authorizationDetailsDirective.js'></script>
 <script src='components/user/service.js'></script>
 <script src='thirdpartyassets/URI.js'></script>
 </body>

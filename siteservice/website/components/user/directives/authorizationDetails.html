@@ -1,0 +1,101 @@
+<md-list-item>
+    <p>
+        <i class="fa fa-user">
+            <md-tooltip>Your username</md-tooltip>
+        </i>
+        Your username
+    </p>
+</md-list-item>
+<md-list-item ng-repeat="(label, i) in requested.organizations">
+    <p><i class="fa fa-users">
+        <md-tooltip>Organization membership</md-tooltip>
+    </i>
+        Member of {{ ::label }}
+    </p>
+    <md-checkbox class="md-secondary"
+                 ng-model="requested.organizations[label]"></md-checkbox>
+</md-list-item>
+<md-list-item ng-repeat="label in requested.email">
+    <p>
+        <i class="fa fa-at">
+            <md-tooltip>Email address</md-tooltip>
+        </i>
+        Email address<span ng-if="label && label !== 'main'">
+                                for {{ ::label }}</span>
+    </p>
+    <md-input-container>
+        <label>Email</label>
+        <md-select ng-model="authorizations.email[label]">
+            <md-option value="">None</md-option>
+            <md-option ng-repeat="(label, email) in user.email" value="{{::label}}"
+                       ng-bind="::email"></md-option>
+        </md-select>
+    </md-input-container>
+</md-list-item>
+<md-list-item ng-repeat="label in requested.phone">
+    <p><i class="fa fa-phone">
+        <md-tooltip>Phone number</md-tooltip>
+    </i> Phone number <span ng-if="label && label !== 'main'">
+                                for {{ ::label }}</span>
+    </p>
+    <md-input-container>
+        <label>Phone number {{ authorizations.phone['even more scam'] }}</label>
+        <md-select ng-model="authorizations.phone[label]">
+            <md-option ng-repeat="(label, phone) in user.phone" value="{{::label}}">
+                {{ ::label + ' - ' + phone }}
+            </md-option>
+        </md-select>
+    </md-input-container>
+</md-list-item>
+<md-list-item ng-repeat="label in requested.address">
+    <p><i class="fa fa-envelope-o">
+        <md-tooltip>Address</md-tooltip>
+    </i> Address <span ng-if="label && label !== 'main'">
+                                for {{ ::label }}</span>
+    </p>
+    <md-input-container>
+        <label>Address</label>
+        <md-select ng-model="authorizations.address[label]">
+            <md-option ng-repeat="(label, address) in user.address" value="{{::label}}">
+                {{ ::label + ' - ' + address.street
+                + (address.nr? ' ' + address.nr : '')
+                + (address.city? ' ' + address.city : '')
+                }}
+            </md-option>
+        </md-select>
+    </md-input-container>
+</md-list-item>
+<md-list-item ng-repeat="label in requested.bank">
+    <p><i class="fa fa-bank">
+        <md-tooltip>Bank account</md-tooltip>
+    </i>
+        Bank account <span ng-if="label != '' && label != 'main'">
+                                    for {{ ::label }}</span>
+    </p>
+    <md-input-container>
+        <label>Bank account</label>
+        <md-select ng-model="authorizations.bank[label]">
+            <md-option ng-repeat="(label, bank) in user.bank" value="{{::label}}">
+                {{ ::label + ' - ' + bank.bic + ', ' + bank.iban + ', ' + bank.country }}
+            </md-option>
+        </md-select>
+    </md-input-container>
+</md-list-item>
+<md-list-item ng-if="requested.github">
+    <p><i class="fa fa-github">
+        <md-tooltip>Github account</md-tooltip>
+    </i>
+        Your Github account
+    </p>
+    <md-checkbox class="md-secondary"
+                 ng-model="authorizations.github"></md-checkbox>
+</md-list-item>
+<md-list-item ng-if="requested.facebook">
+    <p><i class="fa fa-facebook-official">
+        <md-tooltip>Facebook account</md-tooltip>
+    </i>
+        Your Facebook account
+    </p>
+    <md-checkbox class="md-secondary"
+                 ng-model="authorizations.facebook"></md-checkbox>
+</md-list-item>

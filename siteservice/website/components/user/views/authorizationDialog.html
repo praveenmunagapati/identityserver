@@ -1,0 +1,27 @@
+<md-dialog ng-cloak aria-label="Authorization granted to {{ ::requested.grantedTo }}">
+    <form name="dataform">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Authorization granted to <span ng-bind="requested.grantedTo"></span></h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="cancel()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
+                <md-list flex="100" flex-gt-sm="80" flex-gt-md="60">
+                    <authorization-details></authorization-details>
+                </md-list>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button class="md-warn" ng-click="remove(data)">
+                Delete
+            </md-button>
+            <span flex></span>
+            <md-button class="md-primary" type="submit" ng-click="save(data)">Save</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

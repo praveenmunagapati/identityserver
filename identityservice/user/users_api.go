@@ -887,7 +887,6 @@ func (api UsersAPI) usernameorganizationsGet(w http.ResponseWriter, r *http.Requ
 // Get the list of authorizations.
 func (api UsersAPI) GetAllAuthorizations(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-
 	userMgr := NewManager(r)
 
 	authorizations, err := userMgr.GetAuthorizationsByUser(username)

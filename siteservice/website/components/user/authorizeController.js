@@ -7,16 +7,20 @@
         .controller("AuthorizeController", AuthorizeController);
 
 
-    AuthorizeController.$inject = [
-        '$q', '$rootScope', '$location', '$window', 'UserService'];
+    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', 'UserService'];
 
-    function AuthorizeController($q, $rootScope, $location, $window, UserService) {
+    function AuthorizeController($scope, $rootScope, $location, $window, UserService) {
         var vm = this;
 
         var queryParams = URI($location.absUrl()).search(true);
         vm.requestingorganization = queryParams['client_id'];
         vm.requestedScopes = queryParams['scope'];
-        vm.requested = {
+        vm.requestedorganizations = [];
+        vm.username = $rootScope.user;
+
+        $scope.user = {};
+
+        $scope.requested = {
             address: [],
             bank: [],
             email: [],
@@ -25,55 +29,27 @@
             facebook: false,
             github: false
         };
-        vm.requestedorganizations = [];
-        vm.username = $rootScope.user;
-
-        vm.user = {};
-        vm.authorizations = {
+        $scope.authorizations = {
             organizations: {}
         };
 
-        vm.authorize = authorize;
+        $scope.update = update;
 
 
         activate();
 
         function activate() {
-            parseScopes();
             fetch();
         }
 
-//
         function fetch() {
 
             UserService
                 .get(vm.username)
                 .then(
                     function(data) {
-                        vm.user = data;
-                        var properties = ['address', 'email', 'phone', 'bank'];
-                        angular.forEach(vm.requested, function (value, property) {
-                            if (properties.indexOf(property) === -1) {
-                                return;
-                            }
-                            // loop over requests
-                            var prop = vm.user[property];
-                            if (!vm.authorizations[property]) {
-                                vm.authorizations[property] = {};
-                            }
-                            // select first by default
-                            angular.forEach(value, function (requestedLabel) {
-                                // Empty label -> "main"
-                                if (!requestedLabel) {
-                                    vm.requested[property].splice(vm.requested[property].indexOf(requestedLabel), 1);
-                                    requestedLabel = 'main';
-                                    vm.requested[property].push(requestedLabel);
-                                }
-                            });
-                            angular.forEach(value, function (requestedLabel) {
-                                vm.authorizations[property][requestedLabel] = Object.keys(prop)[0];
-                            });
-                        });
+                        $scope.user = data;
+                        parseScopes();
                     },
                     function(reason) {
                         $window.location.href = 'error' + reason.status;
@@ -92,43 +68,39 @@
                     var splitPermission = scope.split(':');
                     var permissionLabel = splitPermission[splitPermission.length - 1];
                     if (scope.startsWith('user:memberof:')) {
-                        vm.requested.organizations[permissionLabel] = true;
+                        $scope.requested.organizations[permissionLabel] = true;
                     }
                     else if (scope.startsWith('user:address:')) {
-                        vm.requested.address.push(permissionLabel);
+                        $scope.requested.address.push(permissionLabel);
                     }
                     else if (scope.startsWith('user:email:')) {
-                        vm.requested.email.push(permissionLabel);
+                        $scope.requested.email.push(permissionLabel);
                     }
                     else if (scope.startsWith('user:phone:')) {
-                        vm.requested.phone.push(permissionLabel);
+                        $scope.requested.phone.push(permissionLabel);
                     }
                     else if (scope.startsWith('user:bankaccount:')) {
-                        vm.requested.bank.push(permissionLabel);
+                        $scope.requested.bank.push(permissionLabel);
                     }
                     else if (scope === 'user:github') {
-                        vm.requested.github = true;
-                        vm.authorizations.github = true;
+                        $scope.requested.github = true;
+                        $scope.authorizations.github = true;
                     }
                     else if (scope === 'user:facebook') {
-                        vm.requested.facebook = true;
-                        vm.authorizations.facebook = true;
+                        $scope.requested.facebook = true;
+                        $scope.authorizations.facebook = true;
                     }
                 });
+                $scope.init();
             }
         }
 
-        function authorize() {
-            vm.authorizations.organizations = [];
-            angular.forEach(vm.requested.organizations, function (allowed, organization) {
-                if (allowed) {
-                    vm.authorizations.organizations.push(organization);
-                }
-            });
-            vm.authorizations.username = vm.username;
-            vm.authorizations.grantedTo = vm.requestingorganization;
+        function update() {
+            // called by the authorizationDetailsDirective
+            $scope.authorizations.username = $scope.username;
+            $scope.authorizations.grantedTo = $scope.requestingorganization;
             UserService
-                .saveAuthorization(vm.authorizations)
+                .saveAuthorization($scope.authorizations)
                 .then(
                     function(data) {
                         var u = URI($location.absUrl());
@@ -144,9 +116,5 @@
                     }
                 );
         }
-
-
     }
-
-
 })();
