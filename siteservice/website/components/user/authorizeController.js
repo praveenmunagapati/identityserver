@@ -14,18 +14,24 @@
         var vm = this;
 
         var queryParams = URI($location.absUrl()).search(true);
-        vm.requestingorganization = queryParams["client_id"];
-        vm.requestedScopes = queryParams["scope"];
+        vm.requestingorganization = queryParams['client_id'];
+        vm.requestedScopes = queryParams['scope'];
+        vm.requested = {
+            address: [],
+            bank: [],
+            email: [],
+            phone: [],
+            organizations: {},
+            facebook: false,
+            github: false
+        };
         vm.requestedorganizations = [];
-        vm.requestedGithub = false
-        vm.requestedFacebook = false
-        vm.requestedAddresses = [];
-        vm.requestedPhones = [];
-        vm.requestedEmails = [];
-        vm.requestedBankaccounts = [];
         vm.username = $rootScope.user;
 
         vm.user = {};
+        vm.authorizations = {
+            organizations: {}
+        };
 
         vm.authorize = authorize;
 
@@ -33,10 +39,11 @@
         activate();
 
         function activate() {
-            fetch();
             parseScopes();
+            fetch();
         }
 
+//
         function fetch() {
 
             UserService
@@ -44,51 +51,84 @@
                 .then(
                     function(data) {
                         vm.user = data;
+                        var properties = ['address', 'email', 'phone', 'bank'];
+                        angular.forEach(vm.requested, function (value, property) {
+                            if (properties.indexOf(property) === -1) {
+                                return;
+                            }
+                            // loop over requests
+                            var prop = vm.user[property];
+                            if (!vm.authorizations[property]) {
+                                vm.authorizations[property] = {};
+                            }
+                            // select first by default
+                            angular.forEach(value, function (requestedLabel) {
+                                // Empty label -> "main"
+                                if (!requestedLabel) {
+                                    vm.requested[property].splice(vm.requested[property].indexOf(requestedLabel), 1);
+                                    requestedLabel = 'main';
+                                    vm.requested[property].push(requestedLabel);
+                                }
+                            });
+                            angular.forEach(value, function (requestedLabel) {
+                                vm.authorizations[property][requestedLabel] = Object.keys(prop)[0];
+                            });
+                        });
                     },
                     function(reason) {
-                        $window.location.href = "error" + reason.status;
+                        $window.location.href = 'error' + reason.status;
                     }
                 );
         }
 
         function parseScopes() {
             if (vm.requestedScopes) {
-                var splitScopes = vm.requestedScopes.split(",");
-                for (var i = 0; i < splitScopes.length; i++) {
-                    //TODO: make sure if the same scope is requested multiple times, it is only added to the lists ones
-                    if (splitScopes[i].startsWith("user:memberof:")) {
-                        var a = splitScopes[i].split(":");
-                        vm.requestedorganizations.push(a[a.length - 1]);
+                var scopes = vm.requestedScopes.split(',');
+                // Filter duplicated scopes
+                scopes = scopes.filter(function (item, pos, self) {
+                    return self.indexOf(item) === pos;
+                });
+                angular.forEach(scopes, function (scope, i) {
+                    var splitPermission = scope.split(':');
+                    var permissionLabel = splitPermission[splitPermission.length - 1];
+                    if (scope.startsWith('user:memberof:')) {
+                        vm.requested.organizations[permissionLabel] = true;
                     }
-                    if (splitScopes[i].startsWith("user:address:")) {
-                        var a = splitScopes[i].split(":");
-                        vm.requestedAddresses.push(a[a.length - 1]);
+                    else if (scope.startsWith('user:address:')) {
+                        vm.requested.address.push(permissionLabel);
                     }
-                    if (splitScopes[i].startsWith("user:email:")) {
-                        var a = splitScopes[i].split(":");
-                        vm.requestedEmails.push(a[a.length - 1]);
+                    else if (scope.startsWith('user:email:')) {
+                        vm.requested.email.push(permissionLabel);
                     }
-                    if (splitScopes[i].startsWith("user:phone:")) {
-                        var a = splitScopes[i].split(":");
-                        vm.requestedPhones.push(a[a.length - 1]);
+                    else if (scope.startsWith('user:phone:')) {
+                        vm.requested.phone.push(permissionLabel);
                     }
-                    if (splitScopes[i].startsWith("user:bankaccount:")) {
-                        var a = splitScopes[i].split(":");
-                        vm.requestedBankaccounts.push(a[a.length - 1]);
+                    else if (scope.startsWith('user:bankaccount:')) {
+                        vm.requested.bank.push(permissionLabel);
                     }
-                    if (splitScopes[i] == "user:github") {
-                        vm.requestedGithub = true;
+                    else if (scope === 'user:github') {
+                        vm.requested.github = true;
+                        vm.authorizations.github = true;
                     }
-                    if (splitScopes[i] == "user:facebook") {
-                        vm.requestedFacebook = true;
+                    else if (scope === 'user:facebook') {
+                        vm.requested.facebook = true;
+                        vm.authorizations.facebook = true;
                     }
-                }
+                });
             }
         }
 
         function authorize() {
+            vm.authorizations.organizations = [];
+            angular.forEach(vm.requested.organizations, function (allowed, organization) {
+                if (allowed) {
+                    vm.authorizations.organizations.push(organization);
+                }
+            });
+            vm.authorizations.username = vm.username;
+            vm.authorizations.grantedTo = vm.requestingorganization;
             UserService
-                .saveAuthorization({username:vm.username, grantedTo:vm.requestingorganization, organizations:vm.requestedorganizations})
+                .saveAuthorization(vm.authorizations)
                 .then(
                     function(data) {
                         var u = URI($location.absUrl());
