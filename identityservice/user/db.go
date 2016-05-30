@@ -203,8 +203,7 @@ func (m *Manager) DeleteFacebookAccount(username string) (err error) {
 
 // GetAuthorizationsByUser returns all authorizations for a specific user
 func (m *Manager) GetAuthorizationsByUser(username string) (authorizations []Authorization, err error) {
-	authorizations = make([]Authorization, 0, 0)
-	err = m.getAuthorizationCollection().Find(bson.M{"username": username}).All(authorizations)
+	err = m.getAuthorizationCollection().Find(bson.M{"username": username}).All(&authorizations)
 	return
 }
 
@@ -212,11 +211,10 @@ func (m *Manager) GetAuthorizationsByUser(username string) (authorizations []Aut
 func (m *Manager) GetAuthorization(username, organization string) (authorization *Authorization, err error) {
 	authorization = &Authorization{}
 	err = m.getAuthorizationCollection().Find(bson.M{"username": username, "grantedto": organization}).One(authorization)
-	if err != nil {
+	if err == mgo.ErrNotFound {
+		err = nil
+	} else if err != nil {
 		authorization = nil
-		if err == mgo.ErrNotFound {
-			err = nil
-		}
 	}
 	return
 }
