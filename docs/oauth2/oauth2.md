@@ -66,7 +66,7 @@ https://petshop.com/callback?code=AUTHORIZATION_CODE&state=STATE
 The application requests an access token from the API, by passing the authorization code along with authentication details, including the client secret, to the API token endpoint and the state. Here is an example POST request to itsyou.online's token endpoint:
 
 ```
-POST https://itsyou.online/v1/oauth/access_token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&code=AUTHORIZATION_CODE&redirect_uri=CALLBACK_URL?state=STATE
+POST https://itsyou.online/v1/oauth/access_token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&code=AUTHORIZATION_CODE&redirect_uri=CALLBACK_URL&state=STATE
 ```
 
 The redirect_uri must match the redirect_uri passed in the access_code request and the callback URI registered in the api key. The redirect URL's host and port must exactly match the callback URL and the redirect URL's path must reference a subdirectory of the callback URL. The state must match the state received with the authorization code
