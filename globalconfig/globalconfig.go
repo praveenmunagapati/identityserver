@@ -79,3 +79,4 @@ func (m *Manager) Delete(key string) error {
 
 	return m.collection.Remove(config)
 }
+

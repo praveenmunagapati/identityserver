@@ -15,6 +15,8 @@ import (
 	"github.com/itsyouonline/identityserver/oauthservice"
 	"github.com/itsyouonline/identityserver/routes"
 	"github.com/itsyouonline/identityserver/siteservice"
+	"github.com/itsyouonline/identityserver/identityservice/user"
+	"github.com/dgrijalva/jwt-go"
 )
 
 func main() {
@@ -128,11 +130,15 @@ func main() {
 				}
 			}
 		}
-
 		if err != nil {
 			log.Fatal("Unable to load a valid key for signing JWT's: ", err)
 		}
-		oauthsc, err := oauthservice.NewService(sc, is, jwtKey)
+		ecdsaKey, err := jwt.ParseECPrivateKeyFromPEM(jwtKey)
+		if err != nil {
+			log.Fatal("Unable to load a valid key for signing JWT's: ", err)
+		}
+		user.JWTPublicKey = ecdsaKey.PublicKey
+		oauthsc, err := oauthservice.NewService(sc, is, ecdsaKey)
 		if err != nil {
 			log.Fatal("Unable to create the oauthservice: ", err)
 		}

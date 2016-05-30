@@ -246,6 +246,11 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authorization, err := userMgr.GetAuthorization(username, requestingClient)
+	if err != nil{
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 
 	respBody := &userview{
 		Username: user.Username,
