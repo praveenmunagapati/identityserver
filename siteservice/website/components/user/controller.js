@@ -50,6 +50,11 @@
         vm.loadNotifications = loadNotifications;
         vm.loadOrganizations = loadOrganizations;
         vm.loadUser = loadUser;
+        vm.loadAuthorizations = loadAuthorizations;
+        vm.showAuthorizationDetailDialog = showAuthorizationDetailDialog;
+
+        var genericDetailControllerParams = ['$scope', '$mdDialog', 'username', '$window', 'label', 'data',
+            'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
         init();
 
         function init() {
@@ -89,6 +94,20 @@
                         vm.owner = data.owner;
                         vm.member = data.member;
                         vm.loaded.organizations = true;
+                    }
+                );
+        }
+
+        function loadAuthorizations() {
+            loadUser();
+            if (vm.loaded.authorizations) {
+                return;
+            }
+            UserService.getAuthorizations(vm.username)
+                .then(
+                    function (data) {
+                        vm.authorizations = data;
+                        vm.loaded.authorizations = true;
                     }
                 );
         }
@@ -192,7 +211,7 @@
         }
 
         function showEmailDetailDialog(ev, label, emailaddress){
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
                 controller: EmailDetailDialogController,
                 templateUrl: 'components/user/views/emailaddressdialog.html',
@@ -220,7 +239,7 @@
         }
 
         function showAddEmailDialog(ev) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
                 controller: EmailDetailDialogController,
                 templateUrl: 'components/user/views/emailaddressdialog.html',
@@ -243,9 +262,9 @@
         }
 
         function showPhonenumberDetailDialog(ev, label, phonenumber){
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: GenericDetailDialogController,
+                controller: genericDetailControllerParams,
                 templateUrl: 'components/user/views/phonenumberdialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -272,9 +291,9 @@
         }
 
         function showAddPhonenumberDialog(ev) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: GenericDetailDialogController,
+                controller: genericDetailControllerParams,
                 templateUrl: 'components/user/views/phonenumberdialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -295,11 +314,10 @@
                 });
         }
 
-
         function showAddressDetailDialog(ev, label, address){
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: GenericDetailDialogController,
+                controller: genericDetailControllerParams,
                 templateUrl: 'components/user/views/addressdialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -326,9 +344,9 @@
         }
 
         function showAddAddressDialog(ev) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: GenericDetailDialogController,
+                controller: genericDetailControllerParams,
                 templateUrl: 'components/user/views/addressdialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -352,7 +370,7 @@
         function showBankAccountDialog(ev, label, bank) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: GenericDetailDialogController,
+                controller: genericDetailControllerParams,
                 templateUrl: 'components/user/views/bankAccountDialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -384,7 +402,7 @@
             }
 
             $mdDialog.show({
-                controller: GenericDetailDialogController,
+                controller: genericDetailControllerParams,
                 templateUrl: 'components/user/views/facebookDialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -411,7 +429,7 @@
             }
 
             $mdDialog.show({
-                controller: GenericDetailDialogController,
+                controller: genericDetailControllerParams,
                 templateUrl: 'components/user/views/githubDialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -439,6 +457,61 @@
             $window.location.href = 'https://github.com/login/oauth/authorize/?client_id=81daef7649d8958cae6e';
         }
 
+        function showAuthorizationDetailDialog(authorization, event) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+
+            function authController($scope, $mdDialog, user, authorization) {
+                $scope.delete = UserService.deleteAuthorization;
+                $scope.update = update;
+                $scope.cancel = cancel;
+                $scope.user = user;
+                $scope.requested = {};
+                var originalAuthorization = JSON.parse(JSON.stringify(authorization));
+                angular.forEach(authorization, function (value, key) {
+                    if (Array.isArray(value)) {
+                        angular.forEach(value, function (v, i) {
+                            if (!$scope.requested[key]) {
+                                $scope.requested[key] = {};
+                            }
+                            $scope.requested[key][v] = true;
+                        });
+                    }
+                    else if (typeof value === 'object') {
+                        $scope.requested[key] = Object.keys(value);
+                    } else {
+                        $scope.requested[key] = value;
+
+                    }
+                });
+                $scope.authorizations = authorization;
+
+                function update(authorization) {
+                    UserService.saveAuthorization($scope.authorizations)
+                        .then(function (data) {
+                            $mdDialog.cancel();
+                            vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
+                            vm.authorizations.push(data);
+                        });
+                }
+
+                function cancel() {
+                    vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
+                    vm.authorizations.push(originalAuthorization);
+                    $mdDialog.cancel();
+                }
+            }
+
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'user', 'authorization', authController],
+                templateUrl: 'components/user/views/authorizationDialog.html',
+                targetEvent: event,
+                fullscreen: useFullScreen,
+                locals: {
+                    user: vm.user,
+                    authorization: authorization
+                }
+            });
+        }
     }
 
 

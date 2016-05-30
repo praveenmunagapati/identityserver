@@ -69,7 +69,7 @@
     function UserService($http, $q) {
         var apiURL = 'api/users';
 
-        var service = {
+        return {
             get: get,
             registerNewEmailAddress: registerNewEmailAddress,
             updateEmailAddress: updateEmailAddress,
@@ -80,6 +80,7 @@
             registerNewAddress: registerNewAddress,
             updateAddress: updateAddress,
             deleteAddress: deleteAddress,
+            getAuthorizations: getAuthorizations,
             saveAuthorization: saveAuthorization,
             deleteAuthorization: deleteAuthorization,
             registerNewBankAccount: registerNewBankAccount,
@@ -88,8 +89,6 @@
             deleteFacebookAccount: deleteFacebookAccount,
             deleteGithubAccount: deleteGithubAccount
         };
-
-        return service;
 
         function genericHttpCall(httpFunction, url, data) {
             if (data){
@@ -186,13 +185,18 @@
             return genericHttpCall($http.delete, url);
         }
 
+        function getAuthorizations(username) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/authorizations/';
+            return genericHttpCall($http.get, url);
+        }
+
         function saveAuthorization(authorization) {
             var url = apiURL + '/' +  encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo);
             return genericHttpCall($http.put, url, authorization);
         }
 
         function deleteAuthorization(username, grantedTo) {
-            var url = apiURL + '/' +  encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo)
+            var url = apiURL + '/' + encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo);
             return genericHttpCall($http.delete, url);
         }
 
