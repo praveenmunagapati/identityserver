@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+       <title>Log in - It's You Online</title>
+
+       <link rel='stylesheet prefetch' href='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css'>
+       <link rel="stylesheet" href="assets/css/style.css"/>
+       <link rel="stylesheet" href="assets/css/font-awesome.min.css"/>
+       <link href='https://fonts.googleapis.com/css?family=Wellfleet|Arvo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <style>
+
+            [ng\:cloak], [ng-cloak], .ng-cloak {
+                display: none;
+            }
+        </style>
+ </head>
+
+<body ng-app="loginApp">
+
+<header id="header">
+  <div class="content">
+    <div id="logo"><a href="./"> ItsYou.Online </a></div>
+  </div>
+</header>
+
+
+<div class="fullscreenform">
+    <form ng-cloak method="post" action="login" layout="column" name="phoneconfirmationform" id="phoneconfirmationform">
+    <div ng-init='phoneconfirmationform.serversidevalidationerrors = {"invalidsomething": true}'></div>
+    <div flex layout="row">
+        <div flex></div>
+        <div layout="column" flex-gt-xs="50" flex-xs="100">
+            <md-input-container>
+                <label>Phone number</label>
+                <input ng-model="sms" minlength="4" ng-required name="phonenumber"
+                       autocomplete="off" ng-pattern="'\\+?[0-9]*'">
+                <div ng-messages="phoneconfirmationform.serversidevalidationerrors" md-auto-hide="false">
+                    <div ng-message="invalidphonenumber">An invalid phone number was given</div>
+                </div>
+                <div ng-messages="phoneconfirmationform.phonenumber.$error">
+                    <div ng-message="pattern">Invalid phone number</div>
+                </div>
+            </md-input-container>
+        </div>
+        <div flex></div>
+    </div>
+
+    <div layout="row">
+        <span flex></span>
+        <div layout="column">
+            <md-button type="submit" class="md-raised md-primary">Send confirmation sms</md-button>
+            <div ng-messages="phoneconfirmationform.serversidevalidationerrors" md-auto-hide="false" class="error">
+                <div ng-message="invalidphonenumber">Invalid phone number</div>
+            </div>
+        </div>
+        <span flex></span>
+    </div>
+    </form>
+</div>
+
+
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js'></script>
+<script>
+    angular.module('loginApp', ['ngMaterial','ngMessages'])
+        .config(function($mdThemingProvider) {
+            $mdThemingProvider.definePalette('blueish', {
+                '50': '#f7fbfd',
+                '100': '#badeed',
+                '200': '#8ec8e2',
+                '300': '#55add3',
+                '400': '#3ca1cd',
+                '500': '#3091bb',
+                '600': '#2a7ea3',
+                '700': '#236b8a',
+                '800': '#1d5872',
+                '900': '#17455a',
+                'A100': '#f7fbfd',
+                'A200': '#badeed',
+                'A400': '#3ca1cd',
+                'A700': '#236b8a',
+                'contrastDefaultColor': 'light',
+                'contrastDarkColors': '50 100 200 300 400 A100 A200 A400'
+            });
+            $mdThemingProvider.theme('default')
+                .primaryPalette('blueish')
+        });
+</script>
+</body>
+</html>

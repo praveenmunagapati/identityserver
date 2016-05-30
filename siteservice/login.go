@@ -9,7 +9,6 @@ import (
 	"math/big"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -72,7 +71,6 @@ func newLoginSessionInformation() (sessionInformation *loginSessionInformation, 
 const loginFileName = "login.html"
 const totpFileName = "logintotpform.html"
 const smsFormFileName = "loginsmsform.html"
-const smsMobileConfirationPage = "loginsms2falink.html"
 
 //renderForm shows the user login page
 func (service *Service) renderLoginForm(w http.ResponseWriter, request *http.Request, pageFileName string, indicateError bool, postbackURL string) {
@@ -86,23 +84,6 @@ func (service *Service) renderLoginForm(w http.ResponseWriter, request *http.Req
 		htmlData = bytes.Replace(htmlData, []byte(`{"invalidsomething": true}`), []byte(`{"invalidcredentials": true}`), 1)
 	}
 	htmlData = bytes.Replace(htmlData, []byte(`action="login"`), []byte(fmt.Sprintf("action=\"%s\"", postbackURL)), 1)
-	sessions.Save(request, w)
-	w.Write(htmlData)
-}
-
-func (service *Service) renderSMSConfirmationPage(w http.ResponseWriter, request *http.Request, succeeded bool) {
-	htmlData, err := html.Asset(smsMobileConfirationPage)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	text := "You should be logged in on your computer in a few seconds"
-
-	if !succeeded {
-		text = "Invalid or expired link"
-	}
-	htmlData = bytes.Replace(htmlData, []byte(`{{ text }}`), []byte(text), 1)
 	sessions.Save(request, w)
 	w.Write(htmlData)
 }
@@ -152,6 +133,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
 	if err != nil {
 		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	u, err := userMgr.GetByName(username)
@@ -161,6 +143,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 	}
 	loginSession.Values["username"] = username
 	if u.TwoFAMethod == "sms" {
+		//TODO: if no confirmed phonenumber, proceed to registration phone validation flow
 		sessionInfo, err := newLoginSessionInformation()
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -173,9 +156,9 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		//TODO: check which phonenumber to use
 		phonenumber := u.Phone["main"]
 		go service.smsService.Send(string(phonenumber), smsmessage)
-		redirectToDifferentLoginPage(w, request, "login", "loginsmsconfirmation")
+		redirectToDifferentPage(w, request, true, "login", "loginsmsconfirmation")
 	} else {
-		redirectToDifferentLoginPage(w, request, "login", "logintotpconfirmation")
+		redirectToDifferentPage(w, request, true, "login", "logintotpconfirmation")
 	}
 }
 
@@ -217,16 +200,6 @@ func (service *Service) getSessionKey(request *http.Request) (sessionKey string,
 	return
 }
 
-func redirectToDifferentLoginPage(w http.ResponseWriter, request *http.Request, from string, to string) {
-	log.Debugf("Redirecting from %s to %s", from, to)
-	sessions.Save(request, w)
-	u, _ := url.Parse(request.RequestURI)
-	path := strings.TrimSuffix(u.Path, from)
-	path += to
-	u.Path = path
-	http.Redirect(w, request, u.RequestURI(), http.StatusFound)
-}
-
 //ShowTOTPConfirmationForm shows the user login page on the initial request
 func (service *Service) ShowTOTPConfirmationForm(w http.ResponseWriter, request *http.Request) {
 	service.renderLoginForm(w, request, totpFileName, false, request.RequestURI)
@@ -240,7 +213,7 @@ func (service *Service) ProcessTOTPConfirmation(w http.ResponseWriter, request *
 		return
 	}
 	if username == "" {
-		redirectToDifferentLoginPage(w, request, "logintotpconfirmation", "login")
+		redirectToDifferentPage(w, request, true, "logintotpconfirmation", "login")
 		return
 	}
 
@@ -264,8 +237,8 @@ func (service *Service) ProcessTOTPConfirmation(w http.ResponseWriter, request *
 	service.loginUser(w, request, username)
 }
 
-//ShowSMSConfirmationForm shows the user login page on the initial request
-func (service *Service) ShowSMSConfirmationForm(w http.ResponseWriter, request *http.Request) {
+//Show2FASMSConfirmationForm shows the user the form to enter the 2fa authentication code sent by sms
+func (service *Service) Show2FASMSConfirmationForm(w http.ResponseWriter, request *http.Request) {
 	service.renderLoginForm(w, request, smsFormFileName, false, request.RequestURI)
 }
 
@@ -308,15 +281,16 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
 	if sessionInfo == nil {
-		service.renderSMSConfirmationPage(w, request, false)
+		service.renderSMSConfirmationPage(w, request, "Invalid or expired link")
 		return
 	}
 
 	validsmscode = (smscode == sessionInfo.SMSCode)
 
 	if !validsmscode { //TODO: limit to 3 failed attempts
-		service.renderSMSConfirmationPage(w, request, false)
+		service.renderSMSConfirmationPage(w, request, "Invalid or expired link")
 		return
 	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
@@ -327,11 +301,11 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	service.renderSMSConfirmationPage(w, request, true)
+	service.renderSMSConfirmationPage(w, request, "You should be logged in on your computer in a few seconds")
 }
 
-//CheckSMSConfirmation is called by the sms code form to check if the sms is already confirmed on the mobile phone
-func (service *Service) CheckSMSConfirmation(w http.ResponseWriter, request *http.Request) {
+//Check2FASMSConfirmation is called by the sms code form to check if the sms is already confirmed on the mobile phone
+func (service *Service) Check2FASMSConfirmation(w http.ResponseWriter, request *http.Request) {
 
 	sessionInfo, err := service.getLoginSessionInformation(request, "")
 	if err != nil {
@@ -349,15 +323,15 @@ func (service *Service) CheckSMSConfirmation(w http.ResponseWriter, request *htt
 
 }
 
-//ProcessSMSConfirmation checks the totp 2 factor authentication code
-func (service *Service) ProcessSMSConfirmation(w http.ResponseWriter, request *http.Request) {
+//Process2FASMSConfirmation checks the totp 2 factor authentication code
+func (service *Service) Process2FASMSConfirmation(w http.ResponseWriter, request *http.Request) {
 	username, err := service.getUserLoggingIn(request)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if username == "" {
-		redirectToDifferentLoginPage(w, request, "loginsmsconfirmation", "login")
+		redirectToDifferentPage(w, request, true, "loginsmsconfirmation", "login")
 		return
 	}
 
@@ -376,7 +350,7 @@ func (service *Service) ProcessSMSConfirmation(w http.ResponseWriter, request *h
 		return
 	}
 	if sessionInfo == nil {
-		redirectToDifferentLoginPage(w, request, "loginsmsconfirmation", "login")
+		redirectToDifferentPage(w, request, true, "loginsmsconfirmation", "login")
 		return
 	}
 	if !sessionInfo.Confirmed { //Already confirmed on the phone

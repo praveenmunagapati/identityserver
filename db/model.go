@@ -19,7 +19,7 @@ func EnsureIndex(collectionName string, index mgo.Index) {
 		log.Debugf("Ensured \"%s\" collection indices", collectionName)
 	} else {
 		// Important: Mongo3 doesn't support DropDups!
-		log.Fatalf("Failed to create index on collection \"%s\". Aborting", collectionName)
+		log.Fatalf("Failed to create index on collection \"%s\": %s. Aborting", collectionName, err.Error())
 	}
 }
 
@@ -39,6 +39,7 @@ func GetSession() *mgo.Session {
 	}
 }
 
+//IsDup checks if an error means it's a duplicate
 func IsDup(err error) bool {
 	return (err == ErrDuplicate || mgo.IsDup(err))
 }
