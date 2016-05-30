@@ -220,7 +220,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 
 func handleAuthorizationGrantCodeType(r *http.Request, username, clientID, redirectURI, scopes string) (correctedRedirectURI string, err error) {
 	correctedRedirectURI = redirectURI
-
+	log.Debug("Handling authorization grant code type for user ", username, ", ", clientID, " is asking for ", scopes)
 	clientState := r.Form.Get("state")
 	//TODO: validate state (length and stuff)
 

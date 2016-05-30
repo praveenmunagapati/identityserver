@@ -304,7 +304,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 
 	totpsession, err := service.GetSession(request, SessionForRegistration, "totp")
 	if err != nil {
-		log.Error("EROR while getting the totp registration session", err)
+		log.Error("ERROR while getting the totp registration session", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -322,8 +322,9 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 
 	newuser := &user.User{
-		Username: values.Get("login"),
-		Email:    map[string]string{"main": values.Get("email")},
+		Username:    values.Get("login"),
+		Email:       map[string]string{"main": values.Get("email")},
+		TwoFAMethod: twoFAMethod,
 	}
 	//TODO: validate newuser
 
