@@ -9,6 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password/keyderivation"
 	"github.com/itsyouonline/identityserver/db"
+	"fmt"
 )
 
 const (
@@ -73,6 +74,9 @@ func (pwm *Manager) Save(username, password string) error {
 		log.Error("ERROR hashing password")
 		log.Debug("ERROR hashing password: ", err)
 		return err
+	}
+	if len(password) < 6 {
+		return fmt.Errorf("Password should be atleast 6 characters")
 	}
 	storedPassword := userPass{Username: username, Password: passwordHash}
 

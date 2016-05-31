@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
+	"github.com/itsyouonline/identityserver/credentials/password"
 )
 
 type UsersAPI struct {
@@ -225,6 +226,40 @@ func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// UpdatePassword handler
+func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	body := struct {
+		Currentpassword        string
+		Newpassword string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	userMgr := NewManager(r)
+	exists, err := userMgr.Exists(username)
+	if ! exists || err != nil  {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	passwordMgr := password.NewManager(r)
+	passwordok, err := passwordMgr.Validate(username, body.Currentpassword)
+	if ! passwordok || err != nil  {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	err = passwordMgr.Save(username, body.Newpassword)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
