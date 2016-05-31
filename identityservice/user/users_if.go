@@ -15,6 +15,8 @@ type UsersInterface interface { // Post is the handler for POST /users
 	Post(http.ResponseWriter, *http.Request)
 	// usernamevalidateGet is the handler for GET /users/{username}/validate
 	usernamevalidateGet(http.ResponseWriter, *http.Request)
+	// UpdatePassword is the handler for PUT /users/{username}/password
+	UpdatePassword(http.ResponseWriter, *http.Request)
 	// usernamephonenumbersGet is the handler for GET /users/{username}/phonenumbers
 	usernamephonenumbersGet(http.ResponseWriter, *http.Request)
 	// RegisterNewPhonenumber is the handler for POST /users/{username}/phonenumbers
@@ -98,6 +100,7 @@ type UsersInterface interface { // Post is the handler for POST /users
 func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.Post))).Methods("POST")
 	r.Handle("/users/{username}/validate", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.usernamevalidateGet))).Methods("GET")
+	r.Handle("/users/{username}/password", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.UpdatePassword))).Methods("PUT")
 	r.Handle("/users/{username}/phonenumbers", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamephonenumbersGet))).Methods("GET")
 	r.Handle("/users/{username}/phonenumbers", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RegisterNewPhonenumber))).Methods("POST")
 	r.Handle("/users/{username}/phonenumbers/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamephonenumberslabelGet))).Methods("GET")

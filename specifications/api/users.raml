@@ -221,6 +221,19 @@ securedBy: [ oauth_2_0 ]
                     application/json:
                         type: User
 
+    /password:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+      put:
+          displayName: UpdatePassword
+          description: Update the user his password
+          body:
+            application/json:
+              properties:
+                currentpassword: string
+                newpassword: string
+          responses:
+              204:
+                description: No response data
     /emailaddresses:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       post:
