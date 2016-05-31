@@ -33,8 +33,12 @@
                             });
                             var prop = scope.user[property];
                             angular.forEach(value, function (requestedLabel) {
-                                // select first by default
-                                scope.authorizations[property][requestedLabel] = Object.keys(prop)[0];
+                                // select first by default, None if the user did not configure this property yet
+                                if (prop) {
+                                    scope.authorizations[property][requestedLabel] = Object.keys(prop)[0] || '';
+                                } else {
+                                    scope.authorizations[property][requestedLabel] = '';
+                                }
                             });
                         });
                     }

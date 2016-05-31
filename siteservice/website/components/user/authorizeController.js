@@ -97,8 +97,8 @@
 
         function update() {
             // called by the authorizationDetailsDirective
-            $scope.authorizations.username = $scope.username;
-            $scope.authorizations.grantedTo = $scope.requestingorganization;
+            $scope.authorizations.username = vm.username;
+            $scope.authorizations.grantedTo = vm.requestingorganization;
             UserService
                 .saveAuthorization($scope.authorizations)
                 .then(
