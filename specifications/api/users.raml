@@ -283,7 +283,7 @@ securedBy: [ oauth_2_0 ]
 
   /{username}/info:
     get:
-      securedBy: [oauth_2_0: { scopes: [ "user:info" ] } ]
+      securedBy: [oauth_2_0: { scopes: [ "user:info", "user:admin" ] } ]
       displayName: GetUserInformation
       responses:
             200:

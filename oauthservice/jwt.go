@@ -88,7 +88,7 @@ func jwtScopesAreAllowed(allowedScopes string, requestedScopes string) (valid bo
 
 	valid = true
 	for _, rs := range requestedScopesList {
-		fmt.Printf("Checking if '%s' is allowed\n", rs)
+		log.Info(fmt.Sprintf("Checking if '%s' is allowed", rs))
 		valid = valid && checkIfScopeInList(allowedScopesList, rs)
 	}
 

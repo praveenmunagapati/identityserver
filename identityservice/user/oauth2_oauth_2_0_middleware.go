@@ -7,7 +7,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/itsyouonline/identityserver/oauthservice"
+	"fmt"
+	"crypto/ecdsa"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
@@ -16,16 +19,15 @@ type Oauth2oauth_2_0Middleware struct {
 	Field       string
 	Scopes      []string
 }
+var JWTPublicKey ecdsa.PublicKey
 
 // newOauth2oauth_2_0Middlewarecreate new Oauth2oauth_2_0Middleware struct
 func newOauth2oauth_2_0Middleware(scopes []string) *Oauth2oauth_2_0Middleware {
 	om := Oauth2oauth_2_0Middleware{
 		Scopes: scopes,
+		DescribedBy: "headers",
+		Field: "Authorization",
 	}
-
-	om.DescribedBy = "headers"
-	om.Field = "Authorization"
-
 	return &om
 }
 
@@ -49,6 +51,10 @@ func (om *Oauth2oauth_2_0Middleware) CheckScopes(scopes []string) bool {
 func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var accessToken string
+		var atscopestring string
+		var username string
+		var clientId string
+		scopes := []string{}
 
 		// access token checking
 		if om.DescribedBy == "queryParameters" {
@@ -57,40 +63,64 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			accessToken = r.Header.Get(om.Field)
 		}
 		//Get the actual token out of the header (accept 'token ABCD' as well as just 'ABCD' and ignore some possible whitespace)
-		accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
-		if accessToken == "" {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
+		if strings.HasPrefix(accessToken, "bearer") {
+			jwtstring := strings.TrimSpace(strings.TrimPrefix(accessToken, "bearer"))
+			token, err := jwt.Parse(jwtstring, func(token *jwt.Token) (interface{}, error) {
+				// Don't forget to validate the alg is what you expect:
 
-		log.Debug("Access Token: ", accessToken)
-		scopes := []string{}
-		//TODO: cache
-		oauthMgr := oauthservice.NewManager(r)
-		at, err := oauthMgr.GetAccessToken(accessToken)
-		if err != nil {
-			log.Error(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		if at == nil {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
+				if token.Method != jwt.SigningMethodES384 {
+				    return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+				}
+				return &JWTPublicKey, nil
+			})
+			if err != nil || !token.Valid {
+				log.Error(err)
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			username = token.Claims["username"].(string)
+			clientId = token.Claims["aud"].(string)
+			atscopestring = token.Claims["scope"].(string)
+
+		} else {
+			accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
+			if accessToken == "" {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+
+			log.Debug("Access Token: ", accessToken)
+			//TODO: cache
+			oauthMgr := oauthservice.NewManager(r)
+			at, err := oauthMgr.GetAccessToken(accessToken)
+			if err != nil {
+				log.Error(err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			if at == nil {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			username = at.Username
+			atscopestring = at.Scope
+			clientId = at.ClientID
+
 		}
 
 		protectedUsername := mux.Vars(r)["username"]
 
-		if protectedUsername == at.Username && at.ClientID == "itsyouonline" && at.Scope == "admin" {
+		if protectedUsername == username && clientId == "itsyouonline" && atscopestring == "admin" {
 			scopes = append(scopes, "user:admin")
 		}
-		if strings.HasPrefix(at.Scope, "user:") {
+		if strings.HasPrefix(atscopestring, "user:") {
 			scopes = append(scopes, "user:info")
 		}
 
 		log.Debug("Available scopes: ", scopes)
 
-		context.Set(r, "client_id", at.ClientID)
-		context.Set(r, "availablescopes", at.Scope)
+		context.Set(r, "client_id", clientId)
+		context.Set(r, "availablescopes", atscopestring)
 
 		// check scopes
 		if !om.CheckScopes(scopes) {

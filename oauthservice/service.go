@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 )
 
@@ -34,11 +33,7 @@ type Service struct {
 }
 
 //NewService creates and initializes a Service
-func NewService(sessionService SessionService, identityService IdentityService, jwtSigningKey []byte) (service *Service, err error) {
-	ecdsaKey, err := jwt.ParseECPrivateKeyFromPEM(jwtSigningKey)
-	if err != nil {
-		return
-	}
+func NewService(sessionService SessionService, identityService IdentityService, ecdsaKey *ecdsa.PrivateKey) (service *Service, err error) {
 	service = &Service{sessionService: sessionService, identityService: identityService, jwtSigningKey: ecdsaKey}
 	return
 }
