@@ -465,6 +465,7 @@
                 $scope.update = update;
                 $scope.cancel = cancel;
                 $scope.user = user;
+                $scope.remove = remove;
                 $scope.requested = {};
                 var originalAuthorization = JSON.parse(JSON.stringify(authorization));
                 angular.forEach(authorization, function (value, key) {
@@ -498,6 +499,14 @@
                     vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
                     vm.authorizations.push(originalAuthorization);
                     $mdDialog.cancel();
+                }
+
+                function remove() {
+                    UserService.deleteAuthorization(authorization)
+                        .then(function (data) {
+                            vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
+                            $mdDialog.cancel();
+                        });
                 }
             }
 
