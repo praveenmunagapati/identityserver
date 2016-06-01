@@ -24,12 +24,12 @@ import (
 //Service is the identityserver http service
 type Service struct {
 	Sessions                     map[SessionType]*sessions.CookieStore
-	smsService                   *communication.SMSService
+	smsService                   communication.SMSService
 	phonenumberValidationService *validation.IYOPhonenumberValidationService
 }
 
 //NewService creates and initializes a Service
-func NewService(cookieSecret string, smsService *communication.SMSService) (service *Service) {
+func NewService(cookieSecret string, smsService communication.SMSService) (service *Service) {
 	service = &Service{smsService: smsService}
 	p := &validation.IYOPhonenumberValidationService{SMSService: smsService}
 	service.phonenumberValidationService = p

@@ -7,16 +7,16 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/globalconfig"
 	"github.com/itsyouonline/identityserver/https"
 	"github.com/itsyouonline/identityserver/identityservice"
+	"github.com/itsyouonline/identityserver/identityservice/user"
 	"github.com/itsyouonline/identityserver/oauthservice"
 	"github.com/itsyouonline/identityserver/routes"
 	"github.com/itsyouonline/identityserver/siteservice"
-	"github.com/itsyouonline/identityserver/identityservice/user"
-	"github.com/dgrijalva/jwt-go"
 )
 
 func main() {
@@ -99,14 +99,18 @@ func main() {
 		defer db.Close()
 
 		cookieSecret := identityservice.GetCookieSecret()
-		var smsService *communication.SMSService
+		var smsService communication.SMSService
 		if twilioAccountSID != "" {
-			smsService = &communication.SMSService{
+			smsService = &communication.TwilioSMSService{
 				AccountSID:          twilioAccountSID,
 				AuthToken:           twilioAuthToken,
 				MessagingServiceSID: twilioMessagingServiceSID,
 			}
+		} else {
+			log.Warn("No valid Twilio Account provided, falling back to development implementation")
+			smsService = &communication.DevSMSService{}
 		}
+
 		sc := siteservice.NewService(cookieSecret, smsService)
 		is := identityservice.NewService()
 

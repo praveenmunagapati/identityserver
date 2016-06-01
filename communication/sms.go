@@ -10,15 +10,20 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-//SMSService is an SMS communication channel using Twilio
-type SMSService struct {
+//SMSService defines an sms communcation channel
+type SMSService interface {
+	Send(phonenumber string, message string) (err error)
+}
+
+//TwilioSMSService is an SMS communication channel using Twilio
+type TwilioSMSService struct {
 	AccountSID          string
 	AuthToken           string
 	MessagingServiceSID string
 }
 
 //Send sends an SMS
-func (s *SMSService) Send(phonenumber string, message string) (err error) {
+func (s *TwilioSMSService) Send(phonenumber string, message string) (err error) {
 	client := &http.Client{}
 
 	data := url.Values{
