@@ -5,3 +5,4 @@ ADD ./dist/identityserver /identityserver
 EXPOSE 443
 
 ENTRYPOINT ["/identityserver", "-b", ":443"]
+# please run with -v /etc/ssl/certs:/etc/ssl/certs to support https connections

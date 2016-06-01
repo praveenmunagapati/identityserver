@@ -10,6 +10,7 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/credentials/password"
+	"github.com/itsyouonline/identityserver/db/user/apikey"
 )
 
 type UsersAPI struct {
@@ -1005,4 +1006,84 @@ func (api UsersAPI) DeleteAuthorization(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (api UsersAPI) AddAPIKey(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	body := struct {
+		Label   string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	apikeyMgr := apikey.NewManager(r)
+	apikey := apikey.NewAPIKey(username, body.Label)
+	apikeyMgr.Save(apikey)
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(apikey)
+}
+
+func (api UsersAPI) GetAPIKey(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+	apikeyMgr := apikey.NewManager(r)
+	apikey, err := apikeyMgr.GetByUsernameAndLabel(username, label)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(apikey)
+}
+
+func (api UsersAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+	apikeyMgr := apikey.NewManager(r)
+	body := struct {
+		Label   string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	apikey, err := apikeyMgr.GetByUsernameAndLabel(username, label)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	apikey.Label = body.Label
+	apikeyMgr.Save(apikey)
+	w.WriteHeader(http.StatusNoContent)
+
+}
+func (api UsersAPI) DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+	apikeyMgr := apikey.NewManager(r)
+	apikeyMgr.Delete(username, label)
+
+}
+func (api UsersAPI) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	apikeyMgr := apikey.NewManager(r)
+	apikeys, err := apikeyMgr.GetByUser(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if apikeys == nil {
+		apikeys = []apikey.APIKey{}
+	}
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(apikeys)
 }

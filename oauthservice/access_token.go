@@ -9,6 +9,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/db/user/apikey"
 )
 
 //AccessTokenExpiration is the time in seconds an access token expires
@@ -56,7 +57,7 @@ func newAccessToken(username, globalID, clientID, scope string) *AccessToken {
 	return &at
 }
 
-//AccessTokenHandler is the handler of the /login/oauth/access_token endpoint
+//AccessTokenHandler is the handler of the /v1/oauth/access_token endpoint
 func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -117,6 +118,8 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 
 func clientCredentialsTokenHandler(clientID string, secret string, r *http.Request) (at *AccessToken, httpStatusCode int) {
 	httpStatusCode = http.StatusOK
+	var scopes string
+	username := ""
 
 	mgr := NewManager(r)
 	client, err := mgr.getClientByCredentials(clientID, secret)
@@ -126,11 +129,23 @@ func clientCredentialsTokenHandler(clientID string, secret string, r *http.Reque
 		return
 	}
 	if client == nil || !client.ClientCredentialsGrantType {
-		httpStatusCode = http.StatusBadRequest
-		return
+		log.Info("Checking user api")
+		apikeyMgr := apikey.NewManager(r)
+		apikey, err := apikeyMgr.GetByApplicationAndSecret(clientID, secret)
+		if err != nil || apikey.ApiKey != secret {
+			log.Error("Error getting the user api key: ", err)
+			httpStatusCode = http.StatusBadRequest
+			return
+		}
+		log.Info("apikey", apikey)
+		scopes = strings.Join(apikey.Scopes, " ")
+		log.Info("scopes ", scopes)
+		username = apikey.Username
+	} else {
+		scopes = "organization:owner"
 	}
 
-	at = newAccessToken("", clientID, clientID, "organization:owner")
+	at = newAccessToken(username, clientID, clientID, scopes)
 	mgr.saveAccessToken(at)
 	return
 }
