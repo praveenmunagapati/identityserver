@@ -197,7 +197,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		//Check if we are redirected from the authorize page, it might be that not all authorizations were given,
 		// authorize the login but only with the authorized scopes
 		referrer := request.Header.Get("Referer")
-		if referrer != "" {
+		if referrer != "" && !validAuthorization { //If we already have a valid authorization, no need to check if we come from the authorize page
 			if referrerURL, err := url.Parse(referrer); err == nil {
 				validAuthorization = referrerURL.Host == request.Host && referrerURL.Path == "/authorize"
 			} else {
