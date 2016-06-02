@@ -105,10 +105,6 @@ func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request, possible
 
 func (service *Service) filterAuthorizedScopes(r *http.Request, username string, clientID string, requestedScopes []string) (authorizedScopes []string, err error) {
 	log.Debug("Validating authorizations for scopes")
-	if clientID == "itsyouonline" {
-		authorizedScopes = requestedScopes
-		return
-	}
 	authorizedScopes, err = service.identityService.FilterAuthorizedScopes(r, username, clientID, requestedScopes)
 
 	//TODO: how to request explicit confirmation?
@@ -181,12 +177,17 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	authorizedScopes, err := service.filterAuthorizedScopes(request, username, clientID, possibleScopes)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+	var authorizedScopes []string
+
+	if clientID != "itsyouonline" {
+		authorizedScopes, err = service.filterAuthorizedScopes(request, username, clientID, possibleScopes)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 	}
+
 	var authorizedScopeString string
 	var validAuthorization bool
 
@@ -205,7 +206,9 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		}
 	}
 
-	if !validAuthorization {
+	//If no valid authorization, ask the user for authorizations
+	// No need when logging in to itsyou.online itself.
+	if !validAuthorization && clientID != "itsyouonline" {
 		token, err := service.createItsYouOnlineAdminToken(username, request)
 		if err != nil {
 			log.Error(err)
