@@ -11,6 +11,15 @@ types:
     maxLength: 50
     minLength: 2
 
+  APIkey:
+    description: User specific API key
+    properties:
+        username: string
+        apikey: string
+        applicationid: string
+        scopes: string[]
+        label: string
+
   Authorization:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
     properties:
@@ -276,6 +285,63 @@ securedBy: [ oauth_2_0 ]
                   description: Email address removed.
                 409:
                   description: The last email address can not be removed.
+
+
+    /apikeys:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+      post:
+          displayName: AddApiKey
+          description: Adds an APIKey to the user
+          body:
+            application/json:
+              properties:
+                label: Label
+          responses:
+              201:
+                description: Added a APIKey to the user
+                body:
+                  application/json:
+                      type: APIKey
+              409:
+                  description: Label is already used.
+      get:
+          displayName: ListAPIKeys
+          description: Lists the API keys
+          responses:
+              200:
+                description: List of API keys
+                body:
+                  application/json:
+                      type: APIKey[]
+      /{label}:
+        put:
+            displayName: UpdateAPIkey
+            description: Updates the label for the api key
+            body:
+              application/json:
+                properties:
+                  label: Label
+            responses:
+              201:
+                  description: Updated
+              409:
+                  description: The new label is already used
+        get:
+            displayName: GetAPIkey
+            description: Get an API key by label
+            responses:
+              200:
+                  description: API key
+                  body:
+                    application/json:
+                      type: APIKey
+
+        delete:
+            displayName: DeleteAPIkey
+            description: Removes an API key
+            responses:
+                204:
+                  description: API key removed.
 
     /github:
       delete:

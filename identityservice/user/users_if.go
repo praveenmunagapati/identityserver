@@ -94,6 +94,13 @@ type UsersInterface interface { // Post is the handler for POST /users
 	// Remove the authorization for an organization, the granted organization will no longer
 	// have access the user's information.
 	DeleteAuthorization(http.ResponseWriter, *http.Request)
+	// Add API Key
+	AddAPIKey(http.ResponseWriter, *http.Request)
+	GetAPIKey(http.ResponseWriter, *http.Request)
+	UpdateAPIKey(http.ResponseWriter, *http.Request)
+	DeleteAPIKey(http.ResponseWriter, *http.Request)
+	ListAPIKeys(http.ResponseWriter, *http.Request)
+
 }
 
 // UsersInterfaceRoutes is routing for /users root endpoint
@@ -110,6 +117,11 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/banks", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamebanksPost))).Methods("POST")
 	r.Handle("/users/{username}/notifications", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamenotificationsGet))).Methods("GET")
 	r.Handle("/users/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernameGet))).Methods("GET")
+	r.Handle("/users/{username}/apikeys", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.ListAPIKeys))).Methods("GET")
+	r.Handle("/users/{username}/apikeys", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.AddAPIKey))).Methods("POST")
+	r.Handle("/users/{username}/apikeys/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetAPIKey))).Methods("GET")
+	r.Handle("/users/{username}/apikeys/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateAPIKey))).Methods("PUT")
+	r.Handle("/users/{username}/apikeys/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteAPIKey))).Methods("DELETE")
 	r.Handle("/users/{username}/facebook", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteFacebookAccount))).Methods("DELETE")
 	r.Handle("/users/{username}/emailaddresses", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RegisterNewEmailAddress))).Methods("POST")
 	r.Handle("/users/{username}/emailaddresses/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateEmailAddress))).Methods("PUT")
