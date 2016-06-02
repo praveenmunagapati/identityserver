@@ -11,37 +11,6 @@
                 link: function (scope, element, attr) {
                     scope.revoke = revoke;
                     scope.save = save;
-                    scope.init = init;
-                    var properties = ['address', 'email', 'phone', 'bank'];
-
-                    function init() {
-                        angular.forEach(scope.requested, function (value, property) {
-                            if (properties.indexOf(property) === -1) {
-                                return;
-                            }
-                            // loop over requests
-                            if (!scope.authorizations[property]) {
-                                scope.authorizations[property] = {};
-                            }
-                            // Empty label -> "main"
-                            angular.forEach(value, function (requestedLabel) {
-                                if (!requestedLabel) {
-                                    scope.requested[property].splice(scope.requested[property].indexOf(requestedLabel), 1);
-                                    requestedLabel = 'main';
-                                    scope.requested[property].push(requestedLabel);
-                                }
-                            });
-                            var prop = scope.user[property];
-                            angular.forEach(value, function (requestedLabel) {
-                                // select first by default, None if the user did not configure this property yet
-                                if (prop) {
-                                    scope.authorizations[property][requestedLabel] = Object.keys(prop)[0] || '';
-                                } else {
-                                    scope.authorizations[property][requestedLabel] = '';
-                                }
-                            });
-                        });
-                    }
 
                     function revoke(property, label) {
                         delete scope.authorizations[property][label];
