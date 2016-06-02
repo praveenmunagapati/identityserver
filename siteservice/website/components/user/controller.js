@@ -9,10 +9,10 @@
 
     UserHomeController.$inject = [
         '$q', '$rootScope', '$location', '$routeParams', '$window', '$mdToast', '$mdMedia', '$mdDialog', 'NotificationService',
-        'OrganizationService', 'UserService'];
+        'OrganizationService', 'UserService', 'configService'];
 
     function UserHomeController($q, $rootScope, $location, $routeParams, $window, $mdToast, $mdMedia, $mdDialog,
-                                NotificationService, OrganizationService, UserService) {
+                                NotificationService, OrganizationService, UserService, configService) {
         var vm = this;
 
         vm.username = $rootScope.user;
@@ -450,11 +450,19 @@
         }
 
         function addFacebookAccount() {
-            $window.location.href = 'https://www.facebook.com/dialog/oauth?client_id=271068306559344&response_type=code&redirect_uri=' + $window.location.origin + '/facebook_callback';
+            configService.getConfig(function (config) {
+                $window.location.href = 'https://www.facebook.com/dialog/oauth?client_id='
+                    + config.facebookclientid
+                    + '&response_type=code&redirect_uri='
+                    + $window.location.origin
+                    + '/facebook_callback';
+            });
         }
 
         function addGithubAccount() {
-            $window.location.href = 'https://github.com/login/oauth/authorize/?client_id=81daef7649d8958cae6e';
+            configService.getConfig(function (config) {
+                $window.location.href = 'https://github.com/login/oauth/authorize/?client_id=' + config.githubclientid;
+            });
         }
 
         function showAuthorizationDetailDialog(authorization, event) {

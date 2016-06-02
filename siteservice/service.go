@@ -19,6 +19,9 @@ import (
 	"github.com/itsyouonline/identityserver/validation"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/credentials/totp"
+	"encoding/json"
+	"github.com/itsyouonline/identityserver/identityservice"
 )
 
 //Service is the identityserver http service
@@ -75,6 +78,7 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	//Error page
 	router.Methods("GET").Path("/error").HandlerFunc(service.ErrorPage)
 	router.Methods("GET").Path("/error{errornumber}").HandlerFunc(service.ErrorPage)
+	router.Methods("GET").Path("/config").HandlerFunc(service.GetConfig)
 
 	//host the assets used in the htmlpages
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(
@@ -191,4 +195,28 @@ func redirectToDifferentPage(w http.ResponseWriter, request *http.Request, keepQ
 		redirectTo = u.RequestURI()
 	}
 	http.Redirect(w, request, redirectTo, http.StatusFound)
+}
+
+func (service *Service) GetConfig(w http.ResponseWriter, request *http.Request) {
+	token, err := totp.NewToken()
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	totpsession, err := service.GetSession(request, SessionForRegistration, "totp")
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	totpsession.Values["secret"] = token.Secret
+	sessions.Save(request, w)
+	data := struct {
+		TotpSecret       string `json:"totpsecret"`
+		GithubClientId   string `json:"githubclientid"`
+		FacebookClientId string `json:"facebookclientid"`
+	}{}
+	data.TotpSecret = token.Secret
+	data.GithubClientId, _ = identityservice.GetOauthClientID("github")
+	data.FacebookClientId, _ = identityservice.GetOauthClientID("facebook")
+	json.NewEncoder(w).Encode(&data)
 }
