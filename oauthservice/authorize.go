@@ -104,9 +104,9 @@ func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request, possible
 }
 
 func (service *Service) filterAuthorizedScopes(r *http.Request, username string, clientID string, requestedScopes []string) (authorizedScopes []string, err error) {
-	log.Debug("Validating authorizations for scopes")
+	log.Debug("Validating authorizations for requested scopes: ", requestedScopes)
 	authorizedScopes, err = service.identityService.FilterAuthorizedScopes(r, username, clientID, requestedScopes)
-
+	log.Debug("Authorized scopes: ", authorizedScopes)
 	//TODO: how to request explicit confirmation?
 
 	return

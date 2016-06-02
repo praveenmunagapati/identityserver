@@ -107,7 +107,9 @@ func main() {
 				MessagingServiceSID: twilioMessagingServiceSID,
 			}
 		} else {
+			log.Warn("============================================================================")
 			log.Warn("No valid Twilio Account provided, falling back to development implementation")
+			log.Warn("============================================================================")
 			smsService = &communication.DevSMSService{}
 		}
 
