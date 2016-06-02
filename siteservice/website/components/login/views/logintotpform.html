@@ -1,0 +1,25 @@
+<form layout="column" name="totpform" ng-submit="vm.submit()">
+    <div flex layout="row">
+        <div flex></div>
+        <div layout="column" flex-gt-xs="50" flex-xs="100">
+            <div>Fill in the 6 digit code from the authenticator application on your phone.</div>
+            <md-input-container>
+                <label>2-Factor authentication code</label>
+                <input type="text" ng-model="vm.totpcode" md-maxlength="6" ng-minlength="6" ng-maxlength="6"
+                       maxlength="6" required name="totpcode" autocomplete="off" md-autofocus
+                       ng-change="vm.resetValidation()">
+                <div ng-messages="totpform.totpcode.$error" md-auto-hide="false" class="error">
+                    <div ng-message="invalidcode">Invalid 2 factor authentication code</div>
+                </div>
+            </md-input-container>
+        </div>
+        <div flex></div>
+    </div>
+    <div layout="row">
+        <span flex></span>
+        <div layout="column">
+            <md-button type="submit" class="md-raised md-primary" ng-disabled="!totpform.$valid">Submit</md-button>
+        </div>
+        <span flex></span>
+    </div>
+</form>

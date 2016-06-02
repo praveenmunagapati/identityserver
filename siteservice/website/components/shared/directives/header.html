@@ -1,0 +1,41 @@
+<header id="header">
+    <div class="content">
+        <div id="logo"><a href="#/"> ItsYou.Online </a></div>
+        <div class="sign-wrap" ng-show="$root.user">
+            <!--<a href="#notifications"><i class="fa fa-bell"></i>-->
+            <!--<md-tooltip ng-cloak> You have no open requests</md-tooltip>-->
+            <!--</a>-->
+            <md-menu md-offset="-5 30">
+                <a ng-click="$mdOpenMenu($event)"><i class="fa fa-plus"></i><i class="fa fa-caret-down"></i>
+                    <md-tooltip ng-cloak>Create new...</md-tooltip>
+                </a>
+                <md-menu-content ng-cloak>
+                    <md-menu-item>
+                        <md-button href="#/organization/new">New organization</md-button>
+                    </md-menu-item>
+                    <md-menu-item>
+                        <md-button href="#/company/new">New company</md-button>
+                    </md-menu-item>
+                </md-menu-content>
+            </md-menu>
+            <md-menu md-offset="-5 30" ng-cloak>
+                <a ng-click="$mdOpenMenu($event)"><i class="fa fa-user"></i><span ng-bind="$root.user"></span><i
+                        class="fa fa-caret-down"></i></a>
+                <md-menu-content ng-cloak>
+                    <md-menu-item>
+                        <md-button href="#/">Home</md-button>
+                    </md-menu-item>
+                    <md-menu-item>
+                        <md-button href="logout">Signout</md-button>
+                    </md-menu-item>
+                </md-menu-content>
+            </md-menu>
+        </div>
+        <div class="sign-wrap" ng-show="!$root.user && ! header_login">
+            <a href="register"><i class="fa fa-user-plus"></i>Register</a>
+        </div>
+        <div class="sign-wrap" ng-show="!$root.user && header_login">
+            <a href="login"><i class="fa fa-sign-in"></i>Sign in</a>
+        </div>
+    </div>
+</header>

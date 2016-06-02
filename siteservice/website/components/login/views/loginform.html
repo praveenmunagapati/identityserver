@@ -1,0 +1,26 @@
+<form layout="column" name="loginform" ng-submit="vm.submit()">
+    <div flex layout="row">
+        <div flex></div>
+        <div layout="column" flex="100" flex-gt-sm="40">
+            <md-input-container>
+                <label>Username</label>
+                <input ng-model="vm.login" ng-minlength="2" required name="login" type="text" autofocus>
+            </md-input-container>
+            <md-input-container>
+                <label>Password</label>
+                <input ng-model="vm.password" required name="password" type="password" ng-change="vm.clearValidation()">
+                <div ng-messages="loginform.password.$error" class="error">
+                    <div ng-message="invalidcredentials">Invalid credentials</div>
+                </div>
+            </md-input-container>
+        </div>
+        <div flex></div>
+    </div>
+    <div layout="row">
+        <span flex></span>
+        <div layout="column">
+            <md-button type="submit" class="md-raised md-primary">Log in</md-button>
+        </div>
+        <span flex></span>
+    </div>
+</form>

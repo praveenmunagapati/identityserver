@@ -125,7 +125,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 
 	err := request.ParseForm()
 	if err != nil {
-		log.Debug("ERROR parsing form")
+		log.Debug("ERROR parsing form", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}

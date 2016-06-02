@@ -2,21 +2,18 @@ package siteservice
 
 import (
 	"net/http"
-
-	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
-
-	log "github.com/Sirupsen/logrus"
+	"strings"
+	"net/url"
 )
-
-const authorizeFileName = "authorize.html"
 
 //ShowAuthorizeForm shows the scopes an application requested and asks a user for confirmation
 func (service *Service) ShowAuthorizeForm(w http.ResponseWriter, r *http.Request) {
-	htmlData, err := html.Asset(authorizeFileName)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+	redirectURI := r.RequestURI
+	parameters := make(url.Values)
+	//Don't parse the redirect url, can only give errors while we don't gain much
+	if !strings.Contains(redirectURI, "#") {
+		redirectURI += "#"
 	}
-	w.Write(htmlData)
+	redirectURI += parameters.Encode()
+	http.Redirect(w, r, redirectURI, http.StatusFound)
 }
