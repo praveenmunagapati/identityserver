@@ -91,28 +91,32 @@ func redirecToLoginPage(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login?"+queryvalues.Encode(), http.StatusFound)
 }
 
-func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request, possibleScopes string) {
+func redirectToScopeRequestPage(w http.ResponseWriter, r *http.Request, possibleScopes []string) {
+	var possibleScopesString string
+	if possibleScopes != nil {
+		possibleScopesString = strings.Join(possibleScopes, ",")
+	}
 	queryvalues := r.URL.Query()
-	queryvalues.Set("scope", possibleScopes)
+	queryvalues.Set("scope", possibleScopesString)
 	queryvalues.Add("endpoint", r.URL.EscapedPath())
 	//TODO: redirect according the the received http method
 	http.Redirect(w, r, "/authorize?"+queryvalues.Encode(), http.StatusFound)
 }
 
-func (service *Service) validAuthorizationForScopes(r *http.Request, username, clientID, requestedScopes string) (valid bool, err error) {
+func (service *Service) filterAuthorizedScopes(r *http.Request, username string, clientID string, requestedScopes []string) (authorizedScopes []string, err error) {
 	log.Debug("Validating authorizations for scopes")
 	if clientID == "itsyouonline" {
-		valid = true
+		authorizedScopes = requestedScopes
 		return
 	}
-	valid, err = service.identityService.ValidAuthorizationForScopes(r, username, clientID, requestedScopes)
+	authorizedScopes, err = service.identityService.FilterAuthorizedScopes(r, username, clientID, requestedScopes)
 
 	//TODO: how to request explicit confirmation?
 
 	return
 }
 
-func (service *Service) filterPossibleScopes(r *http.Request, username, clientID, requestedScopes string) (possibleScopes string, err error) {
+func (service *Service) filterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes []string) (possibleScopes []string, err error) {
 	log.Debug("Filtering requested scopes: ", requestedScopes)
 	possibleScopes, err = service.identityService.FilterPossibleScopes(r, username, clientID, requestedScopes)
 	log.Debug("Possible scopes: ", possibleScopes)
@@ -121,9 +125,9 @@ func (service *Service) filterPossibleScopes(r *http.Request, username, clientID
 }
 
 //AuthorizeHandler is the handler of the /v1/oauth/authorize endpoint
-func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
+func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Request) {
 
-	err := r.ParseForm()
+	err := request.ParseForm()
 	if err != nil {
 		log.Debug("ERROR parsing form")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -131,7 +135,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	//Check if the requested authorization grant type is supported
-	requestedResponseType := r.Form.Get("response_type")
+	requestedResponseType := request.Form.Get("response_type")
 	if requestedResponseType != AuthorizationGrantCodeType && requestedResponseType != ImplicitGrantCodeType {
 		log.Debug("Invalid authorization grant type requested")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -139,25 +143,25 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	//Check if the user is already authenticated, if not, redirect to the login page before returning here
-	username, err := service.GetAuthenticatedUser(r)
+	username, err := service.GetAuthenticatedUser(request)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if username == "" {
-		redirecToLoginPage(w, r)
+		redirecToLoginPage(w, request)
 		return
 	}
 
 	//Validate client and redirect_uri
-	redirectURI, err := url.QueryUnescape(r.Form.Get("redirect_uri"))
+	redirectURI, err := url.QueryUnescape(request.Form.Get("redirect_uri"))
 	if err != nil {
 		log.Debug("Unparsable redirect_uri")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	clientID := r.Form.Get("client_id")
-	mgr := NewManager(r)
+	clientID := request.Form.Get("client_id")
+	mgr := NewManager(request)
 	valid, err := validateRedirectURI(mgr, redirectURI, clientID)
 	if err != nil {
 		log.Error(err)
@@ -169,29 +173,47 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	requestedScopes := r.Form.Get("scope")
-	possibleScopes, err := service.filterPossibleScopes(r, username, clientID, requestedScopes)
+	requestedScopes := strings.Split(request.Form.Get("scope"), ",")
+	possibleScopes, err := service.filterPossibleScopes(request, username, clientID, requestedScopes)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	validAuthorization, err := service.validAuthorizationForScopes(r, username, clientID, possibleScopes)
+	authorizedScopes, err := service.filterAuthorizedScopes(request, username, clientID, possibleScopes)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	var authorizedScopeString string
+	var validAuthorization bool
+
+	if authorizedScopes != nil {
+		authorizedScopeString = strings.Join(authorizedScopes, ",")
+		validAuthorization = len(possibleScopes) == len(authorizedScopes)
+		//Check if we are redirected from the authorize page, it might be that not all authorizations were given,
+		// authorize the login but only with the authorized scopes
+		referrer := request.Header.Get("Referer")
+		if referrer != "" {
+			if referrerURL, err := url.Parse(referrer); err == nil {
+				validAuthorization = referrerURL.Host == request.Host && referrerURL.Path == "/authorize"
+			} else {
+				log.Debug("Error parsing referrer: ", err)
+			}
+		}
+	}
+
 	if !validAuthorization {
-		token, err := service.createItsYouOnlineAdminToken(username, r)
+		token, err := service.createItsYouOnlineAdminToken(username, request)
 		if err != nil {
 			log.Error(err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 		service.sessionService.SetAPIAccessToken(w, token)
-		redirectToScopeRequestPage(w, r, possibleScopes)
+		redirectToScopeRequestPage(w, request, possibleScopes)
 		return
 	}
 
@@ -203,9 +225,9 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		redirectURI, err = handleAuthorizationGrantCodeType(r, username, clientID, redirectURI, possibleScopes)
+		redirectURI, err = handleAuthorizationGrantCodeType(request, username, clientID, redirectURI, authorizedScopeString)
 	case ImplicitGrantCodeType:
-		redirectURI, err = handleImplicitGrantCodeType(r, username, clientID, redirectURI)
+		redirectURI, err = handleImplicitGrantCodeType(request, username, clientID, redirectURI)
 	}
 
 	if err != nil {
@@ -214,7 +236,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	http.Redirect(w, r, redirectURI, http.StatusFound)
+	http.Redirect(w, request, redirectURI, http.StatusFound)
 
 }
 

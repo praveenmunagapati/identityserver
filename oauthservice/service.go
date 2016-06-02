@@ -17,11 +17,11 @@ type SessionService interface {
 
 //IdentityService provides some basic knowledge about authorizations required for the oauthservice
 type IdentityService interface {
-	//ValidAuthorizationForScopes checks if there is a valid authorization for the requested scopes
-	ValidAuthorizationForScopes(r *http.Request, username string, grantedTo string, scopes string) (valid bool, err error)
+	//FilterAuthorizedScopes filters the requested scopes to the ones that are authorizated, if no authorization exists, authorizedScops is nil
+	FilterAuthorizedScopes(r *http.Request, username string, grantedTo string, requestedscopes []string) (authorizedScopes []string, err error)
 	//FilterPossibleScopes filters the requestedScopes to the relevant ones that are possible
 	// For example, a `user:memberof:orgid1` is not possible if the user is not a member the `orgid1` organization
-	FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes string) (possibleScopes string, err error)
+	FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes []string) (possibleScopes []string, err error)
 }
 
 //Service is the oauthserver http service

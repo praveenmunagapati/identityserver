@@ -101,49 +101,45 @@ func GetCookieSecret() string {
 	return cookie.Value
 }
 
-//ValidAuthorizationForScopes checks if there is a valid authorization for the requested scopes
-func (service *Service) ValidAuthorizationForScopes(r *http.Request, username string, grantedTo string, scopes string) (valid bool, err error) {
+//FilterAuthorizedScopes filters the requested scopes to the ones that are authorizated, if no authorization exists, authorizedScops is nil
+func (service *Service) FilterAuthorizedScopes(r *http.Request, username string, grantedTo string, requestedscopes []string) (authorizedScopes []string, err error) {
 	authorization, err := user.NewManager(r).GetAuthorization(username, grantedTo)
 	if authorization == nil || err != nil {
-		valid = false
 		return
 	}
 
-	valid = authorization.ScopesAreAuthorized(scopes)
+	authorizedScopes = authorization.FilterAuthorizedScopes(requestedscopes)
 
 	return
 }
 
 //FilterPossibleScopes filters the requestedScopes to the relevant ones that are possible
 // For example, a `user:memberof:orgid1` is not possible if the user is not a member the `orgid1` organization
-func (service *Service) FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes string) (possibleScopes string, err error) {
-	rawscopes := strings.Split(requestedScopes, ",")
+func (service *Service) FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes []string) (possibleScopes []string, err error) {
+	possibleScopes = make([]string, 0, len(requestedScopes))
 	orgmgr := organization.NewManager(r)
-	for _, rawscope := range rawscopes {
+	for _, rawscope := range requestedScopes {
 		scope := strings.TrimSpace(rawscope)
 		if strings.HasPrefix(scope, "user:memberof:") {
 			orgid := strings.TrimPrefix(scope, "user:memberof:")
 			isMember, err := orgmgr.IsMember(orgid, username)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
 			if isMember {
-				possibleScopes += "," + scope
+				possibleScopes = append(possibleScopes, scope)
 				continue
 			}
 			isOwner, err := orgmgr.IsOwner(orgid, username)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
 			if isOwner {
-				possibleScopes += "," + scope
+				possibleScopes = append(possibleScopes, scope)
 			}
 		} else {
-			possibleScopes += "," + scope
+			possibleScopes = append(possibleScopes, scope)
 		}
-	}
-	if len(possibleScopes) > 0 {
-		possibleScopes = strings.TrimPrefix(possibleScopes, ",")
 	}
 	return
 }

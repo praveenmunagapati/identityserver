@@ -17,35 +17,34 @@ type Authorization struct {
 	Username      string            `json:"username"`
 }
 
-//ScopesAreAuthorized checks if this Authorization covers all the requested scopes
-func (authorization Authorization) ScopesAreAuthorized(scopes string) (authorized bool) {
-	authorized = true
-	for _, rawscope := range strings.Split(scopes, ",") {
+//FilterAuthorizedScopes filters the requested scopes to the ones this Authorization covers
+func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []string) (authorizedScopes []string) {
+	authorizedScopes = make([]string, 0, len(requestedscopes))
+	for _, rawscope := range requestedscopes {
 		scope := strings.TrimSpace(rawscope)
 		if strings.HasPrefix(scope, "user:memberof:") {
 			requestedorgid := strings.TrimPrefix(scope, "user:memberof:")
-			authorized = authorized && authorization.containsOrganization(requestedorgid)
+			if authorization.containsOrganization(requestedorgid) {
+				authorizedScopes = append(authorizedScopes, scope)
+			}
 		}
-		if scope == "user:github" {
-			authorized = authorized && authorization.Github
+		if scope == "user:github" && authorization.Github {
+			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if scope == "user:facebook" {
-			authorized = authorized && authorization.Facebook
+		if scope == "user:facebook" && authorization.Facebook {
+			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:address") {
-			authorized = authorized && labelledPropertyIsAuthorized(scope, "user:address", authorization.Address)
+		if strings.HasPrefix(scope, "user:address") && labelledPropertyIsAuthorized(scope, "user:address", authorization.Address) {
+			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:bankaccount") {
-			authorized = authorized && labelledPropertyIsAuthorized(scope, "user:bankaccount", authorization.Bank)
+		if strings.HasPrefix(scope, "user:bankaccount") && labelledPropertyIsAuthorized(scope, "user:bankaccount", authorization.Bank) {
+			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:email") {
-			authorized = authorized && labelledPropertyIsAuthorized(scope, "user:email", authorization.Email)
+		if strings.HasPrefix(scope, "user:email") && labelledPropertyIsAuthorized(scope, "user:email", authorization.Email) {
+			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:phone") {
-			authorized = authorized && labelledPropertyIsAuthorized(scope, "user:phone", authorization.Phone)
-		}
-		if !authorized {
-			return
+		if strings.HasPrefix(scope, "user:phone") && labelledPropertyIsAuthorized(scope, "user:phone", authorization.Phone) {
+			authorizedScopes = append(authorizedScopes, scope)
 		}
 	}
 

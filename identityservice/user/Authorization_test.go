@@ -1,6 +1,7 @@
 package user
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,6 +45,8 @@ func TestScopesAreAuthorized(t *testing.T) {
 		testcase{a: Authorization{Phone: map[string]string{"": "home"}}, s: "user:phone", authorized: true},
 	}
 	for _, test := range testcases {
-		assert.Equal(t, test.authorized, test.a.ScopesAreAuthorized(test.s), test.s)
+		requestedScopes := strings.Split(test.s, ",")
+		authorizedScopes := test.a.FilterAuthorizedScopes(requestedScopes)
+		assert.Equal(t, test.authorized, len(requestedScopes) == len(authorizedScopes), test.s)
 	}
 }
