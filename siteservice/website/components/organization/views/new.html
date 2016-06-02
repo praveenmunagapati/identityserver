@@ -1,33 +1,39 @@
-<div>
-    <form layout="column" ng-submit="vm.create()" name="newOrganizationForm" style="margin: 0px 0px 0px 0px;">
-        <p ng-if="vm.childOrganizationNames.length !== 0">
-            <span ng-repeat="org in vm.childOrganizationNames">
-                <a class="breadcrumb-link" ng-href="{{ ::org.url }}">{{ ::org.name }}</a>
-                <span ng-if="!$last">&raquo; </span>
-            </span>
-        </p>
-        <h1 ng-if="vm.parentOrganization">Create a suborganization in {{ ::vm.getOrganizationDisplayname(vm.parentOrganization)}}</h1>
-        <h1 ng-if="!vm.parentOrganization">Create a new organization</h1>
-        <br/>
-        <md-input-container>
-            <label>Organization name</label>
-            <input ng-model="vm.name" required type="text" md-autofocus="true" name="name"
-                   ng-change="vm.clearErrors()"
-                   ng-pattern="/^[a-zA-Z0-9 -_]+$/" ng-minlength="3">
-            <div ng-messages="newOrganizationForm.name.$error">
-                <div ng-message="duplicate">This name is already taken</div>
-                <div ng-message="pattern">Invalid organization name. Only characters a-z, 0-9, dashes, underscores and space are allowed
+<div class="fullscreenform">
+    <div flex layout="row" layout-fill style="padding-top: 100px;">
+        <div flex></div>
+        <form layout="column" ng-submit="vm.create()" name="newOrganizationForm" style="margin: 0;">
+            <p ng-if="vm.childOrganizationNames.length !== 0">
+                <span ng-repeat="org in vm.childOrganizationNames">
+                    <a class="breadcrumb-link" href="organization.newsuborganization({globalid:org.fullName})">{{ ::org.name }}</a>
+                    <span ng-if="!$last">&raquo; </span>
+                </span>
+            </p>
+            <h1 ng-if="vm.parentOrganization">Create a suborganization in
+                {{ ::vm.getOrganizationDisplayname(vm.parentOrganization) }}</h1>
+            <h1 ng-if="!vm.parentOrganization">Create a new organization</h1>
+            <br/>
+            <md-input-container>
+                <label>Organization name</label>
+                <input ng-model="vm.name" required type="text" md-autofocus="true" name="name"
+                       ng-change="vm.clearErrors()"
+                       ng-pattern="/^[a-zA-Z0-9 -_]+$/" ng-minlength="3">
+                <div ng-messages="newOrganizationForm.name.$error">
+                    <div ng-message="duplicate">This name is already taken</div>
+                    <div ng-message="pattern">Invalid organization name. Only characters a-z, 0-9, dashes, underscores
+                        and space are allowed
+                    </div>
+                    <div ng-message="minlength">The organization name should be at least 3 characters long</div>
                 </div>
-                <div ng-message="minlength">The organization name should be at least 3 characters long</div>
+            </md-input-container>
+            <md-input-container>
+                <label>Primary DNS</label>
+                <input ng-model="vm.dns" type="text">
+            </md-input-container>
+            <div layout="row">
+                <md-button type="submit" class="md-raised md-primary">Create</md-button>
+                <span flex></span>
             </div>
-        </md-input-container>
-        <md-input-container>
-            <label>Primary DNS</label>
-            <input ng-model="vm.dns" type="text">
-        </md-input-container>
-        <div layout="row">
-            <md-button type="submit" class="md-raised md-primary">Create</md-button>
-            <span flex></span>
-        </div>
-    </form>
+        </form>
+        <div flex></div>
+    </div>
 </div>

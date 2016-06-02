@@ -34,7 +34,6 @@
         vm.checkSelected = checkSelected;
         vm.accept = accept;
         vm.reject = reject;
-        vm.goToOrganization = goToOrganization;
         vm.getPendingCount = getPendingCount;
         vm.showEmailDetailDialog = showEmailDetailDialog;
         vm.showAddEmailDialog = showAddEmailDialog;
@@ -204,10 +203,6 @@
 
             // Show toast!
             $mdToast.show(toast);
-        }
-
-        function goToOrganization(organization) {
-            $location.path("/organizations/" + organization);
         }
 
         function showEmailDetailDialog(ev, label, emailaddress){

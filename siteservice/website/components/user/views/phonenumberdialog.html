@@ -25,7 +25,7 @@
             <span flex="5"></span>
             <md-input-container flex="80">
                 <label>Phone number</label>
-                <input ng-model="data" pattern="\+?[0-9]+" required minlength="4" type="text" name="phonenumberinput">
+                <input ng-model="data" pattern="\+?[0-9 ]+" required minlength="4" type="text" name="phonenumberinput">
                 <div ng-messages="dataform.phonenumberinput.$error">
                     <div ng-message="minlength">Not enough digits</div>
                     <div ng-message="pattern">Invalid phonenumber</div>

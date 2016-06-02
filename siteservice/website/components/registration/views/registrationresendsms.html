@@ -1,0 +1,26 @@
+<form ng-cloak layout="column" name="phoneconfirmationform" ng-submit="vm.submit()">
+    <div flex layout="row">
+        <div flex></div>
+        <div layout="column" flex-gt-xs="50" flex-xs="100">
+            <md-input-container>
+                <label>Phone number</label>
+                <input ng-model="vm.phonenumber" minlength="4" ng-required name="phonenumber" autocomplete="off"
+                       ng-pattern="'\\+?[0-9]*'" ng-change="vm.resetValidation()">
+                <div ng-messages="phoneconfirmationform.phonenumber.$error">
+                    <div ng-message="pattern">Invalid phone number</div>
+                    <div ng-message="invalidphonenumber">An invalid phone number was given</div>
+                </div>
+            </md-input-container>
+        </div>
+        <div flex></div>
+    </div>
+    <div layout="row">
+        <span flex></span>
+        <div layout="column">
+            <md-button type="submit" class="md-raised md-primary" ng-disabled="!phoneconfirmationform.$valid">
+                Send confirmation sms
+            </md-button>
+        </div>
+        <span flex></span>
+    </div>
+</form>

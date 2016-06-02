@@ -1,7 +1,6 @@
 package siteservice
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -15,13 +14,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/gorilla/sessions"
-	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/credentials/password"
 )
 
 const (
@@ -69,28 +68,17 @@ func newLoginSessionInformation() (sessionInformation *loginSessionInformation, 
 }
 
 const loginFileName = "login.html"
-const totpFileName = "logintotpform.html"
-const smsFormFileName = "loginsmsform.html"
 
-//renderForm shows the user login page
-func (service *Service) renderLoginForm(w http.ResponseWriter, request *http.Request, pageFileName string, indicateError bool, postbackURL string) {
-	htmlData, err := html.Asset(pageFileName)
+//ShowLoginForm shows the user login page on the initial request
+func (service *Service) ShowLoginForm(w http.ResponseWriter, request *http.Request) {
+	htmlData, err := html.Asset(loginFileName)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if indicateError {
-		htmlData = bytes.Replace(htmlData, []byte(`{"invalidsomething": true}`), []byte(`{"invalidcredentials": true}`), 1)
-	}
-	htmlData = bytes.Replace(htmlData, []byte(`action="login"`), []byte(fmt.Sprintf("action=\"%s\"", postbackURL)), 1)
 	sessions.Save(request, w)
 	w.Write(htmlData)
-}
-
-//ShowLoginForm shows the user login page on the initial request
-func (service *Service) ShowLoginForm(w http.ResponseWriter, request *http.Request) {
-	service.renderLoginForm(w, request, loginFileName, false, request.RequestURI)
 
 }
 
@@ -105,9 +93,18 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	values := request.Form
+	values := struct {
+		Login    string `json:"login"`
+		Password string `json:"password"`
+	}{}
 
-	username := values.Get("login")
+	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the login request:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	username := values.Login
 
 	//validate the username exists
 	var userexists bool
@@ -120,14 +117,14 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 
 	var validpassword bool
 	passwdMgr := password.NewManager(request)
-	if validpassword, err = passwdMgr.Validate(username, values.Get("password")); err != nil {
+	if validpassword, err = passwdMgr.Validate(username, values.Password); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	validcredentials := userexists && validpassword
 	if !validcredentials {
-		service.renderLoginForm(w, request, loginFileName, true, request.RequestURI)
+		w.WriteHeader(422)
 		return
 	}
 	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
@@ -142,6 +139,14 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		return
 	}
 	loginSession.Values["username"] = username
+	response := struct {
+		TwoFAMethod string `json:"twoFAMethod"`
+	}{}
+	if (u.TwoFAMethod == "") {
+		response.TwoFAMethod = "totp"
+	} else {
+		response.TwoFAMethod = u.TwoFAMethod
+	}
 	if u.TwoFAMethod == "sms" {
 		//TODO: if no confirmed phonenumber, proceed to registration phone validation flow
 		sessionInfo, err := newLoginSessionInformation()
@@ -156,10 +161,9 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		//TODO: check which phonenumber to use
 		phonenumber := u.Phone["main"]
 		go service.smsService.Send(string(phonenumber), smsmessage)
-		redirectToDifferentPage(w, request, true, "login", "loginsmsconfirmation")
-	} else {
-		redirectToDifferentPage(w, request, true, "login", "logintotpconfirmation")
 	}
+	sessions.Save(request, w)
+	json.NewEncoder(w).Encode(&response)
 }
 
 func generateRandomString() (randomString string, err error) {
@@ -200,10 +204,6 @@ func (service *Service) getSessionKey(request *http.Request) (sessionKey string,
 	return
 }
 
-//ShowTOTPConfirmationForm shows the user login page on the initial request
-func (service *Service) ShowTOTPConfirmationForm(w http.ResponseWriter, request *http.Request) {
-	service.renderLoginForm(w, request, totpFileName, false, request.RequestURI)
-}
 
 //ProcessTOTPConfirmation checks the totp 2 factor authentication code
 func (service *Service) ProcessTOTPConfirmation(w http.ResponseWriter, request *http.Request) {
@@ -213,33 +213,30 @@ func (service *Service) ProcessTOTPConfirmation(w http.ResponseWriter, request *
 		return
 	}
 	if username == "" {
-		redirectToDifferentPage(w, request, true, "logintotpconfirmation", "login")
+		sessions.Save(request, w)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
+	values := struct {
+		Totpcode string `json:"totpcode"`
+	}{}
 
-	err = request.ParseForm()
-	if err != nil {
-		log.Debug("ERROR parsing totp form")
+	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the totp confirmation request:", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	values := request.Form
 	var validtotpcode bool
 	totpMgr := totp.NewManager(request)
-	if validtotpcode, err = totpMgr.Validate(username, values.Get("totpcode")); err != nil {
+	if validtotpcode, err = totpMgr.Validate(username, values.Totpcode); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if !validtotpcode { //TODO: limit to 3 failed attempts
-		service.renderLoginForm(w, request, totpFileName, true, request.RequestURI)
+		w.WriteHeader(422)
 		return
 	}
 	service.loginUser(w, request, username)
-}
-
-//Show2FASMSConfirmationForm shows the user the form to enter the 2fa authentication code sent by sms
-func (service *Service) Show2FASMSConfirmationForm(w http.ResponseWriter, request *http.Request) {
-	service.renderLoginForm(w, request, smsFormFileName, false, request.RequestURI)
 }
 
 func (service *Service) getLoginSessionInformation(request *http.Request, sessionKey string) (sessionInfo *loginSessionInformation, err error) {
@@ -331,18 +328,19 @@ func (service *Service) Process2FASMSConfirmation(w http.ResponseWriter, request
 		return
 	}
 	if username == "" {
-		redirectToDifferentPage(w, request, true, "loginsmsconfirmation", "login")
+		sessions.Save(request, w)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
+	values := struct {
+		Smscode string `json:"smscode"`
+	}{}
 
-	err = request.ParseForm()
-	if err != nil {
-		log.Debug("ERROR parsing sms confirmation form")
+	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the totp confirmation request:", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	values := request.Form
-	smscode := values.Get("smscode")
 
 	sessionInfo, err := service.getLoginSessionInformation(request, "")
 	if err != nil {
@@ -350,14 +348,14 @@ func (service *Service) Process2FASMSConfirmation(w http.ResponseWriter, request
 		return
 	}
 	if sessionInfo == nil {
-		redirectToDifferentPage(w, request, true, "loginsmsconfirmation", "login")
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 	if !sessionInfo.Confirmed { //Already confirmed on the phone
-		validsmscode := (smscode == sessionInfo.SMSCode)
+		validsmscode := (values.Smscode == sessionInfo.SMSCode)
 
 		if !validsmscode { //TODO: limit to 3 failed attempts
-			service.renderLoginForm(w, request, smsFormFileName, true, request.RequestURI)
+			w.WriteHeader(422)
 			return
 		}
 	}
@@ -384,8 +382,13 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 		parameters := make(url.Values)
 		parameters.Add("client_id", "itsyouonline")
 		parameters.Add("response_type", "token")
-		redirectURL = "v1/oauth/authorize?" + parameters.Encode()
+		redirectURL = fmt.Sprintf("https://%s/v1/oauth/authorize?%s", request.Host, parameters.Encode())
 	}
 
-	http.Redirect(w, request, redirectURL, http.StatusFound)
+	sessions.Save(request, w)
+	response := struct {
+		Redirecturl string `json:"redirecturl"`
+	}{}
+	response.Redirecturl = redirectURL;
+	json.NewEncoder(w).Encode(response)
 }

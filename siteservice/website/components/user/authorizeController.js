@@ -12,7 +12,7 @@
     function AuthorizeController($scope, $rootScope, $location, $window, UserService) {
         var vm = this;
 
-        var queryParams = URI($location.absUrl()).search(true);
+        var queryParams = $location.search();
         vm.requestingorganization = queryParams['client_id'];
         vm.requestedScopes = queryParams['scope'];
         vm.requestedorganizations = [];
@@ -128,7 +128,7 @@
             UserService
                 .saveAuthorization($scope.authorizations)
                 .then(
-                    function(data) {
+                    function (data) {
                         var u = URI($location.absUrl());
                         var queryParams = u.search(true);
                         var endpoint = queryParams["endpoint"];
