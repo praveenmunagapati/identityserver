@@ -24,6 +24,12 @@ h4 {
     }
 
 }
+
+md-dialog > md-dialog-content > h2 {
+    color: rgba(0, 0, 0, 0.87);
+    text-align: left;
+}
+
 /*= HEADER & NAVIGATION
 --------------------------------------------------------*/
 #header {

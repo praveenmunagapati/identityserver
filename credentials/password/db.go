@@ -73,10 +73,10 @@ func (pwm *Manager) Save(username, password string) error {
 	if err != nil {
 		log.Error("ERROR hashing password")
 		log.Debug("ERROR hashing password: ", err)
-		return errors.New("internalerror")
+		return errors.New("internal_error")
 	}
 	if len(password) < 6 {
-		return errors.New("invalidpasswordsize")
+		return errors.New("invalid_password")
 	}
 	storedPassword := userPass{Username: username, Password: passwordHash}
 

@@ -359,7 +359,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	err = passwdMgr.Save(newuser.Username, values.Password)
 	if err != nil {
 		log.Error(err)
-		if (err.Error() != "internalerror") {
+		if (err.Error() != "internal_error") {
 			w.WriteHeader(422)
 			response.Error = "invalidpassword";
 			json.NewEncoder(w).Encode(&response)
