@@ -74,8 +74,8 @@ func (service *IYOPhonenumberValidationService) InitPhonenumberValidationModels(
 
 }
 
-func newPhonenumberValidationInformation() (info *phonenumberValidationInformation, err error) {
-	info = &phonenumberValidationInformation{CreatedAt: time.Now()}
+func newPhonenumberValidationInformation(username string, phonenumber user.Phonenumber) (info *phonenumberValidationInformation, err error) {
+	info = &phonenumberValidationInformation{CreatedAt: time.Now(), Username: username, Phonenumber: string(phonenumber)}
 	info.Key, err = generateRandomString()
 	if err != nil {
 		return
@@ -89,8 +89,8 @@ func newPhonenumberValidationInformation() (info *phonenumberValidationInformati
 }
 
 //RequestValidation validates the phonenumber by sending an SMS
-func (service *IYOPhonenumberValidationService) RequestValidation(request *http.Request, username string, phone user.Phonenumber, confirmationurl string) (key string, err error) {
-	info, err := newPhonenumberValidationInformation()
+func (service *IYOPhonenumberValidationService) RequestValidation(request *http.Request, username string, phonenumber user.Phonenumber, confirmationurl string) (key string, err error) {
+	info, err := newPhonenumberValidationInformation(username, phonenumber)
 	if err != nil {
 		return
 	}
@@ -101,7 +101,7 @@ func (service *IYOPhonenumberValidationService) RequestValidation(request *http.
 	}
 	smsmessage := fmt.Sprintf("To verify your phonenumber on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s", info.SMSCode, confirmationurl, info.SMSCode, url.QueryEscape(info.Key))
 
-	go service.SMSService.Send(string(phone), smsmessage)
+	go service.SMSService.Send(string(phonenumber), smsmessage)
 	key = info.Key
 	return
 }
