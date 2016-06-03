@@ -142,7 +142,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 	response := struct {
 		TwoFAMethod string `json:"twoFAMethod"`
 	}{}
-	if (u.TwoFAMethod == "") {
+	if u.TwoFAMethod == "" {
 		response.TwoFAMethod = "totp"
 	} else {
 		response.TwoFAMethod = u.TwoFAMethod
@@ -157,7 +157,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		loginSession.Values["sessionkey"] = sessionInfo.SessionKey
 		mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 		mgoCollection.Insert(sessionInfo)
-		smsmessage := fmt.Sprintf("https://%s/sc?c=%s&k=%s or enter the code %s in the form", request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey), sessionInfo.SMSCode)
+		smsmessage := fmt.Sprintf("To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s or ", sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
 		//TODO: check which phonenumber to use
 		phonenumber := u.Phone["main"]
 		go service.smsService.Send(string(phonenumber), smsmessage)
@@ -203,7 +203,6 @@ func (service *Service) getSessionKey(request *http.Request) (sessionKey string,
 	}
 	return
 }
-
 
 //ProcessTOTPConfirmation checks the totp 2 factor authentication code
 func (service *Service) ProcessTOTPConfirmation(w http.ResponseWriter, request *http.Request) {
@@ -389,6 +388,6 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 	response := struct {
 		Redirecturl string `json:"redirecturl"`
 	}{}
-	response.Redirecturl = redirectURL;
+	response.Redirecturl = redirectURL
 	json.NewEncoder(w).Encode(response)
 }

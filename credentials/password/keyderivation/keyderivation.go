@@ -4,6 +4,8 @@ import "github.com/itsyouonline/identityserver/credentials/password/keyderivatio
 
 //Hash creates a random 16 character salt and creates a key using this salt
 //Key generation function: SHA512 with 5000 iterations
+// If you want to generate the same key on the commandline:
+// `echo "user:password" | chpasswd -c SHA512 -S | cut -d: -f 2`
 func Hash(password string) (key string, err error) {
 	c := sha512crypt.New()
 	key, err = c.Generate([]byte(password), []byte(""))

@@ -99,7 +99,7 @@ func (service *IYOPhonenumberValidationService) RequestValidation(request *http.
 	if err != nil {
 		return
 	}
-	smsmessage := fmt.Sprintf("%s?c=%s&k=%s or enter the code %s in the form", confirmationurl, info.SMSCode, url.QueryEscape(info.Key), info.SMSCode)
+	smsmessage := fmt.Sprintf("To verify your phonenumber on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s", info.SMSCode, confirmationurl, info.SMSCode, url.QueryEscape(info.Key))
 
 	go service.SMSService.Send(string(phone), smsmessage)
 	key = info.Key
