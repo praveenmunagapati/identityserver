@@ -12,9 +12,14 @@ import (
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
+	"github.com/itsyouonline/identityserver/communication"
+	"github.com/itsyouonline/identityserver/validation"
+	"fmt"
 )
 
 type UsersAPI struct {
+	SmsService                   communication.SMSService
+	PhonenumberValidationService *validation.IYOPhonenumberValidationService
 }
 
 // It is handler for POST /users
@@ -396,6 +401,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	_, err = api.PhonenumberValidationService.RequestValidation(r, username, body.Phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
 
 	// respond with created phone number.
 	w.Header().Set("Content-Type", "application/json")

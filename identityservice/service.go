@@ -20,21 +20,28 @@ import (
 	"encoding/base64"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/communication"
+	"github.com/itsyouonline/identityserver/validation"
 )
 
 //Service is the identityserver http service
 type Service struct {
+	smsService                   communication.SMSService
+	phonenumberValidationService *validation.IYOPhonenumberValidationService
 }
 
 //NewService creates and initializes a Service
-func NewService() (service *Service) {
-	return &Service{}
+func NewService(smsService communication.SMSService) (service *Service) {
+	service = &Service{smsService: smsService}
+	p := &validation.IYOPhonenumberValidationService{SMSService: smsService}
+	service.phonenumberValidationService = p
+	return
 }
 
 //AddRoutes registers the http routes with the router.
 func (service *Service) AddRoutes(router *mux.Router) {
 	// User API
-	user.UsersInterfaceRoutes(router, user.UsersAPI{})
+	user.UsersInterfaceRoutes(router, user.UsersAPI{SmsService: service.smsService, PhonenumberValidationService: service.phonenumberValidationService})
 	userdb.InitModels()
 
 	// Company API
