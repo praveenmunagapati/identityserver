@@ -10,10 +10,10 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/itsyouonline/identityserver/db"
-	"github.com/itsyouonline/identityserver/identityservice/user"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/itsyouonline/identityserver/db/user"
+	"github.com/itsyouonline/identityserver/db"
 )
 
 //SMSService is the interface an sms communicaction channel should have to be used by the IYOPhonenumberValidationService

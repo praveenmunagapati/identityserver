@@ -1,10 +1,13 @@
 package company
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"gopkg.in/mgo.v2/bson"
+	"github.com/itsyouonline/identityserver/db"
+)
 
 type Company struct {
 	Id            bson.ObjectId `json:"-" bson:"_id,omitempty"`
-	Expire        Date          `json:"expire"`
+	Expire        db.Date          `json:"expire"`
 	Globalid      string        `json:"globalid"`
 	Info          []string      `json:"info"`
 	Organizations []string      `json:"organizations"`

@@ -7,7 +7,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/identityservice"
-	"github.com/itsyouonline/identityserver/identityservice/user"
+	"github.com/itsyouonline/identityserver/db/user"
 )
 
 func (service *Service) FacebookCallback(w http.ResponseWriter, request *http.Request) {

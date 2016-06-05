@@ -3,6 +3,7 @@ package contract
 import (
 	"encoding/json"
 	"net/http"
+	"github.com/itsyouonline/identityserver/db/contract"
 )
 
 type ContractsAPI struct {
@@ -11,7 +12,7 @@ type ContractsAPI struct {
 // Create a new contract.
 // It is handler for POST /contracts
 func (api ContractsAPI) Post(w http.ResponseWriter, r *http.Request) {
-	var respBody Contract
+	var respBody contract.Contract
 	json.NewEncoder(w).Encode(&respBody)
 	// uncomment below line to add header
 	// w.Header().Set("key","value")
@@ -20,7 +21,7 @@ func (api ContractsAPI) Post(w http.ResponseWriter, r *http.Request) {
 // Sign a contract
 // It is handler for POST /contracts/{contractId}/signatures
 func (api ContractsAPI) contractIdsignaturesPost(w http.ResponseWriter, r *http.Request) {
-	var reqBody Signature
+	var reqBody contract.Signature
 
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 		w.WriteHeader(400)
@@ -33,7 +34,7 @@ func (api ContractsAPI) contractIdsignaturesPost(w http.ResponseWriter, r *http.
 // Get a contract
 // It is handler for GET /contracts/{contractId}
 func (api ContractsAPI) contractIdGet(w http.ResponseWriter, r *http.Request) {
-	var respBody Contract
+	var respBody contract.Contract
 	json.NewEncoder(w).Encode(&respBody)
 	// uncomment below line to add header
 	// w.Header().Set("key","value")

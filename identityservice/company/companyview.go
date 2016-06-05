@@ -1,3 +1,5 @@
 package company
 
-type companyview Company
+import "github.com/itsyouonline/identityserver/db/company"
+
+type companyview company.Company
