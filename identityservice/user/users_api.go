@@ -234,10 +234,9 @@ func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request
 func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	body := struct {
-		Currentpassword        string
-		Newpassword string
+		Currentpassword string  `json:"currentpassword"`
+		Newpassword     string  `json:"newpassword"`
 	}{}
-
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -250,15 +249,18 @@ func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 	passwordMgr := password.NewManager(r)
 	passwordok, err := passwordMgr.Validate(username, body.Currentpassword)
-	if ! passwordok || err != nil  {
+	if err != nil {
 		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if ! passwordok {
+		writeErrorResponse(w, 422, "incorrect_password")
 		return
 	}
 	err = passwordMgr.Save(username, body.Newpassword)
 	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		writeErrorResponse(w, 422, err.Error())
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -1086,4 +1088,15 @@ func (api UsersAPI) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(apikeys)
+}
+
+func writeErrorResponse(responseWrite http.ResponseWriter, httpStatusCode int, message string) {
+	log.Debug(httpStatusCode, message)
+	errorResponse := struct {
+		Error string `json:"error"`
+	}{
+		message,
+	}
+	responseWrite.WriteHeader(httpStatusCode)
+	json.NewEncoder(responseWrite).Encode(&errorResponse)
 }

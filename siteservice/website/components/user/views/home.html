@@ -1,7 +1,7 @@
 <div class="fullscreenform">
     <div flex layout="row" layout-fill style="padding-top: 100px;">
         <div flex></div>
-        <div layout="column" flex-gt-md="80" flex="100" layout-fill>
+        <div layout="column" flex-gt-sm="80" flex="100" layout-fill>
             <div layout="column">
                 <div flex="80">
                     <p>You</p>
@@ -290,6 +290,33 @@
                                                     <md-button class="md-primary"
                                                                ng-click="vm.showBankAccountDialog($event)">
                                                         <i class="fa fa-plus"></i> Add
+                                                    </md-button>
+                                                </div>
+                                            </md-list-item>
+                                            <md-list-item>
+
+                                            </md-list-item>
+                                        </md-list>
+                                    </div>
+                                </md-tab-body>
+                            </md-tab>
+                            <md-tab md-on-select="vm.loadUser()">
+                                <md-tab-label><i class="fa fa-lock"></i>&nbsp;Security</md-tab-label>
+                                <md-tab-body>
+                                    <div layout="row" layout-align="center center" ng-if="!vm.loaded.user">
+                                        <md-progress-circular md-mode="indeterminate"
+                                                              md-diameter="100"></md-progress-circular>
+                                    </div>
+                                    <div ng-show="vm.loaded.user">
+                                        <md-list>
+                                            <md-list-item>
+                                                <span flex-gt-xs="5"></span>
+                                                <div flex="10" flex-gt-sm="5"><i class="fa fa-2x fa-key"></i>
+                                                    <md-tooltip>Change password</md-tooltip>
+                                                </div>
+                                                <div flex="60" flex-gt-xs="65">
+                                                    <md-button ng-click="vm.showChangePasswordDialog($event)">
+                                                        Change password
                                                     </md-button>
                                                 </div>
                                             </md-list-item>

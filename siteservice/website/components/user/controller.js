@@ -8,10 +8,10 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$location', '$routeParams', '$window', '$mdToast', '$mdMedia', '$mdDialog', 'NotificationService',
+        '$q', '$rootScope', '$routeParams', '$window', '$mdToast', '$mdMedia', '$mdDialog', 'NotificationService',
         'OrganizationService', 'UserService', 'configService'];
 
-    function UserHomeController($q, $rootScope, $location, $routeParams, $window, $mdToast, $mdMedia, $mdDialog,
+    function UserHomeController($q, $rootScope, $routeParams, $window, $mdToast, $mdMedia, $mdDialog,
                                 NotificationService, OrganizationService, UserService, configService) {
         var vm = this;
 
@@ -51,6 +51,7 @@
         vm.loadUser = loadUser;
         vm.loadAuthorizations = loadAuthorizations;
         vm.showAuthorizationDetailDialog = showAuthorizationDetailDialog;
+        vm.showChangePasswordDialog = showChangePasswordDialog;
 
         var genericDetailControllerParams = ['$scope', '$mdDialog', 'username', '$window', 'label', 'data',
             'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
@@ -521,6 +522,69 @@
                 locals: {
                     user: vm.user,
                     authorization: authorization
+                }
+            });
+        }
+
+        function showChangePasswordDialog(event) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+
+            function showPasswordDialogController($scope, $mdDialog, username, updatePassword) {
+                var ctrl = this;
+                ctrl.resetValidation = resetValidation;
+                ctrl.updatePassword = updatepwd;
+                ctrl.cancel = function () {
+                    $mdDialog.cancel();
+                };
+
+                function resetValidation() {
+                    $scope.changepasswordform.currentPassword.$setValidity('incorrect_password', true);
+                    $scope.changepasswordform.currentPassword.$setValidity('invalid_password', true);
+                }
+
+                function updatepwd() {
+                    updatePassword(username, ctrl.currentPassword, ctrl.newPassword).then(function () {
+                        $mdDialog.hide();
+                        $mdDialog.show(
+                            $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title('Password updated')
+                                .textContent('Your password has been changed.')
+                                .ariaLabel('Password updated')
+                                .ok('Close')
+                                .targetEvent(event)
+                        );
+                    }, function (response) {
+                        switch (response.status) {
+                            case 422:
+                                switch (response.data.error) {
+                                    case 'incorrect_password':
+                                        $scope.changepasswordform.currentPassword.$setValidity('incorrect_password', false);
+                                        break;
+                                    case 'invalid_password':
+                                        $scope.changepasswordform.currentPassword.$setValidity('invalid_password', false);
+                                        break;
+                                }
+                                break;
+                            default:
+                                $window.location.href = 'error' + response.status;
+                                break;
+                        }
+                    });
+                }
+            }
+
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'username', 'updatePassword', showPasswordDialogController],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/user/views/resetPasswordDialog.html',
+                targetEvent: event,
+                fullscreen: useFullScreen,
+                parent: angular.element(document.body),
+                clickOutsideToClose: true,
+                locals: {
+                    username: vm.username,
+                    updatePassword: UserService.updatePassword
                 }
             });
         }

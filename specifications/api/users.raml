@@ -243,6 +243,12 @@ securedBy: [ oauth_2_0 ]
           responses:
               204:
                 description: No response data
+              422:
+                  description: Invalid password format or invallid currentpassword
+                  body:
+                    application/json:
+                      properties:
+                        error: string
     /emailaddresses:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       post:
