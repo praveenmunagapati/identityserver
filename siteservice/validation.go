@@ -27,6 +27,7 @@ func (service *Service) PhonenumberValidation(w http.ResponseWriter, request *ht
 		return
 	}
 	if err != nil {
+		log.Error(err)
 		service.renderSMSConfirmationPage(w, request, "An unexpected error occurred, please try again later")
 		return
 	}

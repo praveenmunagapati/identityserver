@@ -11,10 +11,12 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/db/user"
+	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/validation"
 	"fmt"
+	"strings"
 )
 
 type UsersAPI struct {
@@ -415,6 +417,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 // usernamephonenumbersGet is the handler for GET /users/{username}/phonenumbers
 func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
+	validated := strings.Contains(r.URL.RawQuery, "validated")
 	userMgr := user.NewManager(r)
 
 	user, err := userMgr.GetByName(username)
@@ -422,9 +425,31 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
+	phonenumbers := user.Phone
+	if validated {
+		valMngr := validationdb.NewManager(r)
+		validatednumbers, err := valMngr.GetByUsernameValidatedPhonenumbers(username)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		for label, number := range phonenumbers {
+			found := false
+			for _, validatednumber := range validatednumbers {
+				if string(number) == validatednumber.Phonenumber {
+					found = true
+					break
+				}
+			}
+			if ! found {
+				delete(phonenumbers, label)
+			}
+		}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user.Phone)
+	json.NewEncoder(w).Encode(phonenumbers)
 }
 
 // usernamephonenumberslabelGet is the handler for GET /users/{username}/phonenumbers/{label}

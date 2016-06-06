@@ -439,6 +439,10 @@ securedBy: [ oauth_2_0 ]
   /{username}/phonenumbers:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
+      queryParameters:
+        validated:
+          type: string
+          description: optional queryParameter to filter on only validated phonenumbers
       responses:
         200:
           body:
