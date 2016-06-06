@@ -1,7 +1,9 @@
 package contract
 
+import "github.com/itsyouonline/identityserver/db"
+
 type Signature struct {
-	Date      Date   `json:"date"`
+	Date      db.Date   `json:"date"`
 	PublicKey string `json:"publicKey"`
 	Signature string `json:"signature"`
 	SignedBy  string `json:"signedBy"`

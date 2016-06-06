@@ -10,23 +10,29 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/credentials/password"
+	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
+	"github.com/itsyouonline/identityserver/communication"
+	"github.com/itsyouonline/identityserver/validation"
+	"fmt"
 )
 
 type UsersAPI struct {
+	SmsService                   communication.SMSService
+	PhonenumberValidationService *validation.IYOPhonenumberValidationService
 }
 
 // It is handler for POST /users
 func (api UsersAPI) Post(w http.ResponseWriter, r *http.Request) {
 
-	var u User
+	var u user.User
 
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 	if err := userMgr.Save(&u); err != nil {
 		log.Error("ERROR while saving user:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -43,7 +49,7 @@ func (api UsersAPI) Post(w http.ResponseWriter, r *http.Request) {
 func (api UsersAPI) usernameGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -85,7 +91,7 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 	u, err := userMgr.GetByName(username)
 	if err != nil {
 		log.Error(err)
@@ -131,7 +137,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	if oldlabel != body.Label {
 		u, err := userMgr.GetByName(username)
@@ -172,7 +178,7 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	u, err := userMgr.GetByName(username)
 	if err != nil {
@@ -203,7 +209,7 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 // Delete the associated Github account.
 func (api UsersAPI) DeleteGithubAccount(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 	err := userMgr.DeleteGithubAccount(username)
 	if err != nil {
 		log.Error(err)
@@ -219,7 +225,7 @@ func (api UsersAPI) DeleteGithubAccount(w http.ResponseWriter, r *http.Request) 
 func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 	err := userMgr.DeleteFacebookAccount(username)
 	if err != nil {
 		log.Error(err)
@@ -241,7 +247,7 @@ func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 	exists, err := userMgr.Exists(username)
 	if ! exists || err != nil  {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -269,9 +275,9 @@ func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 // GetUserInformation is the handler for GET /users/{username}/info
 func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -290,21 +296,21 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respBody := &userview{
-		Username: user.Username,
+	respBody := &Userview{
+		Username: userobj.Username,
 	}
 
 	if authorization.Github {
-		respBody.Github = user.Github.Name
+		respBody.Github = userobj.Github.Name
 	}
 	if authorization.Facebook {
-		respBody.Facebook = user.Facebook.Name
+		respBody.Facebook = userobj.Facebook.Name
 	}
 	if authorization.Address != nil {
-		respBody.Address = make(map[string]Address)
+		respBody.Address = make(map[string]user.Address)
 
 		for requestedLabel, realLabel := range authorization.Address {
-			if value, found := user.Address[realLabel]; found {
+			if value, found := userobj.Address[realLabel]; found {
 				respBody.Address[requestedLabel] = value
 			}
 		}
@@ -314,27 +320,27 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		respBody.Email = make(map[string]string)
 
 		for requestedLabel, realLabel := range authorization.Email {
-			if value, found := user.Email[realLabel]; found {
+			if value, found := userobj.Email[realLabel]; found {
 				respBody.Email[requestedLabel] = value
 			}
 		}
 	}
 
 	if authorization.Phone != nil {
-		respBody.Phone = make(map[string]Phonenumber)
+		respBody.Phone = make(map[string]user.Phonenumber)
 
 		for requestedLabel, realLabel := range authorization.Phone {
-			if value, found := user.Phone[realLabel]; found {
+			if value, found := userobj.Phone[realLabel]; found {
 				respBody.Phone[requestedLabel] = value
 			}
 		}
 	}
 
 	if authorization.Bank != nil {
-		respBody.Bank = make(map[string]BankAccount)
+		respBody.Bank = make(map[string]user.BankAccount)
 
 		for requestedLabel, realLabel := range authorization.Bank {
-			if value, found := user.Bank[realLabel]; found {
+			if value, found := userobj.Bank[realLabel]; found {
 				respBody.Bank[requestedLabel] = value
 			}
 		}
@@ -357,7 +363,7 @@ func (api UsersAPI) usernamevalidateGet(w http.ResponseWriter, r *http.Request) 
 // Register a new phonenumber
 func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	u, err := userMgr.GetByName(username)
 	if err != nil {
@@ -367,7 +373,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 
 	body := struct {
 		Label       string
-		Phonenumber Phonenumber
+		Phonenumber user.Phonenumber
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -397,6 +403,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	_, err = api.PhonenumberValidationService.RequestValidation(r, username, body.Phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
 
 	// respond with created phone number.
 	w.Header().Set("Content-Type", "application/json")
@@ -408,7 +415,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 // usernamephonenumbersGet is the handler for GET /users/{username}/phonenumbers
 func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -424,21 +431,21 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if _, ok := user.Phone[label]; ok != true {
+	if _, ok := userobj.Phone[label]; ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	respBody := map[string]Phonenumber{
-		label: user.Phone[label],
+	respBody := map[string]user.Phonenumber{
+		label: userobj.Phone[label],
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -453,7 +460,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 
 	body := struct {
 		Label       string
-		Phonenumber Phonenumber
+		Phonenumber user.Phonenumber
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -471,7 +478,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	u, err := userMgr.GetByName(username)
 	if err != nil {
@@ -516,7 +523,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -542,11 +549,11 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 // It is handler for POST /users/{username}/banks
 func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	body := struct {
 		Label string
-		Bank  BankAccount
+		Bank  user.BankAccount
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -588,7 +595,7 @@ func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 // It is handler for GET /users/{username}/banks
 func (api UsersAPI) usernamebanksGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -604,21 +611,21 @@ func (api UsersAPI) usernamebanksGet(w http.ResponseWriter, r *http.Request) {
 func (api UsersAPI) usernamebankslabelGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if _, ok := user.Bank[label]; ok != true {
+	if _, ok := userobj.Bank[label]; ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	respBody := map[string]BankAccount{
-		label: user.Bank[label],
+	respBody := map[string]user.BankAccount{
+		label: userobj.Bank[label],
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -630,11 +637,11 @@ func (api UsersAPI) usernamebankslabelGet(w http.ResponseWriter, r *http.Request
 func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	body := struct {
 		Label string
-		Bank  BankAccount
+		Bank  user.BankAccount
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -688,7 +695,7 @@ func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request
 func (api UsersAPI) usernamebankslabelDelete(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -714,11 +721,11 @@ func (api UsersAPI) usernamebankslabelDelete(w http.ResponseWriter, r *http.Requ
 // Register a new address
 func (api UsersAPI) RegisterNewAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	body := struct {
 		Label   string
-		Address Address
+		Address user.Address
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -760,7 +767,7 @@ func (api UsersAPI) RegisterNewAddress(w http.ResponseWriter, r *http.Request) {
 // It is handler for GET /users/{username}/addresses
 func (api UsersAPI) usernameaddressesGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -776,21 +783,21 @@ func (api UsersAPI) usernameaddressesGet(w http.ResponseWriter, r *http.Request)
 func (api UsersAPI) usernameaddresseslabelGet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if _, ok := user.Address[label]; ok != true {
+	if _, ok := userobj.Address[label]; ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	respBody := map[string]Address{
-		label: user.Address[label],
+	respBody := map[string]user.Address{
+		label: userobj.Address[label],
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -805,7 +812,7 @@ func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 
 	body := struct {
 		Label   string
-		Address Address
+		Address user.Address
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -818,7 +825,7 @@ func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	u, err := userMgr.GetByName(username)
 	if err != nil {
@@ -862,7 +869,7 @@ func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 func (api UsersAPI) DeleteAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	u, err := userMgr.GetByName(username)
 	if err != nil {
@@ -931,7 +938,7 @@ func (api UsersAPI) usernameorganizationsGet(w http.ResponseWriter, r *http.Requ
 func (api UsersAPI) GetAllAuthorizations(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	authorizations, err := userMgr.GetAuthorizationsByUser(username)
 	if err != nil {
@@ -950,7 +957,7 @@ func (api UsersAPI) GetAuthorization(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	grantedTo := mux.Vars(r)["grantedTo"]
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	authorization, err := userMgr.GetAuthorization(username, grantedTo)
 	if err != nil {
@@ -971,7 +978,7 @@ func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) 
 	username := mux.Vars(r)["username"]
 	grantedTo := mux.Vars(r)["grantedTo"]
 
-	authorization := &Authorization{}
+	authorization := &user.Authorization{}
 
 	if err := json.NewDecoder(r.Body).Decode(authorization); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -981,7 +988,7 @@ func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) 
 	authorization.Username = username
 	authorization.GrantedTo = grantedTo
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	err := userMgr.UpdateAuthorization(authorization)
 	if err != nil {
@@ -1000,7 +1007,7 @@ func (api UsersAPI) DeleteAuthorization(w http.ResponseWriter, r *http.Request) 
 	username := mux.Vars(r)["username"]
 	grantedTo := mux.Vars(r)["grantedTo"]
 
-	userMgr := NewManager(r)
+	userMgr := user.NewManager(r)
 
 	err := userMgr.DeleteAuthorization(username, grantedTo)
 	if err != nil {

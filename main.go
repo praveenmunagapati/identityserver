@@ -114,7 +114,7 @@ func main() {
 		}
 
 		sc := siteservice.NewService(cookieSecret, smsService)
-		is := identityservice.NewService()
+		is := identityservice.NewService(smsService)
 
 		config := globalconfig.NewManager()
 

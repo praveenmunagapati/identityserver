@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/db"
+	companydb "github.com/itsyouonline/identityserver/db/company"
 )
 
 type CompaniesAPI struct {
@@ -16,7 +17,7 @@ type CompaniesAPI struct {
 // It is handler for POST /companies
 func (api CompaniesAPI) Post(w http.ResponseWriter, r *http.Request) {
 
-	var company Company
+	var company companydb.Company
 
 	if err := json.NewDecoder(r.Body).Decode(&company); err != nil {
 		log.Debug("Error decoding the company:", err)
@@ -30,7 +31,7 @@ func (api CompaniesAPI) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	companyMgr := NewCompanyManager(r)
+	companyMgr := companydb.NewCompanyManager(r)
 	err := companyMgr.Create(&company)
 	if err != nil && err != db.ErrDuplicate {
 		log.Error("Error saving company:", err.Error())
@@ -56,14 +57,14 @@ func (api CompaniesAPI) globalIdPut(w http.ResponseWriter, r *http.Request) {
 
 	globalID := mux.Vars(r)["globalId"]
 
-	var company Company
+	var company companydb.Company
 
 	if err := json.NewDecoder(r.Body).Decode(&company); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	companyMgr := NewCompanyManager(r)
+	companyMgr := companydb.NewCompanyManager(r)
 
 	oldCompany, cerr := companyMgr.GetByName(globalID)
 	if cerr != nil {
@@ -87,7 +88,7 @@ func (api CompaniesAPI) globalIdPut(w http.ResponseWriter, r *http.Request) {
 
 // It is handler for GET /companies/{globalid}/info
 func (api CompaniesAPI) globalIdinfoGet(w http.ResponseWriter, r *http.Request) {
-	companyMgr := NewCompanyManager(r)
+	companyMgr := companydb.NewCompanyManager(r)
 
 	globalID := mux.Vars(r)["globalId"]
 

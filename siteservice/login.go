@@ -16,11 +16,11 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db"
-	"github.com/itsyouonline/identityserver/identityservice/user"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password"
+	"github.com/itsyouonline/identityserver/db/user"
 )
 
 const (

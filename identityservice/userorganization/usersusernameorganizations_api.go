@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
-	organizationpackage "github.com/itsyouonline/identityserver/identityservice/organization"
+	organizationdb "github.com/itsyouonline/identityserver/db/organization"
 )
 
 type UsersusernameorganizationsAPI struct {
@@ -31,7 +31,7 @@ func exists(value string, list []string) bool {
 func (api UsersusernameorganizationsAPI) Get(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
-	orgMgr := organizationpackage.NewManager(r)
+	orgMgr := organizationdb.NewManager(r)
 
 	orgs, err := orgMgr.AllByUser(username)
 	if err != nil {
@@ -82,7 +82,7 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	}
 
 	// TODO: Save member
-	orgMgr := organizationpackage.NewManager(r)
+	orgMgr := organizationdb.NewManager(r)
 
 	if org, err := orgMgr.GetByName(organization); err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -135,7 +135,7 @@ func (api UsersusernameorganizationsAPI) globalidrolesroleDelete(w http.Response
 		return
 	}
 
-	orgMgr := organizationpackage.NewManager(r)
+	orgMgr := organizationdb.NewManager(r)
 
 	if org, err := orgMgr.GetByName(organization); err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)

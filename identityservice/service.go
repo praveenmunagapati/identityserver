@@ -7,6 +7,9 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/itsyouonline/identityserver/db"
+	userdb "github.com/itsyouonline/identityserver/db/user"
+	companydb "github.com/itsyouonline/identityserver/db/company"
+	organizationdb "github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/globalconfig"
 	"github.com/itsyouonline/identityserver/identityservice/company"
 	"github.com/itsyouonline/identityserver/identityservice/organization"
@@ -17,31 +20,38 @@ import (
 	"encoding/base64"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/communication"
+	"github.com/itsyouonline/identityserver/validation"
 )
 
 //Service is the identityserver http service
 type Service struct {
+	smsService                   communication.SMSService
+	phonenumberValidationService *validation.IYOPhonenumberValidationService
 }
 
 //NewService creates and initializes a Service
-func NewService() *Service {
-	return &Service{}
+func NewService(smsService communication.SMSService) (service *Service) {
+	service = &Service{smsService: smsService}
+	p := &validation.IYOPhonenumberValidationService{SMSService: smsService}
+	service.phonenumberValidationService = p
+	return
 }
 
 //AddRoutes registers the http routes with the router.
 func (service *Service) AddRoutes(router *mux.Router) {
 	// User API
-	user.UsersInterfaceRoutes(router, user.UsersAPI{})
-	user.InitModels()
+	user.UsersInterfaceRoutes(router, user.UsersAPI{SmsService: service.smsService, PhonenumberValidationService: service.phonenumberValidationService})
+	userdb.InitModels()
 
 	// Company API
 	company.CompaniesInterfaceRoutes(router, company.CompaniesAPI{})
-	company.InitModels()
+	companydb.InitModels()
 
 	// Organization API
 	organization.OrganizationsInterfaceRoutes(router, organization.OrganizationsAPI{})
 	userorganization.UsersusernameorganizationsInterfaceRoutes(router, userorganization.UsersusernameorganizationsAPI{})
-	organization.InitModels()
+	organizationdb.InitModels()
 
 }
 
@@ -103,7 +113,7 @@ func GetCookieSecret() string {
 
 //FilterAuthorizedScopes filters the requested scopes to the ones that are authorizated, if no authorization exists, authorizedScops is nil
 func (service *Service) FilterAuthorizedScopes(r *http.Request, username string, grantedTo string, requestedscopes []string) (authorizedScopes []string, err error) {
-	authorization, err := user.NewManager(r).GetAuthorization(username, grantedTo)
+	authorization, err := userdb.NewManager(r).GetAuthorization(username, grantedTo)
 	if authorization == nil || err != nil {
 		return
 	}
@@ -117,7 +127,7 @@ func (service *Service) FilterAuthorizedScopes(r *http.Request, username string,
 // For example, a `user:memberof:orgid1` is not possible if the user is not a member the `orgid1` organization
 func (service *Service) FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes []string) (possibleScopes []string, err error) {
 	possibleScopes = make([]string, 0, len(requestedScopes))
-	orgmgr := organization.NewManager(r)
+	orgmgr := organizationdb.NewManager(r)
 	for _, rawscope := range requestedScopes {
 		scope := strings.TrimSpace(rawscope)
 		if strings.HasPrefix(scope, "user:memberof:") {

@@ -12,7 +12,8 @@ import (
 
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
-	"github.com/itsyouonline/identityserver/identityservice/user"
+	"github.com/itsyouonline/identityserver/db/user"
+	"github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
 
@@ -24,7 +25,7 @@ type OrganizationsAPI struct {
 
 // byGlobalID implements sort.Interface for []Organization based on
 // the GlobalID field.
-type byGlobalID []Organization
+type byGlobalID []organization.Organization
 
 func (a byGlobalID) Len() int           { return len(a) }
 func (a byGlobalID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -47,7 +48,7 @@ func (api OrganizationsAPI) GetOrganizationTree(w http.ResponseWriter, r *http.R
 		parentGlobalIDs = append(parentGlobalIDs, parentGlobalID)
 	}
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 
 	parentOrganizations, err := orgMgr.GetOrganizations(parentGlobalIDs)
 
@@ -90,7 +91,7 @@ func (api OrganizationsAPI) GetOrganizationTree(w http.ResponseWriter, r *http.R
 // Create a new organization. 1 user should be in the owners list. Validation is performed
 // to check if the securityScheme allows management on this user.
 func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http.Request) {
-	var org Organization
+	var org organization.Organization
 
 	if err := json.NewDecoder(r.Body).Decode(&org); err != nil {
 		log.Debug("Error decoding the organization:", err)
@@ -112,7 +113,7 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 // Create a new suborganization.
 func (api OrganizationsAPI) CreateNewSubOrganization(w http.ResponseWriter, r *http.Request) {
 	parent := mux.Vars(r)["globalid"]
-	var org Organization
+	var org organization.Organization
 
 	if err := json.NewDecoder(r.Body).Decode(&org); err != nil {
 		log.Debug("Error decoding the organization:", err)
@@ -137,7 +138,7 @@ func (api OrganizationsAPI) CreateNewSubOrganization(w http.ResponseWriter, r *h
 
 }
 
-func (api OrganizationsAPI) actualOrganizationCreation(org Organization, w http.ResponseWriter, r *http.Request) {
+func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organization, w http.ResponseWriter, r *http.Request) {
 
 	if strings.TrimSpace(org.Globalid) == itsyouonlineGlobalID {
 		log.Debug("Duplicate organization")
@@ -151,7 +152,7 @@ func (api OrganizationsAPI) actualOrganizationCreation(org Organization, w http.
 		return
 	}
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 
 	err := orgMgr.Create(&org)
 
@@ -177,7 +178,7 @@ func (api OrganizationsAPI) actualOrganizationCreation(org Organization, w http.
 // It is handler for GET /organizations/{globalid}
 func (api OrganizationsAPI) globalidGet(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
@@ -194,14 +195,14 @@ func (api OrganizationsAPI) globalidGet(w http.ResponseWriter, r *http.Request) 
 func (api OrganizationsAPI) globalidPut(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
-	var org Organization
+	var org organization.Organization
 
 	if err := json.NewDecoder(r.Body).Decode(&org); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 
 	oldOrg, err := orgMgr.GetByName(globalid)
 	if err != nil {
@@ -240,7 +241,7 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil { //TODO: make a distinction with an internal server error
@@ -299,7 +300,7 @@ func (api OrganizationsAPI) globalidmembersusernameDelete(w http.ResponseWriter,
 	globalid := mux.Vars(r)["globalid"]
 	username := mux.Vars(r)["username"]
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
@@ -327,7 +328,7 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
@@ -377,7 +378,7 @@ func (api OrganizationsAPI) globalidownersusernameDelete(w http.ResponseWriter, 
 	globalid := mux.Vars(r)["globalid"]
 	username := mux.Vars(r)["username"]
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
@@ -409,9 +410,9 @@ func (api OrganizationsAPI) GetPendingInvitations(w http.ResponseWriter, r *http
 		return
 	}
 
-	pendingInvites := make([]Invitation, len(requests), len(requests))
+	pendingInvites := make([]organization.Invitation, len(requests), len(requests))
 	for index, request := range requests {
-		pendingInvites[index] = Invitation{
+		pendingInvites[index] = organization.Invitation{
 			Role: request.Role,
 			User: request.User,
 		}
@@ -593,7 +594,7 @@ func (api OrganizationsAPI) CreateDns(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 	organization, err := orgMgr.GetByName(globalid)
 
 	err = orgMgr.AddDNS(organization, dnsName)
@@ -634,7 +635,7 @@ func (api OrganizationsAPI) UpdateDns(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 	organization, err := orgMgr.GetByName(globalid)
 
 	err = orgMgr.UpdateDNS(organization, oldDns, body.Name)
@@ -661,7 +662,7 @@ func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	dnsName := mux.Vars(r)["dnsname"]
 
-	orgMgr := NewManager(r)
+	orgMgr := organization.NewManager(r)
 	organization, err := orgMgr.GetByName(globalid)
 
 	sort.Strings(organization.DNS)

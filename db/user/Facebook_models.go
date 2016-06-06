@@ -1,7 +1,7 @@
 package user
 
-// Models used when requesting / parsing information from facebook
 
+// Models used when requesting / parsing information from facebook
 type FacebookPic struct {
 	Is_silhouette bool
 	Url           string

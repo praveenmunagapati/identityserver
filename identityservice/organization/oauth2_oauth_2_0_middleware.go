@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/oauthservice"
+	"github.com/itsyouonline/identityserver/db/organization"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
@@ -81,7 +82,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		if at.GlobalID == protectedOrganization {
 			scopes = []string{at.Scope}
 		} else {
-			orgMgr := NewManager(r)
+			orgMgr := organization.NewManager(r)
 			isOwner, err := orgMgr.IsOwner(protectedOrganization, at.Username)
 			if err != nil {
 				log.Error(err)

@@ -1,7 +1,9 @@
 package organization
 
+import "github.com/itsyouonline/identityserver/db"
+
 type Invitation struct {
-	Created Date   `json:"created"`
+	Created db.Date   `json:"created"`
 	Role    string `json:"role"`
 	User    string `json:"user"`
 }
