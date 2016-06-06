@@ -88,7 +88,8 @@
             deleteBankAccount: deleteBankAccount,
             deleteFacebookAccount: deleteFacebookAccount,
             deleteGithubAccount: deleteGithubAccount,
-            updatePassword: updatePassword
+            updatePassword: updatePassword,
+            updateName: updateName
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -217,7 +218,15 @@
                 currentpassword: currentPassword,
                 newpassword: newPassword
             };
-            console.log(data);
+            return genericHttpCall($http.put, url, data);
+        }
+
+        function updateName(username, firstname, lastname) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/name';
+            var data = {
+                firstname: firstname,
+                lastname: lastname
+            };
             return genericHttpCall($http.put, url, data);
         }
     }

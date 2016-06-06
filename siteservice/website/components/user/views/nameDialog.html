@@ -1,0 +1,33 @@
+<md-dialog ng-cloak>
+    <form name="nameForm" ng-submit="ctrl.save()">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Update name</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="ctrl.cancel()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content layout-padding style="min-width: 400px;">
+            <md-content class="md-dialog-content" layout="column">
+                <md-input-container>
+                    <label>First name</label>
+                    <input ng-model="ctrl.firstname" required name="firstname" type="text">
+                </md-input-container>
+
+                <md-input-container>
+                    <label>Last name</label>
+                    <input ng-model="ctrl.lastname" required name="lastname" type="text">
+                </md-input-container>
+            </md-content>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button ng-click="ctrl.cancel()">Cancel</md-button>
+            <span flex></span>
+            <md-button class="md-primary" type="submit" ng-disabled="!nameForm.$valid"
+                       style="margin-right:20px;"> Save
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

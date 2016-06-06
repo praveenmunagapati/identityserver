@@ -32,7 +32,6 @@
             var data = {
                 smscode: vm.smscode
             };
-            console.log(data);
             $http
                 .post('/login/smsconfirmation', data)
                 .then(function (response) {

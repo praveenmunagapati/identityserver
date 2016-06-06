@@ -32,6 +32,11 @@
 
 # Scopes that can be requested by an oauth client
 
+## `user:name`
+
+First name and last name of the user
+
+
 ## `user:memberof:<globalid>`
 
 A client can check if a user is member or owner of an organization with a specific globalid.

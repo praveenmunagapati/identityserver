@@ -300,6 +300,10 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		Username: userobj.Username,
 	}
 
+	if authorization.Name {
+		respBody.Firstname = userobj.Firstname
+		respBody.Lastname = userobj.Lastname
+	}
 	if authorization.Github {
 		respBody.Github = userobj.Github.Name
 	}
@@ -1117,6 +1121,32 @@ func (api UsersAPI) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(apikeys)
+}
+
+
+// UpdatePassword handler
+func (api UsersAPI) UpdateName(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	values := struct {
+		Firstname string  `json:"firstname"`
+		Lastname  string  `json:"lastname"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&values); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	userMgr := user.NewManager(r)
+	exists, err := userMgr.Exists(username)
+	if ! exists || err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	err = userMgr.UpdateName(username, values.Firstname, values.Lastname)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func writeErrorResponse(responseWrite http.ResponseWriter, httpStatusCode int, message string) {

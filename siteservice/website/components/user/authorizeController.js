@@ -67,6 +67,10 @@
                 angular.forEach(scopes, function (scope, i) {
                     var splitPermission = scope.split(':');
                     var permissionLabel = splitPermission[splitPermission.length - 1];
+                    if (scope === 'user:name') {
+                        $scope.requested.name = true;
+                        $scope.authorizations.name = true;
+                    }
                     if (scope.startsWith('user:memberof:')) {
                         $scope.requested.organizations[permissionLabel] = true;
                     }
@@ -130,7 +134,6 @@
                 .then(
                     function (data) {
                         var u = URI($location.absUrl());
-                        var queryParams = u.search(true);
                         var endpoint = queryParams["endpoint"];
                         delete queryParams.endpoint;
                         u.pathname(endpoint);
