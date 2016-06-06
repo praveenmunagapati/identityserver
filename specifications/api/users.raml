@@ -490,6 +490,13 @@ securedBy: [ oauth_2_0 ]
         responses:
             204:
               description: Phone number removed.
+       /activate:
+         post:
+         displayName: ValidatePhonenumber
+         description: Sends validation text to phone numbers
+         responses:
+           204:
+              description: Validation number send
 
   /{username}/banks:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
