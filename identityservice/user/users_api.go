@@ -452,6 +452,28 @@ func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(respBody)
 }
 
+// Validate phone number is the handler for GET /users/{username}/phonenumbers/{label}/validate
+func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+	userMgr := user.NewManager(r)
+
+	userobj, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if _, ok := userobj.Phone[label]; ok != true {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	phonenumber := userobj.Phone[label]
+	_, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // UpdatePhonenumber is the handler for PUT /users/{username}/phonenumbers/{label}
 // Update the label and/or value of an existing phonenumber.
 func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
