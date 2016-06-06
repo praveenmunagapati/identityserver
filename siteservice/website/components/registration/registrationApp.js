@@ -1,8 +1,8 @@
 (function () {
     'use strict';
     angular
-        .module('registrationApp', [
-            'ngMaterial', 'ngMessages', 'ngRoute', 'monospaced.qrcode', 'itsyouonline.config', 'itsyouonline.header'])
+        .module('itsyouonline.registration', [
+            'ngMaterial', 'ngMessages', 'ngRoute', 'monospaced.qrcode', 'itsyouonline.shared', 'itsyouonline.header'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$routeProvider', routeConfig]);
 

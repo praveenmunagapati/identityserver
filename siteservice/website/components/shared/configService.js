@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    angular.module('itsyouonline.config', [])
+    angular.module('itsyouonline.shared')
         .service('configService', ['$http', configService]);
 
     function configService($http) {

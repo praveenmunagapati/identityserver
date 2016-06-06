@@ -2,7 +2,7 @@
     'use strict';
     angular
         .module('itsyouonlineApp', ['ngCookies', 'ngMaterial', 'ngRoute', 'ngMessages',
-            'itsyouonline.config', 'itsyouonline.header'])
+            'itsyouonline.shared', 'itsyouonline.header'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$httpProvider', httpConfig])
         .config(['$routeProvider', routeConfig])

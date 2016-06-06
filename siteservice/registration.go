@@ -1,7 +1,6 @@
 package siteservice
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -103,32 +102,6 @@ func (service *Service) CheckRegistrationSMSConfirmation(w http.ResponseWriter, 
 //ShowRegistrationForm shows the user registration page
 func (service *Service) ShowRegistrationForm(w http.ResponseWriter, request *http.Request) {
 	service.renderRegistrationFrom(w, request)
-}
-
-func (service *Service) renderForm(w http.ResponseWriter, request *http.Request, filename string, validationErrors []string) {
-	htmlData, err := html.Asset(filename)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	//Don't use go templates since angular uses "{{ ... }}" syntax as well and this way the standalone page also works
-
-	errorMap := make(map[string]bool)
-	for _, errorkey := range validationErrors {
-		errorMap[errorkey] = true
-	}
-	jsonErrors, err := json.Marshal(errorMap)
-
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	htmlData = bytes.Replace(htmlData, []byte(`{"invalidsomething": true}`), jsonErrors, 1)
-
-	sessions.Save(request, w)
-	w.Write(htmlData)
 }
 
 //ProcessPhonenumberConfirmationForm processes the Phone number confirmation form
@@ -261,15 +234,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		Redirecturl string `json:"redirecturl"`
 		Error       string `json:"error"`
 	}{}
-	err := request.ParseForm()
-	if err != nil {
-		log.Debug("ERROR parsing registration form:", err)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
-	validationErrors := make([]string, 0, 0)
-
 	values := struct {
 		TwoFAMethod string `json:"twofamethod"`
 		Login       string `json:"login"`
@@ -326,7 +290,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		return
 	}
 	if userExists {
-		validationErrors = append(validationErrors, "duplicateusername")
 		log.Debug("USER ", newuser.Username, " already registered")
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
@@ -392,3 +355,29 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	log.Debugf("Registered %s", newuser.Username)
 	service.loginUser(w, request, newuser.Username)
 }
+
+//ValidateUsername checks if a username is already taken or not
+func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Request) {
+	username := request.URL.Query().Get("username")
+	response := struct {
+		Valid bool `json:"valid"`
+		Error string `json:"error"`
+	}{
+		true,
+		"",
+	}
+	userMgr := user.NewManager(request)
+	userExists, err := userMgr.Exists(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if userExists {
+		log.Debug("username ", username, " already taken")
+		response.Error = "duplicateusername"
+		response.Valid = false
+	}
+	json.NewEncoder(w).Encode(&response)
+	return
+}
+
