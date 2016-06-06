@@ -119,6 +119,8 @@ types:
             type: string
             maxLength: 30
             minLength: 2
+        firstname: string
+        lastname: string
         publicKeys: string[]
         expire?: date
         email?:
@@ -229,6 +231,21 @@ securedBy: [ oauth_2_0 ]
                 body:
                     application/json:
                         type: User
+    /name:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+      put:
+        displayName: UpdateName
+        description: Update the user his firstname and lastname
+        body:
+          application/json:
+            properties:
+              firstname: string
+              lastname: string
+        responses:
+          204:
+            description: Successfully updated firstname and lastname
+          404:
+            description: User not found
 
     /password:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]

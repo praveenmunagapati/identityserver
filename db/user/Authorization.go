@@ -15,6 +15,7 @@ type Authorization struct {
 	Phone         map[string]string `json:"phone,omitempty"`
 	PublicKeys    []string          `json:"publicKeys,omitempty"`
 	Username      string            `json:"username"`
+	Name          bool              `json:"name"`
 }
 
 //FilterAuthorizedScopes filters the requested scopes to the ones this Authorization covers
@@ -22,6 +23,9 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 	authorizedScopes = make([]string, 0, len(requestedscopes))
 	for _, rawscope := range requestedscopes {
 		scope := strings.TrimSpace(rawscope)
+		if scope == "user:name" && authorization.Name {
+			authorizedScopes = append(authorizedScopes, scope)
+		}
 		if strings.HasPrefix(scope, "user:memberof:") {
 			requestedorgid := strings.TrimPrefix(scope, "user:memberof:")
 			if authorization.containsOrganization(requestedorgid) {

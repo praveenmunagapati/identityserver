@@ -52,6 +52,7 @@
         vm.loadAuthorizations = loadAuthorizations;
         vm.showAuthorizationDetailDialog = showAuthorizationDetailDialog;
         vm.showChangePasswordDialog = showChangePasswordDialog;
+        vm.showEditNameDialog = showEditNameDialog;
 
         var genericDetailControllerParams = ['$scope', '$mdDialog', 'username', '$window', 'label', 'data',
             'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
@@ -585,6 +586,43 @@
                 locals: {
                     username: vm.username,
                     updatePassword: UserService.updatePassword
+                }
+            });
+        }
+
+        function showEditNameDialog(event) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+
+            function showPasswordDialogController($scope, $mdDialog, user, updateName) {
+                var ctrl = this;
+                ctrl.save = save;
+                ctrl.cancel = function () {
+                    $mdDialog.cancel();
+                };
+                ctrl.firstname = user.firstname;
+                ctrl.lastname = user.lastname;
+
+                function save() {
+                    updateName(user.username, ctrl.firstname, ctrl.lastname)
+                        .then(function (response) {
+                            $mdDialog.hide();
+                            vm.user.firstname = ctrl.firstname;
+                            vm.user.lastname = ctrl.lastname;
+                        });
+                }
+            }
+
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'user', 'updateName', showPasswordDialogController],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/user/views/nameDialog.html',
+                targetEvent: event,
+                fullscreen: useFullScreen,
+                parent: angular.element(document.body),
+                clickOutsideToClose: true,
+                locals: {
+                    user: vm.user,
+                    updateName: UserService.updateName
                 }
             });
         }

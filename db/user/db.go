@@ -234,3 +234,12 @@ func (m *Manager) DeleteAuthorization(username, organization string) (err error)
 func (u *User) getID() string {
 	return u.ID.Hex()
 }
+
+func (m *Manager) UpdateName(username string, firstname string, lastname string) (err error) {
+	values := bson.M{
+		"firstname": firstname,
+		"lastname": lastname,
+	}
+	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": values})
+	return
+}

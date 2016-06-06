@@ -6,6 +6,19 @@
         Your username
     </p>
 </md-list-item>
+<md-list-item ng-if="requested.name">
+    <p>
+        <i class="fa fa-user">
+            <md-tooltip>Your name</md-tooltip>
+        </i>
+        Your name
+    </p>
+    <div>
+        <md-checkbox class="md-secondary"
+                     ng-model="authorizations.name">
+        </md-checkbox>
+    </div>
+</md-list-item>
 <md-list-item ng-repeat="(label, i) in requested.organizations">
     <p><i class="fa fa-users">
         <md-tooltip>Organization membership</md-tooltip>
