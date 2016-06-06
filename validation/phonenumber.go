@@ -1,19 +1,13 @@
 package validation
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"math/big"
 	"net/http"
 	"net/url"
-	"time"
 
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"github.com/itsyouonline/identityserver/db/user"
-	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/db/validation"
 )
 
 //SMSService is the interface an sms communicaction channel should have to be used by the IYOPhonenumberValidationService
@@ -21,81 +15,20 @@ type SMSService interface {
 	Send(phonenumber string, message string) (err error)
 }
 
-const (
-	mongoOngoingPhonenumberValidationCollectionName = "ongoingphonenumbervalidations"
-	mongoValidatedPhonenumbers                      = "validatedphonenumbers"
-)
-
-//ValidatedPhonenumber is a record of a phonenumber for a user and when it is validated
-type ValidatedPhonenumber struct {
-	Username    string
-	Phonenumber string
-	CreatedAt   time.Time
-}
-
-type phonenumberValidationInformation struct {
-	Key         string
-	SMSCode     string
-	Username    string
-	Phonenumber string
-	Confirmed   bool
-	CreatedAt   time.Time
-}
-
 //IYOPhonenumberValidationService is the itsyou.online implementation of a PhonenumberValidationService
 type IYOPhonenumberValidationService struct {
 	SMSService SMSService
 }
 
-//InitPhonenumberValidationModels initialize models in mongo
-func (service *IYOPhonenumberValidationService) InitPhonenumberValidationModels() {
-	index := mgo.Index{
-		Key:      []string{"key"},
-		Unique:   true,
-		DropDups: false,
-	}
-
-	db.EnsureIndex(mongoOngoingPhonenumberValidationCollectionName, index)
-
-	automaticExpiration := mgo.Index{
-		Key:         []string{"createdat"},
-		ExpireAfter: time.Second * 60 * 10,
-		Background:  true,
-	}
-	db.EnsureIndex(mongoOngoingPhonenumberValidationCollectionName, automaticExpiration)
-
-	index = mgo.Index{
-		Key:      []string{"username", "phonenumber"},
-		Unique:   true,
-		DropDups: true,
-	}
-
-	db.EnsureIndex(mongoValidatedPhonenumbers, index)
-
-}
-
-func newPhonenumberValidationInformation(username string, phonenumber user.Phonenumber) (info *phonenumberValidationInformation, err error) {
-	info = &phonenumberValidationInformation{CreatedAt: time.Now(), Username: username, Phonenumber: string(phonenumber)}
-	info.Key, err = generateRandomString()
-	if err != nil {
-		return
-	}
-	numbercode, err := rand.Int(rand.Reader, big.NewInt(999999))
-	if err != nil {
-		return
-	}
-	info.SMSCode = fmt.Sprintf("%06d", numbercode)
-	return
-}
 
 //RequestValidation validates the phonenumber by sending an SMS
 func (service *IYOPhonenumberValidationService) RequestValidation(request *http.Request, username string, phonenumber user.Phonenumber, confirmationurl string) (key string, err error) {
-	info, err := newPhonenumberValidationInformation(username, phonenumber)
+	valMngr := validation.NewManager(request)
+	info, err := valMngr.NewPhonenumberValidationInformation(username, phonenumber)
 	if err != nil {
 		return
 	}
-	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoOngoingPhonenumberValidationCollectionName)
-	err = mgoCollection.Insert(info)
+	err = valMngr.SavePhonenumberValidationInformation(info)
 	if err != nil {
 		return
 	}
@@ -111,9 +44,8 @@ func (service *IYOPhonenumberValidationService) ExpireValidation(request *http.R
 	if key == "" {
 		return
 	}
-
-	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoOngoingPhonenumberValidationCollectionName)
-	_, err = mgoCollection.RemoveAll(bson.M{"key": key})
+	valMngr := validation.NewManager(request)
+	err = valMngr.RemovePhonenumberValidationInformation(key)
 	return
 }
 
@@ -124,18 +56,12 @@ var (
 	ErrInvalidOrExpiredKey = errors.New("Invalid key")
 )
 
-func (service *IYOPhonenumberValidationService) getPhonenumberValidationInformation(request *http.Request, key string) (info *phonenumberValidationInformation, err error) {
+func (service *IYOPhonenumberValidationService) getPhonenumberValidationInformation(request *http.Request, key string) (info *validation.PhonenumberValidationInformation, err error) {
 	if key == "" {
 		return
 	}
-
-	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoOngoingPhonenumberValidationCollectionName)
-	info = &phonenumberValidationInformation{}
-	err = mgoCollection.Find(bson.M{"key": key}).One(info)
-	if err == mgo.ErrNotFound {
-		info = nil
-		err = nil
-	}
+	valMngr := validation.NewManager(request)
+	info, err = valMngr.GetByKeyPhonenumberValidationInformation(key)
 	return
 }
 
@@ -167,27 +93,16 @@ func (service *IYOPhonenumberValidationService) ConfirmValidation(request *http.
 		err = ErrInvalidCode
 		return
 	}
-	p := &ValidatedPhonenumber{Username: info.Username, Phonenumber: info.Phonenumber, CreatedAt: time.Now()}
-	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoValidatedPhonenumbers)
-	err = mgoCollection.Insert(p)
+	valMngr := validation.NewManager(request)
+	p := valMngr.NewValidatedPhonenumber(info.Username, info.Phonenumber)
+	err = valMngr.SaveValidatedPhonenumber(p)
 	if err != nil {
 		return
 	}
-	mgoCollection = db.GetCollection(db.GetDBSession(request), mongoOngoingPhonenumberValidationCollectionName)
-	info.Confirmed = true
-	mgoCollection.Update(bson.M{"key": key}, info)
+	err = valMngr.UpdatePhonenumberValidationInformation(key, true)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func generateRandomString() (randomString string, err error) {
-	b := make([]byte, 32)
-	_, err = rand.Read(b)
-	if err != nil {
-		return
-	}
-	randomString = base64.StdEncoding.EncodeToString(b)
-	return
-}
