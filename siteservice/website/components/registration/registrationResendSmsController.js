@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     angular
-        .module('registrationApp')
+        .module('itsyouonline.registration')
         .controller('resendSmsController', ['$scope', '$window', '$http', resendSmsController]);
 
     function resendSmsController($scope, $window, $http) {

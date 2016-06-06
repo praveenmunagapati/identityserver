@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     angular
-        .module('registrationApp')
+        .module('itsyouonline.registration')
         .controller('smsController', ['$http', '$timeout', '$window', smsController]);
 
     function smsController($http, $timeout, $window) {

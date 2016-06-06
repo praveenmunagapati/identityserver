@@ -1,30 +1,31 @@
 (function () {
     'use strict';
     angular
-        .module('registrationApp')
-        .controller('registrationController', ['$scope', '$http', '$window', 'configService', registrationController]);
+        .module('itsyouonline.registration')
+        .controller('registrationController', [
+            '$scope', '$window', '$mdUtil', 'configService', 'registrationService',
+            registrationController]);
 
-    function registrationController($scope, $http, $window, configService) {
+    function registrationController($scope, $window, $mdUtil, configService, registrationService) {
         var vm = this;
         configService.getConfig(function (config) {
             vm.totpsecret = config.totpsecret;
         });
         vm.register = register;
         vm.resetValidation = resetValidation;
+        vm.basicInfoValid = basicInfoValid;
+        vm.twoFAMethod = 'sms';
+        vm.validateUsername = $mdUtil.debounce(function () {
+            registrationService
+                .validateUsername(vm.login)
+                .then(function (response) {
+                    $scope.signupform['login'].$setValidity('duplicateusername', response.data.valid);
+                });
+        }, 500, true);
 
         function register() {
-            var data = {
-                twofamethod: vm.twoFAMethod,
-                login: vm.login,
-                email: vm.email,
-                password: vm.password,
-                totpcode: vm.totpcode,
-                phonenumber: vm.sms
-
-            };
-            console.log(data, data.password)
-            $http
-                .post('/register', data)
+            registrationService
+                .register(vm.twoFAMethod, vm.login, vm.email, vm.password, vm.totpcode, vm.sms)
                 .then(function (response) {
                     $window.location.href = response.data.redirecturl;
                 }, function (response) {
@@ -76,6 +77,14 @@
                     $scope.signupform.phonenumber.$setValidity("pattern", true);
                     break;
             }
+        }
+
+        function basicInfoValid() {
+            return $scope.signupform.login
+                && $scope.signupform.login.$valid
+                && $scope.signupform.email.$valid
+                && $scope.signupform.password.$valid
+                && $scope.signupform.passwordvalidation.$valid;
         }
     }
 })();
