@@ -6,7 +6,7 @@
             <md-input-container>
                 <label>2-Factor authentication code</label>
                 <input type="text" ng-model="vm.totpcode" md-maxlength="6" ng-minlength="6" ng-maxlength="6"
-                       maxlength="6" required name="totpcode" autocomplete="off" md-autofocus
+                       maxlength="6" required name="totpcode" autocomplete="off" md-autofocus autofocus
                        ng-change="vm.resetValidation()">
                 <div ng-messages="totpform.totpcode.$error" md-auto-hide="false" class="error">
                     <div ng-message="invalidcode">Invalid 2 factor authentication code</div>

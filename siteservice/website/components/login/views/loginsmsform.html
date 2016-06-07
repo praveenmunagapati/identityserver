@@ -7,7 +7,7 @@
             <md-input-container>
                 <label>Code sent by sms</label>
                 <input ng-model="vm.smscode" md-maxlength="6" minlength="6" ng-required="!vm.smsconfirmation.confirmed"
-                       name="smscode" autocomplete="off" ng-change="vm.resetValidation()">
+                       name="smscode" autocomplete="off" ng-change="vm.resetValidation()" md-autofocus autofocus>
                 <div ng-messages="smsform.smscode.$error" md-auto-hide="false" class="error">
                     <div ng-message="invalidcode">Invalid code</div>
                 </div>
