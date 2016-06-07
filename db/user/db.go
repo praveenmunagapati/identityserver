@@ -243,3 +243,19 @@ func (m *Manager) UpdateName(username string, firstname string, lastname string)
 	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": values})
 	return
 }
+
+func (m *Manager) FindByVerifiedEmailOrUsername(usernameOrEmail string) (user User, err error) {
+	// todo: filter by verified emails only
+	qry := bson.M{
+		"$or": []bson.M{
+			bson.M{
+				"username":usernameOrEmail,
+			},
+			bson.M{
+				"email.main": usernameOrEmail,
+			},
+		},
+	}
+	err = m.getUserCollection().Find(qry).One(&user)
+	return
+}

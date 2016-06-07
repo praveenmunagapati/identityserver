@@ -391,3 +391,30 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 	response.Redirecturl = redirectURL
 	json.NewEncoder(w).Encode(response)
 }
+
+func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Request) {
+	// login can be username or email
+	values := struct {
+		Login string `json:"login"`
+	}{}
+
+	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the ForgotPassword request:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	userMgr := user.NewManager(request)
+	user, err := userMgr.FindByVerifiedEmailOrUsername(values.Login)
+	if err == mgo.ErrNotFound {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	// todo: implementation
+	log.Debug(user)
+	w.WriteHeader(http.StatusNoContent)
+	return
+}

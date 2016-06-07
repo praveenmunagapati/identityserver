@@ -377,6 +377,7 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 		response.Error = "duplicateusername"
 		response.Valid = false
 	}
+	// TODO: validate username
 	json.NewEncoder(w).Encode(&response)
 	return
 }
