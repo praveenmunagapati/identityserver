@@ -95,15 +95,7 @@
                     pageTitle: 'New company'
                 }
             })
-            .when('/organization/new', {
-                templateUrl: 'components/organization/views/new.html',
-                controller: 'OrganizationController',
-                controllerAs: 'vm',
-                data: {
-                    pageTitle: 'New suborganization'
-                }
-            })
-            .when('organization/:globalid/new', {
+            .when('/organization/new/:globalid?', {
                 templateUrl: 'components/organization/views/new.html',
                 controller: 'OrganizationController',
                 controllerAs: 'vm',

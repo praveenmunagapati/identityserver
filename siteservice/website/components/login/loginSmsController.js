@@ -40,7 +40,7 @@
                 }, function (response) {
                     switch (response.status) {
                         case 422:
-                            $scope.smsform.smscode.$setValidity("invalidcode", false);
+                            $scope.smsform.smscode.$setValidity("invalid_code", false);
                             break;
                         case 401:
                             // Login session expired. Go back to username/password screen.
@@ -54,7 +54,7 @@
         }
 
         function resetValidation() {
-            $scope.smsform.smscode.$setValidity("invalidcode", true);
+            $scope.smsform.smscode.$setValidity("invalid_code", true);
         }
     }
 })();

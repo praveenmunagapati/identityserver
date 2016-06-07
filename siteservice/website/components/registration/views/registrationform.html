@@ -8,9 +8,16 @@
                         <md-input-container>
                             <label for="login">Username</label>
                             <input ng-model="vm.login" md-maxlength="30" minlength="2" required name="login" type="text"
-                                   autofocus ng-change="vm.validateUsername()" id="login">
+                                   ng-pattern="/^[a-zA-Z0-9 \-_]+$/" ng-minlength="3" autofocus
+                                   ng-change="vm.validateUsername()" id="login">
                             <div ng-messages="signupform.login.$error" md-auto-hide="false">
-                                <div ng-message="duplicateusername">This username has already been taken</div>
+                                <div ng-message="duplicate_username">This username has already been taken</div>
+                                <div ng-message="invalid_username_format">Invalid username. Only characters a-z, 0-9,
+                                    dashes, underscores and space are allowed
+                                </div>
+                                <div ng-message="pattern">Invalid username. Only characters a-z, 0-9, dashes,
+                                    underscores and space are allowed
+                                </div>
                             </div>
                         </md-input-container>
                         <md-input-container>
@@ -26,7 +33,7 @@
                                    ng-minlength="6" id="password">
                             <div ng-messages="signupform.password.$error">
                                 <div ng-message="minlength">Password should contain at least 6 characters</div>
-                                <div ng-message="invalidpassword">Password should contain at least 6 characters</div>
+                                <div ng-message="invalid_password">Password should contain at least 6 characters</div>
                             </div>
                         </md-input-container>
                         <md-input-container>
@@ -56,7 +63,7 @@
                                    ng-change="vm.resetValidation('phone')" id="sms">
                             <div ng-messages="signupform.phonenumber.$error">
                                 <div ng-message="pattern">Invalid phone number</div>
-                                <div ng-message="invalidphonenumber">Invalid phone number</div>
+                                <div ng-message="invalid_phonenumber">Invalid phone number</div>
                             </div>
                         </md-input-container>
                         <md-input-container ng-show="vm.twoFAMethod === 'totp'">
@@ -65,7 +72,7 @@
                                    ng-required="vm.twoFAMethod === 'totp'" id="totpcode"
                                    name="totpcode" autocomplete="off" ng-change="vm.resetValidation('login')">
                             <div ng-messages="signupform.totpcode.$error" md-auto-hide="false">
-                                <div ng-message="invalidtotpcode">An invalid code was given</div>
+                                <div ng-message="invalid_totpcode">An invalid code was given</div>
                             </div>
                         </md-input-container>
                         <md-input-container ng-show="vm.twoFAMethod === 'totp'">

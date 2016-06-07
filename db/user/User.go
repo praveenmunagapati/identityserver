@@ -3,6 +3,7 @@ package user
 import (
 	"gopkg.in/mgo.v2/bson"
 	"github.com/itsyouonline/identityserver/db"
+	"regexp"
 )
 
 type User struct {
@@ -19,4 +20,10 @@ type User struct {
 	TwoFAMethod string                 `json:"twofamethod"`
 	Firstname   string                 `json:"firstname"`
 	Lastname    string                 `json:"lastname"`
+}
+
+func ValidateUsername(username string) (valid bool) {
+	regex, _ := regexp.Compile(`^[a-zA-Z0-9\s-_]+$`)
+	matches := regex.FindAllString(username, 2)
+	return len(matches) == 1
 }

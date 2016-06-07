@@ -151,7 +151,7 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 	err = service.phonenumberValidationService.ConfirmValidation(request, validationkey, smscode)
 	if err == validation.ErrInvalidCode {
 		w.WriteHeader(422)
-		response.Error = "invalidsmscode"
+		response.Error = "invalid_sms_code"
 		json.NewEncoder(w).Encode(&response)
 		return
 	}
@@ -203,7 +203,7 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	if !phonenumber.IsValid() {
 		log.Debug("Invalid phone number")
 		w.WriteHeader(422)
-		response.Error = "invalidphonenumber"
+		response.Error = "invalid_phonenumber"
 		json.NewEncoder(w).Encode(&response)
 		return
 	}
@@ -274,13 +274,18 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		return
 	}
 
+	valid := user.ValidateUsername(values.Login)
+	if !valid {
+		response.Error = "invalid_username_format"
+		w.WriteHeader(422)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
 	newuser := &user.User{
 		Username:    values.Login,
 		Email:       map[string]string{"main": values.Email},
 		TwoFAMethod: twoFAMethod,
 	}
-	//TODO: validate newuser
-
 	//validate the username is not taken yet
 	userMgr := user.NewManager(request)
 	//we now just depend on mongo unique index to avoid duplicates when concurrent requests are made
@@ -300,7 +305,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		if !phonenumber.IsValid() {
 			log.Debug("Invalid phone number")
 			w.WriteHeader(422)
-			response.Error = "invalidphonenumber";
+			response.Error = "invalid_phonenumber";
 			json.NewEncoder(w).Encode(&response)
 			return
 		}
@@ -310,7 +315,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		if !token.Validate(values.TotpCode) {
 			log.Debug("Invalid totp code")
 			w.WriteHeader(422)
-			response.Error = "invalidtotpcode";
+			response.Error = "invalid_totpcode";
 			json.NewEncoder(w).Encode(&response)
 			return
 		}
@@ -324,7 +329,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		log.Error(err)
 		if (err.Error() != "internal_error") {
 			w.WriteHeader(422)
-			response.Error = "invalidpassword";
+			response.Error = "invalid_password";
 			json.NewEncoder(w).Encode(&response)
 		} else {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -366,6 +371,14 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 		true,
 		"",
 	}
+	valid := user.ValidateUsername(username)
+	if !valid {
+		log.Debug("Invalid username format:", username)
+		response.Error = "invalid_username_format"
+		response.Valid = false
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
 	userMgr := user.NewManager(request)
 	userExists, err := userMgr.Exists(username)
 	if err != nil {
@@ -374,7 +387,7 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 	}
 	if userExists {
 		log.Debug("username ", username, " already taken")
-		response.Error = "duplicateusername"
+		response.Error = "duplicate_username"
 		response.Valid = false
 	}
 	json.NewEncoder(w).Encode(&response)

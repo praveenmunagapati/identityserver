@@ -24,13 +24,13 @@
             var url = '/register';
             var data = {
                 twofamethod: twoFAMethod,
-                login: login,
-                email: email,
+                login: login.trim(),
+                email: email.trim(),
                 password: password,
                 totpcode: totpcode,
                 phonenumber: sms
             };
-            return $http.post('/register', data);
+            return $http.post(url, data);
         }
     }
 })();
