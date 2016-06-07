@@ -60,6 +60,8 @@ type UsersInterface interface { // Post is the handler for POST /users
 	// DeleteEmailAddress is the handler for DELETE /users/{username}/emailaddresses/{label}
 	// Removes an email address
 	DeleteEmailAddress(http.ResponseWriter, *http.Request)
+	ValidateEmailAddress(http.ResponseWriter, *http.Request)
+	ListEmailAddresses(http.ResponseWriter, *http.Request)
 	// DeleteGithubAccount is the handler for DELETE /users/{username}/github
 	// Unlink Github Account
 	DeleteGithubAccount(http.ResponseWriter, *http.Request)
@@ -134,9 +136,11 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/apikeys/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateAPIKey))).Methods("PUT")
 	r.Handle("/users/{username}/apikeys/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteAPIKey))).Methods("DELETE")
 	r.Handle("/users/{username}/facebook", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteFacebookAccount))).Methods("DELETE")
+	r.Handle("/users/{username}/emailaddresses", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.ListEmailAddresses))).Methods("GET")
 	r.Handle("/users/{username}/emailaddresses", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RegisterNewEmailAddress))).Methods("POST")
 	r.Handle("/users/{username}/emailaddresses/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateEmailAddress))).Methods("PUT")
 	r.Handle("/users/{username}/emailaddresses/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteEmailAddress))).Methods("DELETE")
+	r.Handle("/users/{username}/emailaddresses/{label}/validate", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.ValidateEmailAddress))).Methods("POST")
 	r.Handle("/users/{username}/github", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.DeleteGithubAccount))).Methods("DELETE")
 	r.Handle("/users/{username}/info", alice.New(newOauth2oauth_2_0Middleware([]string{"user:info", "user:admin"}).Handler).Then(http.HandlerFunc(i.GetUserInformation))).Methods("GET")
 	r.Handle("/users/{username}/addresses", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernameaddressesGet))).Methods("GET")

@@ -6,19 +6,20 @@ import (
 
 	"gopkg.in/mgo.v2"
 
-	"github.com/itsyouonline/identityserver/db"
-	"time"
-	"math/big"
-	"encoding/base64"
-	"github.com/itsyouonline/identityserver/db/user"
 	"crypto/rand"
+	"encoding/base64"
+	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/db/user"
 	"gopkg.in/mgo.v2/bson"
+	"math/big"
+	"time"
 )
 
-
 const (
-	mongoOngoingPhonenumberValidationCollectionName = "ongoingphonenumbervalidations"
-	mongoValidatedPhonenumbers                      = "validatedphonenumbers"
+	mongoOngoingPhonenumberValidationCollectionName  = "ongoingphonenumbervalidations"
+	mongoValidatedPhonenumbers                       = "validatedphonenumbers"
+	mongoOngoingEmailAddressValidationCollectionName = "ongoingemailaddressvalidations"
+	mongoValidatedEmailAddresses                     = "validatedemailaddresses"
 )
 
 //InitModels initialize models in mongo, if required.
@@ -30,6 +31,7 @@ func InitModels() {
 	}
 
 	db.EnsureIndex(mongoOngoingPhonenumberValidationCollectionName, index)
+	db.EnsureIndex(mongoOngoingEmailAddressValidationCollectionName, index)
 
 	automaticExpiration := mgo.Index{
 		Key:         []string{"createdat"},
@@ -38,6 +40,13 @@ func InitModels() {
 	}
 	db.EnsureIndex(mongoOngoingPhonenumberValidationCollectionName, automaticExpiration)
 
+	automaticExpiration = mgo.Index{
+		Key:         []string{"createdat"},
+		ExpireAfter: time.Second * 3600 * 48,
+		Background:  true,
+	}
+	db.EnsureIndex(mongoOngoingEmailAddressValidationCollectionName, automaticExpiration)
+
 	index = mgo.Index{
 		Key:      []string{"username", "phonenumber"},
 		Unique:   true,
@@ -45,6 +54,14 @@ func InitModels() {
 	}
 
 	db.EnsureIndex(mongoValidatedPhonenumbers, index)
+
+	index = mgo.Index{
+		Key:      []string{"username", "emailaddress"},
+		Unique:   true,
+		DropDups: true,
+	}
+
+	db.EnsureIndex(mongoValidatedEmailAddresses, index)
 
 }
 
@@ -75,8 +92,27 @@ func (manager *Manager) NewPhonenumberValidationInformation(username string, pho
 	return
 }
 
+func (manager *Manager) NewEmailAddressValidationInformation(username string, email string) (info *EmailAddressValidationInformation, err error) {
+	info = &EmailAddressValidationInformation{CreatedAt: time.Now(), Username: username, EmailAddress: email}
+	info.Key, err = generateRandomString()
+	if err != nil {
+		return
+	}
+	info.Secret, err = generateRandomString()
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (manager *Manager) SavePhonenumberValidationInformation(info *PhonenumberValidationInformation) (err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoOngoingPhonenumberValidationCollectionName)
+	err = mgoCollection.Insert(info)
+	return
+}
+
+func (manager *Manager) SaveEmailAddressValidationInformation(info *EmailAddressValidationInformation) (err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoOngoingEmailAddressValidationCollectionName)
 	err = mgoCollection.Insert(info)
 	return
 }
@@ -87,15 +123,48 @@ func (manager *Manager) RemovePhonenumberValidationInformation(key string) (err 
 	return
 }
 
+func (manager *Manager) RemoveValidatedPhonenumber(username string, phonenumber string) (err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedPhonenumbers)
+	_, err = mgoCollection.RemoveAll(bson.M{"username": username, "phonenumber": phonenumber})
+	return
+}
+
+func (manager *Manager) RemoveValidatedEmailAddress(username string, email string) (err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedEmailAddresses)
+	_, err = mgoCollection.RemoveAll(bson.M{"username": username, "emailaddress": email})
+	return
+}
+
+func (manager *Manager) RemoveEmailAddressValidationInformation(key string) (err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoOngoingEmailAddressValidationCollectionName)
+	_, err = mgoCollection.RemoveAll(bson.M{"key": key})
+	return
+}
+
 func (manager *Manager) UpdatePhonenumberValidationInformation(key string, confirmed bool) (err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoOngoingPhonenumberValidationCollectionName)
 	err = mgoCollection.Update(bson.M{"key": key}, bson.M{"$set": bson.M{"confirmed": confirmed}})
 	return
 }
 
+func (manager *Manager) UpdateEmailAddressValidationInformation(key string, confirmed bool) (err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoOngoingEmailAddressValidationCollectionName)
+	err = mgoCollection.Update(bson.M{"key": key}, bson.M{"$set": bson.M{"confirmed": confirmed}})
+	return
+}
 
-func (manager *Manager) GetByKeyPhonenumberValidationInformation(key string) (info *PhonenumberValidationInformation,  err error) {
+func (manager *Manager) GetByKeyPhonenumberValidationInformation(key string) (info *PhonenumberValidationInformation, err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoOngoingPhonenumberValidationCollectionName)
+	err = mgoCollection.Find(bson.M{"key": key}).One(&info)
+	if err == mgo.ErrNotFound {
+		info = nil
+		err = nil
+	}
+	return
+}
+
+func (manager *Manager) GetByKeyEmailAddressValidationInformation(key string) (info *EmailAddressValidationInformation, err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoOngoingEmailAddressValidationCollectionName)
 	err = mgoCollection.Find(bson.M{"key": key}).One(&info)
 	if err == mgo.ErrNotFound {
 		info = nil
@@ -109,12 +178,22 @@ func (manager *Manager) NewValidatedPhonenumber(username string, phonenumber str
 	return
 }
 
+func (manager *Manager) NewValidatedEmailAddress(username string, email string) (validatedemail *ValidatedEmailAddress) {
+	validatedemail = &ValidatedEmailAddress{CreatedAt: time.Now(), Username: username, EmailAddress: email}
+	return
+}
+
 func (manager *Manager) SaveValidatedPhonenumber(validated *ValidatedPhonenumber) (err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoValidatedPhonenumbers)
 	err = mgoCollection.Insert(validated)
 	return
 }
 
+func (manager *Manager) SaveValidatedEmailAddress(validated *ValidatedEmailAddress) (err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedEmailAddresses)
+	err = mgoCollection.Insert(validated)
+	return
+}
 
 func (manager *Manager) GetByUsernameValidatedPhonenumbers(username string) (validatednumbers []ValidatedPhonenumber, err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoValidatedPhonenumbers)
@@ -122,6 +201,24 @@ func (manager *Manager) GetByUsernameValidatedPhonenumbers(username string) (val
 	return
 }
 
+func (manager *Manager) GetByUsernameValidatedEmailAddress(username string) (validatedemails []ValidatedEmailAddress, err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedEmailAddresses)
+	err = mgoCollection.Find(bson.M{"username": username}).All(&validatedemails)
+	return
+}
+
+func (manager *Manager) IsEmailAddressValidated(username string, emailaddress string) (validated bool, err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedEmailAddresses)
+	count, err := mgoCollection.Find(bson.M{"username": username, "emailaddress": emailaddress}).Count()
+	validated = false
+	if err != nil {
+		return
+	}
+	if count != 0 {
+		validated = true
+	}
+	return
+}
 
 func generateRandomString() (randomString string, err error) {
 	b := make([]byte, 32)

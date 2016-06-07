@@ -26,13 +26,17 @@ type Service struct {
 	Sessions                     map[SessionType]*sessions.CookieStore
 	smsService                   communication.SMSService
 	phonenumberValidationService *validation.IYOPhonenumberValidationService
+	EmailService                  communication.EmailService
+	emailaddressValidationService *validation.IYOEmailAddressValidationService
 }
 
 //NewService creates and initializes a Service
-func NewService(cookieSecret string, smsService communication.SMSService) (service *Service) {
+func NewService(cookieSecret string, smsService communication.SMSService, emailService communication.EmailService) (service *Service) {
 	service = &Service{smsService: smsService}
 	p := &validation.IYOPhonenumberValidationService{SMSService: smsService}
 	service.phonenumberValidationService = p
+	e := &validation.IYOEmailAddressValidationService{EmailService: emailService}
+	service.emailaddressValidationService = e
 	service.initializeSessions(cookieSecret)
 	return
 }
@@ -51,6 +55,7 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("GET").Path("/register").HandlerFunc(service.ShowRegistrationForm)
 	router.Methods("POST").Path("/register").HandlerFunc(service.ProcessRegistrationForm)
 	router.Methods("GET").Path("/phonevalidation").HandlerFunc(service.PhonenumberValidation)
+	router.Methods("GET").Path("/emailvalidation").HandlerFunc(service.EmailValidation)
 	router.Methods("POST").Path("/register/resendsms").HandlerFunc(service.ResendPhonenumberConfirmation)
 	router.Methods("GET").Path("/register/smsconfirmed").HandlerFunc(service.CheckRegistrationSMSConfirmation)
 	router.Methods("POST").Path("/register/smsconfirmation").HandlerFunc(service.ProcessPhonenumberConfirmationForm)
@@ -97,7 +102,8 @@ const (
 	homepageFileName          = "base.html"
 	errorpageFilename         = "error.html"
 	apidocsPageFilename       = "apidocumentation.html"
-	smsMobileConfirmationPage = "smsconfirmation.html"
+	smsconfirmationPage = "smsconfirmation.html"
+	emailconfirmationPage = "emailconfirmation.html"
 )
 
 //ShowPublicSite shows the public website
@@ -167,7 +173,20 @@ func (service *Service) ErrorPage(w http.ResponseWriter, request *http.Request) 
 
 //renderSMSConfirmationPage renders a small mobile friendly confirmation page after a user follows a link in an sms
 func (service *Service) renderSMSConfirmationPage(w http.ResponseWriter, request *http.Request, text string) {
-	htmlData, err := html.Asset(smsMobileConfirmationPage)
+	htmlData, err := html.Asset(smsconfirmationPage)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	htmlData = bytes.Replace(htmlData, []byte(`{{ text }}`), []byte(text), 1)
+	sessions.Save(request, w)
+	w.Write(htmlData)
+}
+
+//renderEmailConfirmationPage renders a small mobile friendly confirmation page after a user follows a link in an email
+func (service *Service) renderEmailConfirmationPage(w http.ResponseWriter, request *http.Request, text string) {
+	htmlData, err := html.Asset(smsconfirmationPage)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

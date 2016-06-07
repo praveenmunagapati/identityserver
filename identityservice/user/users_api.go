@@ -4,24 +4,26 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"github.com/itsyouonline/identityserver/identityservice/contract"
-	"github.com/itsyouonline/identityserver/identityservice/invitations"
+	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/db/user"
-	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
-	"github.com/itsyouonline/identityserver/communication"
+	validationdb "github.com/itsyouonline/identityserver/db/validation"
+	"github.com/itsyouonline/identityserver/identityservice/contract"
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/validation"
-	"fmt"
 	"strings"
 )
 
 type UsersAPI struct {
-	SmsService                   communication.SMSService
-	PhonenumberValidationService *validation.IYOPhonenumberValidationService
+	SmsService                    communication.SMSService
+	PhonenumberValidationService  *validation.IYOPhonenumberValidationService
+	EmailService                  communication.EmailService
+	EmailAddressValidationService *validation.IYOEmailAddressValidationService
 }
 
 // It is handler for POST /users
@@ -112,6 +114,16 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	valMgr := validationdb.NewManager(r)
+	validated, err := valMgr.IsEmailAddressValidated(username, body.Emailaddress)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !validated {
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.Emailaddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+	}
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusCreated)
@@ -174,6 +186,66 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(body)
 }
 
+// Validate email address is the handler for GET /users/{username}/emailaddress/{label}/validate
+func (api UsersAPI) ValidateEmailAddress(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+	userMgr := user.NewManager(r)
+
+	userobj, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if _, ok := userobj.Email[label]; ok != true {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	email := userobj.Email[label]
+	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ListEmailAddresses is the handler for GET /users/{username}/emailaddresses
+func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	validated := strings.Contains(r.URL.RawQuery, "validated")
+	userMgr := user.NewManager(r)
+
+	user, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	emails := user.Email
+	if validated {
+		valMngr := validationdb.NewManager(r)
+		validatedemails, err := valMngr.GetByUsernameValidatedEmailAddress(username)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		for label, email := range emails {
+			found := false
+			for _, validatedemail := range validatedemails {
+				if string(email) == validatedemail.EmailAddress {
+					found = true
+					break
+				}
+			}
+			if !found {
+				delete(emails, label)
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(emails)
+}
+
 // DeleteEmailAddress is the handler for DELETE /users/{username}/emailaddresses/{label}
 // Removes an email address
 func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
@@ -181,6 +253,7 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 	label := mux.Vars(r)["label"]
 
 	userMgr := user.NewManager(r)
+	valMgr := validationdb.NewManager(r)
 
 	u, err := userMgr.GetByName(username)
 	if err != nil {
@@ -188,7 +261,9 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if _, ok := u.Email[label]; !ok {
+
+	email, ok := u.Email[label]
+	if !ok {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -198,6 +273,11 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = userMgr.RemoveEmail(username, label); err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if err = valMgr.RemoveValidatedEmailAddress(username, email); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -242,8 +322,8 @@ func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request
 func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	body := struct {
-		Currentpassword string  `json:"currentpassword"`
-		Newpassword     string  `json:"newpassword"`
+		Currentpassword string `json:"currentpassword"`
+		Newpassword     string `json:"newpassword"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -251,7 +331,7 @@ func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 	userMgr := user.NewManager(r)
 	exists, err := userMgr.Exists(username)
-	if ! exists || err != nil  {
+	if !exists || err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -262,7 +342,7 @@ func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if ! passwordok {
+	if !passwordok {
 		writeErrorResponse(w, 422, "incorrect_password")
 		return
 	}
@@ -292,7 +372,7 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	authorization, err := userMgr.GetAuthorization(username, requestingClient)
-	if err != nil{
+	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -446,7 +526,7 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 					break
 				}
 			}
-			if ! found {
+			if !found {
 				delete(phonenumbers, label)
 			}
 		}
@@ -622,6 +702,7 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
+	valMgr := validationdb.NewManager(r)
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -629,12 +710,18 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := user.Phone[label]; ok != true {
+	number, ok := user.Phone[label]
+	if ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
 	if err := userMgr.RemovePhone(username, label); err != nil {
+		log.Error("ERROR while saving user:\n", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if err := valMgr.RemoveValidatedPhonenumber(username, string(number)); err != nil {
 		log.Error("ERROR while saving user:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -1118,7 +1205,7 @@ func (api UsersAPI) DeleteAuthorization(w http.ResponseWriter, r *http.Request) 
 func (api UsersAPI) AddAPIKey(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	body := struct {
-		Label   string
+		Label string
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -1153,7 +1240,7 @@ func (api UsersAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
 	label := mux.Vars(r)["label"]
 	apikeyMgr := apikey.NewManager(r)
 	body := struct {
-		Label   string
+		Label string
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -1195,13 +1282,12 @@ func (api UsersAPI) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(apikeys)
 }
 
-
 // UpdatePassword handler
 func (api UsersAPI) UpdateName(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	values := struct {
-		Firstname string  `json:"firstname"`
-		Lastname  string  `json:"lastname"`
+		Firstname string `json:"firstname"`
+		Lastname  string `json:"lastname"`
 	}{}
 	if err := json.NewDecoder(r.Body).Decode(&values); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -1209,7 +1295,7 @@ func (api UsersAPI) UpdateName(w http.ResponseWriter, r *http.Request) {
 	}
 	userMgr := user.NewManager(r)
 	exists, err := userMgr.Exists(username)
-	if ! exists || err != nil {
+	if !exists || err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
