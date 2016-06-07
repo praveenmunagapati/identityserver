@@ -62,6 +62,7 @@
 
         function init() {
             vm.selectedTabIndex = parseInt($routeParams.tab) || 0;
+            loadNotifications();
         }
 
         function loadNotifications() {
@@ -81,6 +82,7 @@
                             vm.notificationMessage = '';
                         }
                         vm.loaded.notifications = true;
+                        $rootScope.openRequests = count;
 
                     }
                 );
