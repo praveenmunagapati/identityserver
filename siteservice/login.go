@@ -157,7 +157,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		loginSession.Values["sessionkey"] = sessionInfo.SessionKey
 		mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 		mgoCollection.Insert(sessionInfo)
-		smsmessage := fmt.Sprintf("To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s or ", sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+		smsmessage := fmt.Sprintf("To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s", sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
 		//TODO: check which phonenumber to use
 		phonenumber := u.Phone["main"]
 		go service.smsService.Send(string(phonenumber), smsmessage)

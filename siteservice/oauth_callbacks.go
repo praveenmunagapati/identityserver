@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/itsyouonline/identityserver/identityservice"
 	"github.com/itsyouonline/identityserver/db/user"
+	"github.com/itsyouonline/identityserver/identityservice"
 )
 
 func (service *Service) FacebookCallback(w http.ResponseWriter, request *http.Request) {
@@ -77,7 +77,7 @@ func (service *Service) FacebookCallback(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	http.Redirect(w, request, "/#/?tab=4", http.StatusTemporaryRedirect)
+	http.Redirect(w, request, "/", http.StatusTemporaryRedirect)
 
 }
 
@@ -161,6 +161,6 @@ func (service *Service) GithubCallback(w http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	http.Redirect(w, request, "/#/?tab=4", http.StatusTemporaryRedirect)
+	http.Redirect(w, request, "/", http.StatusTemporaryRedirect)
 
 }

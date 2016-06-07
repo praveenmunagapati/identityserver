@@ -65,14 +65,14 @@
                             <md-tab-body>
                                 <div layout="row" layout-align="end start">
                                     <md-button class="md-primary"
-                                               ng-href="#/organizations/{{ vm.organization.globalid }}/newsuborganization">
+                                               ng-href="#/organization/{{ vm.organization.globalid }}/newsuborganization">
                                         <i class="fa fa-plus"></i> Create suborganization
                                     </md-button>
                                 </div>
                                 <div class="tree">
                                     <ul ng-repeat="tree in vm.organizationRoot.children">
                                         <li ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
-                                            <a ng-href="#/organizations/{{ ::tree.globalid }}"
+                                            <a ng-href="#/organization/{{ ::tree.globalid }}"
                                                ng-bind="::vm.getOrganizationDisplayname(tree.globalid)"></a>
                                             <ng-include
                                                     src="'/components/organization/views/treeItem.html'"></ng-include>

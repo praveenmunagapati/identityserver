@@ -12,103 +12,7 @@
             <md-card flex="100">
                 <md-card-content flex="100" layout="column">
                     <md-tabs flex="100" md-selected="vm.selectedTabIndex" md-dynamic-height>
-                        <md-tab md-on-select="vm.loadNotifications()">
-                            <md-tab-label><i class="fa fa-bell"></i>&nbsp;Notifications</md-tab-label>
-                            <md-tab-body layout="column">
-                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.notifications">
-                                    <md-progress-circular md-mode="indeterminate"
-                                                          md-diameter="100"></md-progress-circular>
-                                </div>
-                                <div layout="row">
-                                    <div layout="column">
-                                        <br/>
-                                        <h3 ng-bind="vm.notificationMessage"></h3>
-                                    </div>
-                                    <span flex></span>
-                                </div>
-                                <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
-                                    <h3>Pending organization invites</h3>
-                                    <md-list>
-                                        <md-list-item
-                                                ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}"
-                                                class="noright">
-                                            <p><i class="fa fa-users"></i> {{ invitation.organization }}</p>
-                                            <md-checkbox class="md-secondary" ng-model="invitation.selected"
-                                                         aria-label="Select invitation">
-                                            </md-checkbox>
-                                        </md-list-item>
-                                    </md-list>
-                                    <div layout="row" layout-align="end center"
-                                         ng-show="vm.getPendingCount(vm.notifications.invitations) > 0">
-                                        <md-button
-                                                ng-click="vm.accept()"
-                                                ng-disabled="vm.checkSelected() === false">
-                                            Accept
-                                        </md-button>
-                                        <md-button
-                                                ng-click="vm.reject()"
-                                                ng-disabled="vm.checkSelected() === false">
-                                            Reject
-                                        </md-button>
-                                    </div>
-                                </div>
-                            </md-tab-body>
-                        </md-tab>
-                        <md-tab md-on-select="vm.loadOrganizations()">
-                            <md-tab-label><i class="fa fa-users"></i>&nbsp;Organizations</md-tab-label>
-                            <md-tab-body>
-                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.organizations">
-                                    <md-progress-circular md-mode="indeterminate"
-                                                          md-diameter="100"></md-progress-circular>
-                                </div>
-                                <div layout ng-show="vm.loaded.organizations">
-                                    <div flex flex-gt-xs="50">
-                                        <md-list>
-                                            <md-subheader>Owner</md-subheader>
-                                            <md-list-item
-                                                    ng-repeat="organization in vm.owner" class="noright"
-                                                    ng-href="#/organization/{{ ::organization }}">
-                                                <p> {{ organization }}</p>
-                                            </md-list-item>
-                                        </md-list>
-                                    </div>
-                                    <div flex flex-gt-xs="50">
-                                        <md-list>
-                                            <md-subheader>Member</md-subheader>
-                                            <md-list-item
-                                                    ng-repeat="organization in vm.member" class="noright"
-                                                    ng-href="#/organization/{{ ::organization }}">
-                                                <p>{{ ::organization }}</p>
-                                            </md-list-item>
-                                        </md-list>
-                                    </div>
-                                </div>
-                            </md-tab-body>
-                        </md-tab>
-                        <md-tab md-on-select="vm.loadAuthorizations()">
-                            <md-tab-label><i class="fa fa-ticket"></i>&nbsp;Authorizations</md-tab-label>
-                            <md-tab-body>
-                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.authorizations">
-                                    <md-progress-circular md-mode="indeterminate"
-                                                          md-diameter="100"></md-progress-circular>
-                                </div>
-                                <div ng-show="vm.loaded.authorizations">
-                                    <md-list>
-                                        <md-list-item
-                                                ng-repeat="authorization in vm.authorizations | orderBy : 'grantedTo'"
-                                                ng-click="vm.showAuthorizationDetailDialog(authorization, $event)">
-                                            <p>{{ ::authorization.grantedTo }}</p>
-                                        </md-list-item>
-                                    </md-list>
-                                </div>
-                            </md-tab-body>
-                        </md-tab>
 
-                        <!--<md-tab>-->
-                        <!--<md-tab-label><i class="fa fa-file-text-o"></i>&nbsp;Contracts</md-tab-label>-->
-                        <!--<md-tab-body>-->
-                        <!--</md-tab-body>-->
-                        <!--</md-tab>-->
 
                         <md-tab md-on-select="vm.loadUser()">
                             <md-tab-label><i class="fa fa-user"></i>&nbsp;You</md-tab-label>
@@ -330,6 +234,106 @@
                                 </div>
                             </md-tab-body>
                         </md-tab>
+
+
+                        <md-tab md-on-select="vm.loadNotifications()">
+                            <md-tab-label><i class="fa fa-bell"></i>&nbsp;Notifications</md-tab-label>
+                            <md-tab-body layout="column">
+                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.notifications">
+                                    <md-progress-circular md-mode="indeterminate"
+                                                          md-diameter="100"></md-progress-circular>
+                                </div>
+                                <div layout="row">
+                                    <div layout="column">
+                                        <br/>
+                                        <h3 ng-bind="vm.notificationMessage"></h3>
+                                    </div>
+                                    <span flex></span>
+                                </div>
+                                <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
+                                    <h3>Pending organization invites</h3>
+                                    <md-list>
+                                        <md-list-item
+                                                ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}"
+                                                class="noright">
+                                            <p><i class="fa fa-users"></i> {{ invitation.organization }}</p>
+                                            <md-checkbox class="md-secondary" ng-model="invitation.selected"
+                                                         aria-label="Select invitation">
+                                            </md-checkbox>
+                                        </md-list-item>
+                                    </md-list>
+                                    <div layout="row" layout-align="end center"
+                                         ng-show="vm.getPendingCount(vm.notifications.invitations) > 0">
+                                        <md-button
+                                                ng-click="vm.accept()"
+                                                ng-disabled="vm.checkSelected() === false">
+                                            Accept
+                                        </md-button>
+                                        <md-button
+                                                ng-click="vm.reject()"
+                                                ng-disabled="vm.checkSelected() === false">
+                                            Reject
+                                        </md-button>
+                                    </div>
+                                </div>
+                            </md-tab-body>
+                        </md-tab>
+                        <md-tab md-on-select="vm.loadOrganizations()">
+                            <md-tab-label><i class="fa fa-users"></i>&nbsp;Organizations</md-tab-label>
+                            <md-tab-body>
+                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.organizations">
+                                    <md-progress-circular md-mode="indeterminate"
+                                                          md-diameter="100"></md-progress-circular>
+                                </div>
+                                <div layout ng-show="vm.loaded.organizations">
+                                    <div flex flex-gt-xs="50">
+                                        <md-list>
+                                            <md-subheader>Owner</md-subheader>
+                                            <md-list-item
+                                                    ng-repeat="organization in vm.owner" class="noright"
+                                                    ng-href="#/organization/{{ ::organization }}">
+                                                <p> {{ organization }}</p>
+                                            </md-list-item>
+                                        </md-list>
+                                    </div>
+                                    <div flex flex-gt-xs="50">
+                                        <md-list>
+                                            <md-subheader>Member</md-subheader>
+                                            <md-list-item
+                                                    ng-repeat="organization in vm.member" class="noright"
+                                                    ng-href="#/organization/{{ ::organization }}">
+                                                <p>{{ ::organization }}</p>
+                                            </md-list-item>
+                                        </md-list>
+                                    </div>
+                                </div>
+                            </md-tab-body>
+                        </md-tab>
+                        <md-tab md-on-select="vm.loadAuthorizations()">
+                            <md-tab-label><i class="fa fa-ticket"></i>&nbsp;Authorizations</md-tab-label>
+                            <md-tab-body>
+                                <div layout="row" layout-align="center center" ng-if="!vm.loaded.authorizations">
+                                    <md-progress-circular md-mode="indeterminate"
+                                                          md-diameter="100"></md-progress-circular>
+                                </div>
+                                <div ng-show="vm.loaded.authorizations">
+                                    <md-list>
+                                        <md-list-item
+                                                ng-repeat="authorization in vm.authorizations | orderBy : 'grantedTo'"
+                                                ng-click="vm.showAuthorizationDetailDialog(authorization, $event)">
+                                            <p>{{ ::authorization.grantedTo }}</p>
+                                        </md-list-item>
+                                    </md-list>
+                                </div>
+                            </md-tab-body>
+                        </md-tab>
+
+                        <!--<md-tab>-->
+                        <!--<md-tab-label><i class="fa fa-file-text-o"></i>&nbsp;Contracts</md-tab-label>-->
+                        <!--<md-tab-body>-->
+                        <!--</md-tab-body>-->
+                        <!--</md-tab>-->
+
                         <md-tab md-on-select="vm.loadUser()">
                             <md-tab-label><i class="fa fa-lock"></i>&nbsp;Security</md-tab-label>
                             <md-tab-body>
