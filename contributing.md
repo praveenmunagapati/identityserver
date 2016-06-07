@@ -16,12 +16,29 @@ After this, a minimal docker `itsyouonline:latest` is created that can be pushed
 
 ## Changes to the website
 
-In order to make the html files and assets available for the identityserver, make sure you have go-bindata installed:
+In order to make the html files and assets available for the identityserver, you neede to regenerate the assets.
+This can be done in two modes development mode and production mode,
+
+### Production Mode
+Make sure you have go-bindata installed:
 ```
 go get -u github.com/jteeuwen/go-bindata/...
 ```
 
 After this execute `go generate` in the `siteservice/website` folder. Commit the overwritten go files in the packaged folder.
+
+### Developement mode
+
+There are two ways to switch in development mode, manually and by means of a script.
+
+NOTE: Never commit `siteservice/website/packaged` when in development mode.
+
+#### Automaticly
+```
+bash builddev.sh
+```
+
+#####  Manually:
 
 During development it can be easier if the files are served directly, execute go-bindata with the -debug flag:
 ```
