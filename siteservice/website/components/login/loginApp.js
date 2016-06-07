@@ -45,6 +45,11 @@
                 controller: 'smsController',
                 controllerAs: 'vm'
             })
+            .when('/forgotpassword', {
+                templateUrl: 'components/login/views/forgotpassword.html',
+                controller: 'forgotPasswordController',
+                controllerAs: 'vm'
+            })
             .otherwise('/');
     }
 })();
