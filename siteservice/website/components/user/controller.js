@@ -137,7 +137,6 @@
             UserService
                 .getVerifiedPhones(vm.username)
                 .then(function (data) {
-                    console.log(data)
                     vm.user.verifiedPhones = data;
                     vm.loaded.verifiedPhones = true;
                 });
@@ -720,13 +719,13 @@
                             close();
                         }, function (response) {
                             if (response.status === 422) {
-                                $scope.form.smscode.$setValidity('invalidcode', false);
+                                $scope.form.smscode.$setValidity('invalid_code', false);
                             }
                         });
                 }
 
                 function resetValidation() {
-                    $scope.form.smscode.$setValidity('invalidcode', true);
+                    $scope.form.smscode.$setValidity('invalid_code', true);
                 }
             }
         }

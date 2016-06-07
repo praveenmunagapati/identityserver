@@ -9,7 +9,7 @@
                 <input ng-model="vm.smscode" md-maxlength="6" minlength="6" ng-required="!vm.smsconfirmation.confirmed"
                        name="smscode" autocomplete="off" ng-change="vm.resetValidation()">
                 <div ng-messages="smsform.smscode.$error" md-auto-hide="false" class="error">
-                    <div ng-message="invalidcode">Invalid code</div>
+                    <div ng-message="invalid_code">Invalid code</div>
                 </div>
             </md-input-container>
         </div>

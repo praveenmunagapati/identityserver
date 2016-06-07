@@ -38,8 +38,8 @@
                 }, function (response) {
                     switch (response.status) {
                         case 422:
-                            if (response.data.error === 'invalidsmscode') {
-                                $scope.phoneconfirmationform.phonenumber.$setValidity("invalidphonenumber", false);
+                            if (response.data.error === 'invalid_sms_code') {
+                                $scope.phoneconfirmationform.phonenumber.$setValidity("invalid_phonenumber", false);
                             }
                             break;
                         case 401:

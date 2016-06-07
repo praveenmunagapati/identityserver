@@ -22,7 +22,7 @@
                 }, function (response) {
                     switch (response.status) {
                         case 422:
-                            $scope.totpform.totpcode.$setValidity("invalidcode", false);
+                            $scope.totpform.totpcode.$setValidity("invalid_code", false);
                             break;
                         case 401:
                             // Login session expired. Go back to username/password screen.
@@ -36,7 +36,7 @@
         }
 
         function resetValidation() {
-            $scope.totpform.totpcode.$setValidity("invalidcode", true);
+            $scope.totpform.totpcode.$setValidity("invalid_code", true);
         }
     }
 })();

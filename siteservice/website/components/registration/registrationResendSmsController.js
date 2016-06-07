@@ -20,8 +20,8 @@
                 }, function (response) {
                     switch (response.status) {
                         case 422:
-                            if (response.data.error === 'invalidphonenumber') {
-                                $scope.phoneconfirmationform.phonenumber.$setValidity("invalidphonenumber", false);
+                            if (response.data.error === 'invalid_phonenumber') {
+                                $scope.phoneconfirmationform.phonenumber.$setValidity("invalid_phonenumber", false);
                             }
                             break;
                         case 401:
@@ -36,7 +36,7 @@
         }
 
         function resetValidation() {
-            $scope.phoneconfirmationform.phonenumber.$setValidity("invalidphonenumber", true);
+            $scope.phoneconfirmationform.phonenumber.$setValidity("invalid_phonenumber", true);
         }
     }
 })();
