@@ -47,7 +47,7 @@ func (s *TwilioSMSService) Send(phonenumber string, message string) (err error) 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusCreated {
-		log.Error("Problem when sending sms via Twilio: ", resp.StatusCode, "\n", body)
+		log.Error("Problem when sending sms via Twilio: ", resp.StatusCode, "\n", string(body))
 		err = errors.New("Error sending sms")
 	}
 	return
