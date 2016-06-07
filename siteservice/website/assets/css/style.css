@@ -121,6 +121,12 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     margin: 130px 50px 0 50px;
 }
 
+.home .fullscreenform {
+    position: relative;
+    margin-left: 0;
+    margin-right: 0;
+}
+
 .md-subheader{
     background-color: transparent !important;
 }
@@ -172,6 +178,9 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 #slide5 .content { background: rgba(175, 175, 175, 0.2); }
 footer { background: #3091BB; color: #FFF; padding: 20px 0; text-align: center; font-family: 'arvo'; font-size: 16px; }
 #slide7 {background: url(../img/bg.png) repeat;height: 120px;padding: 49px 0 0 0;}
+#slide7.footer {
+    background: none;
+}
 .doc a {background: url(../img/button1.png) no-repeat center center;width: 315px;float: left;margin: 0 0px;color: #FFF;text-decoration: none;font-family: arial;padding: 24px 0 24px 0px;text-align: center;}
 
 .text-center {
