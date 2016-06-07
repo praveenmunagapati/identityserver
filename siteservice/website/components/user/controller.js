@@ -8,10 +8,10 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$routeParams', '$window', '$mdToast', '$mdMedia', '$mdDialog', 'NotificationService',
-        'OrganizationService', 'UserService', 'configService'];
+        '$q', '$rootScope', '$routeParams', '$window', '$interval', '$mdToast', '$mdMedia', '$mdDialog',
+        'NotificationService', 'OrganizationService', 'UserService', 'configService'];
 
-    function UserHomeController($q, $rootScope, $routeParams, $window, $mdToast, $mdMedia, $mdDialog,
+    function UserHomeController($q, $rootScope, $routeParams, $window, $interval, $mdToast, $mdMedia, $mdDialog,
                                 NotificationService, OrganizationService, UserService, configService) {
         var vm = this;
 
@@ -50,9 +50,11 @@
         vm.loadOrganizations = loadOrganizations;
         vm.loadUser = loadUser;
         vm.loadAuthorizations = loadAuthorizations;
+        vm.loadVerifiedPhones = loadVerifiedPhones;
         vm.showAuthorizationDetailDialog = showAuthorizationDetailDialog;
         vm.showChangePasswordDialog = showChangePasswordDialog;
         vm.showEditNameDialog = showEditNameDialog;
+        vm.verifyPhone = verifyPhone;
 
         var genericDetailControllerParams = ['$scope', '$mdDialog', 'username', '$window', 'label', 'data',
             'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
@@ -123,8 +125,22 @@
                     function (data) {
                         vm.user = data;
                         vm.loaded.user = true;
+                        loadVerifiedPhones();
                     }
                 );
+        }
+
+        function loadVerifiedPhones() {
+            if (vm.loaded.verifiedPhones) {
+                return;
+            }
+            UserService
+                .getVerifiedPhones(vm.username)
+                .then(function (data) {
+                    console.log(data)
+                    vm.user.verifiedPhones = data;
+                    vm.loaded.verifiedPhones = true;
+                });
         }
 
         function getPendingCount(invitations) {
@@ -589,7 +605,6 @@
                 }
             });
         }
-
         function showEditNameDialog(event) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
@@ -625,6 +640,95 @@
                     updateName: UserService.updateName
                 }
             });
+        }
+
+        function verifyPhone(event, label, phonenumber) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            var interval;
+
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', '$interval', 'user', 'label', 'phonenumber', verifyPhoneDialogController],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/user/views/verifyPhoneDialog.html',
+                targetEvent: event,
+                fullscreen: useFullScreen,
+                locals: {
+                    user: vm.user,
+                    label: label,
+                    phonenumber: phonenumber
+                }
+            }).finally(function () {
+                $interval.cancel(interval);
+            });
+
+            function verifyPhoneDialogController($scope, $mdDialog, $interval, user, label, phonenumber) {
+                var ctrl = this;
+                ctrl.label = label;
+                ctrl.phonenumber = phonenumber;
+                ctrl.close = close;
+                ctrl.submit = submit;
+                ctrl.validationKey = '';
+                ctrl.resetValidation = resetValidation;
+
+                init();
+
+                function init() {
+                    UserService
+                        .sendPhoneVerificationCode(vm.username, label)
+                        .then(function (responseData) {
+                            ctrl.validationKey = responseData.validationkey;
+                            interval = $interval(checkconfirmation, 1000);
+                        }, function (response) {
+                            $mdDialog.show(
+                                $mdDialog.alert()
+                                    .clickOutsideToClose(true)
+                                    .title('Error')
+                                    .textContent('Failed to send verification code. Please try again later.')
+                                    .ariaLabel('Error while sending verification code')
+                                    .ok('Close')
+                                    .targetEvent(event)
+                            );
+                        });
+                }
+
+                function close() {
+                    $mdDialog.cancel();
+                }
+
+                function checkconfirmation() {
+                    UserService
+                        .getVerifiedPhones(vm.username)
+                        .then(function success(confirmedPhones) {
+                            var isConfirmed = false;
+                            angular.forEach(confirmedPhones, function (number, label) {
+                                if (label === ctrl.label) {
+                                    isConfirmed = true;
+                                }
+                            });
+                            if (isConfirmed) {
+                                vm.user.verifiedPhones[ctrl.label] = ctrl.phonenumber;
+                                close();
+                            }
+                        });
+                }
+
+                function submit() {
+                    UserService
+                        .verifyPhone(user.username, ctrl.label, ctrl.validationKey, ctrl.smscode)
+                        .then(function () {
+                            vm.user.verifiedPhones[ctrl.label] = ctrl.phonenumber;
+                            close();
+                        }, function (response) {
+                            if (response.status === 422) {
+                                $scope.form.smscode.$setValidity('invalidcode', false);
+                            }
+                        });
+                }
+
+                function resetValidation() {
+                    $scope.form.smscode.$setValidity('invalidcode', true);
+                }
+            }
         }
     }
 
@@ -772,6 +876,5 @@
         }
 
     }
-
 
 })();

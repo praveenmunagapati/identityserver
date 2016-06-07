@@ -89,7 +89,10 @@
             deleteFacebookAccount: deleteFacebookAccount,
             deleteGithubAccount: deleteGithubAccount,
             updatePassword: updatePassword,
-            updateName: updateName
+            updateName: updateName,
+            getVerifiedPhones: getVerifiedPhones,
+            sendPhoneVerificationCode: sendPhoneVerificationCode,
+            verifyPhone: verifyPhone
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -226,6 +229,25 @@
             var data = {
                 firstname: firstname,
                 lastname: lastname
+            };
+            return genericHttpCall($http.put, url, data);
+        }
+
+        function getVerifiedPhones(username) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers?validated=true';
+            return genericHttpCall($http.get, url);
+        }
+
+        function sendPhoneVerificationCode(username, label) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(label) + '/validate';
+            return genericHttpCall($http.post, url);
+        }
+
+        function verifyPhone(username, label, validationKey, confirmationCode) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(label) + '/validate';
+            var data = {
+                smscode: confirmationCode,
+                validationkey: validationKey
             };
             return genericHttpCall($http.put, url, data);
         }

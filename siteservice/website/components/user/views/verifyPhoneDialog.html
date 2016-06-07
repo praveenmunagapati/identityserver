@@ -1,0 +1,36 @@
+<md-dialog ng-cloak>
+    <form name="form" ng-submit="ctrl.submit()">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Verify phone</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="ctrl.close()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
+                <p>Click the link in the sms sent to your phone <br/>
+                    or enter the code from the sms here to confirm <br/>
+                    your phone number {{ ::ctrl.phonenumber }} ({{ :: ctrl.label }})</p>
+                <md-input-container>
+                    <label>Code</label>
+                    <input ng-model="ctrl.smscode" md-maxlength="6" ng-minlength="6" maxlength="6" name="smscode"
+                           autocomplete="off" ng-change="ctrl.resetValidation()">
+                    <div ng-messages="form.smscode.$error">
+                        <div ng-message="minlength">The code must be at least 6 characters long</div>
+                        <div ng-message="invalidcode">Invalid code supplied</div>
+                    </div>
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button class="md-warn" ng-click="ctrl.close()">
+                Cancel
+            </md-button>
+            <span flex></span>
+            <md-button class="md-primary" type="submit" type="submit" ng-disabled="!form.$valid">Save</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
