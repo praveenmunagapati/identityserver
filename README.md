@@ -2,6 +2,10 @@
 
 [![Build Status](https://travis-ci.org/itsyouonline/identityserver.svg?branch=master)](https://travis-ci.org/itsyouonline/identityserver)
 
+## Documentation
+
+ Documentation is hosted on gitbook: 
+
 ## install and run locally
 
 ### Installation
