@@ -418,3 +418,19 @@ func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Requ
 	w.WriteHeader(http.StatusNoContent)
 	return
 }
+
+func (service *Service) ResetPassword(w http.ResponseWriter, request *http.Request) {
+	values := struct {
+		Code     string `json:"code"`
+		Password string `json:"password"`
+	}{}
+
+	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the ResetPassword request:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	// todo: implementation
+	w.WriteHeader(http.StatusNoContent)
+	return
+}

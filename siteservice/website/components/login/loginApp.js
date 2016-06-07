@@ -50,6 +50,11 @@
                 controller: 'forgotPasswordController',
                 controllerAs: 'vm'
             })
+            .when('/resetpassword/:code', {
+                templateUrl: 'components/login/views/resetpassword.html',
+                controller: 'resetPasswordController',
+                controllerAs: 'vm'
+            })
             .otherwise('/');
     }
 })();
