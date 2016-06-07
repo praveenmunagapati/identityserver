@@ -27,6 +27,9 @@ type UsersInterface interface { // Post is the handler for POST /users
 	// ValidatePhoneNumber is the handler for POST /users/{username}/phonenumbers/{label}/validate
 	// Send sms verification to phone number
 	ValidatePhoneNumber(http.ResponseWriter, *http.Request)
+	// VerifyPhoneNumber is the handler for PUT /users/{username}/phonenumbers/{label}/validate
+	// Verifies a phone number
+	VerifyPhoneNumber(http.ResponseWriter, *http.Request)
 	// usernamephonenumberslabelGet is the handler for GET /users/{username}/phonenumbers/{label}
 	usernamephonenumberslabelGet(http.ResponseWriter, *http.Request)
 	// UpdatePhonenumber is the handler for PUT /users/{username}/phonenumbers/{label}
@@ -120,6 +123,7 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/phonenumbers/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdatePhonenumber))).Methods("PUT")
 	r.Handle("/users/{username}/phonenumbers/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeletePhonenumber))).Methods("DELETE")
 	r.Handle("/users/{username}/phonenumbers/{label}/validate", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.ValidatePhoneNumber))).Methods("POST")
+	r.Handle("/users/{username}/phonenumbers/{label}/validate", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.VerifyPhoneNumber))).Methods("PUT")
 	r.Handle("/users/{username}/banks", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamebanksGet))).Methods("GET")
 	r.Handle("/users/{username}/banks", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamebanksPost))).Methods("POST")
 	r.Handle("/users/{username}/notifications", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamenotificationsGet))).Methods("GET")

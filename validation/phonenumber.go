@@ -10,7 +10,7 @@ import (
 	"github.com/itsyouonline/identityserver/db/validation"
 )
 
-//SMSService is the interface an sms communicaction channel should have to be used by the IYOPhonenumberValidationService
+//SMSService is the interface an sms communication channel should have to be used by the IYOPhonenumberValidationService
 type SMSService interface {
 	Send(phonenumber string, message string) (err error)
 }

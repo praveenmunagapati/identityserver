@@ -30,6 +30,13 @@ md-dialog > md-dialog-content > h2 {
     text-align: left;
 }
 
+.md-list-item-text h3 {
+    text-align: left;
+}
+
+.green {
+    color: #008000;
+}
 /*= HEADER & NAVIGATION
 --------------------------------------------------------*/
 #header {

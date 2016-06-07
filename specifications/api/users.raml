@@ -511,13 +511,32 @@ securedBy: [ oauth_2_0 ]
         responses:
             204:
               description: Phone number removed.
-       /activate:
-         post:
-         displayName: ValidatePhonenumber
-         description: Sends validation text to phone numbers
-         responses:
-           204:
+      /activate:
+        post:
+          displayName: ValidatePhonenumber
+          description: Sends validation text to phone numbers
+          responses:
+            200:
               description: Validation number send
+              body:
+                application/json:
+                  validationkey: string
+        put:
+          displayName: VerifyPhoneNumber
+          description: Verifies a phone number
+          body:
+            application/json:
+              properties:
+                smscode: string
+                validationkey: string
+          responses:
+            204:
+              description: Phone number verified
+            422:
+              description: invalid validationkey or code
+              body:
+                application/json:
+                  error: string
 
   /{username}/banks:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]

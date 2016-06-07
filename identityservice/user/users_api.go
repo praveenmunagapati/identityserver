@@ -481,7 +481,7 @@ func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(respBody)
 }
 
-// Validate phone number is the handler for GET /users/{username}/phonenumbers/{label}/validate
+// Validate phone number is the handler for POST /users/{username}/phonenumbers/{label}/validate
 func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
@@ -499,7 +499,54 @@ func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) 
 	}
 
 	phonenumber := userobj.Phone[label]
-	_, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
+	validationKey := ""
+	validationKey, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
+	response := struct {
+		ValidationKey string `json:"validationkey"`
+	}{
+		validationKey,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+	w.WriteHeader(http.StatusOK)
+}
+
+// Validate phone number is the handler for PUT /users/{username}/phonenumbers/{label}/validate
+func (api UsersAPI) VerifyPhoneNumber(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+	userMgr := user.NewManager(r)
+
+	values := struct {
+		Smscode       string `json:"smscode"`
+		ValidationKey string `json:"validationkey"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the ProcessPhonenumberConfirmation request:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	userobj, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if _, ok := userobj.Phone[label]; ok != true {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	err = api.PhonenumberValidationService.ConfirmValidation(r, values.ValidationKey, values.Smscode)
+	if err != nil {
+		log.Debug(err)
+		if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
+			writeErrorResponse(w, 422, err.Error())
+		} else {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 

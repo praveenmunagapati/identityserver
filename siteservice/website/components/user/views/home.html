@@ -4,7 +4,6 @@
         <div layout="column" flex-gt-sm="80" flex="100" layout-fill>
             <div layout="column">
                 <div flex="80">
-                    <p>You</p>
                     <h1 ng-bind="vm.username"></h1>
                 </div>
                 <div flex></div>
@@ -179,14 +178,24 @@
                                                 </div>
                                                 <div flex="60" flex-gt-xs="65">
                                                     <md-list>
-                                                        <md-list-item class="md-2-line"
-                                                                      ng-repeat="(label, phone) in vm.user.phone"
-                                                                      ng-click="vm.showPhonenumberDetailDialog($event, label, phone)">
-                                                            <div class="md-list-item-text">
-                                                                <h4>{{ phone }}</h4>
-                                                                <p>{{ label }}</p>
-                                                            </div>
-                                                        </md-list-item>
+                                                        <div ng-repeat="(label, phone) in vm.user.phone" layout="row">
+                                                            <md-list-item class="md-2-line"
+                                                                          ng-click="vm.showPhonenumberDetailDialog($event, label, phone)"
+                                                                          flex>
+                                                                <div class="md-list-item-text">
+                                                                    <h3>{{ ::phone }}</h3>
+                                                                    <h4>{{ ::label }}</h4>
+                                                                    <p ng-if="vm.user.verifiedPhones[label]"><i
+                                                                            class="fa fa-check green"></i> Verified</p>
+                                                                </div>
+                                                            </md-list-item>
+                                                            <div flex></div>
+                                                            <md-button
+                                                                    ng-click="vm.verifyPhone($event, label, phone)"
+                                                                    ng-show="vm.loaded.verifiedPhones && !vm.user.verifiedPhones[label]">
+                                                                Verify
+                                                            </md-button>
+                                                        </div>
                                                     </md-list>
                                                 </div>
                                                 <div flex="20" layout="row" layout-align="center center">
