@@ -2,6 +2,7 @@
     <div flex layout="row">
         <div flex></div>
         <div layout="column" flex="100" flex-gt-sm="40">
+            <p ng-if="vm.externalSite">You are about to login to <span ng-bind="vm.externalSite"></span>.</p>
             <md-input-container>
                 <label>Username</label>
                 <input ng-model="vm.login" ng-minlength="2" required name="login" type="text" autofocus>
