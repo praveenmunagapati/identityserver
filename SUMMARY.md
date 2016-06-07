@@ -1,5 +1,6 @@
 # Summary
 
 * [Introduction](docs/introduction.md)
-* OAuth2
+* Oauth2
+  * [Oauth2 Flows](docs/oauth2/oauth2.md)
 
