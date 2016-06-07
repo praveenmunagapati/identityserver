@@ -4,7 +4,7 @@
 
 ## Documentation
 
- Documentation is hosted on gitbook: 
+ Documentation is hosted on [gitbook](https://gig.gitbooks.io/itsyouonline/content/docs/introduction.html)
 
 ## install and run locally
 
