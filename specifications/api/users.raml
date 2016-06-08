@@ -309,6 +309,13 @@ securedBy: [ oauth_2_0 ]
                 409:
                   description: The last email address can not be removed.
 
+        /validate:
+          post:
+          displayName: ValidateEmailAddress
+          description: Sends validation email to email address
+          responses:
+            204:
+               description: Validation email has been send
 
     /apikeys:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]

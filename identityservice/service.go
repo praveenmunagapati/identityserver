@@ -10,6 +10,7 @@ import (
 	userdb "github.com/itsyouonline/identityserver/db/user"
 	companydb "github.com/itsyouonline/identityserver/db/company"
 	organizationdb "github.com/itsyouonline/identityserver/db/organization"
+	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/globalconfig"
 	"github.com/itsyouonline/identityserver/identityservice/company"
 	"github.com/itsyouonline/identityserver/identityservice/organization"
@@ -27,21 +28,25 @@ import (
 //Service is the identityserver http service
 type Service struct {
 	smsService                   communication.SMSService
+	emailService                 communication.EmailService
 	phonenumberValidationService *validation.IYOPhonenumberValidationService
+	emailaddresValidationService *validation.IYOEmailAddressValidationService
 }
 
 //NewService creates and initializes a Service
-func NewService(smsService communication.SMSService) (service *Service) {
-	service = &Service{smsService: smsService}
+func NewService(smsService communication.SMSService, emailService communication.EmailService) (service *Service) {
+	service = &Service{smsService: smsService, emailService: emailService}
 	p := &validation.IYOPhonenumberValidationService{SMSService: smsService}
 	service.phonenumberValidationService = p
+	e := &validation.IYOEmailAddressValidationService{EmailService: emailService}
+	service.emailaddresValidationService = e
 	return
 }
 
 //AddRoutes registers the http routes with the router.
 func (service *Service) AddRoutes(router *mux.Router) {
 	// User API
-	user.UsersInterfaceRoutes(router, user.UsersAPI{SmsService: service.smsService, PhonenumberValidationService: service.phonenumberValidationService})
+	user.UsersInterfaceRoutes(router, user.UsersAPI{SmsService: service.smsService, PhonenumberValidationService: service.phonenumberValidationService, EmailService: service.emailService, EmailAddressValidationService: service.emailaddresValidationService})
 	userdb.InitModels()
 
 	// Company API
@@ -52,6 +57,9 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	organization.OrganizationsInterfaceRoutes(router, organization.OrganizationsAPI{})
 	userorganization.UsersusernameorganizationsInterfaceRoutes(router, userorganization.UsersusernameorganizationsAPI{})
 	organizationdb.InitModels()
+
+	// Initialize Validation models
+	validationdb.InitModels()
 
 }
 

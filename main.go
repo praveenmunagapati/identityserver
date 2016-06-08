@@ -31,6 +31,8 @@ func main() {
 	var bindAddress, dbConnectionString string
 	var tlsCert, tlsKey string
 	var twilioAccountSID, twilioAuthToken, twilioMessagingServiceSID string
+	var smtpserver, smtpuser, smtppassword string
+	var smtpport int
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
@@ -82,6 +84,26 @@ func main() {
 			Usage:       "Twilio MessagingServiceSID",
 			Destination: &twilioMessagingServiceSID,
 		},
+		cli.StringFlag{
+			Name:        "smtp-server",
+			Usage:       "Host of smtp server",
+			Destination: &smtpserver,
+		},
+		cli.StringFlag{
+			Name:        "smtp-user",
+			Usage:       "User to login smtp server",
+			Destination: &smtpuser,
+		},
+		cli.StringFlag{
+			Name:        "smtp-password",
+			Usage:       "Password of smtp server",
+			Destination: &smtppassword,
+		},
+		cli.IntFlag{
+			Name:        "smtp-port",
+			Usage:       "Port of smtp server",
+			Destination: &smtpport,
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -100,6 +122,7 @@ func main() {
 
 		cookieSecret := identityservice.GetCookieSecret()
 		var smsService communication.SMSService
+		var emailService communication.EmailService
 		if twilioAccountSID != "" {
 			smsService = &communication.TwilioSMSService{
 				AccountSID:          twilioAccountSID,
@@ -113,8 +136,18 @@ func main() {
 			smsService = &communication.DevSMSService{}
 		}
 
-		sc := siteservice.NewService(cookieSecret, smsService)
-		is := identityservice.NewService(smsService)
+		if smtpserver == "" {
+			log.Warn("============================================================================")
+			log.Warn("No valid SMTP server provided, falling back to development implementation")
+			log.Warn("============================================================================")
+			emailService = &communication.DevEmailService{}
+
+		} else {
+			emailService = communication.NewSMTPEmailService(smtpserver, smtpport, smtpuser, smtppassword)
+		}
+
+		sc := siteservice.NewService(cookieSecret, smsService, emailService)
+		is := identityservice.NewService(smsService, emailService)
 
 		config := globalconfig.NewManager()
 
