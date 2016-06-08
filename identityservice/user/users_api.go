@@ -179,6 +179,16 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	valMgr := validationdb.NewManager(r)
+	validated, err := valMgr.IsEmailAddressValidated(username, body.Emailaddress)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !validated {
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.Emailaddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -489,7 +499,18 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	_, err = api.PhonenumberValidationService.RequestValidation(r, username, body.Phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
+
+	valMgr := validationdb.NewManager(r)
+	validated, err := valMgr.IsPhonenumberValidated(username, string(body.Phonenumber))
+	if err != nil {
+		log.Error("ERROR while checking if phonenumber has been validated - ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if !validated {
+		_, err = api.PhonenumberValidationService.RequestValidation(r, username, body.Phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
+	}
 
 	// respond with created phone number.
 	w.Header().Set("Content-Type", "application/json")
@@ -689,6 +710,19 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	valMgr := validationdb.NewManager(r)
+	validated, err := valMgr.IsPhonenumberValidated(username, string(body.Phonenumber))
+	if err != nil {
+		log.Error("ERROR while checking if phonenumber has been validated - ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if !validated {
+		_, err = api.PhonenumberValidationService.RequestValidation(r, username, body.Phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusCreated)

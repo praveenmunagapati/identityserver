@@ -220,6 +220,19 @@ func (manager *Manager) IsEmailAddressValidated(username string, emailaddress st
 	return
 }
 
+func (manager *Manager) IsPhonenumberValidated(username string, phonenumber string) (validated bool, err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedPhonenumbers)
+	count, err := mgoCollection.Find(bson.M{"username": username, "phonenumber": phonenumber}).Count()
+	validated = false
+	if err != nil {
+		return
+	}
+	if count != 0 {
+		validated = true
+	}
+	return
+}
+
 func generateRandomString() (randomString string, err error) {
 	b := make([]byte, 32)
 	_, err = rand.Read(b)
