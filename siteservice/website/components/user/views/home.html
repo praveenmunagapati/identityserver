@@ -85,14 +85,15 @@
                                                             <div class="md-list-item-text">
                                                                 <h3>{{ ::phone }}</h3>
                                                                 <h4>{{ ::label }}</h4>
-                                                                <p ng-if="vm.user.verifiedPhones[label]"><i
-                                                                        class="fa fa-check green"></i> Verified</p>
                                                             </div>
                                                         </md-list-item>
                                                         <div flex></div>
-                                                        <md-button
-                                                                ng-click="vm.verifyPhone($event, label, phone)"
-                                                                ng-show="vm.loaded.verifiedPhones && !vm.user.verifiedPhones[label]">
+                                                        <p ng-if="vm.user.verifiedPhones[label]" flex="20"
+                                                           class="md-body-1">
+                                                            <i class="fa fa-check green"></i> Verified
+                                                        </p>
+                                                        <md-button ng-click="vm.verifyPhone($event, label, phone)"
+                                                                   ng-if="vm.loaded.verifiedPhones && !vm.user.verifiedPhones[label]">
                                                             Verify
                                                         </md-button>
                                                     </div>
@@ -224,9 +225,6 @@
                                                     <i class="fa fa-plus"></i> Add
                                                 </md-button>
                                             </div>
-                                        </md-list-item>
-                                        <md-list-item>
-
                                         </md-list-item>
                                     </md-list>
                                 </div>
