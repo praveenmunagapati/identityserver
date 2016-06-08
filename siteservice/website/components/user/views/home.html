@@ -12,7 +12,7 @@
             <md-card flex="100">
                 <md-card-content flex="100" layout="column">
                     <md-tabs flex="100" md-selected="vm.selectedTabIndex" md-dynamic-height>
-                        <md-tab md-on-select="vm.loadUser()">
+                        <md-tab md-on-select="vm.tabSelected(vm.loadUser)">
                             <md-tab-label><i class="fa fa-user"></i>&nbsp;You</md-tab-label>
                             <md-tab-body>
                                 <div layout="row" layout-align="center center" ng-if="!vm.loaded.user">
@@ -230,9 +230,7 @@
                                 </div>
                             </md-tab-body>
                         </md-tab>
-
-
-                        <md-tab md-on-select="vm.loadNotifications()">
+                        <md-tab md-on-select="vm.tabSelected(vm.loadNotifications)">
                             <md-tab-label><i class="fa fa-bell"></i>&nbsp;Notifications</md-tab-label>
                             <md-tab-body layout="column">
                                 <div layout="row" layout-align="center center" ng-if="!vm.loaded.notifications">
@@ -274,7 +272,7 @@
                                 </div>
                             </md-tab-body>
                         </md-tab>
-                        <md-tab md-on-select="vm.loadOrganizations()">
+                        <md-tab md-on-select="vm.tabSelected(vm.loadOrganizations)">
                             <md-tab-label><i class="fa fa-users"></i>&nbsp;Organizations</md-tab-label>
                             <md-tab-body>
                                 <div layout="row" layout-align="center center" ng-if="!vm.loaded.organizations">
@@ -305,7 +303,7 @@
                                 </div>
                             </md-tab-body>
                         </md-tab>
-                        <md-tab md-on-select="vm.loadAuthorizations()">
+                        <md-tab md-on-select="vm.tabSelected(vm.loadAuthorizations)">
                             <md-tab-label><i class="fa fa-ticket"></i>&nbsp;Authorizations</md-tab-label>
                             <md-tab-body>
                                 <div layout="row" layout-align="center center" ng-if="!vm.loaded.authorizations">
@@ -330,7 +328,7 @@
                         <!--</md-tab-body>-->
                         <!--</md-tab>-->
 
-                        <md-tab md-on-select="vm.loadUser()">
+                        <md-tab md-on-select="vm.tabSelected(vm.loadUser)">
                             <md-tab-label><i class="fa fa-lock"></i>&nbsp;Security</md-tab-label>
                             <md-tab-body>
                                 <div layout="row" layout-align="center center" ng-if="!vm.loaded.user">
