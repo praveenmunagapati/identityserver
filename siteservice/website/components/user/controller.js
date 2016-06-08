@@ -8,10 +8,10 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$routeParams', '$window', '$interval', '$mdToast', '$mdMedia', '$mdDialog',
+        '$q', '$rootScope', '$routeParams', '$location', '$window', '$interval', '$mdToast', '$mdMedia', '$mdDialog',
         'NotificationService', 'OrganizationService', 'UserService', 'configService'];
 
-    function UserHomeController($q, $rootScope, $routeParams, $window, $interval, $mdToast, $mdMedia, $mdDialog,
+    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $interval, $mdToast, $mdMedia, $mdDialog,
                                 NotificationService, OrganizationService, UserService, configService) {
         var vm = this;
 
@@ -32,6 +32,7 @@
         vm.selectedTabIndex = 0;
 
         vm.checkSelected = checkSelected;
+        vm.tabSelected = tabSelected;
         vm.accept = accept;
         vm.reject = reject;
         vm.getPendingCount = getPendingCount;
@@ -63,6 +64,11 @@
         function init() {
             vm.selectedTabIndex = parseInt($routeParams.tab) || 0;
             loadNotifications();
+        }
+
+        function tabSelected(fx) {
+            fx();
+            $location.search('tab', vm.selectedTabIndex);
         }
 
         function loadNotifications() {
