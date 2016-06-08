@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/itsyouonline/identityserver",
 	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -20,6 +21,11 @@
 		{
 			"ImportPath": "github.com/elazarl/go-bindata-assetfs",
 			"Rev": "57eb5e1fc594ad4b0b1dbea7b286d299e0cb43c2"
+		},
+		{
+			"ImportPath": "github.com/go-gomail/gomail",
+			"Comment": "2.0.0-23-g81ebce5",
+			"Rev": "81ebce5c23dfd25c6c67194b37d3dd3f338c98b1"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
