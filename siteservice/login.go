@@ -371,17 +371,12 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 
 	log.Debugf("Successfull login by '%s'", username)
 
-	redirectURL := ""
+	redirectURL := "/"
 	queryValues := request.URL.Query()
 	endpoint := queryValues.Get("endpoint")
 	if endpoint != "" {
 		queryValues.Del("endpoint")
 		redirectURL = endpoint + "?" + queryValues.Encode()
-	} else {
-		parameters := make(url.Values)
-		parameters.Add("client_id", "itsyouonline")
-		parameters.Add("response_type", "token")
-		redirectURL = fmt.Sprintf("https://%s/v1/oauth/authorize?%s", request.Host, parameters.Encode())
 	}
 
 	sessions.Save(request, w)

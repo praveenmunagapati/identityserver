@@ -41,8 +41,6 @@ func NewService(sessionService SessionService, identityService IdentityService, 
 const (
 	//AuthorizationGrantCodeType is the requested response_type for an 'authorization code' oauth2 flow
 	AuthorizationGrantCodeType = "code"
-	//ImplicitGrantCodeType is the requested response_type for an 'implicit' oauth2 flow
-	ImplicitGrantCodeType = "token"
 	//ClientCredentialsGrantCodeType is the requested grant_type for a 'client credentials' oauth2 flow
 	ClientCredentialsGrantCodeType = "client_credentials"
 )

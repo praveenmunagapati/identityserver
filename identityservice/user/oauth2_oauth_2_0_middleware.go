@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"strings"
 
+	"crypto/ecdsa"
+	"fmt"
+
 	log "github.com/Sirupsen/logrus"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/itsyouonline/identityserver/oauthservice"
-	"fmt"
-	"crypto/ecdsa"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
@@ -19,14 +20,16 @@ type Oauth2oauth_2_0Middleware struct {
 	Field       string
 	Scopes      []string
 }
+
+//JWTPublicKey has the public key of the allowed JWT issuer
 var JWTPublicKey ecdsa.PublicKey
 
 // newOauth2oauth_2_0Middlewarecreate new Oauth2oauth_2_0Middleware struct
 func newOauth2oauth_2_0Middleware(scopes []string) *Oauth2oauth_2_0Middleware {
 	om := Oauth2oauth_2_0Middleware{
-		Scopes: scopes,
+		Scopes:      scopes,
 		DescribedBy: "headers",
-		Field: "Authorization",
+		Field:       "Authorization",
 	}
 	return &om
 }
@@ -53,7 +56,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		var accessToken string
 		var atscopestring string
 		var username string
-		var clientId string
+		var clientID string
 		scopes := []string{}
 
 		// access token checking
@@ -69,7 +72,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				// Don't forget to validate the alg is what you expect:
 
 				if token.Method != jwt.SigningMethodES384 {
-				    return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 				}
 				return &JWTPublicKey, nil
 			})
@@ -79,10 +82,10 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				return
 			}
 			username = token.Claims["username"].(string)
-			clientId = token.Claims["aud"].(string)
+			clientID = token.Claims["aud"].(string)
 			atscopestring = token.Claims["scope"].(string)
 
-		} else {
+		} else if strings.HasPrefix(accessToken, "token") {
 			accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
 			if accessToken == "" {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
@@ -104,13 +107,24 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			}
 			username = at.Username
 			atscopestring = at.Scope
-			clientId = at.ClientID
-
+			clientID = at.ClientID
+		} else {
+			if authenticateduser, ok := context.GetOk(r, "authenticateduser"); ok {
+				if parsedusername, ok := authenticateduser.(string); ok && parsedusername != "" {
+					username = parsedusername
+					atscopestring = "admin"
+					clientID = "itsyouonline"
+				}
+			}
+		}
+		if username == "" || clientID == "" {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
 		}
 
 		protectedUsername := mux.Vars(r)["username"]
 
-		if protectedUsername == username && clientId == "itsyouonline" && atscopestring == "admin" {
+		if protectedUsername == username && clientID == "itsyouonline" && atscopestring == "admin" {
 			scopes = append(scopes, "user:admin")
 		}
 		if strings.HasPrefix(atscopestring, "user:") {
@@ -119,7 +133,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 
 		log.Debug("Available scopes: ", scopes)
 
-		context.Set(r, "client_id", clientId)
+		context.Set(r, "client_id", clientID)
 		context.Set(r, "availablescopes", atscopestring)
 
 		// check scopes

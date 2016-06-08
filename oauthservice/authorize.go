@@ -42,10 +42,6 @@ func newAuthorizationRequest(username, clientID, state, scope, redirectURI strin
 
 func validateRedirectURI(mgr ClientManager, redirectURI string, clientID string) (valid bool, err error) {
 	log.Debug("Validating redirect URI for ", clientID)
-	if clientID == "itsyouonline" {
-		valid = true
-		return
-	}
 	u, err := url.Parse(redirectURI)
 	if err != nil {
 		err = nil
@@ -132,7 +128,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 
 	//Check if the requested authorization grant type is supported
 	requestedResponseType := request.Form.Get("response_type")
-	if requestedResponseType != AuthorizationGrantCodeType && requestedResponseType != ImplicitGrantCodeType {
+	if requestedResponseType != AuthorizationGrantCodeType {
 		log.Debug("Invalid authorization grant type requested")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -177,15 +173,11 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	var authorizedScopes []string
-
-	if clientID != "itsyouonline" {
-		authorizedScopes, err = service.filterAuthorizedScopes(request, username, clientID, possibleScopes)
-		if err != nil {
-			log.Error(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
+	authorizedScopes, err := service.filterAuthorizedScopes(request, username, clientID, possibleScopes)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 
 	var authorizedScopeString string
@@ -207,8 +199,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 	}
 
 	//If no valid authorization, ask the user for authorizations
-	// No need when logging in to itsyou.online itself.
-	if !validAuthorization && clientID != "itsyouonline" {
+	if !validAuthorization {
 		token, err := service.createItsYouOnlineAdminToken(username, request)
 		if err != nil {
 			log.Error(err)
@@ -220,18 +211,13 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	switch requestedResponseType {
-	case AuthorizationGrantCodeType:
-		if clientID == "itsyouonline" {
-			log.Warn("HACK attempt, someone tried to get a token as the 'itsyouonline' client")
-			//TODO: log the entire request and everything we know
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		redirectURI, err = handleAuthorizationGrantCodeType(request, username, clientID, redirectURI, authorizedScopeString)
-	case ImplicitGrantCodeType:
-		redirectURI, err = handleImplicitGrantCodeType(request, username, clientID, redirectURI)
+	if clientID == "itsyouonline" {
+		log.Warn("HACK attempt, someone tried to get a token as the 'itsyouonline' client")
+		//TODO: log the entire request and everything we know
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
 	}
+	redirectURI, err = handleAuthorizationGrantCodeType(request, username, clientID, redirectURI, authorizedScopeString)
 
 	if err != nil {
 		log.Error(err)
@@ -267,35 +253,6 @@ func handleAuthorizationGrantCodeType(r *http.Request, username, clientID, redir
 		if !strings.HasSuffix(correctedRedirectURI, "&") {
 			correctedRedirectURI += "&"
 		}
-	}
-	correctedRedirectURI += parameters.Encode()
-	return
-}
-
-func handleImplicitGrantCodeType(r *http.Request, username, clientID, redirectURI string) (correctedRedirectURI string, err error) {
-
-	scopes := ""
-	if clientID == "itsyouonline" {
-		scopes = "admin"
-		//hardcoded override the redirect_uri to prevent spoofing
-		redirectURI = "/"
-	}
-	//TODO: scope mapping for other clients
-
-	mgr := NewManager(r)
-
-	at := newAccessToken(username, "", clientID, scopes)
-	err = mgr.saveAccessToken(at)
-	if err != nil {
-		return
-	}
-
-	correctedRedirectURI = redirectURI
-	parameters := make(url.Values)
-	parameters.Add("token", at.AccessToken)
-	//Don't parse the redirect url, can only give errors while we don't gain much
-	if !strings.Contains(correctedRedirectURI, "#") {
-		correctedRedirectURI += "#"
 	}
 	correctedRedirectURI += parameters.Encode()
 	return

@@ -5,9 +5,10 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"github.com/itsyouonline/identityserver/oauthservice"
 	"github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/oauthservice"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
@@ -56,50 +57,73 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		} else if om.describedBy == "headers" {
 			accessToken = r.Header.Get(om.field)
 		}
-		//Get the actual token out of the header (accept 'token ABCD' as well as just 'ABCD' and ignore some possible whitespace)
-		accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
-		if accessToken == "" {
-			w.WriteHeader(401)
-			return
-		}
 
 		var scopes []string
-		//TODO: cache
 		protectedOrganization := mux.Vars(r)["globalid"]
+		var atscopestring string
+		var username string
+		var clientID string
+		var globalID string
 
-		oauthMgr := oauthservice.NewManager(r)
-		at, err := oauthMgr.GetAccessToken(accessToken)
-		if err != nil {
-			log.Error(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
+		if strings.HasPrefix(accessToken, "token") {
+			accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
+			if accessToken == "" {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+
+			log.Debug("Access Token: ", accessToken)
+			//TODO: cache
+			oauthMgr := oauthservice.NewManager(r)
+			at, err := oauthMgr.GetAccessToken(accessToken)
+			if err != nil {
+				log.Error(err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			if at == nil {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			globalID = at.GlobalID
+			username = at.Username
+			atscopestring = at.Scope
+			clientID = at.ClientID
+		} else {
+			if authenticateduser, ok := context.GetOk(r, "authenticateduser"); ok {
+				if parsedusername, ok := authenticateduser.(string); ok && parsedusername != "" {
+					username = parsedusername
+					atscopestring = "admin"
+					clientID = "itsyouonline"
+				}
+			}
 		}
-		if at == nil {
+		if (username == "" && globalID == "") || clientID == "" {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
 
-		if at.GlobalID == protectedOrganization {
-			scopes = []string{at.Scope}
+		if globalID == protectedOrganization {
+			scopes = []string{atscopestring}
 		} else {
 			orgMgr := organization.NewManager(r)
-			isOwner, err := orgMgr.IsOwner(protectedOrganization, at.Username)
+			isOwner, err := orgMgr.IsOwner(protectedOrganization, username)
 			if err != nil {
 				log.Error(err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
 
-			if isOwner && at.ClientID == "itsyouonline" && at.Scope == "admin" {
+			if isOwner && clientID == "itsyouonline" && atscopestring == "admin" {
 				scopes = []string{"organization:owner"}
 			} else {
-				isMember, err := orgMgr.IsMember(protectedOrganization, at.Username)
+				isMember, err := orgMgr.IsMember(protectedOrganization, username)
 				if err != nil {
 					log.Error(err)
 					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 					return
 				}
-				if isMember && at.ClientID == "itsyouonline" && at.Scope == "admin" {
+				if isMember && clientID == "itsyouonline" && atscopestring == "admin" {
 					scopes = []string{"organization:member"}
 				}
 			}

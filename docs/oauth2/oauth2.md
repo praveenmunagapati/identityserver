@@ -7,7 +7,7 @@ OAuth2 defines four grant types, each of which is useful in different cases:
 3. Resource Owner Password Credentials: used with trusted Applications, such as those owned by the service itself
 4. Client Credentials: used with Applications API access
 
-Currently the **authorization code**, **implicit** and **client credentials** grant types are supported.
+Currently the **authorization code** and **client credentials** grant types are supported.
 
 
 ## Authorization Code Flow
@@ -102,49 +102,6 @@ For example, in curl you can set the Authorization header like this:
 ```
 curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/api/users/bob/info
 ```
-
-## Implicit flow
-The implicit grant type is used for mobile apps and web applications (i.e. applications that run in a web browser), where the client secret confidentiality is not guaranteed. The implicit grant type is also a redirection-based flow but the access token is given to the user-agent to forward to the application, so it may be exposed to the user and other applications on the user's device. Also, this flow does not authenticate the identity of the application, and relies on the redirect URI (that was registered with the service) to serve this purpose.
-
-The implicit grant type does not support refresh tokens.
-
-### Step 1: Implicit Authorization Link
-
-With the implicit grant type, the user is presented with an authorization link, that requests a token from the API. This link looks just like the authorization code link, except it is requesting a token instead of a code (note the response type "token"):
-
-First, the user is given an authorization code link that looks like the following:
-
-```
-https://itsyou.online/v1/oauth/authorize?response_type=token&client_id=CLIENT_ID&redirect_uri=CALLBACK_URL&scope=read
-```
-
-### Step 2: User Authorizes Application
-
-When the user clicks the link, they must first log in to itsyou.online, to authenticate their identity (unless they are already logged in). Then they will be prompted by to authorize or deny the application access to their account.
-
-### Step 3: User-agent Receives Access Token with Redirect URI
-
-When the user authorizes the application, itsyou.online redirects the user-agent to the application redirect URI, and includes a URI fragment containing the access token. It would look something like this:
-```
-https://petshop.com/callback#token=ACCESS_TOKEN
-```
-
-### Step 4: User-agent Follows the Redirect URI
-
-The user-agent follows the redirect URI but retains the access token (notice the `#` in the url).
-
-### Step 5: Application Sends Access Token Extraction Script
-
-The application returns a webpage that contains a script that can extract the access token from the full redirect URI that the user-agent has retained.
-
-### Step 6: Access Token Passed to Application
-
-The user-agent executes the provided script and passes the extracted access token to the application.
-
-Now the application is authorized.
-It may use the token to access the user's account via the itsyou.online API, limited to the scope of access, until the token expires or is revoked.
-
-
 
 ## Client Credentials Flow
 The client credentials grant type provides an application linked to an organization to access its own account.

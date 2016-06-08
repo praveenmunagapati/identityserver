@@ -5,6 +5,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/sessions"
+
+	"github.com/gorilla/context"
 )
 
 //SessionType is used to define the type of session
@@ -91,4 +93,16 @@ func (service *Service) GetLoggedInUser(request *http.Request) (username string,
 		username, _ = savedusername.(string)
 	}
 	return
+}
+
+//SetAuthenticatedUserMiddleWare puthe the authenticated user on the context
+func (service *Service) SetAuthenticatedUserMiddleWare(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		if username, err := service.GetLoggedInUser(request); err == nil {
+			log.Debug("Authenticated user: ", username)
+			context.Set(request, "authenticateduser", username)
+		}
+
+		next.ServeHTTP(w, request)
+	})
 }

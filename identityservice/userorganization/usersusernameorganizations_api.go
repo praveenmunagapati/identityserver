@@ -9,8 +9,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 
-	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	organizationdb "github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
 )
 
 type UsersusernameorganizationsAPI struct {

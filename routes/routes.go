@@ -21,7 +21,6 @@ func GetRouter(sc *siteservice.Service, is *identityservice.Service, oauthsc *oa
 
 	apiRouter := r.PathPrefix("/api").Subrouter()
 	is.AddRoutes(apiRouter)
-
 	oauthsc.AddRoutes(r)
 
 	// Add middlewares
@@ -30,7 +29,7 @@ func GetRouter(sc *siteservice.Service, is *identityservice.Service, oauthsc *oa
 	dbmw := db.DBMiddleware()
 	recovery := handlers.RecoveryHandler()
 
-	router.Use(recovery, LoggingMiddleware, dbmw)
+	router.Use(recovery, LoggingMiddleware, dbmw, sc.SetAuthenticatedUserMiddleWare)
 
 	return router.Handler()
 }

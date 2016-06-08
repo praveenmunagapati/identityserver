@@ -46,13 +46,6 @@
     function authenticationInterceptor($q, $window) {
         return {
             'request': function (config) {
-                if (config) {
-                    var url = config.url;
-
-                    if (/(api\/)/i.test(url)) {
-                        config.headers["Authorization"] = "token " + sessionStorage.getItem("oauthToken");
-                    }
-                }
                 return config || $q.when(config);
             },
             'response': function (response) {
@@ -68,7 +61,7 @@
             }
         };
     }
-    
+
     function routeConfig($routeProvider) {
         $routeProvider
             .when('/', {
@@ -133,12 +126,6 @@
     }
 
     function runFunction($cookies, $rootScope, $location) {
-        var pathParts = $location.path().split("=");
-        if (pathParts.length === 2 && pathParts[0] === "/token") {
-            sessionStorage.setItem("oauthToken", pathParts[1]);
-            $location.path("/");
-            $location.replace();
-        }
         $rootScope.user = $cookies.get('itsyou.online.user');
     }
 })();
