@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/credentials/password"
+	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
@@ -24,6 +25,49 @@ type UsersAPI struct {
 	PhonenumberValidationService  *validation.IYOPhonenumberValidationService
 	EmailService                  communication.EmailService
 	EmailAddressValidationService *validation.IYOEmailAddressValidationService
+}
+
+func isUniquePhonenumber(user *user.User, number string, label string) (unique bool) {
+	unique = true
+	for phonelabel, phonenumber := range user.Phone {
+		if phonelabel != label && string(phonenumber) == number {
+			unique = false
+			return
+
+		}
+	}
+	return
+}
+
+func isLastVerifiedPhoneNumber(user *user.User, number string, label string, r *http.Request) (last bool, err error) {
+	last = false
+	valMgr := validationdb.NewManager(r)
+	validated, err := valMgr.IsPhonenumberValidated(user.Username, string(number))
+	if err != nil {
+		return
+	}
+	if validated {
+		// check if this phone number is the last verified one
+		uniquelabel := isUniquePhonenumber(user, number, label)
+		hasotherverifiednumbers := false
+		verifiednumbers, err := valMgr.GetByUsernameValidatedPhonenumbers(user.Username)
+		if err != nil {
+			return false, err
+
+		}
+		for _, verifiednumber := range verifiednumbers {
+			if verifiednumber.Phonenumber != string(number) {
+				hasotherverifiednumbers = true
+				break
+
+			}
+		}
+		if uniquelabel && !hasotherverifiednumbers {
+			return true, nil
+		}
+
+	}
+	return
 }
 
 // It is handler for POST /users
@@ -685,7 +729,8 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := u.Phone[oldlabel]; ok != true {
+	oldnumber, ok := u.Phone[oldlabel]
+	if ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -693,6 +738,19 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	if oldlabel != body.Label {
 		if _, ok := u.Phone[body.Label]; ok {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
+
+	if oldnumber != body.Phonenumber {
+		last, err := isLastVerifiedPhoneNumber(u, string(oldnumber), oldlabel, r)
+		if err != nil {
+			log.Error("ERROR while verifying last verified number - ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if last {
+			writeErrorResponse(w, 409, "Can not remove last verified phonenumber")
 			return
 		}
 	}
@@ -712,6 +770,10 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	valMgr := validationdb.NewManager(r)
+	if oldnumber != body.Phonenumber && isUniquePhonenumber(u, string(oldnumber), oldlabel) {
+		valMgr.RemoveValidatedPhonenumber(username, string(oldnumber))
+	}
+
 	validated, err := valMgr.IsPhonenumberValidated(username, string(body.Phonenumber))
 	if err != nil {
 		log.Error("ERROR while checking if phonenumber has been validated - ", err)
@@ -737,6 +799,7 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
 	valMgr := validationdb.NewManager(r)
+	force := r.URL.Query().Get("force") == "true"
 
 	user, err := userMgr.GetByName(username)
 	if err != nil {
@@ -748,6 +811,25 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 	if ok != true {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
+	}
+
+	last, err := isLastVerifiedPhoneNumber(user, string(number), label, r)
+	if err != nil {
+		log.Error("ERROR while checking if number can be deleted:\n", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+
+	}
+	if last {
+		allowforce := false
+		if force {
+			totpMgr := totp.NewManager(r)
+			allowforce, err = totpMgr.HasTOTP(username)
+		}
+		if !allowforce {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
 	}
 
 	if err := userMgr.RemovePhone(username, label); err != nil {
