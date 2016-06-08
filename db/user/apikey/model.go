@@ -1,9 +1,9 @@
 package apikey
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"gopkg.in/mgo.v2/bson"
-	"crypto/rand"
 )
 
 type APIKey struct {

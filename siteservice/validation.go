@@ -35,7 +35,6 @@ func (service *Service) PhonenumberValidation(w http.ResponseWriter, request *ht
 	service.renderSMSConfirmationPage(w, request, "Your phonenumber is confirmed")
 }
 
-
 func (service *Service) EmailValidation(w http.ResponseWriter, request *http.Request) {
 
 	err := request.ParseForm()

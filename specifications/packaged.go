@@ -245,12 +245,12 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"companies.raml": companiesRaml,
-	"contracts.raml": contractsRaml,
-	"organizations.raml": organizationsRaml,
+	"companies.raml":                 companiesRaml,
+	"contracts.raml":                 contractsRaml,
+	"organizations.raml":             organizationsRaml,
 	"securitySchemes/oauth_2_0.raml": securityschemesOauth_2_0Raml,
-	"userorganizations.raml": userorganizationsRaml,
-	"users.raml": usersRaml,
+	"userorganizations.raml":         userorganizationsRaml,
+	"users.raml":                     usersRaml,
 }
 
 // AssetDir returns the file names below a certain
@@ -292,15 +292,16 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
-	"companies.raml": &bintree{companiesRaml, map[string]*bintree{}},
-	"contracts.raml": &bintree{contractsRaml, map[string]*bintree{}},
+	"companies.raml":     &bintree{companiesRaml, map[string]*bintree{}},
+	"contracts.raml":     &bintree{contractsRaml, map[string]*bintree{}},
 	"organizations.raml": &bintree{organizationsRaml, map[string]*bintree{}},
 	"securitySchemes": &bintree{nil, map[string]*bintree{
 		"oauth_2_0.raml": &bintree{securityschemesOauth_2_0Raml, map[string]*bintree{}},
 	}},
 	"userorganizations.raml": &bintree{userorganizationsRaml, map[string]*bintree{}},
-	"users.raml": &bintree{usersRaml, map[string]*bintree{}},
+	"users.raml":             &bintree{usersRaml, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
@@ -349,4 +350,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-

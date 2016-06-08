@@ -238,7 +238,7 @@ func (u *User) getID() string {
 func (m *Manager) UpdateName(username string, firstname string, lastname string) (err error) {
 	values := bson.M{
 		"firstname": firstname,
-		"lastname": lastname,
+		"lastname":  lastname,
 	}
 	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": values})
 	return
@@ -249,7 +249,7 @@ func (m *Manager) FindByVerifiedEmailOrUsername(usernameOrEmail string) (user Us
 	qry := bson.M{
 		"$or": []bson.M{
 			bson.M{
-				"username":usernameOrEmail,
+				"username": usernameOrEmail,
 			},
 			bson.M{
 				"email.main": usernameOrEmail,

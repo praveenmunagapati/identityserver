@@ -2,8 +2,8 @@ package contract
 
 import (
 	"encoding/json"
-	"net/http"
 	"github.com/itsyouonline/identityserver/db/contract"
+	"net/http"
 )
 
 type OrganizationsglobalidcontractsAPI struct {

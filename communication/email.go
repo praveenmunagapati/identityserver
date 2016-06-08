@@ -17,12 +17,11 @@ func (s *DevEmailService) Send(email string, subject string, message string) (er
 	return
 }
 
-
-type SMTPEmailService struct{
+type SMTPEmailService struct {
 	dialer *gomail.Dialer
 }
 
-func NewSMTPEmailService (host string, port int, user string, password string) (service *SMTPEmailService) {
+func NewSMTPEmailService(host string, port int, user string, password string) (service *SMTPEmailService) {
 	dialer := gomail.NewDialer(host, port, user, password)
 	service = &SMTPEmailService{dialer: dialer}
 	return
@@ -41,4 +40,3 @@ func (s *SMTPEmailService) Send(email string, subject string, message string) (e
 	}
 	return
 }
-
