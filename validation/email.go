@@ -1,13 +1,12 @@
 package validation
 
 import (
-	"net/http"
-	"github.com/itsyouonline/identityserver/db/validation"
 	"fmt"
-	"net/url"
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/db/validation"
+	"net/http"
+	"net/url"
 )
-
 
 //SMSService is the interface an sms communicaction channel should have to be used by the IYOPhonenumberValidationService
 type EmailService interface {
@@ -18,7 +17,6 @@ type EmailService interface {
 type IYOEmailAddressValidationService struct {
 	EmailService EmailService
 }
-
 
 //RequestValidation validates the phonenumber by sending an SMS
 func (service *IYOEmailAddressValidationService) RequestValidation(request *http.Request, username string, email string, confirmationurl string) (key string, err error) {
@@ -49,7 +47,6 @@ func (service *IYOEmailAddressValidationService) ExpireValidation(request *http.
 	err = valMngr.RemoveEmailAddressValidationInformation(key)
 	return
 }
-
 
 func (service *IYOEmailAddressValidationService) getEmailAddressValidationInformation(request *http.Request, key string) (info *validation.EmailAddressValidationInformation, err error) {
 	if key == "" {
@@ -100,4 +97,3 @@ func (service *IYOEmailAddressValidationService) ConfirmValidation(request *http
 	}
 	return
 }
-

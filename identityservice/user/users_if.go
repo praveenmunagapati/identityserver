@@ -110,7 +110,6 @@ type UsersInterface interface { // Post is the handler for POST /users
 	UpdateAPIKey(http.ResponseWriter, *http.Request)
 	DeleteAPIKey(http.ResponseWriter, *http.Request)
 	ListAPIKeys(http.ResponseWriter, *http.Request)
-
 }
 
 // UsersInterfaceRoutes is routing for /users root endpoint

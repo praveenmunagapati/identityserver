@@ -266,13 +266,13 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"index.html": indexHtml,
-	"registration.html": registrationHtml,
-	"login.html": loginHtml,
-	"base.html": baseHtml,
-	"error.html": errorHtml,
+	"index.html":            indexHtml,
+	"registration.html":     registrationHtml,
+	"login.html":            loginHtml,
+	"base.html":             baseHtml,
+	"error.html":            errorHtml,
 	"apidocumentation.html": apidocumentationHtml,
-	"smsconfirmation.html": smsconfirmationHtml,
+	"smsconfirmation.html":  smsconfirmationHtml,
 }
 
 // AssetDir returns the file names below a certain
@@ -314,14 +314,15 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"apidocumentation.html": &bintree{apidocumentationHtml, map[string]*bintree{}},
-	"base.html": &bintree{baseHtml, map[string]*bintree{}},
-	"error.html": &bintree{errorHtml, map[string]*bintree{}},
-	"index.html": &bintree{indexHtml, map[string]*bintree{}},
-	"login.html": &bintree{loginHtml, map[string]*bintree{}},
-	"registration.html": &bintree{registrationHtml, map[string]*bintree{}},
-	"smsconfirmation.html": &bintree{smsconfirmationHtml, map[string]*bintree{}},
+	"base.html":             &bintree{baseHtml, map[string]*bintree{}},
+	"error.html":            &bintree{errorHtml, map[string]*bintree{}},
+	"index.html":            &bintree{indexHtml, map[string]*bintree{}},
+	"login.html":            &bintree{loginHtml, map[string]*bintree{}},
+	"registration.html":     &bintree{registrationHtml, map[string]*bintree{}},
+	"smsconfirmation.html":  &bintree{smsconfirmationHtml, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
@@ -370,4 +371,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-

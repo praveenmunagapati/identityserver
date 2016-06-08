@@ -305,7 +305,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		if !phonenumber.IsValid() {
 			log.Debug("Invalid phone number")
 			w.WriteHeader(422)
-			response.Error = "invalid_phonenumber";
+			response.Error = "invalid_phonenumber"
 			json.NewEncoder(w).Encode(&response)
 			return
 		}
@@ -315,7 +315,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		if !token.Validate(values.TotpCode) {
 			log.Debug("Invalid totp code")
 			w.WriteHeader(422)
-			response.Error = "invalid_totpcode";
+			response.Error = "invalid_totpcode"
 			json.NewEncoder(w).Encode(&response)
 			return
 		}
@@ -327,9 +327,9 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	err = passwdMgr.Save(newuser.Username, values.Password)
 	if err != nil {
 		log.Error(err)
-		if (err.Error() != "internal_error") {
+		if err.Error() != "internal_error" {
 			w.WriteHeader(422)
-			response.Error = "invalid_password";
+			response.Error = "invalid_password"
 			json.NewEncoder(w).Encode(&response)
 		} else {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -349,7 +349,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		registrationSession.Values["phonenumbervalidationkey"] = validationkey
 
 		sessions.Save(request, w)
-		response.Redirecturl = fmt.Sprintf("https://%s/register#/smsconfirmation?%s", request.Host, request.URL.Query().Encode());
+		response.Redirecturl = fmt.Sprintf("https://%s/register#/smsconfirmation?%s", request.Host, request.URL.Query().Encode())
 		json.NewEncoder(w).Encode(&response)
 		return
 	}
@@ -365,7 +365,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Request) {
 	username := request.URL.Query().Get("username")
 	response := struct {
-		Valid bool `json:"valid"`
+		Valid bool   `json:"valid"`
 		Error string `json:"error"`
 	}{
 		true,
@@ -394,4 +394,3 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 	json.NewEncoder(w).Encode(&response)
 	return
 }
-

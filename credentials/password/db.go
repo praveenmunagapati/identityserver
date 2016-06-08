@@ -6,10 +6,10 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password/keyderivation"
 	"github.com/itsyouonline/identityserver/db"
-	"errors"
 )
 
 const (

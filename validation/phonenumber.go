@@ -19,7 +19,6 @@ type IYOPhonenumberValidationService struct {
 	SMSService SMSService
 }
 
-
 //RequestValidation validates the phonenumber by sending an SMS
 func (service *IYOPhonenumberValidationService) RequestValidation(request *http.Request, username string, phonenumber user.Phonenumber, confirmationurl string) (key string, err error) {
 	valMngr := validation.NewManager(request)
@@ -97,4 +96,3 @@ func (service *IYOPhonenumberValidationService) ConfirmValidation(request *http.
 	}
 	return
 }
-

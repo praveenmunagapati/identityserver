@@ -2,3 +2,7 @@ language: go
 
 go:
   - 1.6
+
+script:
+  - test -z "$(gofmt -l $(find * -type d | grep -v '^vendor') | tee /dev/stderr)"
+  - go test -v ./...

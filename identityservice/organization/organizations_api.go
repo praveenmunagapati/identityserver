@@ -11,9 +11,9 @@ import (
 	"sort"
 
 	"github.com/itsyouonline/identityserver/db"
-	"github.com/itsyouonline/identityserver/identityservice/invitations"
-	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/db/user"
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
 

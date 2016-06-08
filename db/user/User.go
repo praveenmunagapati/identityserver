@@ -1,8 +1,8 @@
 package user
 
 import (
-	"gopkg.in/mgo.v2/bson"
 	"github.com/itsyouonline/identityserver/db"
+	"gopkg.in/mgo.v2/bson"
 	"regexp"
 )
 

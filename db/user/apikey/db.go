@@ -13,7 +13,6 @@ const (
 	mongoCollectionName = "apikeys"
 )
 
-
 //Manager is used to store users
 type Manager struct {
 	session *mgo.Session
@@ -70,4 +69,3 @@ func (m *Manager) Delete(username string, label string) (err error) {
 	_, err = m.getCollection().RemoveAll(bson.M{"username": username, "label": label})
 	return
 }
-

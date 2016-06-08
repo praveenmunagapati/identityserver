@@ -2,7 +2,6 @@ package siteservice
 
 import (
 	"bytes"
-	"net/http"
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -14,18 +13,19 @@ import (
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/thirdpartyassets"
 	"github.com/itsyouonline/identityserver/specifications"
 	"github.com/itsyouonline/identityserver/validation"
+	"net/http"
 
+	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/totp"
-	"encoding/json"
 	"github.com/itsyouonline/identityserver/identityservice"
 )
 
 //Service is the identityserver http service
 type Service struct {
-	Sessions                     map[SessionType]*sessions.CookieStore
-	smsService                   communication.SMSService
-	phonenumberValidationService *validation.IYOPhonenumberValidationService
+	Sessions                      map[SessionType]*sessions.CookieStore
+	smsService                    communication.SMSService
+	phonenumberValidationService  *validation.IYOPhonenumberValidationService
 	EmailService                  communication.EmailService
 	emailaddressValidationService *validation.IYOEmailAddressValidationService
 }
@@ -99,11 +99,11 @@ func (service *Service) AddRoutes(router *mux.Router) {
 }
 
 const (
-	mainpageFileName          = "index.html"
-	homepageFileName          = "base.html"
-	errorpageFilename         = "error.html"
-	apidocsPageFilename       = "apidocumentation.html"
-	smsconfirmationPage = "smsconfirmation.html"
+	mainpageFileName      = "index.html"
+	homepageFileName      = "base.html"
+	errorpageFilename     = "error.html"
+	apidocsPageFilename   = "apidocumentation.html"
+	smsconfirmationPage   = "smsconfirmation.html"
 	emailconfirmationPage = "emailconfirmation.html"
 )
 
