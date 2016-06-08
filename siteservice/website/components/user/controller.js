@@ -332,11 +332,16 @@
                 function(data) {
                     vm.user.phone[data.newLabel] = data.data;
                     // Verify a phonenumber if it's the same number as an already verified one.
+                    var isVerified = false;
                     angular.forEach(vm.user.verifiedPhones, function (number, label) {
                         if (number === data.data) {
                             vm.user.verifiedPhones[data.newLabel] = data.data;
+                            isVerified = true;
                         }
                     });
+                    if (!isVerified) {
+                        vm.verifyPhone(ev, data.newLabel, data.data);
+                    }
                 });
         }
 
