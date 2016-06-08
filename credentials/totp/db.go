@@ -66,6 +66,17 @@ func (pwm *Manager) Validate(username, securityCode string) (bool, error) {
 	return match, nil
 }
 
+func (pwm *Manager) HasTOTP(username string) (hastoken bool, err error) {
+	hastoken = false
+	count, err := pwm.collection.Find(bson.M{"username": username}).Count()
+	if err != nil {
+		count = 0
+		return
+	}
+	hastoken = count != 0
+	return
+}
+
 // Save stores a secret for a specific username.
 func (pwm *Manager) Save(username, secret string) error {
 	//TODO: username and secret validation
