@@ -1,4 +1,4 @@
-<div class="fullscreenform" flex layout="row" layout-fill style="padding-top: 80px;">
+<div flex layout="row">
     <div flex></div>
     <div layout="column" flex-gt-sm="80" flex="100" layout-fill>
         <div layout="column">
@@ -12,8 +12,6 @@
             <md-card flex="100">
                 <md-card-content flex="100" layout="column">
                     <md-tabs flex="100" md-selected="vm.selectedTabIndex" md-dynamic-height>
-
-
                         <md-tab md-on-select="vm.loadUser()">
                             <md-tab-label><i class="fa fa-user"></i>&nbsp;You</md-tab-label>
                             <md-tab-body>
@@ -362,7 +360,6 @@
                 </md-card-content>
             </md-card>
         </div>
-        <its-you-online-footer></its-you-online-footer>
     </div>
     <div flex></div>
 </div>
