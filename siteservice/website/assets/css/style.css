@@ -43,7 +43,7 @@ md-dialog > md-dialog-content > h2 {
     width: 100%;
     background: rgba(48, 145, 187, 0.92);
     height: 80px;
-    position: fixed;
+    position: relative;
     z-index: 2;
 }
 #nav { width: 473px; float: right; margin-top: 30px; }
@@ -79,13 +79,22 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 /*= FOOTER
 --------------------------------------------------------*/
 
+.wrapper {
+    min-height: 100%;
+    margin: 0 auto -120px;
+}
+
+.footer, .push {
+    height: 120px;
+}
+
 #slide1 .content { margin-top: 220px; background: rgba(72, 72, 72, 0.2); }
 
 .error {
     color: rgb(221,44,0);
 }
 
-.fullscreenform:before, .background-image:before {
+.fullscreenform:before {
   content: "";
   position: fixed;
   left: 0;
@@ -103,8 +112,8 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
   filter: opacity(0.1) contrast(0.2);
 }
 
-.background-image:before {
-    z-index: 0;
+.bg {
+    background: #eeeeee url(../img/bg.png);
 }
 
 .fullscreenform {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="itsyouonlineApp" ng-cloak>
+<html lang="en" ng-app="itsyouonlineApp" ng-cloak class="bg">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title pagetitle>It's You Online</title>
@@ -16,11 +16,13 @@
     </style>
 </head>
 
-<body class="home">
+<body class="bg">
 
 <its-you-online-header></its-you-online-header>
 
-<div ng-view></div>
+<div ng-view class="wrapper"></div>
+<div class="push"></div>
+<its-you-online-footer></its-you-online-footer>
 
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.js"></script>
