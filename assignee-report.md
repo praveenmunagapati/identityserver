@@ -2,7 +2,6 @@
 
 # Issues per assignee
 - [lucasvanhalst](#lucasvanhalst) has 1 assigned
-- [maxux](#maxux) has 1 assigned
 
 
 
@@ -10,12 +9,5 @@
 
 |Issue|Title|State|Type|
 |-----|-----|-----|----|
-|[#29](https://github.com/itsyouonline/identityserver/issues/29)|The organization api does not return the created date for the invitations yet|:white_circle: Verification|feature|
-
-
-## [maxux](https://github.com/maxux)
-
-|Issue|Title|State|Type|
-|-----|-----|-----|----|
-|[#2](https://github.com/itsyouonline/identityserver/issues/2)|An http 500 is returned instead of a 404|:white_circle: Verification||
+|[#29](https://github.com/itsyouonline/identityserver/issues/29)|The organization api does not return the created date for the invitations yet|:red_circle: Open|feature|
 
