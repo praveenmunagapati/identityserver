@@ -161,9 +161,9 @@ func (service *Service) GetTwoFactorAuthenticationMethods(w http.ResponseWriter,
 	}
 
 	response := struct {
-		Totp bool                        `json:"totp"`
-		Sms  map[string]user.Phonenumber `json:"sms"`
-	}{Sms: make(map[string]user.Phonenumber)}
+		Totp bool              `json:"totp"`
+		Sms  map[string]string `json:"sms"`
+	}{Sms: make(map[string]string)}
 	totpMgr := totp.NewManager(request)
 	response.Totp, err = totpMgr.HasTOTP(username)
 	if err != nil {
@@ -172,13 +172,17 @@ func (service *Service) GetTwoFactorAuthenticationMethods(w http.ResponseWriter,
 		return
 	}
 	valMgr := validationdb.NewManager(request)
-	for label, phoneNumber := range userFromDB.Phone {
-		validated, err := valMgr.IsPhonenumberValidated(username, string(phoneNumber))
-		if err != nil {
-			return
-		}
-		if validated {
-			response.Sms[label] = phoneNumber
+	verifiedPhones, err := valMgr.GetByUsernameValidatedPhonenumbers(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	for _, validatedPhoneNumber := range verifiedPhones {
+		for label, number := range userFromDB.Phone {
+			if string(number) == string(validatedPhoneNumber.Phonenumber) {
+				response.Sms[label] = string(validatedPhoneNumber.Phonenumber)
+			}
 		}
 	}
 	json.NewEncoder(w).Encode(response)
