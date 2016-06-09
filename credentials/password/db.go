@@ -10,15 +10,24 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password/keyderivation"
 	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/tools"
+	"time"
 )
 
 const (
-	mongoCollectionName = "password"
+	mongoCollectionName           = "password"
+	mongoCollectionNameResetToken = "passwordresetoken"
 )
 
 type userPass struct {
 	Username string
 	Password string
+}
+
+type ResetToken struct {
+	Username  string
+	Token     string
+	CreatedAt time.Time
 }
 
 //InitModels initializes models in mongo, if required.
@@ -28,26 +37,45 @@ func InitModels() {
 		Unique:   true,
 		DropDups: true,
 	}
-
 	db.EnsureIndex(mongoCollectionName, index)
+
+	index = mgo.Index{
+		Key:      []string{"username", "token"},
+		Unique:   true,
+		DropDups: true,
+	}
+	db.EnsureIndex(mongoCollectionNameResetToken, index)
+
+	automaticExpiration := mgo.Index{
+		Key:         []string{"createdat"},
+		ExpireAfter: time.Minute * 10,
+		Background:  true,
+	}
+	db.EnsureIndex(mongoCollectionNameResetToken, automaticExpiration)
 }
 
 //Manager stores and validates passwords
 type Manager struct {
-	session    *mgo.Session
-	collection *mgo.Collection
+	session         *mgo.Session
+	collection      *mgo.Collection
+	tokencollection *mgo.Collection
 }
 
 func getPasswordCollection(session *mgo.Session) *mgo.Collection {
 	return db.GetCollection(session, mongoCollectionName)
 }
 
+func getPasswordResetTokenCollection(session *mgo.Session) *mgo.Collection {
+	return db.GetCollection(session, mongoCollectionNameResetToken)
+}
+
 //NewManager creates a new Manager
 func NewManager(r *http.Request) *Manager {
 	session := db.GetDBSession(r)
 	return &Manager{
-		session:    session,
-		collection: getPasswordCollection(session),
+		session:         session,
+		collection:      getPasswordCollection(session),
+		tokencollection: getPasswordResetTokenCollection(session),
 	}
 }
 
@@ -83,4 +111,33 @@ func (pwm *Manager) Save(username, password string) error {
 	_, err = pwm.collection.Upsert(bson.M{"username": username}, storedPassword)
 
 	return err
+}
+
+// get new reset token
+func (pwm *Manager) NewResetToken(username string) (token *ResetToken, err error) {
+	tokenstring, err := tools.GenerateRandomString()
+	if err != nil {
+		return
+	}
+	token = &ResetToken{Token: tokenstring, CreatedAt: time.Now(), Username: username}
+	return
+}
+
+// save reset token
+func (pwm *Manager) SaveResetToken(token *ResetToken) (err error) {
+	err = pwm.tokencollection.Insert(token)
+	return
+}
+
+// find reset token by token
+func (pwm *Manager) FindResetToken(token string) (tokenobj *ResetToken, err error) {
+	tokenobj = &ResetToken{}
+	err = pwm.tokencollection.Find(bson.M{"token": token}).One(tokenobj)
+	return
+}
+
+// delete reset token by token
+func (pwm *Manager) DeleteResetToken(token string) (err error) {
+	_, err = pwm.tokencollection.RemoveAll(bson.M{"token": token})
+	return
 }

@@ -7,15 +7,15 @@ import (
 
 //EmailService defines an email communication channel
 type EmailService interface {
-	Send(email string, subject string, message string) (err error)
+	Send(recipients []string, subject string, message string) (err error)
 }
 
 //DevEmailService is the implementation of an EmailService suitable for use in local development environments
 type DevEmailService struct{}
 
 //Send sends an Email
-func (s *DevEmailService) Send(email string, subject string, message string) (err error) {
-	log.Infof("In production an email would be sent to %s with the following content:\n%s", email, message)
+func (s *DevEmailService) Send(recipients []string, subject string, message string) (err error) {
+	log.Infof("In production an email would be sent to %s with the following content:\n%s", recipients, message)
 	return
 }
 
@@ -32,11 +32,13 @@ func NewSMTPEmailService(host string, port int, user string, password string) (s
 }
 
 //Send sends an Email
-func (s *SMTPEmailService) Send(email string, subject string, message string) (err error) {
+func (s *SMTPEmailService) Send(recipients []string, subject string, message string) (err error) {
 	gomsg := gomail.NewMessage()
 	gomsg.SetHeader("Subject", subject)
 	gomsg.SetHeader("From", "noreply@itsyou.online")
-	gomsg.SetHeader("To", email)
+	for _, recipient := range recipients {
+		gomsg.SetHeader("To", recipient)
+	}
 	gomsg.SetBody("text/plain", message)
 	err = s.dialer.DialAndSend(gomsg)
 	if err != nil {
