@@ -14,7 +14,6 @@
     function UserHomeController($q, $rootScope, $routeParams, $location, $window, $interval, $mdToast, $mdMedia, $mdDialog,
                                 NotificationService, OrganizationService, UserService, configService) {
         var vm = this;
-
         vm.username = $rootScope.user;
         vm.notifications = {
             invitations: [],
@@ -68,7 +67,7 @@
 
         function tabSelected(fx) {
             fx();
-            $location.search('tab', vm.selectedTabIndex);
+            $location.path('/home/' + vm.selectedTabIndex, false);
         }
 
         function loadNotifications() {
