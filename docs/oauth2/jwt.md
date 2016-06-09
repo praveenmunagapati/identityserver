@@ -38,14 +38,14 @@ The response will be a JWT with:
       "username": "bob",
       "scope": "user:memberOf:org1",
       "iss": "itsyouonline",
-      "aud": "CLIENTID",
+      "aud": ["CLIENTID"],
       "exp": 1463554314
     }
     ```
 
     - iss: Issuer, in this case "itsyouonline"
     - exp: Expiration time in seconds since the epoch. This is set to the same time as the expiration time of the oauth token used to acquire this JWT.
-    - aud: The `client_id` of the oauth token used to acquire this JWT
+    - aud: An array with 1 entry: the `client_id` of the oauth token used to acquire this JWT
 
     If the oauth token is not for a user but for an organization application that authenticated using the client credentials flow, the `username` field is replaced with a `globalid` field containing the globalid of the organization.
 
@@ -61,3 +61,29 @@ The response will be a JWT with:
     ```
 
 In case the requested scopes are not available for your oauth token or the token has expired, an http 401 status code is returned.
+
+## Creating JWT's for other audiences
+
+In case you want to pass on a JWT and your authorization to a different audience, you can specify extra audiences to the call for creating a JWT.
+
+```
+curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/v1/oauth/jwt??scope=user:memberOf:org1&aud=external1,external2
+```
+
+In this case, this results in the following JWT data
+
+    ```
+    {
+      "username": "bob",
+      "scope": "user:memberOf:org1",
+      "iss": "itsyouonline",
+      "aud": [
+            "CLIENTID",
+            "external1",
+            "external2"
+            ]
+      "exp": 1463554314
+    }
+    ```
+
+The audience field is a list of audiences, the first audience is always the `client_id` of the oauth token used to acquire this JWT followed by the audiences passed in the request. The extra audiences are not required to be valid globalid's of organizations in itsyou.online.
