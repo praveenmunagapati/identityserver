@@ -283,31 +283,82 @@
 
         function showPhonenumberDetailDialog(ev, label, phonenumber){
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+
+            function deletePhoneNumber(username, label) {
+                return $q(function (resolve, reject) {
+                    UserService
+                        .deletePhonenumber(username, label, false)
+                        .then(resolve, function (response) {
+                            if (response.status === 409) {
+                                var errorMsg, dialog;
+                                console.log(response.data)
+                                if (response.data.error === 'warning_delete_last_verified_phone_number') {
+                                    errorMsg = 'Are you sure you want to delete this phone number? <br />' +
+                                        'It is your last verified phone number, which means you will <br />' +
+                                        'no longer be able to login using sms confirmations.';
+                                    dialog = $mdDialog.confirm()
+                                        .title('Confirm deletion')
+                                        .ok('Confirm')
+                                        .cancel('Cancel');
+                                }
+                                else if (response.data.error === 'cannot_delete_last_verified_phone_number') {
+                                    errorMsg = 'You cannot delete your last verified phone number. <br />' +
+                                        'Please change your 2 factor authentication method or add another verified phone number.';
+                                    dialog = $mdDialog.alert()
+                                        .title('Error')
+                                        .ok('Close');
+                                }
+                                dialog = dialog.htmlContent(errorMsg)
+                                    .ariaLabel('Delete phone number')
+                                    .targetEvent(ev);
+                                $mdDialog.show(dialog)
+                                    .then(function () {
+                                        UserService
+                                            .deletePhonenumber(username, label, true)
+                                            .then(resolve, function () {
+                                                showDialog('Could not delete phone number. Please try again later.');
+                                            });
+                                    }, function () {
+                                        // Closed confirm dialog
+                                        reject();
+                                    });
+                            } else {
+                                showDialog('Could not delete phone number. Please try again later.');
+                                reject();
+                            }
+                        });
+                });
+            }
+
             $mdDialog.show({
                 controller: genericDetailControllerParams,
                 templateUrl: 'components/user/views/phonenumberdialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
-                locals:
-                    {
-                        username : vm.username,
-                        $window: $window,
-                        label: label,
-                        data : phonenumber,
-                        createFunction: UserService.registerNewPhonenumber,
-                        updateFunction: UserService.updatePhonenumber,
-                        deleteFunction: UserService.deletePhonenumber
-                    }
+                locals: {
+                    username: vm.username,
+                    $window: $window,
+                    label: label,
+                    data: phonenumber,
+                    createFunction: UserService.registerNewPhonenumber,
+                    updateFunction: UserService.updatePhonenumber,
+                    deleteFunction: deletePhoneNumber
+                }
             })
-            .then(
-                function(data) {
+                .then(updatePhoneNumber, function () {
+                });
+
+            function updatePhoneNumber(data) {
+                // no data is provided when dialog is closed because another dialog opened (in case a confirmation is asked)
+                if (data) {
                     if (data.newLabel) {
                         vm.user.phone[data.newLabel] = data.data;
                     }
-                    if (!data.newLabel || data.newLabel != data.originalLabel){
+                    if (!data.newLabel || data.newLabel != data.originalLabel) {
                         delete vm.user.phone[data.originalLabel];
                     }
-                });
+                }
+            }
         }
 
         function showAddPhonenumberDialog(ev) {
@@ -748,6 +799,26 @@
                 }
             }
         }
+
+
+        /**
+         *
+         * @param message
+         * @param title
+         * @param closeText
+         * @returns promise
+         */
+        function showDialog(message, title, closeText) {
+            title = title || 'Alert';
+            closeText = closeText || 'Close';
+            return $mdDialog.show(
+                $mdDialog.alert({
+                    title: title,
+                    htmlContent: message,
+                    ok: closeText
+                })
+            );
+        }
     }
 
 
@@ -869,13 +940,16 @@
                 function(response){
                     $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel, data: data});
                 },
-                function(reason){
-                    if (reason.status == 409){
+                function (response) {
+                    if (response.data && response.data.error) {
+                        $scope.validationerrors[response.data.error] = true;
+                    }
+                    if (response.status == 409) {
                         $scope.validationerrors.duplicate = true;
                     }
                     else
                     {
-                        $window.location.href = "error" + reason.status;
+                        $window.location.href = "error" + response.status;
                     }
                 }
             );
@@ -887,8 +961,10 @@
                 function(response){
                     $mdDialog.hide({originalLabel: label, newLabel: ""});
                 },
-                function(reason){
-                    $window.location.href = "error" + reason.status;
+                function (response) {
+                    if (response) {
+                        $window.location.href = "error" + response.status;
+                    }
                 }
             );
         }
