@@ -8,7 +8,7 @@
         .config(['$routeProvider', routeConfig])
         .factory('authenticationInterceptor', ['$q', '$window', authenticationInterceptor])
         .directive('pagetitle', ['$rootScope', '$timeout', pagetitle])
-        .run(['$cookies', '$rootScope', '$location', runFunction]);
+        .run(['$route', '$cookies', '$rootScope', '$location', runFunction]);
 
     function themingConfig($mdThemingProvider) {
         $mdThemingProvider.definePalette('blueish', {
@@ -64,7 +64,7 @@
 
     function routeConfig($routeProvider) {
         $routeProvider
-            .when('/', {
+            .when('/home/:tab?', {
                 templateUrl: 'components/user/views/home.html',
                 controller: 'UserHomeController',
                 controllerAs: 'vm',
@@ -104,7 +104,7 @@
                     pageTitle: 'Organization detail'
                 }
             })
-            .otherwise('/');
+            .otherwise('/home');
     }
 
     function pagetitle($rootScope, $timeout) {
@@ -125,7 +125,19 @@
         };
     }
 
-    function runFunction($cookies, $rootScope, $location) {
+    function runFunction($route, $cookies, $rootScope, $location) {
         $rootScope.user = $cookies.get('itsyou.online.user');
+        var original = $location.path;
+        // prevent controller reload when changing route params in code because we aren't using states
+        $location.path = function (path, reload) {
+            if (reload === false) {
+                var lastRoute = $route.current;
+                var un = $rootScope.$on('$locationChangeSuccess', function () {
+                    $route.current = lastRoute;
+                    un();
+                });
+            }
+            return original.apply($location, [path]);
+        };
     }
 })();

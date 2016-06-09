@@ -2,7 +2,7 @@
     <div class="content">
         <div id="logo"><a href="#/"> ItsYou.Online </a></div>
         <div class="sign-wrap" ng-show="$root.user">
-            <a href="#/?tab=1" ng-show="$root.openRequests !== undefined">
+            <a href="#/home/1" ng-show="$root.openRequests !== undefined">
                 <span ng-show="$root.openRequests > 0" ng-bind="$root.openRequests"></span>
                 <i class="fa fa-bell"></i>
                 <md-tooltip ng-cloak> You have {{ $root.openRequests? $root.openRequests : 'no'}} open
