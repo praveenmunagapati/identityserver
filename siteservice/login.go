@@ -2,7 +2,6 @@ package siteservice
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -21,6 +20,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/db/user"
+	validationdb "github.com/itsyouonline/identityserver/db/validation"
+	"github.com/itsyouonline/identityserver/tools"
 )
 
 const (
@@ -55,7 +56,7 @@ type loginSessionInformation struct {
 
 func newLoginSessionInformation() (sessionInformation *loginSessionInformation, err error) {
 	sessionInformation = &loginSessionInformation{CreatedAt: time.Now()}
-	sessionInformation.SessionKey, err = generateRandomString()
+	sessionInformation.SessionKey, err = tools.GenerateRandomString()
 	if err != nil {
 		return
 	}
@@ -164,16 +165,6 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 	}
 	sessions.Save(request, w)
 	json.NewEncoder(w).Encode(&response)
-}
-
-func generateRandomString() (randomString string, err error) {
-	b := make([]byte, 32)
-	_, err = rand.Read(b)
-	if err != nil {
-		return
-	}
-	randomString = base64.StdEncoding.EncodeToString(b)
-	return
 }
 
 //getUserLoggingIn returns an user trying to log in, or an empty string if there is none
@@ -387,6 +378,7 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 	json.NewEncoder(w).Encode(response)
 }
 
+//ForgotPassword handler for POST /login/forgotpassword
 func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Request) {
 	// login can be username or email
 	values := struct {
@@ -399,24 +391,51 @@ func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Requ
 		return
 	}
 	userMgr := user.NewManager(request)
-	user, err := userMgr.FindByVerifiedEmailOrUsername(values.Login)
-	if err == mgo.ErrNotFound {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	} else if err != nil {
-		log.Error(err)
+	valMgr := validationdb.NewManager(request)
+	validatedemail, err := valMgr.GetByEmailAddressValidatedEmailAddress(values.Login)
+	if err != nil && err != mgo.ErrNotFound {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
 	}
-	// todo: implementation
-	log.Debug(user)
+	var username string
+	var emails []string
+	if err != mgo.ErrNotFound {
+		username = validatedemail.Username
+		emails = []string{validatedemail.EmailAddress}
+	} else {
+		user, err := userMgr.GetByName(values.Login)
+		if err != nil && err != mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		username = user.Username
+		validatedemails, err := valMgr.GetByUsernameValidatedEmailAddress(username)
+		if validatedemails == nil || len(validatedemails) == 0 {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+		if err != nil {
+			log.Error("Failed to get validated emails address - ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		emails = make([]string, len(validatedemails))
+		for idx, validatedemail := range validatedemails {
+			emails[idx] = validatedemail.EmailAddress
+		}
+
+	}
+	_, err = service.emailaddressValidationService.RequestPasswordReset(request, username, emails)
+	if err != nil {
+		log.Error("Failed to request password reset - ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
 	w.WriteHeader(http.StatusNoContent)
 	return
 }
 
+//ResetPassword handler for POST /login/resetpassword
 func (service *Service) ResetPassword(w http.ResponseWriter, request *http.Request) {
 	values := struct {
-		Code     string `json:"code"`
+		Token    string `json:"token"`
 		Password string `json:"password"`
 	}{}
 
@@ -425,7 +444,23 @@ func (service *Service) ResetPassword(w http.ResponseWriter, request *http.Reque
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	// todo: implementation
+	pwdMngr := password.NewManager(request)
+	token, err := pwdMngr.FindResetToken(values.Token)
+	if err != nil {
+		log.Error("Failed to find password reset token password reset - ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	err = pwdMngr.Save(token.Username, values.Password)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if err = pwdMngr.DeleteResetToken(values.Token); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+
+	}
 	w.WriteHeader(http.StatusNoContent)
 	return
 }

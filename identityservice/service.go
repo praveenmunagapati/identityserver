@@ -22,6 +22,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/communication"
+	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/validation"
 )
 
@@ -60,6 +61,9 @@ func (service *Service) AddRoutes(router *mux.Router) {
 
 	// Initialize Validation models
 	validationdb.InitModels()
+
+	// Initialize Password models
+	password.InitModels()
 
 }
 

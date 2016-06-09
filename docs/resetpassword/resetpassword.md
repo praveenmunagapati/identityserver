@@ -25,7 +25,7 @@ UI asks for username or email + new password (with verification) and makes a POS
 Example body:
 ```
 {"user" : "email or username",
- "resettoken": "token",
+ "token": "token",
  "newpassword": "new valid password
 }
 ```

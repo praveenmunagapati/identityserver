@@ -7,9 +7,9 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"crypto/rand"
-	"encoding/base64"
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/db/user"
+	"github.com/itsyouonline/identityserver/tools"
 	"gopkg.in/mgo.v2/bson"
 	"math/big"
 	"time"
@@ -52,7 +52,13 @@ func InitModels() {
 		Unique:   true,
 		DropDups: true,
 	}
+	db.EnsureIndex(mongoValidatedPhonenumbers, index)
 
+	index = mgo.Index{
+		Key:      []string{"phonenumber"},
+		Unique:   true,
+		DropDups: true,
+	}
 	db.EnsureIndex(mongoValidatedPhonenumbers, index)
 
 	index = mgo.Index{
@@ -60,7 +66,12 @@ func InitModels() {
 		Unique:   true,
 		DropDups: true,
 	}
-
+	db.EnsureIndex(mongoValidatedEmailAddresses, index)
+	index = mgo.Index{
+		Key:      []string{"emailaddress"},
+		Unique:   true,
+		DropDups: true,
+	}
 	db.EnsureIndex(mongoValidatedEmailAddresses, index)
 
 }
@@ -80,7 +91,7 @@ func NewManager(r *http.Request) *Manager {
 
 func (manager *Manager) NewPhonenumberValidationInformation(username string, phonenumber user.Phonenumber) (info *PhonenumberValidationInformation, err error) {
 	info = &PhonenumberValidationInformation{CreatedAt: time.Now(), Username: username, Phonenumber: string(phonenumber)}
-	info.Key, err = generateRandomString()
+	info.Key, err = tools.GenerateRandomString()
 	if err != nil {
 		return
 	}
@@ -94,11 +105,11 @@ func (manager *Manager) NewPhonenumberValidationInformation(username string, pho
 
 func (manager *Manager) NewEmailAddressValidationInformation(username string, email string) (info *EmailAddressValidationInformation, err error) {
 	info = &EmailAddressValidationInformation{CreatedAt: time.Now(), Username: username, EmailAddress: email}
-	info.Key, err = generateRandomString()
+	info.Key, err = tools.GenerateRandomString()
 	if err != nil {
 		return
 	}
-	info.Secret, err = generateRandomString()
+	info.Secret, err = tools.GenerateRandomString()
 	if err != nil {
 		return
 	}
@@ -201,6 +212,13 @@ func (manager *Manager) GetByUsernameValidatedPhonenumbers(username string) (val
 	return
 }
 
+func (manager *Manager) GetByEmailAddressValidatedEmailAddress(email string) (validatedemail *ValidatedEmailAddress, err error) {
+	validatedemail = &ValidatedEmailAddress{}
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedEmailAddresses)
+	err = mgoCollection.Find(bson.M{"emailaddress": email}).One(validatedemail)
+	return
+}
+
 func (manager *Manager) GetByUsernameValidatedEmailAddress(username string) (validatedemails []ValidatedEmailAddress, err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoValidatedEmailAddresses)
 	err = mgoCollection.Find(bson.M{"username": username}).All(&validatedemails)
@@ -230,15 +248,5 @@ func (manager *Manager) IsPhonenumberValidated(username string, phonenumber stri
 	if count != 0 {
 		validated = true
 	}
-	return
-}
-
-func generateRandomString() (randomString string, err error) {
-	b := make([]byte, 32)
-	_, err = rand.Read(b)
-	if err != nil {
-		return
-	}
-	randomString = base64.StdEncoding.EncodeToString(b)
 	return
 }
