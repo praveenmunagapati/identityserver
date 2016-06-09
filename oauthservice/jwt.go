@@ -40,6 +40,8 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	requestedScopes := r.FormValue("scope")
+	extraAudiences := strings.TrimSpace(r.FormValue("aud"))
+
 	if !jwtScopesAreAllowed(at.Scope, requestedScopes) {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
@@ -52,7 +54,13 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 	if at.GlobalID != "" {
 		token.Claims["globalid"] = at.GlobalID
 	}
-	token.Claims["aud"] = at.ClientID
+
+	audiences := []string{at.ClientID}
+	if extraAudiences != "" {
+		audiences = append(audiences, strings.Split(extraAudiences, ",")...)
+	}
+
+	token.Claims["aud"] = audiences
 	token.Claims["exp"] = at.ExpirationTime().Unix()
 	token.Claims["iss"] = "itsyouonline"
 	token.Claims["scope"] = requestedScopes

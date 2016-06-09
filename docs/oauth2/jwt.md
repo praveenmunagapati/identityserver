@@ -86,4 +86,4 @@ In this case, this results in the following JWT data
     }
     ```
 
-The audience field is now a list of audiences, the first audience is always the `client_id` of the oauth token used to acquire this JWT followed by the audiences passed in the request. The extra audiences are not required to be valid globalid's or organizations in itsyou.online.
+The audience field is a list of audiences, the first audience is always the `client_id` of the oauth token used to acquire this JWT followed by the audiences passed in the request. The extra audiences are not required to be valid globalid's of organizations in itsyou.online.
