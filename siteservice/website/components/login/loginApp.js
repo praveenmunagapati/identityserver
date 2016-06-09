@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    angular.module('loginApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'itsyouonline.header'])
+    angular.module('loginApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngSanitize', 'itsyouonline.header', 'itsyouonline.footer'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$routeProvider', routeConfig]);
 
@@ -35,14 +35,9 @@
                 controller: 'loginController',
                 controllerAs: 'vm'
             })
-            .when('/totp', {
-                templateUrl: 'components/login/views/logintotpform.html',
-                controller: 'totpController',
-                controllerAs: 'vm'
-            })
-            .when('/sms', {
-                templateUrl: 'components/login/views/loginsmsform.html',
-                controller: 'smsController',
+            .when('/2fa', {
+                templateUrl: 'components/login/views/twoFactorAuthentication.html',
+                controller: 'twoFactorAuthenticationController',
                 controllerAs: 'vm'
             })
             .when('/forgotpassword', {

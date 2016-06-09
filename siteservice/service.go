@@ -62,7 +62,9 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	//Login forms
 	router.Methods("GET").Path("/login").HandlerFunc(service.ShowLoginForm)
 	router.Methods("POST").Path("/login").HandlerFunc(service.ProcessLoginForm)
+	router.Methods("GET").Path("/login/twofamethods").HandlerFunc(service.GetTwoFactorAuthenticationMethods)
 	router.Methods("POST").Path("/login/totpconfirmation").HandlerFunc(service.ProcessTOTPConfirmation)
+	router.Methods("POST").Path("/login/smscode/{phoneLabel}").HandlerFunc(service.GetSmsCode)
 	router.Methods("POST").Path("/login/smsconfirmation").HandlerFunc(service.Process2FASMSConfirmation)
 	router.Methods("GET").Path("/sc").HandlerFunc(service.MobileSMSConfirmation)
 	router.Methods("GET").Path("/login/smsconfirmed").HandlerFunc(service.Check2FASMSConfirmation)

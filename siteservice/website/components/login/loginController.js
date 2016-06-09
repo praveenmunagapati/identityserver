@@ -16,8 +16,8 @@
             };
             $http.post('/login', data).then(
                 function (response) {
-                    // Redirect to appropriate page
-                    $window.location.hash = '#/' + response.data.twoFAMethod;
+                    // Redirect 2 factor authentication page
+                    $window.location.hash = '#/2fa';
                 },
                 function (response) {
                     if (response.status === 422) {

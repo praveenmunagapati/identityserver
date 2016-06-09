@@ -290,7 +290,6 @@
                         .then(resolve, function (response) {
                             if (response.status === 409) {
                                 var errorMsg, dialog;
-                                console.log(response.data)
                                 if (response.data.error === 'warning_delete_last_verified_phone_number') {
                                     errorMsg = 'Are you sure you want to delete this phone number? <br />' +
                                         'It is your last verified phone number, which means you will <br />' +
@@ -314,12 +313,12 @@
                                     .then(function () {
                                         UserService
                                             .deletePhonenumber(username, label, true)
-                                            .then(resolve, function () {
+                                            .then(function () {
+                                                // Manually remove phone number since the dialog which executes the updatePhoneNumber promise callback had been closed before
+                                                delete vm.user.phone[label];
+                                            }, function () {
                                                 showDialog('Could not delete phone number. Please try again later.');
                                             });
-                                    }, function () {
-                                        // Closed confirm dialog
-                                        reject();
                                     });
                             } else {
                                 showDialog('Could not delete phone number. Please try again later.');
@@ -348,6 +347,7 @@
                 });
 
             function updatePhoneNumber(data) {
+                console.log(data)
                 // no data is provided when dialog is closed because another dialog opened (in case a confirmation is asked)
                 if (data) {
                     if (data.newLabel) {
