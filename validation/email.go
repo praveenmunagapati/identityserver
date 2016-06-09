@@ -5,6 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/db/validation"
+	"github.com/itsyouonline/identityserver/tools"
 	"net/http"
 	"net/url"
 )
@@ -32,7 +33,11 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 		log.Error(err)
 		return
 	}
-	message := fmt.Sprintf("To verify your Email Address on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s", info.Secret, confirmationurl, url.QueryEscape(info.Secret), url.QueryEscape(info.Key))
+	validationurl := fmt.Sprintf("%s?c=%s&k=%s", confirmationurl, url.QueryEscape(info.Secret), url.QueryEscape(info.Key))
+	message, err := tools.RenderTemplate("templates/email/emailvalidation.html", struct{ Url string }{Url: validationurl})
+	if err != nil {
+		return
+	}
 
 	go service.EmailService.Send([]string{email}, "ItsYouOnline Email Validation", message)
 	key = info.Key
@@ -49,7 +54,12 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 	if err = pwdMngr.SaveResetToken(token); err != nil {
 		return
 	}
-	message := fmt.Sprintf("To reset your password on itsyou.online please visit https://%s/login#/resetpassword?token=%s", request.Host, url.QueryEscape(token.Token))
+
+	passwordreseturl := fmt.Sprintf("https://%s/login#/resetpassword?token=%s", request.Host, url.QueryEscape(token.Token))
+	message, err := tools.RenderTemplate("templates/email/passwordreset.html", struct{ Url string }{Url: passwordreseturl})
+	if err != nil {
+		return
+	}
 	go service.EmailService.Send(emails, "ItsYouOnline Password Reset", message)
 	key = token.Token
 	return

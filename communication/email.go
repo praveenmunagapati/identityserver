@@ -39,7 +39,7 @@ func (s *SMTPEmailService) Send(recipients []string, subject string, message str
 	for _, recipient := range recipients {
 		gomsg.SetHeader("To", recipient)
 	}
-	gomsg.SetBody("text/plain", message)
+	gomsg.SetBody("text/html", message)
 	err = s.dialer.DialAndSend(gomsg)
 	if err != nil {
 		log.Error("Failed to send email ", err)
