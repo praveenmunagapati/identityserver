@@ -33,7 +33,6 @@
             $http
                 .post('register/smsconfirmation', data)
                 .then(function (response) {
-                    console.log(response.data)
                     $window.location.href = response.data.redirecturl;
                 }, function (response) {
                     switch (response.status) {

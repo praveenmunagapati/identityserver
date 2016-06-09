@@ -127,7 +127,6 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     z-index: 0;
     margin-left: 20px;
     margin-right: 20px;
-    height: 100%;
 }
 
 .fullscreenform form {
@@ -138,6 +137,11 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     position: relative;
     margin-left: 0;
     margin-right: 0;
+}
+
+.form-card {
+    margin: 50px;
+    padding: 0 10px 10px;
 }
 
 .md-subheader{

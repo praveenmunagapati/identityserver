@@ -33,7 +33,6 @@
                 .then(function (response) {
                     $window.location.href = response.data.redirecturl;
                 }, function (response) {
-                    console.log(response.data);
                     switch (response.status) {
                         case 422:
                             var err = response.data.error;

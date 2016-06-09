@@ -6,22 +6,22 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"net/url"
 	"time"
 
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
-
 	"github.com/gorilla/sessions"
-	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
+	"gopkg.in/mgo.v2"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/credentials/password"
+	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db/user"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/tools"
+	"gopkg.in/mgo.v2/bson"
+	"net/url"
 )
 
 const (
@@ -134,37 +134,56 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	u, err := userMgr.GetByName(username)
+	loginSession.Values["username"] = username
+	sessions.Save(request, w)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// GetTwoFactorAuthenticationMethods returns the possible two factor authentication methods the user can use to login with.
+func (service *Service) GetTwoFactorAuthenticationMethods(w http.ResponseWriter, request *http.Request) {
+	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
 	if err != nil {
+		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	loginSession.Values["username"] = username
-	response := struct {
-		TwoFAMethod string `json:"twoFAMethod"`
-	}{}
-	if u.TwoFAMethod == "" {
-		response.TwoFAMethod = "totp"
-	} else {
-		response.TwoFAMethod = u.TwoFAMethod
+	username, ok := loginSession.Values["username"].(string)
+	if username == "" || !ok {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
 	}
-	if u.TwoFAMethod == "sms" {
-		//TODO: if no confirmed phonenumber, proceed to registration phone validation flow
-		sessionInfo, err := newLoginSessionInformation()
+	userMgr := user.NewManager(request)
+	userFromDB, err := userMgr.GetByName(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Totp bool                        `json:"totp"`
+		Sms  map[string]user.Phonenumber `json:"sms"`
+	}{Sms: make(map[string]user.Phonenumber)}
+	totpMgr := totp.NewManager(request)
+	response.Totp, err = totpMgr.HasTOTP(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	valMgr := validationdb.NewManager(request)
+	for label, phoneNumber := range userFromDB.Phone {
+		validated, err := valMgr.IsPhonenumberValidated(username, string(phoneNumber))
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		loginSession.Values["sessionkey"] = sessionInfo.SessionKey
-		mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
-		mgoCollection.Insert(sessionInfo)
-		smsmessage := fmt.Sprintf("To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s", sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
-		//TODO: check which phonenumber to use
-		phonenumber := u.Phone["main"]
-		go service.smsService.Send(string(phonenumber), smsmessage)
+		if validated {
+			response.Sms[label] = phoneNumber
+		}
 	}
-	sessions.Save(request, w)
-	json.NewEncoder(w).Encode(&response)
+	json.NewEncoder(w).Encode(response)
+	w.WriteHeader(http.StatusOK)
+	return
 }
 
 //getUserLoggingIn returns an user trying to log in, or an empty string if there is none
@@ -193,6 +212,49 @@ func (service *Service) getSessionKey(request *http.Request) (sessionKey string,
 		sessionKey, _ = savedSessionKey.(string)
 	}
 	return
+}
+
+//GetSmsCode returns an sms code for a specified phone label
+func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request) {
+	phoneLabel := mux.Vars(request)["phoneLabel"]
+	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	sessionInfo, err := newLoginSessionInformation()
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	username, ok := loginSession.Values["username"].(string)
+	if username == "" || !ok {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+	userMgr := user.NewManager(request)
+	userFromDB, err := userMgr.GetByName(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	phoneNumber, exists := userFromDB.Phone[phoneLabel]
+	if !exists {
+		log.Debug(userFromDB.Phone)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	loginSession.Values["sessionkey"] = sessionInfo.SessionKey
+	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
+	mgoCollection.Insert(sessionInfo)
+	smsmessage := fmt.Sprintf("To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
+		sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+	sessions.Save(request, w)
+	go service.smsService.Send(string(phoneNumber), smsmessage)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 //ProcessTOTPConfirmation checks the totp 2 factor authentication code
