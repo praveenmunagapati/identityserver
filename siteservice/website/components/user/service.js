@@ -155,8 +155,8 @@
             return genericHttpCall($http.put, url, {label: newlabel, phonenumber: phonenumber});
         }
 
-        function deletePhonenumber(username, label) {
-            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(label) ;
+        function deletePhonenumber(username, label, force) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(label) + '?force=' + !!force;
             return genericHttpCall($http.delete, url);
         }
 

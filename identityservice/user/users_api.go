@@ -724,8 +724,9 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if oldlabel != body.Label {
+		// Check if there already is another phone number with the new label
 		if _, ok := u.Phone[body.Label]; ok {
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			writeErrorResponse(w, http.StatusConflict, "duplicate_label")
 			return
 		}
 	}
@@ -738,7 +739,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if last {
-			writeErrorResponse(w, 409, "Can not remove last verified phonenumber")
+			writeErrorResponse(w, http.StatusConflict, "cannot_delete_last_verified_phone_number")
 			return
 		}
 	}
@@ -798,13 +799,16 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 
 	}
 	if last {
-		allowforce := false
-		if force {
+		hasTOTP := false
+		if !force {
+			writeErrorResponse(w, http.StatusConflict, "warning_delete_last_verified_phone_number")
+			return
+		} else {
 			totpMgr := totp.NewManager(r)
-			allowforce, err = totpMgr.HasTOTP(username)
+			hasTOTP, err = totpMgr.HasTOTP(username)
 		}
-		if !allowforce {
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		if !hasTOTP {
+			writeErrorResponse(w, http.StatusConflict, "cannot_delete_last_verified_phone_number")
 			return
 		}
 	}

@@ -34,6 +34,10 @@ md-dialog > md-dialog-content > h2 {
     text-align: left;
 }
 
+.max-width-400 {
+    max-width: 400px;
+}
+
 .green {
     color: #008000;
 }
