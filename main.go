@@ -103,6 +103,7 @@ func main() {
 			Name:        "smtp-port",
 			Usage:       "Port of smtp server",
 			Destination: &smtpport,
+			Value:       587,
 		},
 	}
 

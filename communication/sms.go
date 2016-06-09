@@ -10,7 +10,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-//SMSService defines an sms communcation channel
+//SMSService defines an sms communication channel
 type SMSService interface {
 	Send(phonenumber string, message string) (err error)
 }
