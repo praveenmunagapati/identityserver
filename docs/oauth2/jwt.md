@@ -19,7 +19,7 @@ You can create a JWT like this:
 curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/v1/oauth/jwt?scope=user:memberOf:org1
 ```
 
-The `scope` parameter can be a comma seperated list of scopes. Instead of a query parameter, an http `POST` can also be submitted to this url with the scope parameter as a form value.
+The `scope` parameter can be a comma separated list of scopes. Instead of a query parameter, an http `POST` can also be submitted to this url with the scope parameter as a form value.
 
 The response will be a JWT with:
 * Header

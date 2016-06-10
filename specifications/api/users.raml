@@ -1,10 +1,10 @@
 #%RAML 1.0
-title: ItsYouOnline
+title: Users
 version: 0.1
 baseUri: /
 securitySchemes:
-  - oauth_2_0:
-        !include securitySchemes/oauth_2_0.raml
+  oauth_2_0: !include securitySchemes/oauth_2_0.raml
+
 types:
   Label:
     type: string
@@ -122,7 +122,7 @@ types:
         firstname: string
         lastname: string
         publicKeys: string[]
-        expire?: date
+        expire?: datetime
         email?:
           properties:
             "[]":
@@ -150,14 +150,14 @@ types:
         lastname: Johnson
         publicKeys:
             - 1GVS7544tvWM2TM13vNH8sboamJzL6mJ36
-        expire: 2018-10-20
+        expire: 2018-10-20T16:41:41.090Z
         email:
             work: bob@company.com
             home: bob@example.com
             "dance club": bob@linedanceclub.example.org
         phone:
-          be: +3212341234123
-          eg: +2012341234123
+          be: "+3212341234123"
+          eg: "+2012341234123"
         address:
             home:
                 city: Springfield
@@ -168,7 +168,7 @@ types:
             work:
                 city: Capital City
                 street: Capital street
-                nr: 1
+                nr: "1"
                 country: Tomorrowland
                 postalcode: T-1000
         bank:
@@ -284,7 +284,6 @@ securedBy: [ oauth_2_0 ]
                   properties:
                     "[]":
                       type: string
-      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       post:
           displayName: RegisterNewEmailAddress
           description: Register a new email address

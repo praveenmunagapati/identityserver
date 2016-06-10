@@ -1,16 +1,15 @@
 #%RAML 1.0
-title: ItsYouOnline
+title: Contracts
 version: 0.1
 baseUri: /
 securitySchemes:
-  - oauth_2_0:
-        !include securitySchemes/oauth_2_0.raml
+  oauth_2_0: !include securitySchemes/oauth_2_0.raml
 
 types:
   Signature:
     properties:
       signedBy: string
-      date: date
+      date: datetime
       publicKey:
         type: string
         description: The public key used
@@ -37,7 +36,7 @@ types:
         type: string[]
         maxItems: 10
         description: list of contractId's this contract is an extension upon
-      expires: date
+      expires: datetime
       contractId:
         type: string
         description: |
