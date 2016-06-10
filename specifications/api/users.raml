@@ -11,7 +11,7 @@ types:
     maxLength: 50
     minLength: 2
 
-  APIkey:
+  APIKey:
     description: User specific API key
     properties:
         username: string
@@ -146,6 +146,8 @@ types:
 
     example:
         username: bob
+        firstname: Bob
+        lastname: Johnson
         publicKeys:
             - 1GVS7544tvWM2TM13vNH8sboamJzL6mJ36
         expire: 2018-10-20
@@ -326,10 +328,10 @@ securedBy: [ oauth_2_0 ]
 
         /validate:
           post:
-          displayName: ValidateEmailAddress
-          description: Sends validation email to email address
-          responses:
-            204:
+            displayName: ValidateEmailAddress
+            description: Sends validation email to email address
+            responses:
+              204:
                description: Validation email has been send
 
     /apikeys:
@@ -542,7 +544,8 @@ securedBy: [ oauth_2_0 ]
               description: Validation number send
               body:
                 application/json:
-                  validationkey: string
+                    properties:
+                        validationkey: string
         put:
           displayName: VerifyPhoneNumber
           description: Verifies a phone number
@@ -558,7 +561,8 @@ securedBy: [ oauth_2_0 ]
               description: invalid validationkey or code
               body:
                 application/json:
-                  error: string
+                    properties:
+                        error: string
 
   /{username}/banks:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
