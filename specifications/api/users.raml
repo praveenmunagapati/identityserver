@@ -268,6 +268,21 @@ securedBy: [ oauth_2_0 ]
                         error: string
     /emailaddresses:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+      get:
+        displayName: GetEmailAddresses
+        description: Get a list of the user his email addresses.
+        queryParameters:
+          validated:
+            type: string
+            description: optional queryParameter to filter on only validated email addressses
+        responses:
+          200:
+            body:
+              application/json:
+                  properties:
+                    "[]":
+                      type: string
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       post:
           displayName: RegisterNewEmailAddress
           description: Register a new email address

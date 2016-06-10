@@ -92,7 +92,9 @@
             updateName: updateName,
             getVerifiedPhones: getVerifiedPhones,
             sendPhoneVerificationCode: sendPhoneVerificationCode,
-            verifyPhone: verifyPhone
+            verifyPhone: verifyPhone,
+            getVerifiedEmailAddresses: getVerifiedEmailAddresses,
+            sendEmailAddressVerification: sendEmailAddressVerification
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -250,6 +252,16 @@
                 validationkey: validationKey
             };
             return genericHttpCall($http.put, url, data);
+        }
+
+        function getVerifiedEmailAddresses(username) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses?validated=true';
+            return genericHttpCall($http.get, url);
+        }
+
+        function sendEmailAddressVerification(username, label){
+            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(label) + '/validate';
+            return genericHttpCall($http.post, url);
         }
     }
 })();
