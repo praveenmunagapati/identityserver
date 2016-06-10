@@ -53,14 +53,25 @@
                                             </div>
                                             <div flex="60" flex-gt-xs="65">
                                                 <md-list>
-                                                    <md-list-item class="md-2-line"
-                                                                  ng-repeat="(label, email) in vm.user.email"
-                                                                  ng-click="vm.showEmailDetailDialog($event, label, email)">
-                                                        <div class="md-list-item-text">
-                                                            <h4>{{ email }}</h4>
-                                                            <p>{{ label }}</p>
-                                                        </div>
-                                                    </md-list-item>
+                                                    <div ng-repeat="(label, email) in vm.user.email" layout="row">
+                                                        <md-list-item class="md-2-line" flex
+                                                                      ng-click="vm.showEmailDetailDialog($event, label, email)">
+                                                            <div class="md-list-item-text">
+                                                                <h4>{{ email }}</h4>
+                                                                <p>{{ label }}</p>
+                                                            </div>
+                                                        </md-list-item>
+                                                        <div flex></div>
+                                                        <p ng-if="vm.user.verifiedEmails[label]" flex="20"
+                                                           class="md-body-1">
+                                                            <i class="fa fa-check green"></i> Verified
+                                                        </p>
+                                                        <md-button
+                                                                ng-click="vm.verifyEmailAddress($event, label)"
+                                                                ng-if="vm.loaded.verifiedEmails && !vm.user.verifiedEmails[label]">
+                                                            Verify
+                                                        </md-button>
+                                                    </div>
                                                 </md-list>
                                             </div>
                                             <div flex="20" layout="row" layout-align="center center">
@@ -83,8 +94,8 @@
                                                                       ng-click="vm.showPhonenumberDetailDialog($event, label, phone)"
                                                                       flex>
                                                             <div class="md-list-item-text">
-                                                                <h3>{{ ::phone }}</h3>
-                                                                <h4>{{ ::label }}</h4>
+                                                                <h4>{{ ::phone }}</h4>
+                                                                <p>{{ ::label }}</p>
                                                             </div>
                                                         </md-list-item>
                                                         <div flex></div>

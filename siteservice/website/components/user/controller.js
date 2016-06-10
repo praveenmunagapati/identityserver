@@ -55,6 +55,7 @@
         vm.showChangePasswordDialog = showChangePasswordDialog;
         vm.showEditNameDialog = showEditNameDialog;
         vm.verifyPhone = verifyPhone;
+        vm.verifyEmailAddress = verifyEmailAddress;
 
         var genericDetailControllerParams = ['$scope', '$mdDialog', 'username', '$window', 'label', 'data',
             'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
@@ -133,6 +134,7 @@
                         vm.user = data;
                         vm.loaded.user = true;
                         loadVerifiedPhones();
+                        loadVerifiedEmails();
                     }
                 );
         }
@@ -146,6 +148,18 @@
                 .then(function (data) {
                     vm.user.verifiedPhones = data;
                     vm.loaded.verifiedPhones = true;
+                });
+        }
+
+        function loadVerifiedEmails() {
+            if (vm.loaded.verifiedEmails) {
+                return;
+            }
+            UserService
+                .getVerifiedEmailAddresses(vm.username)
+                .then(function (data) {
+                    vm.user.verifiedEmails = data;
+                    vm.loaded.verifiedEmails = true;
                 });
         }
 
@@ -347,7 +361,7 @@
                 });
 
             function updatePhoneNumber(data) {
-                console.log(data)
+                console.log(data);
                 // no data is provided when dialog is closed because another dialog opened (in case a confirmation is asked)
                 if (data) {
                     if (data.newLabel) {
@@ -799,6 +813,30 @@
             }
         }
 
+        function verifyEmailAddress(event, label) {
+            UserService.sendEmailAddressVerification(vm.username, label)
+                .then(function () {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .clickOutsideToClose(true)
+                            .title('Verification email sent')
+                            .textContent('A verification email has been sent to ' + vm.user.email[label] + '.')
+                            .ariaLabel('Verification email sent')
+                            .ok('close')
+                            .targetEvent(event)
+                    );
+                }, function () {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .clickOutsideToClose(true)
+                            .title('Error')
+                            .textContent('Could not send verification email. Please try again later.')
+                            .ariaLabel('Error while sending verification email')
+                            .ok('close')
+                            .targetEvent(event)
+                    );
+                });
+        }
 
         /**
          *
@@ -832,7 +870,7 @@
         $scope.username = username;
 
         $scope.cancel = cancel;
-        $scope.validationerrors = {}
+        $scope.validationerrors = {};
         $scope.create = create;
         $scope.update = update;
         $scope.deleteEmailAddress = deleteEmailAddress;
