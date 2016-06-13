@@ -17,20 +17,21 @@ type ContractsAPI struct {
 func (api ContractsAPI) contractIdsignaturesPost(w http.ResponseWriter, r *http.Request) {
 	contractID := mux.Vars(r)["contractId"]
 	contractMngr := contractdb.NewManager(r)
-	contract, err := contractMngr.Get(contractID)
-	if err != nil {
-		log.Error(err)
+	exists, err := contractMngr.Exists(contractID)
+	if err != nil || !exists {
+		if err != nil {
+			log.Error(err)
+		}
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	signature := contractdb.Signature{}
+	var signature contractdb.Signature
 	if err = json.NewDecoder(r.Body).Decode(&signature); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	contract.Signatures = append(contract.Signatures, signature)
-	err = contractMngr.Save(contract)
+	err = contractMngr.AddSignature(contractID, signature)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)

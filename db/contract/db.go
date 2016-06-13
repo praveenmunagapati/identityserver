@@ -49,10 +49,22 @@ func (m *Manager) Save(contract *Contract) (err error) {
 	if contract.ID == "" {
 		// New Doc!
 		contract.ID = bson.NewObjectId()
-		err := m.collection.Insert(contract)
+		err = m.collection.Insert(contract)
 		return err
 	}
 	_, err = m.collection.Upsert(bson.M{"contractid": contract.ContractId}, contract)
+	return
+}
+
+//Exists checks if a contract with this contractId already exists.
+func (m *Manager) Exists(contractID string) (bool, error) {
+	count, err := m.collection.Find(bson.M{"contractid": contractID}).Count()
+	return count >= 1, err
+}
+
+//AddSignature adds a signature to a contract
+func (m *Manager) AddSignature(contractID string, signature Signature) (err error) {
+	err = m.collection.Update(bson.M{"contractid": contractID}, bson.M{"$push": bson.M{"signatures": signature}})
 	return
 }
 
