@@ -130,6 +130,10 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		if strings.HasPrefix(atscopestring, "user:") {
 			scopes = append(scopes, "user:info")
 		}
+		for _, scope := range strings.Split(atscopestring, ",") {
+			scope = strings.Trim(scope, " ")
+			scopes = append(scopes, scope)
+		}
 
 		log.Debug("Available scopes: ", scopes)
 
