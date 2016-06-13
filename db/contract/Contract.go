@@ -2,13 +2,18 @@ package contract
 
 import "github.com/itsyouonline/identityserver/db"
 
+type Party struct {
+	Type string
+	Name string
+}
+
 type Contract struct {
 	Content      string      `json:"content"`
-	ContractId   string      `json:"contractId"`
 	ContractType string      `json:"contractType"`
 	Expires      db.Date     `json:"expires"`
 	Extends      []string    `json:"extends"`
 	Invalidates  []string    `json:"invalidates"`
-	Parties      []string    `json:"parties"`
+	Parties      []Party     `json:"parties"`
+	ContractId   string      `json:"contractId"`
 	Signatures   []Signature `json:"signatures"`
 }

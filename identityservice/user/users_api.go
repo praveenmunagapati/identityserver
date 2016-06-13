@@ -11,6 +11,7 @@ import (
 	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
+	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
@@ -1176,6 +1177,17 @@ func (api UsersAPI) DeleteAddress(w http.ResponseWriter, r *http.Request) {
 // Get the contracts where the user is 1 of the parties. Order descending by date.
 // It is handler for GET /users/{username}/contracts
 func (api UsersAPI) usernamecontractsGet(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	includedparty := contractdb.Party{Type: "user", Name: username}
+	contract.FindContracts(w, r, includedparty)
+}
+
+// RegisterNewContract is handler for GET /users/{username}/contracts
+func (api UsersAPI) RegisterNewContract(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	includedparty := contractdb.Party{Type: "user", Name: username}
+	contract.CreateContract(w, r, includedparty)
+
 }
 
 // Get the list of notifications, these are pending invitations or approvals
@@ -1185,7 +1197,7 @@ func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Requ
 
 	type NotificationList struct {
 		Approvals        []invitations.JoinOrganizationInvitation `json:"approvals"`
-		ContractRequests []contract.ContractSigningRequest        `json:"contractRequests"`
+		ContractRequests []contractdb.ContractSigningRequest      `json:"contractRequests"`
 		Invitations      []invitations.JoinOrganizationInvitation `json:"invitations"`
 	}
 	var notifications NotificationList
@@ -1202,7 +1214,7 @@ func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Requ
 
 	// TODO: Get Approvals and Contract requests
 	notifications.Approvals = []invitations.JoinOrganizationInvitation{}
-	notifications.ContractRequests = []contract.ContractSigningRequest{}
+	notifications.ContractRequests = []contractdb.ContractSigningRequest{}
 
 	w.Header().Set("Content-type", "application/json")
 	json.NewEncoder(w).Encode(&notifications)

@@ -346,10 +346,16 @@ types:
       signature:
         type: string
 
+  Party:
+    properties:
+      type: string
+      name: string
+
+
   Contract:
     properties:
       parties:
-        type: string[]
+        type: Party[]
         minItems: 2
         maxItems: 20
         uniqueItems: true
