@@ -30,6 +30,7 @@ type CompaniesInterface interface { // GetCompanyList is the handler for GET /co
 	// Get the contracts where the organization is 1 of the parties. Order descending by
 	// date.
 	globalIdcontractsGet(http.ResponseWriter, *http.Request)
+	RegisterNewContract(http.ResponseWriter, *http.Request)
 }
 
 // CompaniesInterfaceRoutes is routing for /companies root endpoint
@@ -41,4 +42,5 @@ func CompaniesInterfaceRoutes(r *mux.Router, i CompaniesInterface) {
 	r.Handle("/companies/{globalId}/info", alice.New(newOauth2oauth_2_0Middleware([]string{"company:info"}).Handler).Then(http.HandlerFunc(i.globalIdinfoGet))).Methods("GET")
 	r.Handle("/companies/{globalId}/validate", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.globalIdvalidateGet))).Methods("GET")
 	r.Handle("/companies/{globalId}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"company:admin", "company:contracts:read"}).Handler).Then(http.HandlerFunc(i.globalIdcontractsGet))).Methods("GET")
+	r.Handle("/companies/{globalId}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"company:admin", "company:contracts:write"}).Handler).Then(http.HandlerFunc(i.RegisterNewContract))).Methods("POST")
 }

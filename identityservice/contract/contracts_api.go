@@ -2,26 +2,20 @@ package contract
 
 import (
 	"encoding/json"
-	"github.com/itsyouonline/identityserver/db/contract"
+	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/mux"
+	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	"net/http"
 )
 
+//ContractsAPI service
 type ContractsAPI struct {
-}
-
-// Create a new contract.
-// It is handler for POST /contracts
-func (api ContractsAPI) Post(w http.ResponseWriter, r *http.Request) {
-	var respBody contract.Contract
-	json.NewEncoder(w).Encode(&respBody)
-	// uncomment below line to add header
-	// w.Header().Set("key","value")
 }
 
 // Sign a contract
 // It is handler for POST /contracts/{contractId}/signatures
 func (api ContractsAPI) contractIdsignaturesPost(w http.ResponseWriter, r *http.Request) {
-	var reqBody contract.Signature
+	var reqBody contractdb.Signature
 
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 		w.WriteHeader(400)
@@ -34,8 +28,15 @@ func (api ContractsAPI) contractIdsignaturesPost(w http.ResponseWriter, r *http.
 // Get a contract
 // It is handler for GET /contracts/{contractId}
 func (api ContractsAPI) contractIdGet(w http.ResponseWriter, r *http.Request) {
-	var respBody contract.Contract
-	json.NewEncoder(w).Encode(&respBody)
+	contractID := mux.Vars(r)["contractId"]
+	contractMngr := contractdb.NewManager(r)
+	contract, err := contractMngr.Get(contractID)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
+
+	json.NewEncoder(w).Encode(&contract)
 	// uncomment below line to add header
 	// w.Header().Set("key","value")
 }

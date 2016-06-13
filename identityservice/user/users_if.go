@@ -91,6 +91,8 @@ type UsersInterface interface { // Post is the handler for POST /users
 	// usernamecontractsGet is the handler for GET /users/{username}/contracts
 	// Get the contracts where the user is 1 of the parties. Order descending by date.
 	usernamecontractsGet(http.ResponseWriter, *http.Request)
+	// RegisterNewContract is the handler for POST /user/{username}/contracts
+	RegisterNewContract(http.ResponseWriter, *http.Request)
 	// GetAllAuthorizations is the handler for GET /users/{username}/authorizations
 	// Get the list of authorizations.
 	GetAllAuthorizations(http.ResponseWriter, *http.Request)
@@ -151,6 +153,7 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/banks/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamebankslabelPut))).Methods("PUT")
 	r.Handle("/users/{username}/banks/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamebankslabelDelete))).Methods("DELETE")
 	r.Handle("/users/{username}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamecontractsGet))).Methods("GET")
+	r.Handle("/users/{username}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RegisterNewContract))).Methods("POST")
 	r.Handle("/users/{username}/authorizations", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetAllAuthorizations))).Methods("GET")
 	r.Handle("/users/{username}/authorizations/{grantedTo}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetAuthorization))).Methods("GET")
 	r.Handle("/users/{username}/authorizations/{grantedTo}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateAuthorization))).Methods("PUT")

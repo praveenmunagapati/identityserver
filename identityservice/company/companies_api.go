@@ -8,6 +8,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/db"
 	companydb "github.com/itsyouonline/identityserver/db/company"
+	contractdb "github.com/itsyouonline/identityserver/db/contract"
+	"github.com/itsyouonline/identityserver/identityservice/contract"
 )
 
 type CompaniesAPI struct {
@@ -113,7 +115,16 @@ func (api CompaniesAPI) globalIdvalidateGet(w http.ResponseWriter, r *http.Reque
 // date.
 // It is handler for GET /companies/{globalId}/contracts
 func (api CompaniesAPI) globalIdcontractsGet(w http.ResponseWriter, r *http.Request) {
-	log.Error("globalIdcontractsGet is not implemented")
+	globalID := mux.Vars(r)["globalId"]
+	includedparty := contractdb.Party{Type: "company", Name: globalID}
+	contract.FindContracts(w, r, includedparty)
+}
+
+// RegisterNewContract is handler for GET /companies/{globalId}/contracts
+func (api CompaniesAPI) RegisterNewContract(w http.ResponseWriter, r *http.Request) {
+	globalID := mux.Vars(r)["glabalId"]
+	includedparty := contractdb.Party{Type: "company", Name: globalID}
+	contract.CreateContract(w, r, includedparty)
 }
 
 // GetCompanyList is the handler for GET /companies

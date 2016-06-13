@@ -11,8 +11,10 @@ import (
 	"sort"
 
 	"github.com/itsyouonline/identityserver/db"
+	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	"github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/db/user"
+	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
@@ -432,7 +434,16 @@ func (api OrganizationsAPI) RemovePendingInvitation(w http.ResponseWriter, r *ht
 // Get the contracts where the organization is 1 of the parties. Order descending by
 // date.
 func (api OrganizationsAPI) GetContracts(w http.ResponseWriter, r *http.Request) {
-	log.Error("GetContracts is not implemented")
+	globalID := mux.Vars(r)["globalId"]
+	includedparty := contractdb.Party{Type: "org", Name: globalID}
+	contract.FindContracts(w, r, includedparty)
+}
+
+// RegisterNewContract is handler for GET /organizations/{globalId}/contracts
+func (api OrganizationsAPI) RegisterNewContract(w http.ResponseWriter, r *http.Request) {
+	globalID := mux.Vars(r)["glabalId"]
+	includedparty := contractdb.Party{Type: "org", Name: globalID}
+	contract.CreateContract(w, r, includedparty)
 }
 
 // GetAPIKeyLabels is the handler for GET /organizations/{globalid}/apikeys

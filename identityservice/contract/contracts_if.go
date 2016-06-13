@@ -11,8 +11,6 @@ import (
 
 // ContractsInterface is interface for /contracts root endpoint
 type ContractsInterface interface { // Post is the handler for POST /contracts
-	// Create a new contract.
-	Post(http.ResponseWriter, *http.Request)
 	// contractIdGet is the handler for GET /contracts/{contractId}
 	// Get a contract
 	contractIdGet(http.ResponseWriter, *http.Request)
@@ -23,7 +21,6 @@ type ContractsInterface interface { // Post is the handler for POST /contracts
 
 // ContractsInterfaceRoutes is routing for /contracts root endpoint
 func ContractsInterfaceRoutes(r *mux.Router, i ContractsInterface) {
-	r.Handle("/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.Post))).Methods("POST")
 	r.Handle("/contracts/{contractId}", alice.New(newOauth2oauth_2_0Middleware([]string{"contract:read"}).Handler).Then(http.HandlerFunc(i.contractIdGet))).Methods("GET")
 	r.Handle("/contracts/{contractId}/signatures", alice.New(newOauth2oauth_2_0Middleware([]string{"contract:participant"}).Handler).Then(http.HandlerFunc(i.contractIdsignaturesPost))).Methods("POST")
 }
