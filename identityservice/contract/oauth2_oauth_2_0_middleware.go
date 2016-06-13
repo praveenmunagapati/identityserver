@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/mux"
+	contractdb "github.com/itsyouonline/identityserver/db/contract"
+	"github.com/itsyouonline/identityserver/oauthservice"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -54,15 +57,50 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			accessToken = r.Header.Get(om.field)
 		}
 		//Get the actual token out of the header (accept 'token ABCD' as well as just 'ABCD' and ignore some possible whitespace)
-		accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
-		if accessToken == "" {
+		var atscopestring string
+		var username string
+		if strings.HasPrefix(accessToken, "token") {
+			accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
+			if accessToken == "" {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+
+			log.Debug("Access Token: ", accessToken)
+			//TODO: cache
+			oauthMgr := oauthservice.NewManager(r)
+			at, err := oauthMgr.GetAccessToken(accessToken)
+			if err != nil {
+				log.Error(err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			if at == nil {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			atscopestring = at.Scope
+			username = at.Username
+		} else {
 			w.WriteHeader(401)
 			return
 		}
-
-		// TODO: WRITE codes to check user's scopes for this contract
 		scopes := []string{}
+
+		contractID := mux.Vars(r)["contractId"]
+		contractMngr := contractdb.NewManager(r)
+		isParticipant, err := contractMngr.IsParticipant(contractID, username)
+		if err != nil {
+				log.Error(err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+		}
+		if isParticipant {
+			scopes = append(scopes, "contract:participant")
+			scopes = append(scopes, "contract:read")
+		}
 		log.Debug("Available scopes: ", scopes)
+		log.Debug("Atscopestring scope: ", atscopestring)
 
 		// check scopes
 		if !om.CheckScopes(scopes) {
