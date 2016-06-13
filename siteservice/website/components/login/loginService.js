@@ -54,16 +54,16 @@
             return genericHttpCall($http.post, url);
         }
 
-        function submitTotpCode(code) {
-            var url = apiURL + '/totpconfirmation';
+        function submitTotpCode(code, queryString) {
+            var url = apiURL + '/totpconfirmation' + queryString;
             var data = {
                 totpcode: code
             };
             return genericHttpCall($http.post, url, data);
         }
 
-        function submitSmsCode(code) {
-            var url = apiURL + '/smsconfirmation';
+        function submitSmsCode(code, queryString) {
+            var url = apiURL + '/smsconfirmation' + queryString;
             var data = {
                 smscode: code
             };
