@@ -7,9 +7,9 @@
         .controller("AuthorizeController", AuthorizeController);
 
 
-    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', 'UserService'];
+    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', 'UserService', 'UserDialogService'];
 
-    function AuthorizeController($scope, $rootScope, $location, $window, UserService) {
+    function AuthorizeController($scope, $rootScope, $location, $window, UserService, UserDialogService) {
         var vm = this;
 
         var queryParams = $location.search();
@@ -18,7 +18,14 @@
         vm.requestedorganizations = [];
         vm.username = $rootScope.user;
 
-        $scope.user = {};
+        vm.user = {};
+
+        UserDialogService.init(vm);
+        vm.showAddEmailDialog = addEmail;
+        vm.showAddPhonenumberDialog = addPhone;
+        vm.showAddAddressDialog = addAddress;
+        vm.showBankAccountDialog = bank;
+
 
         $scope.requested = {
             address: [],
@@ -34,7 +41,7 @@
         };
 
         $scope.update = update;
-
+        $scope.isNew = true;
 
         activate();
 
@@ -48,7 +55,7 @@
                 .get(vm.username)
                 .then(
                     function(data) {
-                        $scope.user = data;
+                        vm.user = data;
                         parseScopes();
                     },
                     function(reason) {
@@ -112,7 +119,7 @@
                             $scope.requested[property].push(requestedLabel);
                         }
                     });
-                    var prop = $scope.user[property];
+                    var prop = vm.user[property];
                     angular.forEach(value, function (requestedLabel) {
                         // select first by default, None if the user did not configure this property yet
                         if (prop) {
@@ -144,6 +151,32 @@
                         $window.location.href = "error" + reason.status;
                     }
                 );
+        }
+
+        function addEmail(event, label) {
+            selectDefault(UserDialogService.addEmail, event, label, 'email');
+        }
+
+        function addPhone(event, label) {
+            selectDefault(UserDialogService.addPhonenumber, event, label, 'phone');
+        }
+
+        function addAddress(event, label) {
+            selectDefault(UserDialogService.addAddress, event, label, 'address');
+        }
+
+        function bank(event, label) {
+            selectDefault(UserDialogService.bankAccount, event, label, 'bank');
+        }
+
+        function selectDefault(fx, event, label, property) {
+            fx(event).then(function (data) {
+                $scope.authorizations[property][label] = data.newLabel;
+
+            }, function () {
+                // Select first possible value, else 'None'
+                $scope.authorizations[property][label] = Object.keys(vm.user[property])[0] || '';
+            });
         }
     }
 })();

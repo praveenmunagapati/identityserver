@@ -1,6 +1,7 @@
 (function () {
     'use strict';
-    angular.module('loginApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngSanitize', 'itsyouonline.header', 'itsyouonline.footer'])
+    angular.module('loginApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngSanitize',
+        'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.user'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$routeProvider', routeConfig]);
 
