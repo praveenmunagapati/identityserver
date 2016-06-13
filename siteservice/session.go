@@ -99,7 +99,6 @@ func (service *Service) GetLoggedInUser(request *http.Request) (username string,
 func (service *Service) SetAuthenticatedUserMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		if username, err := service.GetLoggedInUser(request); err == nil {
-			log.Debug("Authenticated user: ", username)
 			context.Set(request, "authenticateduser", username)
 		}
 

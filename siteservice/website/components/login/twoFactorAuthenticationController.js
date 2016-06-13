@@ -16,6 +16,7 @@
         vm.hasMoreThanOneTwoFaMethod = false;
         init();
         var interval;
+        var queryString = $window.location.search;
 
         function init() {
             LoginService
@@ -106,7 +107,7 @@
             } else if (vm.selectedTwoFaMethod.indexOf('sms-') === 0) {
                 method = LoginService.submitSmsCode;
             }
-            method(vm.code)
+            method(vm.code, queryString)
                 .then(
                     function (data) {
                         localStorage.setItem('itsyouonline.last2falabel', vm.selectedTwoFaMethod);
