@@ -39,7 +39,10 @@
         <label>Email</label>
         <md-select ng-model="authorizations.email[label]">
             <md-option value="">None</md-option>
-            <md-option ng-repeat="(label, email) in user.email" value="{{::label}}" ng-bind="::email"></md-option>
+            <md-option ng-repeat="(label, email) in vm.user.email" value="{{::label}}" ng-bind="::email"></md-option>
+            <md-option ng-click="vm.showAddEmailDialog($event, label)" ng-if="isNew">
+                <i class="fa fa-plus"></i> Create new
+            </md-option>
         </md-select>
     </md-input-container>
 </md-list-item>
@@ -52,8 +55,11 @@
         <label>Phone number {{ authorizations.phone['even more scam'] }}</label>
         <md-select ng-model="authorizations.phone[label]">
             <md-option value="">None</md-option>
-            <md-option ng-repeat="(label, phone) in user.phone" value="{{::label}}">
+            <md-option ng-repeat="(label, phone) in vm.user.phone" value="{{::label}}">
                 {{ ::label + ' - ' + phone }}
+            </md-option>
+            <md-option ng-click="vm.showAddPhonenumberDialog($event, label)" ng-if="isNew">
+                <i class="fa fa-plus"></i> Create new
             </md-option>
         </md-select>
     </md-input-container>
@@ -67,11 +73,14 @@
         <label>Address</label>
         <md-select ng-model="authorizations.address[label]">
             <md-option value="">None</md-option>
-            <md-option ng-repeat="(label, address) in user.address" value="{{::label}}">
+            <md-option ng-repeat="(label, address) in vm.user.address" value="{{::label}}">
                 {{ ::label + ' - ' + address.street
                 + (address.nr? ' ' + address.nr : '')
                 + (address.city? ' ' + address.city : '')
                 }}
+            </md-option>
+            <md-option ng-click="vm.showAddAddressDialog($event, label)" ng-if="isNew">
+                <i class="fa fa-plus"></i> Create new
             </md-option>
         </md-select>
     </md-input-container>
@@ -86,8 +95,11 @@
         <label>Bank account</label>
         <md-select ng-model="authorizations.bank[label]">
             <md-option value="">None</md-option>
-            <md-option ng-repeat="(label, bank) in user.bank" value="{{::label}}">
+            <md-option ng-repeat="(label, bank) in vm.user.bank" value="{{::label}}">
                 {{ ::label + ' - ' + bank.bic + ', ' + bank.iban + ', ' + bank.country }}
+            </md-option>
+            <md-option ng-click="vm.showBankAccountDialog($event, label)" ng-if="isNew">
+                <i class="fa fa-plus"></i> Create new
             </md-option>
         </md-select>
     </md-input-container>
