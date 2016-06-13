@@ -3,7 +3,35 @@
 # Summary
 |Milestone|ETA|
 |---------|---|
+|[0.9 alfa](#milestone-09-alfa)|0 seconds|
+|[0.9 beta](#milestone-09-beta)|0 seconds|
+|[1.0](#milestone-10)|0 seconds|
+|[roadmap](#milestone-roadmap)|0 seconds|
 |[No milestone](#no-milestone)|0 seconds|
+
+## [Milestone 0.9 alfa](milestones/1:0.9 alfa.md)
+
+
+|Issue|Title|State|Owner|ETA|
+|-----|-----|-----|-----|---|
+
+## [Milestone 0.9 beta](milestones/2:0.9 beta.md)
+
+
+|Issue|Title|State|Owner|ETA|
+|-----|-----|-----|-----|---|
+
+## [Milestone 1.0](milestones/3:1.0.md)
+
+
+|Issue|Title|State|Owner|ETA|
+|-----|-----|-----|-----|---|
+
+## [Milestone roadmap](milestones/4:roadmap.md)
+
+
+|Issue|Title|State|Owner|ETA|
+|-----|-----|-----|-----|---|
 
 
 
