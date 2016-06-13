@@ -8,11 +8,13 @@ import (
 
 	"github.com/itsyouonline/identityserver/db"
 	companydb "github.com/itsyouonline/identityserver/db/company"
+	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	organizationdb "github.com/itsyouonline/identityserver/db/organization"
 	userdb "github.com/itsyouonline/identityserver/db/user"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/globalconfig"
 	"github.com/itsyouonline/identityserver/identityservice/company"
+	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/identityservice/user"
 	"github.com/itsyouonline/identityserver/identityservice/userorganization"
@@ -53,6 +55,10 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	// Company API
 	company.CompaniesInterfaceRoutes(router, company.CompaniesAPI{})
 	companydb.InitModels()
+
+	//contracts API
+	contract.ContractsInterfaceRoutes(router, contract.ContractsAPI{})
+	contractdb.InitModels()
 
 	// Organization API
 	organization.OrganizationsInterfaceRoutes(router, organization.OrganizationsAPI{})

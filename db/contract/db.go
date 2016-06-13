@@ -18,7 +18,7 @@ const (
 //InitModels initialize models in mongo, if required.
 func InitModels() {
 	index := mgo.Index{
-		Key:    []string{"ContractId"},
+		Key:    []string{"contractid"},
 		Unique: true,
 	}
 
@@ -46,7 +46,13 @@ func (m *Manager) Save(contract *Contract) (err error) {
 		err = errors.New("Contractid can not be empty")
 		return
 	}
-	err = m.collection.Insert(contract)
+	if contract.ID == "" {
+		// New Doc!
+		contract.ID = bson.NewObjectId()
+		err := m.collection.Insert(contract)
+		return err
+	}
+	_, err = m.collection.Upsert(bson.M{"contractid": contract.ContractId}, contract)
 	return
 }
 
@@ -61,6 +67,17 @@ func (m *Manager) Get(contractid string) (contract *Contract, err error) {
 func (m *Manager) Delete(contractid string) (err error) {
 	_, err = m.collection.RemoveAll(bson.M{"contractid": contractid})
 	return
+}
+
+//IsParticipant check if name is participant in contract with id contractID
+func (m *Manager) IsParticipant(contractID string, name string) (isparticipant bool, err error) {
+	count, err := m.collection.Find(bson.M{"contractid": contractID, "parties.name": name}).Count()
+	if err != nil {
+		return
+	}
+	isparticipant = count != 0
+	return
+
 }
 
 //GetByIncludedParty Get contracts that include the included party

@@ -15,18 +15,33 @@ type ContractsAPI struct {
 // Sign a contract
 // It is handler for POST /contracts/{contractId}/signatures
 func (api ContractsAPI) contractIdsignaturesPost(w http.ResponseWriter, r *http.Request) {
-	var reqBody contractdb.Signature
-
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		w.WriteHeader(400)
+	contractID := mux.Vars(r)["contractId"]
+	contractMngr := contractdb.NewManager(r)
+	contract, err := contractMngr.Get(contractID)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	// uncomment below line to add header
-	// w.Header().Set("key","value")
+	signature := contractdb.Signature{}
+	if err = json.NewDecoder(r.Body).Decode(&signature); err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	contract.Signatures = append(contract.Signatures, signature)
+	err = contractMngr.Save(contract)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	http.Error(w, http.StatusText(http.StatusCreated), http.StatusCreated)
+	return
 }
 
 // Get a contract
-// It is handler for GET /contracts/{contractId}
+// contractIdGet is handler for GET /contracts/{contractId}
 func (api ContractsAPI) contractIdGet(w http.ResponseWriter, r *http.Request) {
 	contractID := mux.Vars(r)["contractId"]
 	contractMngr := contractdb.NewManager(r)
@@ -37,6 +52,4 @@ func (api ContractsAPI) contractIdGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(&contract)
-	// uncomment below line to add header
-	// w.Header().Set("key","value")
 }
