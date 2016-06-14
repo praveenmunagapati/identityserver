@@ -1,8 +1,8 @@
-<div flex layout="row">
+<div flex layout="row" layout-fill>
     <div flex></div>
     <div layout="column" layout-fill flex="100" flex-gt-sm="80">
         <div layout="column">
-            <div flex="80">
+            <div>
                 <p ng-if="vm.childOrganizationNames.length === 0">Organization</p>
                 <p ng-if="vm.childOrganizationNames.length !== 0">
                     <span ng-repeat="org in vm.childOrganizationNames">
@@ -12,7 +12,6 @@
                 </p>
                 <h1 ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></h1>
             </div>
-            <div flex></div>
         </div>
         <div flex layout="column">
             <md-card flex="100">
