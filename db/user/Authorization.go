@@ -5,17 +5,22 @@ import "strings"
 // Authorization defines what userinformation is authorized to be seen by an organization
 // For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
 type Authorization struct {
-	Address       map[string]string `json:"address,omitempty"`
-	Bank          map[string]string `json:"bank,omitempty"`
-	Email         map[string]string `json:"email,omitempty"`
-	Facebook      bool              `json:"facebook,omitempty"`
-	Github        bool              `json:"github,omitempty"`
-	GrantedTo     string            `json:"grantedTo"`
-	Organizations []string          `json:"organizations"`
-	Phone         map[string]string `json:"phone,omitempty"`
-	PublicKeys    []string          `json:"publicKeys,omitempty"`
-	Username      string            `json:"username"`
-	Name          bool              `json:"name"`
+	Addresses      []AuthorizationMap `json:"addresses,omitempty"`
+	BankAccounts   []AuthorizationMap `json:"bankaccounts,omitempty"`
+	EmailAddresses []AuthorizationMap `json:"emailaddresses,omitempty"`
+	Facebook       bool               `json:"facebook,omitempty"`
+	Github         bool               `json:"github,omitempty"`
+	GrantedTo      string             `json:"grantedTo"`
+	Organizations  []string           `json:"organizations"`
+	Phonenumbers   []AuthorizationMap `json:"phonenumbers,omitempty"`
+	PublicKeys     []AuthorizationMap `json:"publicKeys,omitempty"`
+	Username       string             `json:"username"`
+	Name           bool               `json:"name"`
+}
+
+type AuthorizationMap struct {
+	RequestedLabel string `json:"requestedlabel"`
+	RealLabel      string `json:"reallabel"`
 }
 
 //FilterAuthorizedScopes filters the requested scopes to the ones this Authorization covers
@@ -38,16 +43,16 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 		if scope == "user:facebook" && authorization.Facebook {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:address") && labelledPropertyIsAuthorized(scope, "user:address", authorization.Address) {
+		if strings.HasPrefix(scope, "user:address") && labelledPropertyIsAuthorized(scope, "user:address", authorization.Addresses) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:bankaccount") && labelledPropertyIsAuthorized(scope, "user:bankaccount", authorization.Bank) {
+		if strings.HasPrefix(scope, "user:bankaccount") && labelledPropertyIsAuthorized(scope, "user:bankaccount", authorization.BankAccounts) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:email") && labelledPropertyIsAuthorized(scope, "user:email", authorization.Email) {
+		if strings.HasPrefix(scope, "user:email") && labelledPropertyIsAuthorized(scope, "user:email", authorization.EmailAddresses) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:phone") && labelledPropertyIsAuthorized(scope, "user:phone", authorization.Phone) {
+		if strings.HasPrefix(scope, "user:phone") && labelledPropertyIsAuthorized(scope, "user:phone", authorization.Phonenumbers) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
 	}
@@ -64,7 +69,7 @@ func (authorization Authorization) containsOrganization(globalid string) bool {
 	return false
 }
 
-func labelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLabels map[string]string) (authorized bool) {
+func labelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLabels []AuthorizationMap) (authorized bool) {
 	if authorizedLabels == nil {
 		return
 	}
@@ -74,7 +79,12 @@ func labelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLa
 	}
 	if strings.HasPrefix(scope, scopePrefix+":") {
 		requestedLabel := strings.TrimPrefix(scope, scopePrefix+":")
-		_, authorized = authorizedLabels[requestedLabel]
+		for _, authorizationmap := range authorizedLabels {
+			if authorizationmap.RequestedLabel == requestedLabel {
+				authorized = true
+				return
+			}
+		}
 	}
 	return
 }

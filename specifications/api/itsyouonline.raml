@@ -26,6 +26,11 @@ types:
         label: string
         publickey: string
 
+  AuthorizationMap:
+     description: Mapping between requested labels and real labels
+     properties:
+        requestedlabel: string
+        reallabel: string
 
   Authorization:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
@@ -34,27 +39,23 @@ types:
         grantedTo:
           type: string
           description: The organization that is granted read access to some of the user's information
-        address?:
+        addresses?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
-        publicKeys?: string[]
-        email?:
+             type: AuthorizationMap[]
+        publicKeys?: AuthorizationMap[]
+        emailaddresses?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
-        phone?:
+             type: AuthorizationMap[]
+        phonenumbers?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
-        bank?:
+             type: AuthorizationMap[]
+        bankaccounts?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
+             type: AuthorizationMap[]
         facebook?: boolean
         github?: boolean
         organizations:

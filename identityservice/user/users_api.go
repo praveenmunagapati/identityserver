@@ -440,14 +440,14 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	if authorization.Facebook {
 		respBody.Facebook = userobj.Facebook.Name
 	}
-	if authorization.Address != nil {
+	if authorization.Addresses != nil {
 		respBody.Addresses = make([]user.Address, 0)
 
-		for requestedLabel, realLabel := range authorization.Address {
-			address, err := userobj.GetAddressByLabel(realLabel)
+		for _, addressmap := range authorization.Addresses {
+			address, err := userobj.GetAddressByLabel(addressmap.RealLabel)
 			if err != nil {
 				newaddress := user.Address{
-					Label:      requestedLabel,
+					Label:      addressmap.RequestedLabel,
 					City:       address.City,
 					Country:    address.Country,
 					Nr:         address.Nr,
@@ -460,14 +460,14 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if authorization.Email != nil {
+	if authorization.EmailAddresses != nil {
 		respBody.EmailAddresses = make([]user.EmailAddress, 0)
 
-		for requestedLabel, realLabel := range authorization.Email {
-			email, err := userobj.GetEmailAddressByLabel(realLabel)
+		for _, emailmap := range authorization.EmailAddresses {
+			email, err := userobj.GetEmailAddressByLabel(emailmap.RealLabel)
 			if err != nil {
 				newemail := user.EmailAddress{
-					Label:        requestedLabel,
+					Label:        emailmap.RequestedLabel,
 					EmailAddress: email.EmailAddress,
 				}
 				respBody.EmailAddresses = append(respBody.EmailAddresses, newemail)
@@ -475,13 +475,13 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if authorization.Phone != nil {
+	if authorization.Phonenumbers != nil {
 		respBody.Phonenumbers = make([]user.Phonenumber, 0)
-		for requestedLabel, realLabel := range authorization.Phone {
-			phonenumber, err := userobj.GetPhonenumberByLabel(realLabel)
+		for _, phonemap := range authorization.Phonenumbers {
+			phonenumber, err := userobj.GetPhonenumberByLabel(phonemap.RealLabel)
 			if err != nil {
 				newnumber := user.Phonenumber{
-					Label:       requestedLabel,
+					Label:       phonemap.RequestedLabel,
 					Phonenumber: phonenumber.Phonenumber,
 				}
 				respBody.Phonenumbers = append(respBody.Phonenumbers, newnumber)
@@ -489,14 +489,14 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if authorization.Bank != nil {
+	if authorization.BankAccounts != nil {
 		respBody.BankAccounts = make([]user.BankAccount, 0)
 
-		for requestedLabel, realLabel := range authorization.Bank {
-			bank, err := userobj.GetBankAccountByLabel(realLabel)
+		for _, bankmap := range authorization.BankAccounts {
+			bank, err := userobj.GetBankAccountByLabel(bankmap.RealLabel)
 			if err != nil {
 				newbank := user.BankAccount{
-					Label:   requestedLabel,
+					Label:   bankmap.RealLabel,
 					Bic:     bank.Bic,
 					Country: bank.Country,
 					Iban:    bank.Iban,
