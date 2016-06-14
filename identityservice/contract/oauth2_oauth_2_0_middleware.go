@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strings"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	"github.com/itsyouonline/identityserver/oauthservice"
-	log "github.com/Sirupsen/logrus"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
@@ -91,9 +91,9 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		contractMngr := contractdb.NewManager(r)
 		isParticipant, err := contractMngr.IsParticipant(contractID, username)
 		if err != nil {
-				log.Error(err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
 		if isParticipant {
 			scopes = append(scopes, "contract:participant")
