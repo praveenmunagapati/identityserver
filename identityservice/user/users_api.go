@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"fmt"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
@@ -18,7 +20,6 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/validation"
-	"strings"
 )
 
 type UsersAPI struct {
@@ -148,7 +149,7 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if _, ok := u.Email[body.Label]; ok {
+	if _, err := u.GetEmailAddressByLabel(body.Label); err != nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -205,7 +206,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		if _, ok := u.Email[body.Label]; ok {
+		if _, err := u.GetEmailAddressByLabel(body.Label); err != nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
@@ -253,13 +254,13 @@ func (api UsersAPI) ValidateEmailAddress(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if _, ok := userobj.Email[label]; ok != true {
+	email, err := userobj.GetEmailAddressByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	email := userobj.Email[label]
-	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -274,7 +275,7 @@ func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	emails := user.Email
+	emails := user.EmailAddresses
 	if validated {
 		valMngr := validationdb.NewManager(r)
 		validatedemails, err := valMngr.GetByUsernameValidatedEmailAddress(username)
@@ -283,16 +284,16 @@ func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		for label, email := range emails {
+		for index, email := range emails {
 			found := false
 			for _, validatedemail := range validatedemails {
-				if string(email) == validatedemail.EmailAddress {
+				if email.EmailAddress == validatedemail.EmailAddress {
 					found = true
 					break
 				}
 			}
 			if !found {
-				delete(emails, label)
+				emails = append(emails[:index], emails[index+1:]...)
 			}
 		}
 	}
@@ -317,12 +318,12 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email, ok := u.Email[label]
-	if !ok {
+	email, err := u.GetEmailAddressByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	if len(u.Email) == 1 {
+	if len(u.EmailAddresses) == 1 {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -332,7 +333,7 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if err = valMgr.RemoveValidatedEmailAddress(username, email); err != nil {
+	if err = valMgr.RemoveValidatedEmailAddress(username, email.EmailAddress); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -461,8 +462,9 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		respBody.Email = make(map[string]string)
 
 		for requestedLabel, realLabel := range authorization.Email {
-			if value, found := userobj.Email[realLabel]; found {
-				respBody.Email[requestedLabel] = value
+			email, err := userobj.GetEmailAddressByLabel(realLabel)
+			if err != nil {
+				respBody.Email[requestedLabel] = email.EmailAddress
 			}
 		}
 	}

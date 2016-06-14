@@ -282,9 +282,9 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		return
 	}
 	newuser := &user.User{
-		Username:    values.Login,
-		Email:       map[string]string{"main": values.Email},
-		TwoFAMethod: twoFAMethod,
+		Username:       values.Login,
+		EmailAddresses: []user.EmailAddress{user.EmailAddress{Label: "main", EmailAddress: values.Email}},
+		TwoFAMethod:    twoFAMethod,
 	}
 	//validate the username is not taken yet
 	userMgr := user.NewManager(request)

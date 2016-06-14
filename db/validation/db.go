@@ -7,12 +7,13 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"crypto/rand"
+	"math/big"
+	"time"
+
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/tools"
 	"gopkg.in/mgo.v2/bson"
-	"math/big"
-	"time"
 )
 
 const (

@@ -109,6 +109,13 @@ types:
       name:
         type: string
 
+  EmailAddress:
+    properties:
+      Label:
+         type: string
+      EmailAddress:
+         type: string
+
   User:
     properties:
         username:
@@ -119,9 +126,7 @@ types:
         lastname: string
         publicKeys: string[]
         expire?: datetime
-        email?:
-          properties:
-            //: string
+        emailaddresses: EmailAddress[]
         phone?:
           properties:
             //: Phonenumber
@@ -143,10 +148,11 @@ types:
         publicKeys:
             - 1GVS7544tvWM2TM13vNH8sboamJzL6mJ36
         expire: 2018-10-20T16:41:41.090Z
-        email:
-            work: bob@company.com
-            home: bob@example.com
-            "dance club": bob@linedanceclub.example.org
+        emailaddresses:
+            - Label: work
+              EmailAddress: bob@company.com
+            - Label: home
+              EmailAddress: bob@example.com
         phone:
           be: "+3212341234123"
           eg: "+2012341234123"
