@@ -26,7 +26,7 @@ type User struct {
 	Expire         db.Date         `json:"expire"`
 	Facebook       FacebookAccount `json:"facebook"`
 	Github         GithubAccount   `json:"github"`
-	Phonenumbers   []Phonenumber   `json:"phone"`
+	Phonenumbers   []Phonenumber   `json:"phonenumbers"`
 	PublicKeys     []PublicKey     `json:"publicKeys"`
 	Username       string          `json:"username"`
 	Firstname      string          `json:"firstname"`

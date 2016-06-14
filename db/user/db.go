@@ -104,7 +104,9 @@ func (m *Manager) Delete(u *User) error {
 
 // SaveEmail save or update email along with its label
 func (m *Manager) SaveEmail(username string, email EmailAddress) error {
-
+	if err := m.RemoveEmail(username, email.Label); err != nil {
+		return err
+	}
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
 		bson.M{"$push": bson.M{"emailaddresses": email}})
@@ -119,6 +121,9 @@ func (m *Manager) RemoveEmail(username string, label string) error {
 
 // SavePhone save or update phone along with its label
 func (m *Manager) SavePhone(username string, phonenumber Phonenumber) error {
+	if err := m.RemovePhone(username, phonenumber.Label); err != nil {
+		return err
+	}
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
 		bson.M{"$push": bson.M{"phonenumbers": phonenumber}})
@@ -133,6 +138,9 @@ func (m *Manager) RemovePhone(username string, label string) error {
 
 // SaveAddress save or update address
 func (m *Manager) SaveAddress(username string, address Address) error {
+	if err := m.RemoveAddress(username, address.Label); err != nil {
+		return err
+	}
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
 		bson.M{"$push": bson.M{"addresses": address}})
@@ -147,6 +155,9 @@ func (m *Manager) RemoveAddress(username, label string) error {
 
 // SaveBank save or update bank account
 func (m *Manager) SaveBank(u *User, bank BankAccount) error {
+	if err := m.RemoveBank(u, bank.Label); err != nil {
+		return err
+	}
 	return m.getUserCollection().Update(
 		bson.M{"username": u.Username},
 		bson.M{"$push": bson.M{"bankaccounts": bank}})

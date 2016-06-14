@@ -198,7 +198,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		if _, err := u.GetEmailAddressByLabel(body.Label); err != nil {
+		if _, err := u.GetEmailAddressByLabel(body.Label); err == nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
@@ -739,7 +739,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	if oldlabel != body.Label {
 		// Check if there already is another phone number with the new label
 		_, err := u.GetPhonenumberByLabel(body.Label)
-		if err != nil {
+		if err == nil {
 			writeErrorResponse(w, http.StatusConflict, "duplicate_label")
 			return
 		}
@@ -1123,7 +1123,7 @@ func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 
 	if oldlabel != newaddress.Label {
 		_, err = u.GetAddressByLabel(newaddress.Label)
-		if err != nil {
+		if err == nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
