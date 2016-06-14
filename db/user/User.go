@@ -20,8 +20,8 @@ type PublicKey struct {
 
 type User struct {
 	ID             bson.ObjectId   `json:"-" bson:"_id,omitempty"`
-	Addresses      []Address       `json:"address"`
-	BankAccounts   []BankAccount   `json:"bank"`
+	Addresses      []Address       `json:"addresses"`
+	BankAccounts   []BankAccount   `json:"bankaccounts"`
 	EmailAddresses []EmailAddress  `json:"emailaddresses"`
 	Expire         db.Date         `json:"expire"`
 	Facebook       FacebookAccount `json:"facebook"`
