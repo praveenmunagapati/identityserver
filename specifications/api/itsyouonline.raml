@@ -1,5 +1,5 @@
 #%RAML 1.0
-title: Itsyou.online API
+title: Itsyou online API
 version: 0.1
 baseUri: /
 securitySchemes:
@@ -30,24 +30,20 @@ types:
         address?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
+            //: string
         publicKeys?: string[]
         email?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
+            //: string
         phone?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
+            //: string
         bank?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
+            //: string
         facebook?: boolean
         github?: boolean
         organizations:
@@ -125,20 +121,16 @@ types:
         expire?: datetime
         email?:
           properties:
-            "[]":
-              type: string
+            //: string
         phone?:
           properties:
-            "[]":
-              type: Phonenumber
+            //: Phonenumber
         address?:
           properties:
-            "[]":
-              type: Address
+            //: Address
         bank?:
           properties:
-            "[]":
-              type: BankAccount
+            //: BankAccount
         facebook?:
             type: FacebookAccount
         github?:
@@ -184,20 +176,16 @@ types:
         publicKeys?: string[]
         email?:
           properties:
-            "[]":
-              type: string
+            //: string
         phone?:
           properties:
-            "[]":
-              type: Phonenumber
+            //: Phonenumber
         address?:
           properties:
-            "[]":
-              type: Address
+            //: Address
         bank?:
           properties:
-            "[]":
-              type: BankAccount
+            //: BankAccount
         facebook?:
             type: FacebookAccount
         github?:
@@ -429,7 +417,7 @@ securedBy: [ oauth_2_0 ]
               204:
                 description: No response data
               422:
-                  description: Invalid password format or invallid currentpassword
+                  description: Invalid password format or invalid current password
                   body:
                     application/json:
                       properties:
@@ -440,7 +428,7 @@ securedBy: [ oauth_2_0 ]
         displayName: GetEmailAddresses
         description: Get a list of the user his email addresses.
         queryParameters:
-          validated:
+          validated?:
             type: string
             description: optional queryParameter to filter on only validated email addressses
         responses:
@@ -448,8 +436,7 @@ securedBy: [ oauth_2_0 ]
             body:
               application/json:
                   properties:
-                    "[]":
-                      type: string
+                    //: string
       post:
           displayName: RegisterNewEmailAddress
           description: Register a new email address
@@ -595,8 +582,7 @@ securedBy: [ oauth_2_0 ]
                 body:
                     application/json:
                         properties:
-                          "[]":
-                            type: Address
+                          //: Address
     post:
       displayName: RegisterNewAddress
       description: Register a new address
@@ -654,8 +640,7 @@ securedBy: [ oauth_2_0 ]
           body:
             application/json:
                 properties:
-                  "[]":
-                    type: Phonenumber
+                  //: Phonenumber
     post:
       displayName: RegisterNewPhonenumber
       description: Register a new phonenumber
@@ -736,23 +721,20 @@ securedBy: [ oauth_2_0 ]
       body:
         application/json:
             properties:
-              "[]":
-                type: BankAccount
+              //: BankAccount
       responses:
         201:
           body:
             application/json:
                 properties:
-                  "[]":
-                    type: BankAccount
+                  //: BankAccount
     get:
         responses:
             200:
                 body:
                     application/json:
                         properties:
-                          "[]":
-                            type: BankAccount
+                          //: BankAccount
   /{username}/banks/{label}:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
@@ -1158,7 +1140,7 @@ securedBy: [ oauth_2_0 ]
             body:
               application/json:
                 properties:
-                  "[]": OrganizationTreeItem
+                  //: OrganizationTreeItem
 
 /companies:
     post:
