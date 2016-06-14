@@ -7,12 +7,13 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"crypto/rand"
+	"math/big"
+	"time"
+
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/tools"
 	"gopkg.in/mgo.v2/bson"
-	"math/big"
-	"time"
 )
 
 const (
@@ -116,15 +117,17 @@ func (manager *Manager) NewEmailAddressValidationInformation(username string, em
 	return
 }
 
+//SavePhonenumberValidationInformation stores a validated phonenumber.
 func (manager *Manager) SavePhonenumberValidationInformation(info *PhonenumberValidationInformation) (err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoOngoingPhonenumberValidationCollectionName)
-	err = mgoCollection.Insert(info)
+	_, err = mgoCollection.Upsert(bson.M{"phonenumber": info.Phonenumber}, info)
 	return
 }
 
+//SaveEmailAddressValidationInformation stores a validated emailaddress
 func (manager *Manager) SaveEmailAddressValidationInformation(info *EmailAddressValidationInformation) (err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoOngoingEmailAddressValidationCollectionName)
-	err = mgoCollection.Insert(info)
+	_, err = mgoCollection.Upsert(bson.M{"emailaddress": info.EmailAddress}, info)
 	return
 }
 
