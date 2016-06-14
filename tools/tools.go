@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/templates/packaged"
 	"html/template"
-	"log"
 )
 
 func GenerateRandomString() (randomString string, err error) {
@@ -18,11 +19,17 @@ func GenerateRandomString() (randomString string, err error) {
 	return
 }
 
-func RenderTemplate(templatepath string, data interface{}) (message string, err error) {
-	log.Print(data)
-	templateEngine := template.New("template")
-	templateEngine, err = template.ParseFiles(templatepath)
+func RenderTemplate(templateName string, data interface{}) (message string, err error) {
+	log.Debug(templateName, data)
+	htmlData, err := templates.Asset(templateName)
 	if err != nil {
+		log.Error(err)
+		return
+	}
+	templateEngine := template.New("template")
+	templateEngine, err = templateEngine.Parse(string(htmlData))
+	if err != nil {
+		log.Error(err)
 		return
 	}
 	buf := new(bytes.Buffer)

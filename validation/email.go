@@ -10,6 +10,10 @@ import (
 	"net/url"
 )
 
+const (
+	emailWithButtonTemplateName = "emailwithbutton.html"
+)
+
 //EmailService is the interface for an email communication channel, should be used by the IYOEmailAddressValidationService
 type EmailService interface {
 	Send(receipients []string, subject string, message string) (err error)
@@ -49,7 +53,7 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 		ButtonText: "Verify email",
 		Reason:     " You’re receiving this email because you recently created a new ItsYou.Online account or added a new email address. If this wasn’t you, please ignore this email.",
 	}
-	message, err := tools.RenderTemplate("templates/email/emailwithbutton.html", templateParameters)
+	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
 	if err != nil {
 		return
 	}
@@ -86,7 +90,7 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 		ButtonText: "Reset password",
 		Reason:     "You’re receiving this email because you recently requested to reset your password at ItsYou.Online. If this wasn’t you, please ignore this email.",
 	}
-	message, err := tools.RenderTemplate("templates/email/emailwithbutton.html", templateParameters)
+	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
 	if err != nil {
 		return
 	}
