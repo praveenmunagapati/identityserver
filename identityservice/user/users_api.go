@@ -31,11 +31,10 @@ type UsersAPI struct {
 
 func isUniquePhonenumber(user *user.User, number string, label string) (unique bool) {
 	unique = true
-	for phonelabel, phonenumber := range user.Phone {
-		if phonelabel != label && string(phonenumber) == number {
+	for _, phonenumber := range user.Phonenumbers {
+		if phonenumber.Label != label && phonenumber.Phonenumber == number {
 			unique = false
 			return
-
 		}
 	}
 	return
@@ -126,10 +125,7 @@ func isValidLabel(label string) (valid bool) {
 // Register a new email address
 func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	body := struct {
-		Label        string
-		Emailaddress string
-	}{}
+	body := user.EmailAddress{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -149,26 +145,26 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if _, err := u.GetEmailAddressByLabel(body.Label); err != nil {
+	if _, err := u.GetEmailAddressByLabel(body.Label); err == nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	if err = userMgr.SaveEmail(username, body.Label, body.Emailaddress); err != nil {
+	if err = userMgr.SaveEmail(username, body); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	valMgr := validationdb.NewManager(r)
-	validated, err := valMgr.IsEmailAddressValidated(username, body.Emailaddress)
+	validated, err := valMgr.IsEmailAddressValidated(username, body.EmailAddress)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if !validated {
-		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.Emailaddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
 	}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -182,11 +178,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
 
-	body := struct {
-		Label        string
-		Emailaddress string
-	}{}
-
+	body := user.EmailAddress{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -212,7 +204,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := userMgr.SaveEmail(username, body.Label, body.Emailaddress); err != nil {
+	if err := userMgr.SaveEmail(username, body); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -226,14 +218,14 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	valMgr := validationdb.NewManager(r)
-	validated, err := valMgr.IsEmailAddressValidated(username, body.Emailaddress)
+	validated, err := valMgr.IsEmailAddressValidated(username, body.EmailAddress)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if !validated {
-		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.Emailaddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -473,8 +465,9 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		respBody.Phone = make(map[string]user.Phonenumber)
 
 		for requestedLabel, realLabel := range authorization.Phone {
-			if value, found := userobj.Phone[realLabel]; found {
-				respBody.Phone[requestedLabel] = value
+			phonenumber, err := userobj.GetPhonenumberByLabel(realLabel)
+			if err != nil {
+				respBody.Phone[requestedLabel] = phonenumber
 			}
 		}
 	}
@@ -514,10 +507,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	body := struct {
-		Label       string
-		Phonenumber user.Phonenumber
-	}{}
+	body := user.Phonenumber{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -529,19 +519,20 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if !body.Phonenumber.IsValid() {
+	if !body.IsValid() {
 		log.Debug("Invalid phonenumber: ", body.Phonenumber)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	//Check if this label is already used
-	if _, ok := u.Phone[body.Label]; ok {
+	_, err = u.GetPhonenumberByLabel(body.Label)
+	if err == nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	if err := userMgr.SavePhone(username, body.Label, body.Phonenumber); err != nil {
+	if err := userMgr.SavePhone(username, body); err != nil {
 		log.Error("ERROR while saving a phonenumber - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -565,7 +556,7 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	phonenumbers := user.Phone
+	phonenumbers := user.Phonenumbers
 	if validated {
 		valMngr := validationdb.NewManager(r)
 		validatednumbers, err := valMngr.GetByUsernameValidatedPhonenumbers(username)
@@ -574,16 +565,16 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		for label, number := range phonenumbers {
+		for index, number := range phonenumbers {
 			found := false
 			for _, validatednumber := range validatednumbers {
-				if string(number) == validatednumber.Phonenumber {
+				if number.Phonenumber == validatednumber.Phonenumber {
 					found = true
 					break
 				}
 			}
 			if !found {
-				delete(phonenumbers, label)
+				phonenumbers = append(phonenumbers[:index], phonenumbers[index+1:]...)
 			}
 		}
 	}
@@ -604,17 +595,14 @@ func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if _, ok := userobj.Phone[label]; ok != true {
+	phonenumber, err := userobj.GetPhonenumberByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	respBody := map[string]user.Phonenumber{
-		label: userobj.Phone[label],
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(respBody)
+	json.NewEncoder(w).Encode(phonenumber)
 }
 
 // Validate phone number is the handler for POST /users/{username}/phonenumbers/{label}/validate
@@ -629,12 +617,12 @@ func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if _, ok := userobj.Phone[label]; ok != true {
+	phonenumber, err := userobj.GetPhonenumberByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	phonenumber := userobj.Phone[label]
 	validationKey := ""
 	validationKey, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
 	response := struct {
@@ -668,7 +656,8 @@ func (api UsersAPI) VerifyPhoneNumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := userobj.Phone[label]; ok != true {
+	_, err = userobj.GetPhonenumberByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -692,10 +681,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
 
-	body := struct {
-		Label       string
-		Phonenumber user.Phonenumber
-	}{}
+	body := user.Phonenumber{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -707,7 +693,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !body.Phonenumber.IsValid() {
+	if !body.IsValid() {
 		http.Error(w, "Invalid phone number", http.StatusBadRequest)
 		return
 	}
@@ -720,22 +706,23 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldnumber, ok := u.Phone[oldlabel]
-	if ok != true {
+	oldnumber, err := u.GetPhonenumberByLabel(oldlabel)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
 	if oldlabel != body.Label {
 		// Check if there already is another phone number with the new label
-		if _, ok := u.Phone[body.Label]; ok {
+		_, err := u.GetPhonenumberByLabel(body.Label)
+		if err != nil {
 			writeErrorResponse(w, http.StatusConflict, "duplicate_label")
 			return
 		}
 	}
 
-	if oldnumber != body.Phonenumber {
-		last, err := isLastVerifiedPhoneNumber(u, string(oldnumber), oldlabel, r)
+	if oldnumber.Phonenumber != body.Phonenumber {
+		last, err := isLastVerifiedPhoneNumber(u, oldnumber.Phonenumber, oldlabel, r)
 		if err != nil {
 			log.Error("ERROR while verifying last verified number - ", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -747,7 +734,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err = userMgr.SavePhone(username, body.Label, body.Phonenumber); err != nil {
+	if err = userMgr.SavePhone(username, body); err != nil {
 		log.Error("ERROR while saving phonenumber - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -762,8 +749,8 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	valMgr := validationdb.NewManager(r)
-	if oldnumber != body.Phonenumber && isUniquePhonenumber(u, string(oldnumber), oldlabel) {
-		valMgr.RemoveValidatedPhonenumber(username, string(oldnumber))
+	if oldnumber.Phonenumber != body.Phonenumber && isUniquePhonenumber(u, oldnumber.Phonenumber, oldlabel) {
+		valMgr.RemoveValidatedPhonenumber(username, oldnumber.Phonenumber)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -788,13 +775,13 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	number, ok := user.Phone[label]
-	if ok != true {
+	number, err := user.GetPhonenumberByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	last, err := isLastVerifiedPhoneNumber(user, string(number), label, r)
+	last, err := isLastVerifiedPhoneNumber(user, number.Phonenumber, label, r)
 	if err != nil {
 		log.Error("ERROR while checking if number can be deleted:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -821,7 +808,7 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if err := valMgr.RemoveValidatedPhonenumber(username, string(number)); err != nil {
+	if err := valMgr.RemoveValidatedPhonenumber(username, number.Phonenumber); err != nil {
 		log.Error("ERROR while saving user:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

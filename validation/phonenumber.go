@@ -32,7 +32,7 @@ func (service *IYOPhonenumberValidationService) RequestValidation(request *http.
 	}
 	smsmessage := fmt.Sprintf("To verify your phonenumber on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s", info.SMSCode, confirmationurl, info.SMSCode, url.QueryEscape(info.Key))
 
-	go service.SMSService.Send(string(phonenumber), smsmessage)
+	go service.SMSService.Send(phonenumber.Phonenumber, smsmessage)
 	key = info.Key
 	return
 }

@@ -21,7 +21,7 @@ type User struct {
 	Expire         db.Date                `json:"expire"`
 	Facebook       FacebookAccount        `json:"facebook"`
 	Github         GithubAccount          `json:"github"`
-	Phone          map[string]Phonenumber `json:"phone"`
+	Phonenumbers   []Phonenumber          `json:"phone"`
 	PublicKeys     []string               `json:"publicKeys"`
 	Username       string                 `json:"username"`
 	TwoFAMethod    string                 `json:"twofamethod"`
@@ -36,6 +36,16 @@ func (u *User) GetEmailAddressByLabel(label string) (email EmailAddress, err err
 		}
 	}
 	err = errors.New("Could not find EmailAddress with Label")
+	return
+}
+
+func (u *User) GetPhonenumberByLabel(label string) (phonenumber Phonenumber, err error) {
+	for _, phonenumber = range u.Phonenumbers {
+		if phonenumber.Label == label {
+			return
+		}
+	}
+	err = errors.New("Could not find Phonenumber with Label")
 	return
 }
 
