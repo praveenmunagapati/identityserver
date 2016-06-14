@@ -116,7 +116,7 @@ func (m *Manager) SaveEmail(username string, email EmailAddress) error {
 func (m *Manager) RemoveEmail(username string, label string) error {
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$pull": bson.M{"emailaddreses": bson.M{"label": label}}})
+		bson.M{"$pull": bson.M{"emailaddresses": bson.M{"label": label}}})
 }
 
 // SavePhone save or update phone along with its label
