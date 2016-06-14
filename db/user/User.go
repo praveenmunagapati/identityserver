@@ -9,24 +9,28 @@ import (
 )
 
 type EmailAddress struct {
-	EmailAddress string
-	Label        string
+	EmailAddress string `json:"emailaddress"`
+	Label        string `json:"label"`
+}
+
+type PublicKey struct {
+	PublicKey string `json:"publickey"`
+	Label     string `json:"label"`
 }
 
 type User struct {
-	ID             bson.ObjectId          `json:"-" bson:"_id,omitempty"`
-	Address        map[string]Address     `json:"address"`
-	Bank           map[string]BankAccount `json:"bank"`
-	EmailAddresses []EmailAddress         `json:"emailaddresses"`
-	Expire         db.Date                `json:"expire"`
-	Facebook       FacebookAccount        `json:"facebook"`
-	Github         GithubAccount          `json:"github"`
-	Phonenumbers   []Phonenumber          `json:"phone"`
-	PublicKeys     []string               `json:"publicKeys"`
-	Username       string                 `json:"username"`
-	TwoFAMethod    string                 `json:"twofamethod"`
-	Firstname      string                 `json:"firstname"`
-	Lastname       string                 `json:"lastname"`
+	ID             bson.ObjectId   `json:"-" bson:"_id,omitempty"`
+	Addresses      []Address       `json:"address"`
+	BankAccounts   []BankAccount   `json:"bank"`
+	EmailAddresses []EmailAddress  `json:"emailaddresses"`
+	Expire         db.Date         `json:"expire"`
+	Facebook       FacebookAccount `json:"facebook"`
+	Github         GithubAccount   `json:"github"`
+	Phonenumbers   []Phonenumber   `json:"phone"`
+	PublicKeys     []PublicKey     `json:"publicKeys"`
+	Username       string          `json:"username"`
+	Firstname      string          `json:"firstname"`
+	Lastname       string          `json:"lastname"`
 }
 
 func (u *User) GetEmailAddressByLabel(label string) (email EmailAddress, err error) {
@@ -42,6 +46,26 @@ func (u *User) GetEmailAddressByLabel(label string) (email EmailAddress, err err
 func (u *User) GetPhonenumberByLabel(label string) (phonenumber Phonenumber, err error) {
 	for _, phonenumber = range u.Phonenumbers {
 		if phonenumber.Label == label {
+			return
+		}
+	}
+	err = errors.New("Could not find Phonenumber with Label")
+	return
+}
+
+func (u *User) GetBankAccountByLabel(label string) (bankaccount BankAccount, err error) {
+	for _, bankaccount = range u.BankAccounts {
+		if bankaccount.Label == label {
+			return
+		}
+	}
+	err = errors.New("Could not find Phonenumber with Label")
+	return
+}
+
+func (u *User) GetAddressByLabel(label string) (address Address, err error) {
+	for _, address = range u.Addresses {
+		if address.Label == label {
 			return
 		}
 	}

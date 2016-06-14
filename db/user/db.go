@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"gopkg.in/mgo.v2"
@@ -132,42 +131,32 @@ func (m *Manager) RemovePhone(username string, label string) error {
 		bson.M{"$pull": bson.M{"phonenumbers": bson.M{"label": label}}})
 }
 
-// SaveAddress save or update address along with its label
-func (m *Manager) SaveAddress(username, label string, address Address) error {
-	//TODO: is this safe to do?
-	addressLabel := fmt.Sprintf("address.%s", label)
-
+// SaveAddress save or update address
+func (m *Manager) SaveAddress(username string, address Address) error {
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$set": bson.M{addressLabel: address}})
+		bson.M{"$push": bson.M{"addresses": address}})
 }
 
 // RemoveAddress remove address associated with label
 func (m *Manager) RemoveAddress(username, label string) error {
-	//TODO: is this safe to do?
-	addressLabel := fmt.Sprintf("address.%s", label)
-
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$unset": bson.M{addressLabel: ""}})
+		bson.M{"$pull": bson.M{"addresses": bson.M{"label": label}}})
 }
 
-// SaveBank save or update bank account along with its label
-func (m *Manager) SaveBank(u *User, label string, bank BankAccount) error {
-	bankLabel := fmt.Sprintf("bank.%s", label)
-
+// SaveBank save or update bank account
+func (m *Manager) SaveBank(u *User, bank BankAccount) error {
 	return m.getUserCollection().Update(
 		bson.M{"username": u.Username},
-		bson.M{"$set": bson.M{bankLabel: bank}})
+		bson.M{"$push": bson.M{"bankaccounts": bank}})
 }
 
 // RemoveBank remove bank associated with label
 func (m *Manager) RemoveBank(u *User, label string) error {
-	bankLabel := fmt.Sprintf("bank.%s", label)
-
 	return m.getUserCollection().Update(
 		bson.M{"username": u.Username},
-		bson.M{"$unset": bson.M{bankLabel: ""}})
+		bson.M{"$pull": bson.M{"bankaccounts": bson.M{"label": label}}})
 }
 
 func (m *Manager) UpdateGithubAccount(username string, githubaccount GithubAccount) (err error) {

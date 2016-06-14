@@ -20,6 +20,13 @@ types:
         scopes: string[]
         label: string
 
+  PublicKey:
+     description: PublicKey of a user
+     properties:
+        label: string
+        publickey: string
+
+
   Authorization:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
     properties:
@@ -65,9 +72,16 @@ types:
         country:
           type: string
           maxLength: 40
+        label:
+           type: string
 
   Phonenumber:
-    pattern: ^\+?[0-9]+$
+     properties:
+       phonenumber:
+         type: string
+         pattern: ^\+?[0-9]+$
+       label:
+         type: string
 
   Address:
     properties:
@@ -89,6 +103,8 @@ types:
         postalcode:
             type: string
             maxLength: 20
+        label:
+           type: string
   FacebookAccount:
     properties:
       id:
@@ -131,18 +147,9 @@ types:
         publicKeys: string[]
         expire?: datetime
         emailaddresses: EmailAddress[]
-        phone?:
-          properties:
-            "[]":
-              type: Phonenumber
-        address?:
-          properties:
-            "[]":
-              type: Address
-        bank?:
-          properties:
-            "[]":
-              type: BankAccount
+        phonenumbers: Phonenumber[]
+        addresses: Address[]
+        bankaccounts: BankAccount[]
         facebook?:
             type: FacebookAccount
         github?:
@@ -160,49 +167,39 @@ types:
               emailaddress: bob@company.com
             - label: home
               emailaddress: bob@example.com
-        phone:
-          be: "+3212341234123"
-          eg: "+2012341234123"
-        address:
-            home:
-                city: Springfield
-                street: Main street
-                nr: 45B
-                country: Tomorrowland
-                postalcode: T-9450
-            work:
-                city: Capital City
-                street: Capital street
-                nr: "1"
-                country: Tomorrowland
-                postalcode: T-1000
-        bank:
-            kbc:
-                iban: TL123451234512345
-                bic: ABCDEF
-                country: Tomorrowland
+        phonenumbers:
+            - label: be
+              phonenumber: "+3212341234123"
+            - label: eg
+              phonenumber: "+2012341234123"
+        addresses:
+            - label: home
+              city: Springfield
+              street: Main street
+              nr: 45B
+              country: Tomorrowland
+              postalcode: T-9450
+            - label: work
+              city: Capital City
+              street: Capital street
+              nr: "1"
+              country: Tomorrowland
+              postalcode: T-1000
+        bankaccounts:
+            - label: kbc
+              iban: TL123451234512345
+              bic: ABCDEF
+              country: Tomorrowland
 
   userview:
     properties:
         username:
             type: string
-        publicKeys?: string[]
-        email?:
-          properties:
-            "[]":
-              type: string
-        phone?:
-          properties:
-            "[]":
-              type: Phonenumber
-        address?:
-          properties:
-            "[]":
-              type: Address
-        bank?:
-          properties:
-            "[]":
-              type: BankAccount
+        publicKeys?: PublicKey[]
+        emailaddresses: EmailAddress[]
+        phonenumbers: Phonenumber[]
+        addresses: Address[]
+        bankaccounts: BankAccount[]
         facebook?:
             type: FacebookAccount
         github?:

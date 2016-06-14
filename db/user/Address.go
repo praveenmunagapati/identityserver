@@ -7,4 +7,5 @@ type Address struct {
 	Other      string `json:"other" validate:"max=30"`
 	Postalcode string `json:"postalcode" validate:"max=20"`
 	Street     string `json:"street" validate:"max=50"`
+	Label      string `json:"label"`
 }

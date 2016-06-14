@@ -4,8 +4,8 @@ import "regexp"
 
 //Phonenumber defines a phonenumber and has functions for validation
 type Phonenumber struct {
-	Label       string
-	Phonenumber string
+	Label       string `json:"label"`
+	Phonenumber string `json:"phonenumber"`
 }
 
 var (
