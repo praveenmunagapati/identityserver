@@ -21,17 +21,13 @@
         vm.user = {};
 
         UserDialogService.init(vm);
-        vm.showAddEmailDialog = addEmail;
-        vm.showAddPhonenumberDialog = addPhone;
-        vm.showAddAddressDialog = addAddress;
+        vm.showEmailDialog = addEmail;
+        vm.showPhonenumberDialog = addPhone;
+        vm.showAddressDialog = addAddress;
         vm.showBankAccountDialog = bank;
 
-
+        var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts'];
         $scope.requested = {
-            address: [],
-            bank: [],
-            email: [],
-            phone: [],
             organizations: {},
             facebook: false,
             github: false
@@ -39,6 +35,10 @@
         $scope.authorizations = {
             organizations: {}
         };
+        angular.forEach(properties, function (prop) {
+            $scope.requested[prop] = [];
+            $scope.authorizations[prop] = [];
+        });
 
         $scope.update = update;
         $scope.isNew = true;
@@ -82,16 +82,16 @@
                         $scope.requested.organizations[permissionLabel] = true;
                     }
                     else if (scope.startsWith('user:address:')) {
-                        $scope.requested.address.push(permissionLabel);
+                        $scope.requested.addresses.push(permissionLabel);
                     }
                     else if (scope.startsWith('user:email:')) {
-                        $scope.requested.email.push(permissionLabel);
+                        $scope.requested.emailaddresses.push(permissionLabel);
                     }
                     else if (scope.startsWith('user:phone:')) {
-                        $scope.requested.phone.push(permissionLabel);
+                        $scope.requested.phonenumbers.push(permissionLabel);
                     }
                     else if (scope.startsWith('user:bankaccount:')) {
-                        $scope.requested.bank.push(permissionLabel);
+                        $scope.requested.bankaccounts.push(permissionLabel);
                     }
                     else if (scope === 'user:github') {
                         $scope.requested.github = true;
@@ -102,15 +102,11 @@
                         $scope.authorizations.facebook = true;
                     }
                 });
-                var properties = ['address', 'email', 'phone', 'bank'];
                 angular.forEach($scope.requested, function (value, property) {
                     if (properties.indexOf(property) === -1) {
                         return;
                     }
                     // loop over requests
-                    if (!$scope.authorizations[property]) {
-                        $scope.authorizations[property] = {};
-                    }
                     // Empty label -> "main"
                     angular.forEach(value, function (requestedLabel) {
                         if (!requestedLabel) {
@@ -119,14 +115,13 @@
                             $scope.requested[property].push(requestedLabel);
                         }
                     });
-                    var prop = vm.user[property];
                     angular.forEach(value, function (requestedLabel) {
                         // select first by default, None if the user did not configure this property yet
-                        if (prop) {
-                            $scope.authorizations[property][requestedLabel] = Object.keys(prop)[0] || '';
-                        } else {
-                            $scope.authorizations[property][requestedLabel] = '';
-                        }
+                        var authorization = {
+                            requestedlabel: requestedLabel,
+                            reallabel: vm.user[property].length ? vm.user[property][0].label : ''
+                        };
+                        $scope.authorizations[property].push(authorization);
                     });
                 });
             }
@@ -154,28 +149,28 @@
         }
 
         function addEmail(event, label) {
-            selectDefault(UserDialogService.addEmail, event, label, 'email');
+            selectDefault(UserDialogService.emailDetail, event, label, 'emailaddresses');
         }
 
         function addPhone(event, label) {
-            selectDefault(UserDialogService.addPhonenumber, event, label, 'phone');
+            selectDefault(UserDialogService.phonenumberDetail, event, label, 'phonenumbers');
         }
 
         function addAddress(event, label) {
-            selectDefault(UserDialogService.addAddress, event, label, 'address');
+            selectDefault(UserDialogService.addressDetail, event, label, 'addresses');
         }
 
         function bank(event, label) {
-            selectDefault(UserDialogService.bankAccount, event, label, 'bank');
+            selectDefault(UserDialogService.bankAccount, event, label, 'bankaccounts');
         }
 
         function selectDefault(fx, event, label, property) {
             fx(event).then(function (data) {
-                $scope.authorizations[property][label] = data.newLabel;
+                $scope.getAuthorizationByLabel(property, label).reallabel = data.data.label;
 
             }, function () {
                 // Select first possible value, else 'None'
-                $scope.authorizations[property][label] = Object.keys(vm.user[property])[0] || '';
+                $scope.getAuthorizationByLabel(property, label).reallabel = vm.user[property][0] ? vm.user[property][0].label : '';
             });
         }
     }

@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"fmt"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
@@ -18,7 +20,6 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/validation"
-	"strings"
 )
 
 type UsersAPI struct {
@@ -30,11 +31,10 @@ type UsersAPI struct {
 
 func isUniquePhonenumber(user *user.User, number string, label string) (unique bool) {
 	unique = true
-	for phonelabel, phonenumber := range user.Phone {
-		if phonelabel != label && string(phonenumber) == number {
+	for _, phonenumber := range user.Phonenumbers {
+		if phonenumber.Label != label && phonenumber.Phonenumber == number {
 			unique = false
 			return
-
 		}
 	}
 	return
@@ -125,10 +125,7 @@ func isValidLabel(label string) (valid bool) {
 // Register a new email address
 func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	body := struct {
-		Label        string
-		Emailaddress string
-	}{}
+	body := user.EmailAddress{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -148,26 +145,26 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if _, ok := u.Email[body.Label]; ok {
+	if _, err := u.GetEmailAddressByLabel(body.Label); err == nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	if err = userMgr.SaveEmail(username, body.Label, body.Emailaddress); err != nil {
+	if err = userMgr.SaveEmail(username, body); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	valMgr := validationdb.NewManager(r)
-	validated, err := valMgr.IsEmailAddressValidated(username, body.Emailaddress)
+	validated, err := valMgr.IsEmailAddressValidated(username, body.EmailAddress)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if !validated {
-		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.Emailaddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
 	}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -181,11 +178,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
 
-	body := struct {
-		Label        string
-		Emailaddress string
-	}{}
-
+	body := user.EmailAddress{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -205,13 +198,13 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		if _, ok := u.Email[body.Label]; ok {
+		if _, err := u.GetEmailAddressByLabel(body.Label); err == nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
 	}
 
-	if err := userMgr.SaveEmail(username, body.Label, body.Emailaddress); err != nil {
+	if err := userMgr.SaveEmail(username, body); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -225,14 +218,14 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	valMgr := validationdb.NewManager(r)
-	validated, err := valMgr.IsEmailAddressValidated(username, body.Emailaddress)
+	validated, err := valMgr.IsEmailAddressValidated(username, body.EmailAddress)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if !validated {
-		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.Emailaddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -253,13 +246,13 @@ func (api UsersAPI) ValidateEmailAddress(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if _, ok := userobj.Email[label]; ok != true {
+	email, err := userobj.GetEmailAddressByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	email := userobj.Email[label]
-	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -268,14 +261,14 @@ func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	validated := strings.Contains(r.URL.RawQuery, "validated")
 	userMgr := user.NewManager(r)
-
-	user, err := userMgr.GetByName(username)
+	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	emails := user.Email
+	var emails []user.EmailAddress
 	if validated {
+		emails = make([]user.EmailAddress, 0)
 		valMngr := validationdb.NewManager(r)
 		validatedemails, err := valMngr.GetByUsernameValidatedEmailAddress(username)
 		if err != nil {
@@ -283,18 +276,16 @@ func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		for label, email := range emails {
-			found := false
+		for _, email := range userobj.EmailAddresses {
 			for _, validatedemail := range validatedemails {
-				if string(email) == validatedemail.EmailAddress {
-					found = true
+				if email.EmailAddress == validatedemail.EmailAddress {
+					emails = append(emails, email)
 					break
 				}
 			}
-			if !found {
-				delete(emails, label)
-			}
 		}
+	} else {
+		emails = userobj.EmailAddresses
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -317,12 +308,12 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email, ok := u.Email[label]
-	if !ok {
+	email, err := u.GetEmailAddressByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	if len(u.Email) == 1 {
+	if len(u.EmailAddresses) == 1 {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -332,7 +323,7 @@ func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if err = valMgr.RemoveValidatedEmailAddress(username, email); err != nil {
+	if err = valMgr.RemoveValidatedEmailAddress(username, email.EmailAddress); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -447,42 +438,68 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	if authorization.Facebook {
 		respBody.Facebook = userobj.Facebook.Name
 	}
-	if authorization.Address != nil {
-		respBody.Address = make(map[string]user.Address)
+	if authorization.Addresses != nil {
+		respBody.Addresses = make([]user.Address, 0)
 
-		for requestedLabel, realLabel := range authorization.Address {
-			if value, found := userobj.Address[realLabel]; found {
-				respBody.Address[requestedLabel] = value
+		for _, addressmap := range authorization.Addresses {
+			address, err := userobj.GetAddressByLabel(addressmap.RealLabel)
+			if err != nil {
+				newaddress := user.Address{
+					Label:      addressmap.RequestedLabel,
+					City:       address.City,
+					Country:    address.Country,
+					Nr:         address.Nr,
+					Other:      address.Other,
+					Postalcode: address.Postalcode,
+					Street:     address.Street,
+				}
+				respBody.Addresses = append(respBody.Addresses, newaddress)
 			}
 		}
 	}
 
-	if authorization.Email != nil {
-		respBody.Email = make(map[string]string)
+	if authorization.EmailAddresses != nil {
+		respBody.EmailAddresses = make([]user.EmailAddress, 0)
 
-		for requestedLabel, realLabel := range authorization.Email {
-			if value, found := userobj.Email[realLabel]; found {
-				respBody.Email[requestedLabel] = value
+		for _, emailmap := range authorization.EmailAddresses {
+			email, err := userobj.GetEmailAddressByLabel(emailmap.RealLabel)
+			if err != nil {
+				newemail := user.EmailAddress{
+					Label:        emailmap.RequestedLabel,
+					EmailAddress: email.EmailAddress,
+				}
+				respBody.EmailAddresses = append(respBody.EmailAddresses, newemail)
 			}
 		}
 	}
 
-	if authorization.Phone != nil {
-		respBody.Phone = make(map[string]user.Phonenumber)
-
-		for requestedLabel, realLabel := range authorization.Phone {
-			if value, found := userobj.Phone[realLabel]; found {
-				respBody.Phone[requestedLabel] = value
+	if authorization.Phonenumbers != nil {
+		respBody.Phonenumbers = make([]user.Phonenumber, 0)
+		for _, phonemap := range authorization.Phonenumbers {
+			phonenumber, err := userobj.GetPhonenumberByLabel(phonemap.RealLabel)
+			if err != nil {
+				newnumber := user.Phonenumber{
+					Label:       phonemap.RequestedLabel,
+					Phonenumber: phonenumber.Phonenumber,
+				}
+				respBody.Phonenumbers = append(respBody.Phonenumbers, newnumber)
 			}
 		}
 	}
 
-	if authorization.Bank != nil {
-		respBody.Bank = make(map[string]user.BankAccount)
+	if authorization.BankAccounts != nil {
+		respBody.BankAccounts = make([]user.BankAccount, 0)
 
-		for requestedLabel, realLabel := range authorization.Bank {
-			if value, found := userobj.Bank[realLabel]; found {
-				respBody.Bank[requestedLabel] = value
+		for _, bankmap := range authorization.BankAccounts {
+			bank, err := userobj.GetBankAccountByLabel(bankmap.RealLabel)
+			if err != nil {
+				newbank := user.BankAccount{
+					Label:   bankmap.RealLabel,
+					Bic:     bank.Bic,
+					Country: bank.Country,
+					Iban:    bank.Iban,
+				}
+				respBody.BankAccounts = append(respBody.BankAccounts, newbank)
 			}
 		}
 	}
@@ -512,10 +529,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	body := struct {
-		Label       string
-		Phonenumber user.Phonenumber
-	}{}
+	body := user.Phonenumber{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -527,19 +541,20 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if !body.Phonenumber.IsValid() {
+	if !body.IsValid() {
 		log.Debug("Invalid phonenumber: ", body.Phonenumber)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	//Check if this label is already used
-	if _, ok := u.Phone[body.Label]; ok {
+	_, err = u.GetPhonenumberByLabel(body.Label)
+	if err == nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	if err := userMgr.SavePhone(username, body.Label, body.Phonenumber); err != nil {
+	if err := userMgr.SavePhone(username, body); err != nil {
 		log.Error("ERROR while saving a phonenumber - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -558,13 +573,14 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 	validated := strings.Contains(r.URL.RawQuery, "validated")
 	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	phonenumbers := user.Phone
+	var phonenumbers []user.Phonenumber
 	if validated {
+		phonenumbers = make([]user.Phonenumber, 0)
 		valMngr := validationdb.NewManager(r)
 		validatednumbers, err := valMngr.GetByUsernameValidatedPhonenumbers(username)
 		if err != nil {
@@ -572,18 +588,16 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		for label, number := range phonenumbers {
-			found := false
+		for _, number := range userobj.Phonenumbers {
 			for _, validatednumber := range validatednumbers {
-				if string(number) == validatednumber.Phonenumber {
-					found = true
+				if number.Phonenumber == validatednumber.Phonenumber {
+					phonenumbers = append(phonenumbers, number)
 					break
 				}
 			}
-			if !found {
-				delete(phonenumbers, label)
-			}
 		}
+	} else {
+		phonenumbers = userobj.Phonenumbers
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -602,17 +616,14 @@ func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if _, ok := userobj.Phone[label]; ok != true {
+	phonenumber, err := userobj.GetPhonenumberByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	respBody := map[string]user.Phonenumber{
-		label: userobj.Phone[label],
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(respBody)
+	json.NewEncoder(w).Encode(phonenumber)
 }
 
 // Validate phone number is the handler for POST /users/{username}/phonenumbers/{label}/validate
@@ -627,12 +638,12 @@ func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if _, ok := userobj.Phone[label]; ok != true {
+	phonenumber, err := userobj.GetPhonenumberByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	phonenumber := userobj.Phone[label]
 	validationKey := ""
 	validationKey, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
 	response := struct {
@@ -666,7 +677,8 @@ func (api UsersAPI) VerifyPhoneNumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := userobj.Phone[label]; ok != true {
+	_, err = userobj.GetPhonenumberByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -690,10 +702,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
 
-	body := struct {
-		Label       string
-		Phonenumber user.Phonenumber
-	}{}
+	body := user.Phonenumber{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -705,7 +714,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !body.Phonenumber.IsValid() {
+	if !body.IsValid() {
 		http.Error(w, "Invalid phone number", http.StatusBadRequest)
 		return
 	}
@@ -718,22 +727,23 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldnumber, ok := u.Phone[oldlabel]
-	if ok != true {
+	oldnumber, err := u.GetPhonenumberByLabel(oldlabel)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
 	if oldlabel != body.Label {
 		// Check if there already is another phone number with the new label
-		if _, ok := u.Phone[body.Label]; ok {
+		_, err := u.GetPhonenumberByLabel(body.Label)
+		if err == nil {
 			writeErrorResponse(w, http.StatusConflict, "duplicate_label")
 			return
 		}
 	}
 
-	if oldnumber != body.Phonenumber {
-		last, err := isLastVerifiedPhoneNumber(u, string(oldnumber), oldlabel, r)
+	if oldnumber.Phonenumber != body.Phonenumber {
+		last, err := isLastVerifiedPhoneNumber(u, oldnumber.Phonenumber, oldlabel, r)
 		if err != nil {
 			log.Error("ERROR while verifying last verified number - ", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -745,7 +755,7 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err = userMgr.SavePhone(username, body.Label, body.Phonenumber); err != nil {
+	if err = userMgr.SavePhone(username, body); err != nil {
 		log.Error("ERROR while saving phonenumber - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -760,8 +770,8 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	valMgr := validationdb.NewManager(r)
-	if oldnumber != body.Phonenumber && isUniquePhonenumber(u, string(oldnumber), oldlabel) {
-		valMgr.RemoveValidatedPhonenumber(username, string(oldnumber))
+	if oldnumber.Phonenumber != body.Phonenumber && isUniquePhonenumber(u, oldnumber.Phonenumber, oldlabel) {
+		valMgr.RemoveValidatedPhonenumber(username, oldnumber.Phonenumber)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -786,13 +796,13 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	number, ok := user.Phone[label]
-	if ok != true {
+	number, err := user.GetPhonenumberByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	last, err := isLastVerifiedPhoneNumber(user, string(number), label, r)
+	last, err := isLastVerifiedPhoneNumber(user, number.Phonenumber, label, r)
 	if err != nil {
 		log.Error("ERROR while checking if number can be deleted:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -819,7 +829,7 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if err := valMgr.RemoveValidatedPhonenumber(username, string(number)); err != nil {
+	if err := valMgr.RemoveValidatedPhonenumber(username, number.Phonenumber); err != nil {
 		log.Error("ERROR while saving user:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -834,18 +844,15 @@ func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := user.NewManager(r)
 
-	body := struct {
-		Label string
-		Bank  user.BankAccount
-	}{}
+	bank := user.BankAccount{}
 
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&bank); err != nil {
 		log.Error("Error while decoding the body: ", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	if !isValidLabel(body.Label) {
+	if !isValidLabel(bank.Label) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -857,12 +864,13 @@ func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Check if this label is already used
-	if _, ok := user.Bank[body.Label]; ok {
+	_, err = user.GetBankAccountByLabel(bank.Label)
+	if err == nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	if err := userMgr.SaveBank(user, body.Label, body.Bank); err != nil {
+	if err := userMgr.SaveBank(user, bank); err != nil {
 		log.Error("ERROR while saving address:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -872,7 +880,7 @@ func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(body.Bank)
+	json.NewEncoder(w).Encode(bank)
 }
 
 // It is handler for GET /users/{username}/banks
@@ -887,7 +895,7 @@ func (api UsersAPI) usernamebanksGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user.Bank)
+	json.NewEncoder(w).Encode(user.BankAccounts)
 }
 
 // It is handler for GET /users/{username}/banks/{label}
@@ -902,17 +910,14 @@ func (api UsersAPI) usernamebankslabelGet(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if _, ok := userobj.Bank[label]; ok != true {
+	bank, err := userobj.GetBankAccountByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	respBody := map[string]user.BankAccount{
-		label: userobj.Bank[label],
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(respBody)
+	json.NewEncoder(w).Encode(bank)
 }
 
 // Update an existing bankaccount and label.
@@ -922,17 +927,14 @@ func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request
 	oldlabel := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
 
-	body := struct {
-		Label string
-		Bank  user.BankAccount
-	}{}
+	newbank := user.BankAccount{}
 
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&newbank); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	if !isValidLabel(body.Label) {
+	if !isValidLabel(newbank.Label) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -943,25 +945,27 @@ func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if _, ok := user.Bank[oldlabel]; ok != true {
+	oldbank, err := user.GetBankAccountByLabel(oldlabel)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if oldlabel != body.Label {
-		if _, ok := user.Bank[body.Label]; ok {
+	if oldbank.Label != newbank.Label {
+		_, err := user.GetBankAccountByLabel(newbank.Label)
+		if err == nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
 	}
 
-	if err = userMgr.SaveBank(user, body.Label, body.Bank); err != nil {
+	if err = userMgr.SaveBank(user, newbank); err != nil {
 		log.Error("ERROR while saving bank - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	if oldlabel != body.Label {
+	if oldlabel != newbank.Label {
 		if err := userMgr.RemoveBank(user, oldlabel); err != nil {
 			log.Error(err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -970,7 +974,7 @@ func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(body.Bank)
+	json.NewEncoder(w).Encode(newbank)
 }
 
 // Delete a BankAccount
@@ -986,7 +990,8 @@ func (api UsersAPI) usernamebankslabelDelete(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if _, ok := user.Bank[label]; ok != true {
+	_, err = user.GetBankAccountByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -1006,18 +1011,15 @@ func (api UsersAPI) RegisterNewAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := user.NewManager(r)
 
-	body := struct {
-		Label   string
-		Address user.Address
-	}{}
+	address := user.Address{}
 
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&address); err != nil {
 		log.Debug("Error while decoding the body: ", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	if !isValidLabel(body.Label) {
+	if !isValidLabel(address.Label) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -1029,12 +1031,13 @@ func (api UsersAPI) RegisterNewAddress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Check if this label is already used
-	if _, ok := u.Address[body.Label]; ok {
+	_, err = u.GetAddressByLabel(address.Label)
+	if err == nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	if err := userMgr.SaveAddress(username, body.Label, body.Address); err != nil {
+	if err := userMgr.SaveAddress(username, address); err != nil {
 		log.Error("ERROR while saving address:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -1044,7 +1047,7 @@ func (api UsersAPI) RegisterNewAddress(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	json.NewEncoder(w).Encode(body)
+	json.NewEncoder(w).Encode(address)
 }
 
 // It is handler for GET /users/{username}/addresses
@@ -1059,7 +1062,7 @@ func (api UsersAPI) usernameaddressesGet(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user.Address)
+	json.NewEncoder(w).Encode(user.Addresses)
 }
 
 // It is handler for GET /users/{username}/addresses/{label}
@@ -1074,17 +1077,14 @@ func (api UsersAPI) usernameaddresseslabelGet(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if _, ok := userobj.Address[label]; ok != true {
+	address, err := userobj.GetAddressByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	respBody := map[string]user.Address{
-		label: userobj.Address[label],
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(respBody)
+	json.NewEncoder(w).Encode(address)
 }
 
 // UpdateAddress is the handler for PUT /users/{username}/addresses/{label}
@@ -1093,17 +1093,13 @@ func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
 
-	body := struct {
-		Label   string
-		Address user.Address
-	}{}
-
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	newaddress := user.Address{}
+	if err := json.NewDecoder(r.Body).Decode(&newaddress); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	if !isValidLabel(body.Label) {
+	if !isValidLabel(newaddress.Label) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -1116,25 +1112,27 @@ func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := u.Address[oldlabel]; ok != true {
+	_, err = u.GetAddressByLabel(oldlabel)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if oldlabel != body.Label {
-		if _, ok := u.Address[body.Label]; ok {
+	if oldlabel != newaddress.Label {
+		_, err = u.GetAddressByLabel(newaddress.Label)
+		if err == nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
 	}
 
-	if err = userMgr.SaveAddress(username, body.Label, body.Address); err != nil {
+	if err = userMgr.SaveAddress(username, newaddress); err != nil {
 		log.Error("ERROR while saving address - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	if oldlabel != body.Label {
+	if oldlabel != newaddress.Label {
 		if err := userMgr.RemoveAddress(username, oldlabel); err != nil {
 			log.Error(err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -1144,7 +1142,7 @@ func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(body)
+	json.NewEncoder(w).Encode(newaddress)
 }
 
 // DeleteAddress is the handler for DELETE /users/{username}/addresses/{label}
@@ -1160,12 +1158,13 @@ func (api UsersAPI) DeleteAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := u.Address[label]; ok != true {
+	_, err = u.GetAddressByLabel(label)
+	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if err := userMgr.RemoveAddress(username, label); err != nil {
+	if err = userMgr.RemoveAddress(username, label); err != nil {
 		log.Error("ERROR while saving address:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"gopkg.in/mgo.v2"
@@ -104,81 +103,71 @@ func (m *Manager) Delete(u *User) error {
 }
 
 // SaveEmail save or update email along with its label
-func (m *Manager) SaveEmail(username string, label string, email string) error {
-	//TODO: is this safe to do?
-	emailLabel := fmt.Sprintf("email.%s", label)
-
+func (m *Manager) SaveEmail(username string, email EmailAddress) error {
+	if err := m.RemoveEmail(username, email.Label); err != nil {
+		return err
+	}
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$set": bson.M{emailLabel: email}})
+		bson.M{"$push": bson.M{"emailaddresses": email}})
 }
 
 // RemoveEmail remove email associated with label
 func (m *Manager) RemoveEmail(username string, label string) error {
-	//TODO: is this safe to do?
-	emailLabel := fmt.Sprintf("email.%s", label)
-
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$unset": bson.M{emailLabel: ""}})
+		bson.M{"$pull": bson.M{"emailaddresses": bson.M{"label": label}}})
 }
 
 // SavePhone save or update phone along with its label
-func (m *Manager) SavePhone(username string, label string, phonenumber Phonenumber) error {
-	//TODO: is this safe to do?
-	phoneLabel := fmt.Sprintf("phone.%s", label)
-
+func (m *Manager) SavePhone(username string, phonenumber Phonenumber) error {
+	if err := m.RemovePhone(username, phonenumber.Label); err != nil {
+		return err
+	}
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$set": bson.M{phoneLabel: phonenumber}})
+		bson.M{"$push": bson.M{"phonenumbers": phonenumber}})
 }
 
 // RemovePhone remove phone associated with label
 func (m *Manager) RemovePhone(username string, label string) error {
-	//TODO: is this safe to do?
-	phoneLabel := fmt.Sprintf("phone.%s", label)
-
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$unset": bson.M{phoneLabel: ""}})
+		bson.M{"$pull": bson.M{"phonenumbers": bson.M{"label": label}}})
 }
 
-// SaveAddress save or update address along with its label
-func (m *Manager) SaveAddress(username, label string, address Address) error {
-	//TODO: is this safe to do?
-	addressLabel := fmt.Sprintf("address.%s", label)
-
+// SaveAddress save or update address
+func (m *Manager) SaveAddress(username string, address Address) error {
+	if err := m.RemoveAddress(username, address.Label); err != nil {
+		return err
+	}
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$set": bson.M{addressLabel: address}})
+		bson.M{"$push": bson.M{"addresses": address}})
 }
 
 // RemoveAddress remove address associated with label
 func (m *Manager) RemoveAddress(username, label string) error {
-	//TODO: is this safe to do?
-	addressLabel := fmt.Sprintf("address.%s", label)
-
 	return m.getUserCollection().Update(
 		bson.M{"username": username},
-		bson.M{"$unset": bson.M{addressLabel: ""}})
+		bson.M{"$pull": bson.M{"addresses": bson.M{"label": label}}})
 }
 
-// SaveBank save or update bank account along with its label
-func (m *Manager) SaveBank(u *User, label string, bank BankAccount) error {
-	bankLabel := fmt.Sprintf("bank.%s", label)
-
+// SaveBank save or update bank account
+func (m *Manager) SaveBank(u *User, bank BankAccount) error {
+	if err := m.RemoveBank(u, bank.Label); err != nil {
+		return err
+	}
 	return m.getUserCollection().Update(
 		bson.M{"username": u.Username},
-		bson.M{"$set": bson.M{bankLabel: bank}})
+		bson.M{"$push": bson.M{"bankaccounts": bank}})
 }
 
 // RemoveBank remove bank associated with label
 func (m *Manager) RemoveBank(u *User, label string) error {
-	bankLabel := fmt.Sprintf("bank.%s", label)
-
 	return m.getUserCollection().Update(
 		bson.M{"username": u.Username},
-		bson.M{"$unset": bson.M{bankLabel: ""}})
+		bson.M{"$pull": bson.M{"bankaccounts": bson.M{"label": label}}})
 }
 
 func (m *Manager) UpdateGithubAccount(username string, githubaccount GithubAccount) (err error) {

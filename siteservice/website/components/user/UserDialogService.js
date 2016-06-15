@@ -10,14 +10,11 @@
 
     function UserDialogService($window, $q, $interval, $mdMedia, $mdDialog, UserService, configService) {
         var vm;
-        var genericDetailControllerParams = ['$scope', '$mdDialog', 'username', '$window', 'label', 'data',
+        var genericDetailControllerParams = ['$scope', '$mdDialog', 'user', '$window', 'data',
             'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
         return {
             init: init,
-            addEmail: addEmail,
             emailDetail: emailDetail,
-            addPhonenumber: addPhonenumber,
-            addAddress: addAddress,
             addressDetail: addressDetail,
             phonenumberDetail: phonenumberDetail,
             verifyPhone: verifyPhone,
@@ -36,186 +33,169 @@
         function doNothing() {
         }
 
-        function addEmail(ev) {
+        function findByLabel(property, label) {
+            return vm.user[property].filter(function (val) {
+                return val.label === label;
+            })[0];
+        }
+
+        function emailDetail(ev, email) {
+
             return $q(function (resolve, reject) {
+                email = email || {};
+                var originalEmail = JSON.parse(JSON.stringify(email));
                 $mdDialog.show({
-                    controller: ['$scope', '$mdDialog', '$window', 'UserService', 'username', 'label', 'emailaddress', 'deleteIsPossible', EmailDetailDialogController],
-                    controllerAs: 'ctrl',
+                    controller: genericDetailControllerParams,
                     templateUrl: 'components/user/views/emailaddressdialog.html',
                     targetEvent: ev,
                     fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                     locals: {
-                        username: vm.username,
-                        label: "",
-                        emailaddress: "",
-                        deleteIsPossible: false
+                        user: vm.user,
+                        data: email,
+                        createFunction: UserService.registerNewEmailAddress,
+                        updateFunction: UserService.updateEmailAddress,
+                        deleteFunction: UserService.deleteEmailAddress
                     }
                 })
                     .then(
                         function (data) {
-                            vm.user.email[data.newLabel] = data.emailaddress;
+                            if (data.fx === 'create') {
+                                vm.user.emailaddresses.push(data.data);
+                            } else if (data.fx === 'delete') {
+                                vm.user.emailaddresses.splice(vm.user.emailaddresses.indexOf(email), 1);
+                            }
                             resolve(data);
-                        }, reject);
+                        }, function (response) {
+                            angular.forEach(originalEmail, function (value, key) {
+                                email[key] = value;
+                            });
+                            reject(response);
+                        });
             });
         }
 
-        function emailDetail(ev, label, emailaddress) {
-            $mdDialog.show({
-                controller: ['$scope', '$mdDialog', '$window', 'UserService', 'username', 'label', 'emailaddress', 'deleteIsPossible', EmailDetailDialogController],
-                controllerAs: 'ctrl',
-                templateUrl: 'components/user/views/emailaddressdialog.html',
-                targetEvent: ev,
-                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
-                locals: {
-                    username: vm.username,
-                    label: label,
-                    emailaddress: emailaddress,
-                    deleteIsPossible: Object.keys(vm.user.email).length > 1
-                }
-            })
-                .then(
-                    function (data) {
-                        if (data.newLabel) {
-                            vm.user.email[data.newLabel] = data.emailaddress;
-                        }
-                        if (!data.newLabel || data.newLabel != data.originalLabel) {
-                            delete vm.user.email[data.originalLabel];
-                        }
-                    });
-        }
+        function phonenumberDetail(ev, phone) {
+            return $q(function (res, rej) {
+                phone = phone || {};
+                var originalPhone = JSON.parse(JSON.stringify(phone));
 
-        function addPhonenumber(ev) {
-            return $q(function (resolve, reject) {
+                function deletePhoneNumber(username, label) {
+                    return $q(function (resolve, reject) {
+                        rollbackPhoneNumber();
+                        UserService
+                            .deletePhonenumber(username, phone.label, false)
+                            .then(resolve, function (response) {
+                                if (response.status === 409) {
+                                    var errorMsg, dialog;
+                                    if (response.data.error === 'warning_delete_last_verified_phone_number') {
+                                        errorMsg = 'Are you sure you want to delete this phone number? <br />' +
+                                            'It is your last verified phone number, which means you will <br />' +
+                                            'no longer be able to login using sms confirmations.';
+                                        dialog = $mdDialog.confirm()
+                                            .title('Confirm deletion')
+                                            .ok('Confirm')
+                                            .cancel('Cancel');
+                                    }
+                                    else if (response.data.error === 'cannot_delete_last_verified_phone_number') {
+                                        errorMsg = 'You cannot delete your last verified phone number. <br />' +
+                                            'Please change your 2 factor authentication method or add another verified phone number.';
+                                        dialog = $mdDialog.alert()
+                                            .title('Error')
+                                            .ok('Close');
+                                    }
+                                    dialog = dialog.htmlContent(errorMsg)
+                                        .ariaLabel('Delete phone number')
+                                        .targetEvent(ev);
+                                    $mdDialog.show(dialog)
+                                        .then(function () {
+                                            UserService
+                                                .deletePhonenumber(username, label, true)
+                                                .then(function () {
+                                                    // Manually remove phone number since the dialog which executes the updatePhoneNumber promise callback had been closed before
+                                                    vm.user.phonenumbers.splice(vm.user.phonenumbers.indexOf(phone), 1);
+                                                }, function () {
+                                                    showSimpleDialog('Could not delete phone number. Please try again later.');
+                                                });
+                                        });
+                                } else {
+                                    reject();
+                                    showSimpleDialog('Could not delete phone number. Please try again later.');
+                                }
+                            });
+                    });
+                }
+
                 $mdDialog.show({
                     controller: genericDetailControllerParams,
                     templateUrl: 'components/user/views/phonenumberdialog.html',
                     targetEvent: ev,
                     fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                     locals: {
-                        username: vm.username,
-                        label: "",
-                        data: "",
+                        user: vm.user,
+                        data: phone,
                         createFunction: UserService.registerNewPhonenumber,
                         updateFunction: UserService.updatePhonenumber,
-                        deleteFunction: UserService.deletePhonenumber
+                        deleteFunction: deletePhoneNumber
                     }
                 })
-                    .then(
-                        function (data) {
-                            vm.user.phone[data.newLabel] = data.data;
-                            // Verify a phonenumber if it's the same number as an already verified one.
-                            var isVerified = false;
-                            angular.forEach(vm.user.verifiedPhones, function (number, label) {
-                                if (number === data.data) {
-                                    vm.user.verifiedPhones[data.newLabel] = data.data;
-                                    isVerified = true;
+                    .then(updatePhoneNumber, rollbackPhoneNumber);
+
+                function rollbackPhoneNumber(response) {
+                    angular.forEach(originalPhone, function (value, key) {
+                        phone[key] = value;
+                    });
+                    rej(response);
+                }
+
+                function updatePhoneNumber(data) {
+                    // no data is provided when dialog is closed because another dialog opened (in case a confirmation is asked)
+                    if (data) {
+                        var newPhone = data.data;
+                        if (data.fx === 'delete') {
+                            vm.user.phonenumbers.splice(vm.user.phonenumbers.indexOf(phone), 1);
+                        }
+                        else {
+                            // Mark a phonenumber as verified if it's the same number as an already verified one.
+                            // Executed when updating and adding
+                            vm.user.phonenumbers.map(function (number) {
+                                if (number.phonenumber === newPhone.phonenumber) {
+                                    newPhone.verified = true;
                                 }
                             });
-                            if (!isVerified) {
-                                verifyPhone(ev, data.newLabel, data.data);
+                            if (data.fx === 'create') {
+                                vm.user.phonenumbers.push(newPhone);
                             }
-                            resolve(data);
-                        }, reject);
+                            if (!newPhone.verified) {
+                                verifyPhone(ev, newPhone);
+                            }
+                        }
+                    }
+                    res(data);
+                }
+
             });
         }
 
-        function phonenumberDetail(ev, label, phonenumber) {
-            function deletePhoneNumber(username, label) {
-                return $q(function (resolve, reject) {
-                    UserService
-                        .deletePhonenumber(username, label, false)
-                        .then(resolve, function (response) {
-                            if (response.status === 409) {
-                                var errorMsg, dialog;
-                                if (response.data.error === 'warning_delete_last_verified_phone_number') {
-                                    errorMsg = 'Are you sure you want to delete this phone number? <br />' +
-                                        'It is your last verified phone number, which means you will <br />' +
-                                        'no longer be able to login using sms confirmations.';
-                                    dialog = $mdDialog.confirm()
-                                        .title('Confirm deletion')
-                                        .ok('Confirm')
-                                        .cancel('Cancel');
-                                }
-                                else if (response.data.error === 'cannot_delete_last_verified_phone_number') {
-                                    errorMsg = 'You cannot delete your last verified phone number. <br />' +
-                                        'Please change your 2 factor authentication method or add another verified phone number.';
-                                    dialog = $mdDialog.alert()
-                                        .title('Error')
-                                        .ok('Close');
-                                }
-                                dialog = dialog.htmlContent(errorMsg)
-                                    .ariaLabel('Delete phone number')
-                                    .targetEvent(ev);
-                                $mdDialog.show(dialog)
-                                    .then(function () {
-                                        UserService
-                                            .deletePhonenumber(username, label, true)
-                                            .then(function () {
-                                                // Manually remove phone number since the dialog which executes the updatePhoneNumber promise callback had been closed before
-                                                delete vm.user.phone[label];
-                                            }, function () {
-                                                showSimpleDialog('Could not delete phone number. Please try again later.');
-                                            });
-                                    });
-                            } else {
-                                showSimpleDialog('Could not delete phone number. Please try again later.');
-                                reject();
-                            }
-                        });
-                });
-            }
-
-            $mdDialog.show({
-                controller: genericDetailControllerParams,
-                templateUrl: 'components/user/views/phonenumberdialog.html',
-                targetEvent: ev,
-                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
-                locals: {
-                    username: vm.username,
-                    label: label,
-                    data: phonenumber,
-                    createFunction: UserService.registerNewPhonenumber,
-                    updateFunction: UserService.updatePhonenumber,
-                    deleteFunction: deletePhoneNumber
-                }
-            })
-                .then(updatePhoneNumber, function () {
-                });
-
-            function updatePhoneNumber(data) {
-                // no data is provided when dialog is closed because another dialog opened (in case a confirmation is asked)
-                if (data) {
-                    if (data.newLabel) {
-                        vm.user.phone[data.newLabel] = data.data;
-                    }
-                    if (!data.newLabel || data.newLabel != data.originalLabel) {
-                        delete vm.user.phone[data.originalLabel];
-                    }
-                }
-            }
-        }
-
-        function verifyPhone(event, label, phonenumber) {
+        function verifyPhone(event, phone) {
             var interval;
             $mdDialog.show({
-                controller: ['$scope', '$mdDialog', '$interval', 'user', 'label', 'phonenumber', verifyPhoneDialogController],
+                controller: ['$scope', '$mdDialog', '$interval', 'user', 'phone', verifyPhoneDialogController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/verifyPhoneDialog.html',
                 targetEvent: event,
                 fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                 locals: {
                     user: vm.user,
-                    label: label,
-                    phonenumber: phonenumber
+                    phone: phone
                 }
             }).finally(function () {
                 $interval.cancel(interval);
             });
 
-            function verifyPhoneDialogController($scope, $mdDialog, $interval, user, label, phonenumber) {
+            function verifyPhoneDialogController($scope, $mdDialog, $interval, user, phone) {
                 var ctrl = this;
-                ctrl.label = label;
-                ctrl.phonenumber = phonenumber;
+                ctrl.label = phone.label;
+                ctrl.phone = phone.phonenumber;
                 ctrl.close = close;
                 ctrl.submit = submit;
                 ctrl.validationKey = '';
@@ -225,7 +205,7 @@
 
                 function init() {
                     UserService
-                        .sendPhoneVerificationCode(vm.username, label)
+                        .sendPhoneVerificationCode(vm.username, phone.label)
                         .then(function (responseData) {
                             ctrl.validationKey = responseData.validationkey;
                             interval = $interval(checkconfirmation, 1000);
@@ -250,16 +230,11 @@
                     UserService
                         .getVerifiedPhones(vm.username)
                         .then(function success(confirmedPhones) {
-                            var isConfirmed = false;
-                            angular.forEach(confirmedPhones, function (number, label) {
-                                if (label === ctrl.label) {
-                                    isConfirmed = true;
-                                }
-                            });
-                            if (isConfirmed) {
-                                if (vm.user.verifiedPhones) {
-                                    vm.user.verifiedPhones[ctrl.label] = ctrl.phonenumber;
-                                }
+                            var confirmed = confirmedPhones.filter(function (p) {
+                                    return p.label === ctrl.label;
+                                }).length !== 0;
+                            if (confirmed) {
+                                findByLabel('phonenumbers', ctrl.label).verified = true;
                                 close();
                             }
                         });
@@ -269,9 +244,7 @@
                     UserService
                         .verifyPhone(user.username, ctrl.label, ctrl.validationKey, ctrl.smscode)
                         .then(function () {
-                            if (vm.user.verifiedPhones) {
-                                vm.user.verifiedPhones[ctrl.label] = ctrl.phonenumber;
-                            }
+                            findByLabel('phonenumbers', ctrl.label).verified = true;
                             close();
                         }, function (response) {
                             if (response.status === 422) {
@@ -286,17 +259,18 @@
             }
         }
 
-        function addAddress(ev) {
+        function addressDetail(ev, address) {
             return $q(function (resolve, reject) {
+                address = address || {};
+                var originalAddress = JSON.parse(JSON.stringify(address));
                 $mdDialog.show({
                     controller: genericDetailControllerParams,
                     templateUrl: 'components/user/views/addressdialog.html',
                     targetEvent: ev,
                     fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                     locals: {
-                        username: vm.username,
-                        label: "",
-                        data: {},
+                        user: vm.user,
+                        data: address,
                         createFunction: UserService.registerNewAddress,
                         updateFunction: UserService.updateAddress,
                         deleteFunction: UserService.deleteAddress
@@ -304,39 +278,26 @@
                 })
                     .then(
                         function (data) {
-                            vm.user.address[data.newLabel] = data.data;
+                            if (data.fx === 'create') {
+                                vm.user.addresses.push(data.data);
+                            }
+                            else if (data.fx === 'delete') {
+                                // delete
+                                vm.user.addresses.splice(vm.user.addresses.indexOf(address), 1);
+                            }
                             resolve(data);
-                        }, reject);
+                        }, function (response) {
+                            // Dialog closed without saving. Rollback.
+                            angular.forEach(originalAddress, function (value, key) {
+                                address[key] = value;
+                            });
+                            reject(response);
+                        });
             });
         }
 
-        function addressDetail(ev, label, address) {
-            $mdDialog.show({
-                controller: genericDetailControllerParams,
-                templateUrl: 'components/user/views/addressdialog.html',
-                targetEvent: ev,
-                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
-                locals: {
-                    username: vm.username,
-                    label: label,
-                    data: address,
-                    createFunction: UserService.registerNewAddress,
-                    updateFunction: UserService.updateAddress,
-                    deleteFunction: UserService.deleteAddress
-                }
-            })
-                .then(
-                    function (data) {
-                        if (data.newLabel) {
-                            vm.user.address[data.newLabel] = data.data;
-                        }
-                        if (!data.newLabel || data.newLabel != data.originalLabel) {
-                            delete vm.user.address[data.originalLabel];
-                        }
-                    });
-        }
-
-        function bankAccount(ev, label, bank) {
+        function bankAccount(ev, bank) {
+            var originalBankAccount = JSON.parse(JSON.stringify(bank || {}));
             return $q(function (resolve, reject) {
                 $mdDialog.show({
                     controller: genericDetailControllerParams,
@@ -344,8 +305,7 @@
                     targetEvent: ev,
                     fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                     locals: {
-                        username: vm.username,
-                        label: label,
+                        user: vm.user,
                         data: bank,
                         createFunction: UserService.registerNewBankAccount,
                         updateFunction: UserService.updateBankAccount,
@@ -354,14 +314,19 @@
                 })
                     .then(
                         function (data) {
-                            if (data.originalLabel || !data.newLabel) {
-                                delete vm.user.bank[data.originalLabel];
+                            if (data.fx === 'delete') {
+                                vm.user.bankaccounts.splice(vm.user.bankaccounts.indexOf(bank), 1);
                             }
-                            if (data.newLabel) {
-                                vm.user.bank[data.newLabel] = data.data;
+                            else if (data.fx === 'create') {
+                                vm.user.bankaccounts.push(data.data);
                             }
                             resolve(data);
-                        }, reject);
+                        }, function (response) {
+                            angular.forEach(originalBankAccount, function (value, key) {
+                                bank[key] = value;
+                            });
+                            reject(response);
+                        });
             });
         }
 
@@ -382,8 +347,7 @@
                 targetEvent: ev,
                 fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                 locals: {
-                    username: vm.username,
-                    label: "",
+                    user: vm.user,
                     data: vm.user.facebook,
                     createFunction: doNothing,
                     updateFunction: doNothing,
@@ -403,8 +367,7 @@
                 targetEvent: ev,
                 fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                 locals: {
-                    username: vm.username,
-                    label: "",
+                    user: vm.user,
                     data: vm.user.github,
                     createFunction: doNothing,
                     updateFunction: doNothing,
@@ -442,13 +405,12 @@
             );
         }
 
-        function GenericDetailDialogController($scope, $mdDialog, username, $window, label, data, createFunction, updateFunction, deleteFunction) {
-
+        function GenericDetailDialogController($scope, $mdDialog, user, $window, data, createFunction, updateFunction, deleteFunction) {
+            data = data || {};
             $scope.data = data;
 
-            $scope.originalLabel = label;
-            $scope.label = label;
-            $scope.username = username;
+            $scope.originalLabel = data.label;
+            $scope.user = user;
 
             $scope.cancel = cancel;
             $scope.validationerrors = {};
@@ -460,14 +422,14 @@
                 $mdDialog.cancel();
             }
 
-            function create(label, data) {
+            function create(data) {
                 if (Object.keys($scope.dataform.$error).length > 0) {
                     return;
                 }
                 $scope.validationerrors = {};
-                createFunction(username, label, data).then(
+                createFunction(user.username, data).then(
                     function (response) {
-                        $mdDialog.hide({originalLabel: "", newLabel: label, data: data});
+                        $mdDialog.hide({fx: 'create', data: response});
                     },
                     function (reason) {
                         if (reason.status == 409) {
@@ -480,20 +442,20 @@
                 );
             }
 
-            function update(oldLabel, newLabel, data) {
+            function update(oldLabel, data) {
                 if (Object.keys($scope.dataform.$error).length > 0) {
                     return;
                 }
                 $scope.validationerrors = {};
-                updateFunction(username, oldLabel, newLabel, data).then(
+                updateFunction(user.username, oldLabel, data).then(
                     function (response) {
-                        $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel, data: data});
+                        $mdDialog.hide({fx: 'update', data: response});
                     },
                     function (response) {
                         if (response.data && response.data.error) {
                             $scope.validationerrors[response.data.error] = true;
                         }
-                        if (response.status == 409) {
+                        else if (response.status == 409) {
                             $scope.validationerrors.duplicate = true;
                         }
                         else {
@@ -505,88 +467,14 @@
 
             function remove(label) {
                 $scope.validationerrors = {};
-                deleteFunction(username, label).then(
+                deleteFunction(user.username, label).then(
                     function (response) {
-                        $mdDialog.hide({originalLabel: label, newLabel: ""});
+                        $mdDialog.hide({fx: 'delete'});
                     },
                     function (response) {
                         if (response) {
                             $window.location.href = "error" + response.status;
                         }
-                    }
-                );
-            }
-
-        }
-
-        function EmailDetailDialogController($scope, $mdDialog, $window, UserService, username, label, emailaddress, deleteIsPossible) {
-            //If there is an emailaddress, it is already saved, if not, this means that a new one is being registered.
-            $scope.emailaddress = emailaddress;
-            $scope.deleteIsPossible = deleteIsPossible;
-
-            $scope.originalLabel = label;
-            $scope.label = label;
-            $scope.username = username;
-
-            $scope.cancel = cancel;
-            $scope.validationerrors = {};
-            $scope.create = create;
-            $scope.update = update;
-            $scope.deleteEmailAddress = deleteEmailAddress;
-
-
-            function cancel() {
-                $mdDialog.cancel();
-            }
-
-            function create(label, emailaddress) {
-                if (Object.keys($scope.emailaddressform.$error).length > 0) {
-                    return;
-                }
-                $scope.validationerrors = {};
-                UserService.registerNewEmailAddress(username, label, emailaddress).then(
-                    function (data) {
-                        $mdDialog.hide({originalLabel: "", newLabel: label, emailaddress: emailaddress});
-                    },
-                    function (reason) {
-                        if (reason.status == 409) {
-                            $scope.validationerrors.duplicate = true;
-                        }
-                        else {
-                            $window.location.href = "error" + reason.status;
-                        }
-                    }
-                );
-            }
-
-            function update(oldLabel, newLabel, emailaddress) {
-                if (Object.keys($scope.emailaddressform.$error).length > 0) {
-                    return;
-                }
-                $scope.validationerrors = {};
-                UserService.updateEmailAddress(username, oldLabel, newLabel, emailaddress).then(
-                    function (data) {
-                        $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel, emailaddress: emailaddress});
-                    },
-                    function (reason) {
-                        if (reason.status == 409) {
-                            $scope.validationerrors.duplicate = true;
-                        }
-                        else {
-                            $window.location.href = "error" + reason.status;
-                        }
-                    }
-                );
-            }
-
-            function deleteEmailAddress(label) {
-                $scope.validationerrors = {};
-                UserService.deleteEmailAddress(username, label).then(
-                    function (data) {
-                        $mdDialog.hide({originalLabel: label, newLabel: ""});
-                    },
-                    function (reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
             }

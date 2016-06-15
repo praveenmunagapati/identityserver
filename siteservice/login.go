@@ -2,6 +2,7 @@ package siteservice
 
 import (
 	"crypto/rand"
+	"strings"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -13,6 +14,8 @@ import (
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 	"gopkg.in/mgo.v2"
 
+	"net/url"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/credentials/password"
@@ -21,7 +24,6 @@ import (
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/tools"
 	"gopkg.in/mgo.v2/bson"
-	"net/url"
 )
 
 const (
@@ -105,7 +107,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	username := values.Login
+	username := strings.ToLower(values.Login)
 
 	//validate the username exists
 	var userexists bool
@@ -179,9 +181,9 @@ func (service *Service) GetTwoFactorAuthenticationMethods(w http.ResponseWriter,
 		return
 	}
 	for _, validatedPhoneNumber := range verifiedPhones {
-		for label, number := range userFromDB.Phone {
-			if string(number) == string(validatedPhoneNumber.Phonenumber) {
-				response.Sms[label] = string(validatedPhoneNumber.Phonenumber)
+		for _, number := range userFromDB.Phonenumbers {
+			if number.Phonenumber == string(validatedPhoneNumber.Phonenumber) {
+				response.Sms[number.Label] = string(validatedPhoneNumber.Phonenumber)
 			}
 		}
 	}
@@ -245,9 +247,9 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	phoneNumber, exists := userFromDB.Phone[phoneLabel]
-	if !exists {
-		log.Debug(userFromDB.Phone)
+	phoneNumber, err := userFromDB.GetPhonenumberByLabel(phoneLabel)
+	if err != nil {
+		log.Debug(userFromDB.Phonenumbers)
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -257,7 +259,7 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	smsmessage := fmt.Sprintf("To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
 		sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
 	sessions.Save(request, w)
-	go service.smsService.Send(string(phoneNumber), smsmessage)
+	go service.smsService.Send(phoneNumber.Phonenumber, smsmessage)
 	w.WriteHeader(http.StatusNoContent)
 }
 

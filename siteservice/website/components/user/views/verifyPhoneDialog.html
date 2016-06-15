@@ -13,7 +13,7 @@
             <div class="md-dialog-content" layout="column">
                 <p>Click the link in the sms sent to your phone <br/>
                     or enter the code from the sms here to confirm <br/>
-                    your phone number {{ ::ctrl.phonenumber }} ({{ :: ctrl.label }})</p>
+                    your phone number {{ ::ctrl.phone }} ({{ :: ctrl.label }})</p>
                 <md-input-container>
                     <label>Code</label>
                     <input ng-model="ctrl.smscode" md-maxlength="6" ng-minlength="6" maxlength="6" name="smscode"

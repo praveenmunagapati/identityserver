@@ -91,7 +91,7 @@ func NewManager(r *http.Request) *Manager {
 }
 
 func (manager *Manager) NewPhonenumberValidationInformation(username string, phonenumber user.Phonenumber) (info *PhonenumberValidationInformation, err error) {
-	info = &PhonenumberValidationInformation{CreatedAt: time.Now(), Username: username, Phonenumber: string(phonenumber)}
+	info = &PhonenumberValidationInformation{CreatedAt: time.Now(), Username: username, Phonenumber: phonenumber.Phonenumber}
 	info.Key, err = tools.GenerateRandomString()
 	if err != nil {
 		return

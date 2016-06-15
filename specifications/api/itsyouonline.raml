@@ -20,6 +20,18 @@ types:
         scopes: string[]
         label: string
 
+  PublicKey:
+     description: PublicKey of a user
+     properties:
+        label: string
+        publickey: string
+
+  AuthorizationMap:
+     description: Mapping between requested labels and real labels
+     properties:
+        requestedlabel: string
+        reallabel: string
+
   Authorization:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
     properties:
@@ -27,27 +39,23 @@ types:
         grantedTo:
           type: string
           description: The organization that is granted read access to some of the user's information
-        address?:
+        addresses?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
-        publicKeys?: string[]
-        email?:
+             type: AuthorizationMap[]
+        publicKeys?: AuthorizationMap[]
+        emailaddresses?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
-        phone?:
+             type: AuthorizationMap[]
+        phonenumbers?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
-        bank?:
+             type: AuthorizationMap[]
+        bankaccounts?:
           description: Mapping of the labels of the granted ones to the labels the organization requested.
           properties:
-            "[]":
-              type: string
+             type: AuthorizationMap[]
         facebook?: boolean
         github?: boolean
         organizations:
@@ -65,9 +73,16 @@ types:
         country:
           type: string
           maxLength: 40
+        label:
+           type: string
 
   Phonenumber:
-    pattern: ^\+?[0-9]+$
+     properties:
+       phonenumber:
+         type: string
+         pattern: ^\+?[0-9]+$
+       label:
+         type: string
 
   Address:
     properties:
@@ -89,6 +104,8 @@ types:
         postalcode:
             type: string
             maxLength: 20
+        label:
+           type: string
   FacebookAccount:
     properties:
       id:
@@ -113,32 +130,28 @@ types:
       name:
         type: string
 
+  EmailAddress:
+    properties:
+      label:
+         type: string
+      emailaddress:
+         type: string
+
   User:
     properties:
         username:
             type: string
             maxLength: 30
+            pattern: ^[a-z0-9]{2,30}$
             minLength: 2
         firstname: string
         lastname: string
         publicKeys: string[]
         expire?: datetime
-        email?:
-          properties:
-            "[]":
-              type: string
-        phone?:
-          properties:
-            "[]":
-              type: Phonenumber
-        address?:
-          properties:
-            "[]":
-              type: Address
-        bank?:
-          properties:
-            "[]":
-              type: BankAccount
+        emailaddresses: EmailAddress[]
+        phonenumbers: Phonenumber[]
+        addresses: Address[]
+        bankaccounts: BankAccount[]
         facebook?:
             type: FacebookAccount
         github?:
@@ -151,53 +164,44 @@ types:
         publicKeys:
             - 1GVS7544tvWM2TM13vNH8sboamJzL6mJ36
         expire: 2018-10-20T16:41:41.090Z
-        email:
-            work: bob@company.com
-            home: bob@example.com
-            "dance club": bob@linedanceclub.example.org
-        phone:
-          be: "+3212341234123"
-          eg: "+2012341234123"
-        address:
-            home:
-                city: Springfield
-                street: Main street
-                nr: 45B
-                country: Tomorrowland
-                postalcode: T-9450
-            work:
-                city: Capital City
-                street: Capital street
-                nr: "1"
-                country: Tomorrowland
-                postalcode: T-1000
-        bank:
-            kbc:
-                iban: TL123451234512345
-                bic: ABCDEF
-                country: Tomorrowland
+        emailaddresses:
+            - label: work
+              emailaddress: bob@company.com
+            - label: home
+              emailaddress: bob@example.com
+        phonenumbers:
+            - label: be
+              phonenumber: "+3212341234123"
+            - label: eg
+              phonenumber: "+2012341234123"
+        addresses:
+            - label: home
+              city: Springfield
+              street: Main street
+              nr: 45B
+              country: Tomorrowland
+              postalcode: T-9450
+            - label: work
+              city: Capital City
+              street: Capital street
+              nr: "1"
+              country: Tomorrowland
+              postalcode: T-1000
+        bankaccounts:
+            - label: kbc
+              iban: TL123451234512345
+              bic: ABCDEF
+              country: Tomorrowland
 
   userview:
     properties:
         username:
             type: string
-        publicKeys?: string[]
-        email?:
-          properties:
-            "[]":
-              type: string
-        phone?:
-          properties:
-            "[]":
-              type: Phonenumber
-        address?:
-          properties:
-            "[]":
-              type: Address
-        bank?:
-          properties:
-            "[]":
-              type: BankAccount
+        publicKeys?: PublicKey[]
+        emailaddresses: EmailAddress[]
+        phonenumbers: Phonenumber[]
+        addresses: Address[]
+        bankaccounts: BankAccount[]
         facebook?:
             type: FacebookAccount
         github?:
@@ -231,6 +235,7 @@ types:
         type: string
         minLength: 3
         maxLength: 150
+        pattern: ^[a-z0-9]{3,150}$
       publicKeys:
         type: string[]
         maxItems: 20
@@ -305,6 +310,7 @@ types:
         globalid:
             type: string
             minLength: 3
+            pattern: ^[a-z0-9]{3,150}$
             maxLength: 150
         publicKeys:
             type: string[]
@@ -654,8 +660,7 @@ securedBy: [ oauth_2_0 ]
           body:
             application/json:
                 properties:
-                  "[]":
-                    type: Phonenumber
+                   type: Phonenumber[]
     post:
       displayName: RegisterNewPhonenumber
       description: Register a new phonenumber
@@ -669,9 +674,7 @@ securedBy: [ oauth_2_0 ]
             description: Registered a new phone number
             body:
               application/json:
-                  properties:
-                     label: Label
-                     phonenumber: Phonenumber
+                 type: Phonenumber
           409:
               description: Label is already used.
     /{label}:

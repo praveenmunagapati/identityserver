@@ -199,7 +199,7 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	validationkey, _ := registrationSession.Values["phonenumbervalidationkey"].(string)
 	_ = service.phonenumberValidationService.ExpireValidation(request, validationkey)
 
-	phonenumber := user.Phonenumber(values.PhoneNumber)
+	phonenumber := user.Phonenumber{Label: "main", Phonenumber: values.PhoneNumber}
 	if !phonenumber.IsValid() {
 		log.Debug("Invalid phone number")
 		w.WriteHeader(422)
@@ -209,7 +209,7 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	}
 
 	uMgr := user.NewManager(request)
-	err = uMgr.SavePhone(username, "main", phonenumber)
+	err = uMgr.SavePhone(username, phonenumber)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -275,6 +275,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 
 	valid := user.ValidateUsername(values.Login)
+	var phonenumber user.Phonenumber
 	if !valid {
 		response.Error = "invalid_username_format"
 		w.WriteHeader(422)
@@ -282,9 +283,8 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		return
 	}
 	newuser := &user.User{
-		Username:    values.Login,
-		Email:       map[string]string{"main": values.Email},
-		TwoFAMethod: twoFAMethod,
+		Username:       values.Login,
+		EmailAddresses: []user.EmailAddress{user.EmailAddress{Label: "main", EmailAddress: values.Email}},
 	}
 	//validate the username is not taken yet
 	userMgr := user.NewManager(request)
@@ -301,7 +301,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 
 	if twoFAMethod == "sms" {
-		phonenumber := user.Phonenumber(values.Phonenumber)
+		phonenumber = user.Phonenumber{Label: "main", Phonenumber: values.Phonenumber}
 		if !phonenumber.IsValid() {
 			log.Debug("Invalid phone number")
 			w.WriteHeader(422)
@@ -309,7 +309,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 			json.NewEncoder(w).Encode(&response)
 			return
 		}
-		newuser.Phone = map[string]user.Phonenumber{"main": phonenumber}
+		newuser.Phonenumbers = []user.Phonenumber{phonenumber}
 	} else {
 		token := totp.TokenFromSecret(totpsecret)
 		if !token.Validate(values.TotpCode) {
@@ -338,7 +338,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 
 	if twoFAMethod == "sms" {
-		validationkey, err := service.phonenumberValidationService.RequestValidation(request, newuser.Username, newuser.Phone["main"], fmt.Sprintf("https://%s/phonevalidation", request.Host))
+		validationkey, err := service.phonenumberValidationService.RequestValidation(request, newuser.Username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host))
 		if err != nil {
 			log.Error(err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

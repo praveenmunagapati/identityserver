@@ -8,7 +8,7 @@
                         <md-input-container>
                             <label for="login">Username</label>
                             <input ng-model="vm.login" md-maxlength="30" minlength="2" required name="login" type="text"
-                                   ng-pattern="/^[a-zA-Z0-9 \-_]+$/" ng-minlength="3" autofocus
+                                   ng-pattern="/^[a-z0-9 \-_]+$/" ng-minlength="3" autofocus
                                    ng-change="vm.validateUsername()" id="login">
                             <div ng-messages="signupform.login.$error" md-auto-hide="false">
                                 <div ng-message="duplicate_username">This username has already been taken</div>

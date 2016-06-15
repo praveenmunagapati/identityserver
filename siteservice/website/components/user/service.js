@@ -131,19 +131,14 @@
             return genericHttpCall($http.get, url);
         }
 
-        function update(username, user) {
-            var url = apiURL + '/' + encodeURIComponent(username);
-            return genericHttpCall($http.put, url, user);
-        }
-
-        function registerNewEmailAddress(username, label, emailaddress) {
+        function registerNewEmailAddress(username, emailaddress) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses';
-            return genericHttpCall($http.post, url, {label: label, emailaddress: emailaddress});
+            return genericHttpCall($http.post, url, emailaddress);
         }
 
-        function updateEmailAddress(username, oldlabel, newlabel, emailaddress) {
+        function updateEmailAddress(username, oldlabel, emailaddress) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(oldlabel) ;
-            return genericHttpCall($http.put, url, {label: newlabel, emailaddress: emailaddress});
+            return genericHttpCall($http.put, url, emailaddress);
         }
 
         function deleteEmailAddress(username, label) {
@@ -151,16 +146,16 @@
             return genericHttpCall($http.delete, url);
         }
 
-        function registerNewPhonenumber(username, label, phonenumber) {
-            phonenumber = phonenumber.replace(/ /g, '');
+        function registerNewPhonenumber(username, phonenumber) {
+            phonenumber.phonenumber = phonenumber.phonenumber.replace(/ /g, '');
             var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers';
-            return genericHttpCall($http.post, url, {label: label, phonenumber: phonenumber});
+            return genericHttpCall($http.post, url, phonenumber);
         }
 
-        function updatePhonenumber(username, oldlabel, newlabel, phonenumber) {
-            phonenumber = phonenumber.replace(/ /g, '');
+        function updatePhonenumber(username, oldlabel, phonenumber) {
+            phonenumber.phonenumber = phonenumber.phonenumber.replace(/ /g, '');
             var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(oldlabel) ;
-            return genericHttpCall($http.put, url, {label: newlabel, phonenumber: phonenumber});
+            return genericHttpCall($http.put, url, phonenumber);
         }
 
         function deletePhonenumber(username, label, force) {
@@ -168,14 +163,14 @@
             return genericHttpCall($http.delete, url);
         }
 
-        function registerNewAddress(username, label, address) {
+        function registerNewAddress(username, address) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/addresses';
-            return genericHttpCall($http.post, url, {label: label, address: address});
+            return genericHttpCall($http.post, url, address);
         }
 
-        function updateAddress(username, oldlabel, newlabel, address) {
+        function updateAddress(username, oldlabel, address) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/addresses/' + encodeURIComponent(oldlabel) ;
-            return genericHttpCall($http.put, url, {label: newlabel, address: address});
+            return genericHttpCall($http.put, url, address);
         }
 
         function deleteAddress(username, label) {
@@ -183,14 +178,14 @@
             return genericHttpCall($http.delete, url);
         }
 
-        function registerNewBankAccount(username, label, bankAccount) {
+        function registerNewBankAccount(username, bankAccount) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/banks';
-            return genericHttpCall($http.post, url, {label: label, bank: bankAccount});
+            return genericHttpCall($http.post, url, bankAccount);
         }
 
-        function updateBankAccount(username, oldLabel, label, bankAccount) {
+        function updateBankAccount(username, oldLabel, bankAccount) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/banks/' + encodeURIComponent(oldLabel);
-            return genericHttpCall($http.put, url, {label: label, bank: bankAccount});
+            return genericHttpCall($http.put, url, bankAccount);
         }
 
         function deleteBankAccount(username, label) {
