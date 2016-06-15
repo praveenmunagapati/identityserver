@@ -1,5 +1,5 @@
 #%RAML 1.0
-title: Itsyou.online API
+title: Itsyouonline
 version: 0.1
 baseUri: /
 securitySchemes:
@@ -453,9 +453,7 @@ securedBy: [ oauth_2_0 ]
           200:
             body:
               application/json:
-                  properties:
-                    "[]":
-                      type: string
+                type: EmailAddress[]
       post:
           displayName: RegisterNewEmailAddress
           description: Register a new email address
@@ -601,8 +599,7 @@ securedBy: [ oauth_2_0 ]
                 body:
                     application/json:
                         properties:
-                          "[]":
-                            type: Address
+                            type: Address[]
     post:
       displayName: RegisterNewAddress
       description: Register a new address
@@ -739,14 +736,12 @@ securedBy: [ oauth_2_0 ]
       body:
         application/json:
             properties:
-              "[]":
                 type: BankAccount
       responses:
         201:
           body:
             application/json:
                 properties:
-                  "[]":
                     type: BankAccount
     get:
         responses:
@@ -754,8 +749,7 @@ securedBy: [ oauth_2_0 ]
                 body:
                     application/json:
                         properties:
-                          "[]":
-                            type: BankAccount
+                            type: BankAccount[]
   /{username}/banks/{label}:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
@@ -1160,8 +1154,7 @@ securedBy: [ oauth_2_0 ]
           200:
             body:
               application/json:
-                properties:
-                  "[]": OrganizationTreeItem
+                type: OrganizationTreeItem[]
 
 /companies:
     post:
