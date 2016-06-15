@@ -3,13 +3,13 @@
 # Summary
 |Milestone|ETA|
 |---------|---|
-|[0.9 alfa](#milestone-09-alfa)|0 seconds|
+|[0.9 alpha](#milestone-09-alpha)|0 seconds|
 |[0.9 beta](#milestone-09-beta)|0 seconds|
 |[1.0](#milestone-10)|0 seconds|
 |[roadmap](#milestone-roadmap)|0 seconds|
 |[No milestone](#no-milestone)|0 seconds|
 
-## [Milestone 0.9 alfa](milestones/1:0.9 alfa.md)
+## [Milestone 0.9 alpha](milestones/1:0.9 alpha.md)
 
 
 |Issue|Title|State|Owner|ETA|
