@@ -24,25 +24,25 @@ func TestScopesAreAuthorized(t *testing.T) {
 		testcase{a: Authorization{}, s: "user:facebook", authorized: false},
 		testcase{a: Authorization{Facebook: true}, s: "user:facebook", authorized: true},
 
-		testcase{a: Authorization{Address: map[string]string{"billing": "home"}}, s: "user:address:billing", authorized: true},
-		testcase{a: Authorization{Address: map[string]string{"billing": "home"}}, s: "user:address:home", authorized: false},
-		testcase{a: Authorization{Address: map[string]string{"billing": "home"}}, s: "user:address", authorized: true},
-		testcase{a: Authorization{Address: map[string]string{"": "home"}}, s: "user:address", authorized: true},
+		testcase{a: Authorization{Addresses: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "billing"}}}, s: "user:address:billing", authorized: true},
+		testcase{a: Authorization{Addresses: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "billing"}}}, s: "user:address:home", authorized: false},
+		testcase{a: Authorization{Addresses: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "billing"}}}, s: "user:address", authorized: true},
+		testcase{a: Authorization{Addresses: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: ""}}}, s: "user:address", authorized: true},
 
-		testcase{a: Authorization{Bank: map[string]string{"billing": "home"}}, s: "user:bankaccount:billing", authorized: true},
-		testcase{a: Authorization{Bank: map[string]string{"billing": "home"}}, s: "user:bankaccount:home", authorized: false},
-		testcase{a: Authorization{Bank: map[string]string{"billing": "home"}}, s: "user:bankaccount", authorized: true},
-		testcase{a: Authorization{Bank: map[string]string{"": "home"}}, s: "user:bankaccount", authorized: true},
+		testcase{a: Authorization{BankAccounts: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "billing"}}}, s: "user:bankaccount:billing", authorized: true},
+		testcase{a: Authorization{BankAccounts: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "billing"}}}, s: "user:bankaccount:home", authorized: false},
+		testcase{a: Authorization{BankAccounts: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "billing"}}}, s: "user:bankaccount", authorized: true},
+		testcase{a: Authorization{BankAccounts: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: ""}}}, s: "user:bankaccount", authorized: true},
 
-		testcase{a: Authorization{Email: map[string]string{"main": "home"}}, s: "user:email:main", authorized: true},
-		testcase{a: Authorization{Email: map[string]string{"main": "home"}}, s: "user:email:home", authorized: false},
-		testcase{a: Authorization{Email: map[string]string{"main": "home"}}, s: "user:email", authorized: true},
-		testcase{a: Authorization{Email: map[string]string{"": "home"}}, s: "user:email", authorized: true},
+		testcase{a: Authorization{EmailAddresses: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "main"}}}, s: "user:email:main", authorized: true},
+		testcase{a: Authorization{EmailAddresses: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "main"}}}, s: "user:email:home", authorized: false},
+		testcase{a: Authorization{EmailAddresses: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "main"}}}, s: "user:email", authorized: true},
+		testcase{a: Authorization{EmailAddresses: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: ""}}}, s: "user:email", authorized: true},
 
-		testcase{a: Authorization{Phone: map[string]string{"main": "home"}}, s: "user:phone:main", authorized: true},
-		testcase{a: Authorization{Phone: map[string]string{"main": "home"}}, s: "user:phone:home", authorized: false},
-		testcase{a: Authorization{Phone: map[string]string{"main": "home"}}, s: "user:phone:main", authorized: true},
-		testcase{a: Authorization{Phone: map[string]string{"": "home"}}, s: "user:phone", authorized: true},
+		testcase{a: Authorization{Phonenumbers: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "main"}}}, s: "user:phone:main", authorized: true},
+		testcase{a: Authorization{Phonenumbers: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "main"}}}, s: "user:phone:home", authorized: false},
+		testcase{a: Authorization{Phonenumbers: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: "main"}}}, s: "user:phone", authorized: true},
+		testcase{a: Authorization{Phonenumbers: []AuthorizationMap{AuthorizationMap{RealLabel: "home", RequestedLabel: ""}}}, s: "user:phone", authorized: true},
 	}
 	for _, test := range testcases {
 		requestedScopes := strings.Split(test.s, ",")

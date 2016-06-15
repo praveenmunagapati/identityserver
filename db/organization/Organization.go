@@ -1,5 +1,7 @@
 package organization
 
+import "strings"
+
 type Organization struct {
 	DNS        []string `json:"dns"`
 	Globalid   string   `json:"globalid"`
@@ -13,6 +15,6 @@ type Organization struct {
 func (c *Organization) IsValid() (valid bool) {
 	valid = true
 	globalIDLength := len(c.Globalid)
-	valid = valid && (globalIDLength >= 3) && (globalIDLength <= 150)
+	valid = valid && (globalIDLength >= 3) && (globalIDLength <= 150) && c.Globalid == strings.ToLower(c.Globalid)
 	return
 }
