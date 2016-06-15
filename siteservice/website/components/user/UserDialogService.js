@@ -23,7 +23,8 @@
             addFacebook: addFacebook,
             github: github,
             addGithub: addGithub,
-            showSimpleDialog: showSimpleDialog
+            showSimpleDialog: showSimpleDialog,
+            createOrganization: createOrganization
         };
 
         function init(scope) {
@@ -405,6 +406,19 @@
             );
         }
 
+        function createOrganization(ev, parentOrganization) {
+            $mdDialog.show({
+                controller: ['$scope', '$rootScope', '$window', '$mdDialog', 'OrganizationService', 'parentOrganization', CreateOrganizationController],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/organization/views/createOrganizationDialog.html',
+                targetEvent: ev,
+                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
+                locals: {
+                    parentOrganization: parentOrganization
+                }
+            });
+        }
+
         function GenericDetailDialogController($scope, $mdDialog, user, $window, data, createFunction, updateFunction, deleteFunction) {
             data = data || {};
             $scope.data = data;
@@ -481,5 +495,43 @@
 
         }
 
+        function CreateOrganizationController($scope, $rootScope, $window, $mdDialog, OrganizationService, parentOrganization) {
+            var ctrl = this;
+            ctrl.submit = submit;
+            ctrl.cancel = cancel;
+            ctrl.resetValidation = resetValidation;
+            ctrl.name = '';
+            ctrl.parentOrganization = parentOrganization || '';
+
+            function submit() {
+                if (!$scope.form.$valid) {
+                    return;
+                }
+                OrganizationService
+                    .create(ctrl.name, [], $rootScope.user, parentOrganization)
+                    .then(
+                        function (data) {
+                            cancel();
+                            $window.location.hash = '#/organization/' + encodeURIComponent(data.globalid);
+                        },
+                        function (reason) {
+                            if (reason.status == 409) {
+                                $scope.form.name.$setValidity('duplicate', false);
+                            }
+                            else {
+                                $window.location.href = "error" + reason.status;
+                            }
+                        }
+                    );
+            }
+
+            function cancel() {
+                $mdDialog.cancel();
+            }
+
+            function resetValidation() {
+                $scope.form.name.$setValidity('duplicate', true);
+            }
+        }
     }
 })();

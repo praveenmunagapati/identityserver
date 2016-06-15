@@ -58,7 +58,7 @@
         vm.verifyPhone = UserDialogService.verifyPhone;
         vm.verifyEmailAddress = verifyEmailAddress;
         vm.showAPIKeyDialog = showAPIKeyDialog;
-
+        vm.createOrganization = UserDialogService.createOrganization;
         init();
 
         function init() {
