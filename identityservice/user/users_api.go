@@ -261,14 +261,14 @@ func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	validated := strings.Contains(r.URL.RawQuery, "validated")
 	userMgr := user.NewManager(r)
-
-	user, err := userMgr.GetByName(username)
+	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	emails := user.EmailAddresses
+	var emails []user.EmailAddress
 	if validated {
+		emails = make([]user.EmailAddress, 0)
 		valMngr := validationdb.NewManager(r)
 		validatedemails, err := valMngr.GetByUsernameValidatedEmailAddress(username)
 		if err != nil {
@@ -276,18 +276,16 @@ func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		for index, email := range emails {
-			found := false
+		for _, email := range userobj.EmailAddresses {
 			for _, validatedemail := range validatedemails {
 				if email.EmailAddress == validatedemail.EmailAddress {
-					found = true
+					emails = append(emails, email)
 					break
 				}
 			}
-			if !found {
-				emails = append(emails[:index], emails[index+1:]...)
-			}
 		}
+	} else {
+		emails = userobj.EmailAddresses
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -575,13 +573,14 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 	validated := strings.Contains(r.URL.RawQuery, "validated")
 	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	phonenumbers := user.Phonenumbers
+	var phonenumbers []user.Phonenumber
 	if validated {
+		phonenumbers = make([]user.Phonenumber, 0)
 		valMngr := validationdb.NewManager(r)
 		validatednumbers, err := valMngr.GetByUsernameValidatedPhonenumbers(username)
 		if err != nil {
@@ -589,18 +588,16 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		for index, number := range phonenumbers {
-			found := false
+		for _, number := range userobj.Phonenumbers {
 			for _, validatednumber := range validatednumbers {
 				if number.Phonenumber == validatednumber.Phonenumber {
-					found = true
+					phonenumbers = append(phonenumbers, number)
 					break
 				}
 			}
-			if !found {
-				phonenumbers = append(phonenumbers[:index], phonenumbers[index+1:]...)
-			}
 		}
+	} else {
+		phonenumbers = userobj.Phonenumbers
 	}
 
 	w.Header().Set("Content-Type", "application/json")
