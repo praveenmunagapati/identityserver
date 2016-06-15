@@ -286,6 +286,11 @@
                         <md-tab md-on-select="vm.tabSelected(vm.loadOrganizations)">
                             <md-tab-label><i class="fa fa-users"></i>&nbsp;Organizations</md-tab-label>
                             <md-tab-body>
+                                <div layout="row">
+                                    <md-button class="md-primary md-raised" ng-click="vm.createOrganization($event)">
+                                        <i class="fa fa-plus"></i> Create new
+                                    </md-button>
+                                </div>
                                 <div layout="row" layout-align="center center" ng-if="!vm.loaded.organizations">
                                     <md-progress-circular md-mode="indeterminate"
                                                           md-diameter="100"></md-progress-circular>

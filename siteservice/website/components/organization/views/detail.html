@@ -59,7 +59,7 @@
                             <md-tab-body>
                                 <div layout="row" layout-align="end start">
                                     <md-button class="md-primary"
-                                               ng-href="#/organization/new/{{ vm.organization.globalid }}">
+                                               ng-click="vm.showCreateOrganizationDialog($event, vm.organization.globalid)">
                                         <i class="fa fa-plus"></i> Create suborganization
                                     </md-button>
                                 </div>

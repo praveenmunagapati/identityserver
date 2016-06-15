@@ -2,62 +2,13 @@
     'use strict';
     angular
         .module("itsyouonlineApp")
-        .controller("OrganizationController", OrganizationController)
         .controller("OrganizationDetailController", OrganizationDetailController)
         .controller("InvitationDialogController", InvitationDialogController);
 
 
-    OrganizationController.$inject = ['$rootScope', '$location', '$routeParams', 'OrganizationService', '$window', '$scope'];
-    OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia', '$rootScope'];
+    OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia', '$rootScope', 'UserDialogService'];
 
-    function OrganizationController($rootScope, $location, $routeParams, OrganizationService, $window, $scope) {
-        var vm = this;
-        vm.create = create;
-        vm.childOrganizationNames = [];
-        vm.parentOrganization = $routeParams.globalid;
-
-        vm.username = $rootScope.user;
-        vm.clearErrors = clearErrors;
-        vm.getOrganizationDisplayname = getOrganizationDisplayname;
-        activate();
-
-        function activate() {
-            vm.childOrganizationNames = getChildOrganizations(vm.parentOrganization);
-        }
-
-        function create(){
-            if (!$scope.newOrganizationForm.$valid) {
-                return;
-            }
-            var dns = [];
-
-            if (vm.dns) {
-                dns.push(vm.dns);
-            }
-
-            OrganizationService
-                .create(vm.name, dns, vm.username, vm.parentOrganization)
-                .then(
-                    function(data){
-                        $location.path("/organizations/" + data.globalid);
-                    },
-                    function(reason){
-                        if (reason.status == 409) {
-                            $scope.newOrganizationForm.name.$setValidity('duplicate', false);
-                        }
-                        else{
-                            $window.location.href = "error" + reason.status;
-                        }
-                    }
-                );
-        }
-
-        function clearErrors() {
-            $scope.newOrganizationForm.name.$setValidity('duplicate', true);
-        }
-    }
-
-    function OrganizationDetailController($routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope) {
+    function OrganizationDetailController($routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope, UserDialogService) {
         var vm = this,
             globalid = $routeParams.globalid;
         vm.invitations = [];
@@ -75,6 +26,8 @@
         vm.getOrganizationDisplayname = getOrganizationDisplayname;
         vm.fetchInvitations = fetchInvitations;
         vm.fetchAPIKeyLabels = fetchAPIKeyLabels;
+        vm.showCreateOrganizationDialog = UserDialogService.createOrganization;
+
         activate();
 
         function activate() {

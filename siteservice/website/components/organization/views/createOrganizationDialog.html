@@ -1,0 +1,44 @@
+<md-dialog ng-cloak>
+    <form name="form" ng-submit="ctrl.submit()">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>New organization</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="ctrl.cancel()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column" style="min-width:350px;">
+                <p ng-if="ctrl.parentOrganization">Create a suborganization in
+                    {{ ctrl.parentOrganization.split('.').splice(-1,1)[0] }}</p>
+                <p ng-if="!ctrl.parentOrganization">Create a new organization</p>
+                <br/>
+                <md-input-container>
+                    <label for="organizationName">Organization name</label>
+                    <input ng-model="ctrl.name" required type="text" md-autofocus="true" name="name" minlength="3"
+                           ng-minlength="3" ng-change="ctrl.resetValidation()" ng-pattern="/^[a-zA-Z0-9 \-_]+$/"
+                           id=organizationName>
+                    <div ng-messages="form.name.$error">
+                        <div ng-message="duplicate">This name is already taken</div>
+                        <div ng-message="pattern">Invalid organization name. <br/>
+                            Only characters a-z, 0-9, dashes, <br/>
+                            underscores and space are allowed
+                        </div>
+                        <div ng-message="minlength">Minimum 3 characters are required</div>
+                    </div>
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button ng-click="ctrl.cancel()">
+                Cancel
+            </md-button>
+            <md-button class="md-primary" type="submit">
+                Create
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

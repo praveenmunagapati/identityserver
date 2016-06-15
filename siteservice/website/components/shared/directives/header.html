@@ -10,16 +10,6 @@
                                   when="{'1': 'request', 'other': 'requests'}"></ng-pluralize>
                 </md-tooltip>
             </a>
-            <md-menu md-offset="-5 30">
-                <a ng-click="$mdOpenMenu($event)"><i class="fa fa-plus"></i><i class="fa fa-caret-down"></i>
-                    <md-tooltip ng-cloak>Create new...</md-tooltip>
-                </a>
-                <md-menu-content ng-cloak>
-                    <md-menu-item>
-                        <md-button href="#/organization/new">New organization</md-button>
-                    </md-menu-item>
-                </md-menu-content>
-            </md-menu>
             <md-menu md-offset="-5 30" ng-cloak>
                 <a ng-click="$mdOpenMenu($event)"><i class="fa fa-user"></i><span ng-bind="$root.user"></span><i
                         class="fa fa-caret-down"></i></a>
