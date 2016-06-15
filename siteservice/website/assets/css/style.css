@@ -363,3 +363,37 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 .breadcrumb-link:hover, .breadcrumb-link:active {
     text-decoration: underline;
 }
+
+.badge {
+    color: #ffffff;
+    background-color: rgba(48, 145, 187, 0.92);
+    padding: 3px 6px;
+    display: inline-block;
+    min-width: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    border-radius: 10px;
+}
+
+.notification-bell {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-bell-unread {
+    position: absolute;
+    top: -8px;
+    right: 1px;
+    z-index: 2;
+    width: 10px;
+    height: 10px;
+    color: #ffffff;
+    text-align: center;
+    background-color: rgb(255, 64, 129); /*Same as md-ink-bar */
+    border: 2px solid #f3f3f3;
+    border-radius: 15px;
+}
