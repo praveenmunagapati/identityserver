@@ -14,7 +14,7 @@
                 <div layout="row">
                     <md-input-container>
                         <label>Label</label>
-                        <input ng-model="label" ng-minlength="2" required type="text" autofocus name="label">
+                        <input ng-model="data.label" ng-minlength="2" required type="text" autofocus name="label">
                         <div ng-messages="dataform.label.$error">
                             <div ng-message="minlength">The label should be at least 2 characters long</div>
                         </div>
@@ -54,11 +54,11 @@
             <md-button ng-click="cancel()">
                 Cancel
             </md-button>
-            <md-button class="md-primary" type="submit" ng-click="create(label, data)" style="margin-right:20px;"
+            <md-button class="md-primary" type="submit" ng-click="create(data)" style="margin-right:20px;"
                        ng-if="!originalLabel" ng-disabled="!dataform.$valid">
                 Register
             </md-button>
-            <md-button class="md-primary" type="submit" ng-click="update(originalLabel, label, data)"
+            <md-button class="md-primary" type="submit" ng-click="update(originalLabel, data)"
                        style="margin-right:20px;" ng-if="originalLabel" ng-disabled="!dataform.$valid">
                 Save
             </md-button>

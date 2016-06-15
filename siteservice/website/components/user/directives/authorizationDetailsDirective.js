@@ -9,11 +9,13 @@
                 restrict: 'AE',
                 templateUrl: 'components/user/directives/authorizationDetails.html',
                 link: function (scope, element, attr) {
-                    scope.revoke = revoke;
                     scope.save = save;
+                    scope.getAuthorizationByLabel = getAuthorizationByLabel;
 
-                    function revoke(property, label) {
-                        delete scope.authorizations[property][label];
+                    function getAuthorizationByLabel(property, requestedLabel) {
+                        return scope.authorizations[property].filter(function (val) {
+                            return val.requestedlabel === requestedLabel;
+                        })[0];
                     }
 
                     function save() {
@@ -27,14 +29,8 @@
                         angular.forEach(scope.authorizations, function (value, key) {
                             if (Array.isArray(value)) {
                                 angular.forEach(value, function (val, i) {
-                                    if (!val) {
+                                    if (!val || val.reallabel === '') {
                                         value.splice(value.indexOf(val), 1);
-                                    }
-                                });
-                            } else if (typeof value === 'object') {
-                                angular.forEach(value, function (val, k) {
-                                    if (val === '') {
-                                        delete value[k];
                                     }
                                 });
                             }

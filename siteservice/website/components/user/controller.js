@@ -38,11 +38,9 @@
         vm.reject = reject;
         vm.getPendingCount = getPendingCount;
         vm.showEmailDetailDialog = UserDialogService.emailDetail;
-        vm.showAddEmailDialog = UserDialogService.addEmail;
         vm.showPhonenumberDetailDialog = UserDialogService.phonenumberDetail;
-        vm.showAddPhonenumberDialog = UserDialogService.addPhonenumber;
         vm.showAddressDetailDialog = UserDialogService.addressDetail;
-        vm.showAddAddressDialog = UserDialogService.addAddress;
+        vm.showAddressDetailDialog = UserDialogService.addressDetail;
         vm.showBankAccountDialog = UserDialogService.bankAccount;
         vm.showFacebookDialog = UserDialogService.facebook;
         vm.showGithubDialog = UserDialogService.github;
@@ -147,8 +145,10 @@
             }
             UserService
                 .getVerifiedPhones(vm.username)
-                .then(function (data) {
-                    vm.user.verifiedPhones = data;
+                .then(function (confirmedPhones) {
+                    confirmedPhones.map(function (p) {
+                        findByLabel('phonenumbers', p.label).verified = true;
+                    });
                     vm.loaded.verifiedPhones = true;
                 });
         }
@@ -159,10 +159,19 @@
             }
             UserService
                 .getVerifiedEmailAddresses(vm.username)
-                .then(function (data) {
-                    vm.user.verifiedEmails = data;
+                .then(function (confirmedEmails) {
+                    confirmedEmails.map(function (p) {
+                        findByLabel('emailaddresses', p.label).verified = true;
+                    });
                     vm.loaded.verifiedEmails = true;
                 });
+        }
+
+
+        function findByLabel(property, label) {
+            return vm.user[property].filter(function (val) {
+                return val.label === label;
+            })[0];
         }
 
         function loadAPIKeys() {
@@ -271,16 +280,19 @@
                 var originalAuthorization = JSON.parse(JSON.stringify(authorization));
                 angular.forEach(authorization, function (value, key) {
                     if (Array.isArray(value)) {
+                        $scope.requested[key] = {};
                         angular.forEach(value, function (v, i) {
-                            if (!$scope.requested[key]) {
-                                $scope.requested[key] = {};
+                            if (typeof v !== 'object') {
+                                $scope.requested[key][v] = true;
+                            } else {
+                                if (!Array.isArray($scope.requested[key])) {
+                                    $scope.requested[key] = [];
+                                }
+                                $scope.requested[key].push(v.requestedlabel);
                             }
-                            $scope.requested[key][v] = true;
                         });
                     }
-                    else if (typeof value === 'object') {
-                        $scope.requested[key] = Object.keys(value);
-                    } else {
+                    else {
                         $scope.requested[key] = value;
 
                     }
@@ -423,14 +435,14 @@
             });
         }
 
-        function verifyEmailAddress(event, label) {
-            UserService.sendEmailAddressVerification(vm.username, label)
+        function verifyEmailAddress(event, email) {
+            UserService.sendEmailAddressVerification(vm.username, email.label)
                 .then(function () {
                     $mdDialog.show(
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
                             .title('Verification email sent')
-                            .textContent('A verification email has been sent to ' + vm.user.email[label] + '.')
+                            .textContent('A verification email has been sent to ' + email.emailaddress + '.')
                             .ariaLabel('Verification email sent')
                             .ok('close')
                             .targetEvent(event)

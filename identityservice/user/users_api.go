@@ -951,8 +951,8 @@ func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if oldlabel != newbank.Label {
-		_, err := user.GetBankAccountByLabel(oldbank.Label)
+	if oldbank.Label != newbank.Label {
+		_, err := user.GetBankAccountByLabel(newbank.Label)
 		if err == nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
