@@ -2,6 +2,7 @@ package siteservice
 
 import (
 	"crypto/rand"
+	"strings"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -106,7 +107,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	username := values.Login
+	username := strings.ToLower(values.Login)
 
 	//validate the username exists
 	var userexists bool

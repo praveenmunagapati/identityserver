@@ -74,7 +74,7 @@ func (u *User) GetAddressByLabel(label string) (address Address, err error) {
 }
 
 func ValidateUsername(username string) (valid bool) {
-	regex, _ := regexp.Compile(`^[a-zA-Z0-9\s-_]+$`)
+	regex, _ := regexp.Compile(`^[a-z0-9\s-_]+$`)
 	matches := regex.FindAllString(username, 2)
 	return len(matches) == 1
 }

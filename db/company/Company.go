@@ -1,6 +1,7 @@
 package company
 
 import (
+	"strings"
 	"github.com/itsyouonline/identityserver/db"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -19,6 +20,6 @@ type Company struct {
 func (c *Company) IsValid() (valid bool) {
 	valid = true
 	globalIDLength := len(c.Globalid)
-	valid = valid && (globalIDLength >= 3) && (globalIDLength <= 150)
+	valid = valid && (globalIDLength >= 3) && (globalIDLength <= 150) && c.Globalid == strings.ToLower(c.Globalid)
 	return
 }
