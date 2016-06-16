@@ -9,7 +9,7 @@
         </md-card-title>
         <md-card-content>
             <div layout="column">
-                <md-input-container ng-show="vm.hasMoreThanOneTwoFaMethod">
+                <md-input-container ng-show="vm.step === 'choice'">
                     <label>Authentication method</label>
                     <md-select ng-model="vm.selectedTwoFaMethod" required>
                         <md-option ng-repeat="(method, label) in vm.possibleTwoFaMethods" value="{{ ::method }}">
@@ -17,7 +17,7 @@
                         </md-option>
                     </md-select>
                 </md-input-container>
-                <md-input-container>
+                <md-input-container ng-show="vm.step === 'code'">
                     <label for="code">Code</label>
                     <input type="text" md-maxlength="6" maxlength="6" ng-minlength="6" required id="code"
                            name="code"
@@ -26,17 +26,18 @@
                         <div ng-message="invalid_code">Invalid code</div>
                     </div>
                 </md-input-container>
-                <p ng-show="vm.selectedTwoFaMethod.indexOf('sms-') === 0 && vm.smsSend">
-
-                </p>
             </div>
         </md-card-content>
         <md-card-actions layout="row"
                          layout-align="{{vm.shouldShowSendButton() ? 'space-between center' : 'end center'}}">
-            <md-button ng-if="vm.shouldShowSendButton()" class="md-raised md-primary"
-                       ng-click="vm.sendSmsCode()"> Send authentication code
+            <md-button class="md-raised md-primary" ng-show="vm.step === 'choice'" ng-click="vm.nextStep()">
+                Next
             </md-button>
-            <md-button type="submit" class="md-raised md-primary" ng-disabled="!twoFaForm.$valid">
+            <md-button ng-if="vm.shouldShowSendButton()" class="md-raised" ng-click="vm.sendSmsCode()">
+                Resend code
+            </md-button>
+            <md-button type="submit" class="md-raised md-primary" ng-disabled="!twoFaForm.$valid"
+                       ng-show="vm.step === 'code'">
                 Login
             </md-button>
         </md-card-actions>

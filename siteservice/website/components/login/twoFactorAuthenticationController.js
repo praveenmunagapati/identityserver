@@ -5,18 +5,22 @@
             twoFactorAuthenticationController]);
 
     function twoFactorAuthenticationController($scope, $window, $interval, $mdDialog, LoginService) {
+        var STEP_CHOICE = 'choice',
+            STEP_CODE = 'code';
         var vm = this;
         vm.resetValidation = resetValidation;
         vm.shouldShowSendButton = shouldShowSendButton;
         vm.sendSmsCode = sendSmsCode;
         vm.login = login;
         vm.getHelpText = getHelpText;
-        vm.smsSend = false;
+        vm.nextStep = nextStep;
         vm.selectedTwoFaMethod = null;
         vm.hasMoreThanOneTwoFaMethod = false;
-        init();
+        var steps = [STEP_CHOICE, STEP_CODE];
+        vm.step = steps[0];
         var interval;
         var queryString = $window.location.search;
+        init();
 
         function init() {
             LoginService
@@ -44,9 +48,9 @@
                         );
                         return;
                     }
-                    if (!vm.hasMoreThanOneTwoFaMethod && methods[0].indexOf('sms-') === 0) {
+                    if (!vm.hasMoreThanOneTwoFaMethod) {
                         vm.selectedTwoFaMethod = methods[0];
-                        sendSmsCode();
+                        nextStep();
                     } else {
                         // Preselect based on what was selected when previously logging in
                         var method = localStorage.getItem('itsyouonline.last2falabel');
@@ -60,17 +64,28 @@
                 });
         }
 
-        function getHelpText() {
-            if (vm.selectedTwoFaMethod && vm.selectedTwoFaMethod.indexOf('sms-') === 0 && vm.smsSend) {
-                return 'Click the link in the sms sent to your phone or enter the code from the sms here to continue.';
-            }
-            if (vm.selectedTwoFaMethod === 'totp') {
-                return 'Fill in the 6 digit code from the authenticator application on your phone.';
+        function nextStep() {
+            vm.step = steps[steps.indexOf(vm.step) + 1];
+            if (vm.step === STEP_CODE && vm.selectedTwoFaMethod.indexOf('sms-') === 0) {
+                sendSmsCode();
             }
         }
 
+        function getHelpText() {
+            var text = '';
+            if (vm.step === STEP_CODE) {
+                if (vm.selectedTwoFaMethod.indexOf('sms-') === 0) {
+                    text = 'Click the link in the sms sent to your phone or enter the code from the sms here to continue.';
+                }
+                if (vm.selectedTwoFaMethod === 'totp') {
+                    text = 'Fill in the 6 digit code from the authenticator application on your phone.';
+                }
+            }
+            return text;
+        }
+
         function shouldShowSendButton() {
-            return vm.selectedTwoFaMethod && vm.selectedTwoFaMethod.indexOf('sms-') === 0;
+            return vm.selectedTwoFaMethod && vm.selectedTwoFaMethod.indexOf('sms-') === 0 && vm.step === STEP_CODE;
         }
 
         function resetValidation() {
@@ -82,7 +97,6 @@
                 $interval.cancel(interval);
             }
             var phoneLabel = vm.selectedTwoFaMethod.replace('sms-', '');
-            vm.smsSend = true;
             LoginService
                 .sendSmsCode(phoneLabel)
                 .then(function () {
