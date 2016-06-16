@@ -2,6 +2,27 @@
     authorization-details md-select-value > span {
         width: 200px;
     }
+
+    authorization-details .list-item-text-right {
+        text-align: right;
+        margin-right: 40px !important;
+    }
+
+    authorization-details .list-item-img {
+        height: 30px;
+    }
+
+    authorization-details .list-item-img img.md-avatar {
+        height: 30px;
+        width: 30px;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    authorization-details .list-item-img span {
+        position: relative;
+        bottom: 10px;
+    }
 </style>
 <md-list-item>
     <p>
@@ -10,14 +31,16 @@
         </i>
         Your username
     </p>
+    <p class="list-item-text-right">{{ ::vm.user.username }}</p>
 </md-list-item>
 <md-list-item ng-if="requested.name">
     <p>
         <i class="fa fa-user">
-            <md-tooltip>Your name</md-tooltip>
+            <md-tooltip>Your full name</md-tooltip>
         </i>
-        Your name
+        Your full name
     </p>
+    <p class="list-item-text-right">{{ ::vm.user.firstname }} {{ ::vm.user.lastname }}</p>
     <md-checkbox class="md-secondary" ng-model="authorizations.name"></md-checkbox>
 </md-list-item>
 <md-list-item ng-repeat="(label, i) in requested.organizations">
@@ -111,6 +134,10 @@
     </i>
         Your Github account
     </p>
+    <div class="list-item-text-right list-item-img" ng-if="vm.user.github.id">
+        <img class="md-avatar" ng-src="{{ vm.user.github.avatar_url }}"/>
+        <span>{{ ::vm.user.github.login }}</span>
+    </div>
     <md-checkbox class="md-secondary" ng-model="authorizations.github"></md-checkbox>
 </md-list-item>
 <md-list-item ng-if="requested.facebook">
@@ -119,5 +146,9 @@
     </i>
         Your Facebook account
     </p>
+    <div class="list-item-text-right list-item-img" ng-if="vm.user.facebook.id">
+        <img class="md-avatar" ng-src="{{ vm.user.facebook.picture }}"/>
+        <span>{{ ::vm.user.facebook.name }}</span>
+    </div>
     <md-checkbox class="md-secondary" ng-model="authorizations.facebook"></md-checkbox>
 </md-list-item>
