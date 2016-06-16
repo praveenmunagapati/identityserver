@@ -24,7 +24,7 @@
 
         vm.owner = [];
         vm.member = [];
-
+        vm.twoFAMethods = {};
         vm.user = {};
 
         vm.loaded = {};
@@ -52,7 +52,7 @@
         vm.loadUser = loadUser;
         vm.loadAuthorizations = loadAuthorizations;
         vm.loadVerifiedPhones = loadVerifiedPhones;
-        vm.loadAPIKeys = loadAPIKeys;
+        vm.loadSettings = loadSettings;
         vm.showAuthorizationDetailDialog = showAuthorizationDetailDialog;
         vm.showChangePasswordDialog = showChangePasswordDialog;
         vm.showEditNameDialog = showEditNameDialog;
@@ -60,6 +60,8 @@
         vm.verifyEmailAddress = verifyEmailAddress;
         vm.showAPIKeyDialog = showAPIKeyDialog;
         vm.createOrganization = UserDialogService.createOrganization;
+        vm.showSetupAuthenticatorApplication = showSetupAuthenticatorApplication;
+        vm.removeAuthenticatorApplication = removeAuthenticatorApplication;
         init();
 
         function init() {
@@ -192,7 +194,7 @@
             })[0];
         }
 
-        function loadAPIKeys() {
+        function loadSettings() {
             if (vm.loaded.APIKeys) {
                 return;
             }
@@ -201,6 +203,11 @@
                 .then(function (data) {
                     vm.APIKeys = data;
                     vm.loaded.APIKeys = true;
+                });
+            UserService
+                .getTwoFAMethods(vm.username)
+                .then(function (data) {
+                    vm.twoFAMethods = data;
                 });
         }
 
@@ -421,6 +428,7 @@
                 }
             });
         }
+
         function showEditNameDialog(event) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
@@ -593,6 +601,89 @@
                     );
                 }
             }
+        }
+
+        function showSetupAuthenticatorApplication(event) {
+            $mdDialog.show({
+                controller: ['$scope', '$window', '$mdDialog', 'UserService', SetupAuthenticatorController],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/user/views/setupTOTPDialog.html',
+                targetEvent: event,
+                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
+                parent: angular.element(document.body),
+                clickOutsideToClose: true
+            });
+
+            function SetupAuthenticatorController($scope, $window, $mdDialog, UserService) {
+                var ctrl = this;
+                ctrl.close = close;
+                ctrl.submit = submit;
+                ctrl.resetValidation = resetValidation;
+                vm.config = {};
+                init();
+
+                function init() {
+                    UserService.getAuthenticatorSecret(vm.username)
+                        .then(function (data) {
+                            ctrl.totpsecret = data.totpsecret;
+                        });
+                }
+
+                function close() {
+                    $mdDialog.cancel();
+                }
+
+                function submit() {
+                    UserService.setAuthenticator(vm.username, ctrl.totpsecret, ctrl.totpcode)
+                        .then(function () {
+                            vm.twoFAMethods.totp = true;
+                            $mdDialog.hide();
+                        }, function (response) {
+                            if (response.status === 422) {
+                                $scope.form.totpcode.$setValidity('invalid_totpcode', false);
+                            } else {
+                                $window.location.href = 'error' + response.status;
+                            }
+                        });
+                }
+
+                function resetValidation() {
+                    $scope.form.totpcode.$setValidity('invalid_totpcode', true);
+                }
+            }
+        }
+
+        function removeAuthenticatorApplication(event) {
+            var hasConfirmedPhones = vm.user.phonenumbers.filter(function (phone) {
+                    return phone.verified;
+                }).length !== 0;
+            if (!hasConfirmedPhones) {
+                var msg = 'You cannot remove your authenticator application because this is your last two-factor' +
+                    ' authentication method.<br />Add a phone number and verify it to be able to remove your authenticator application.';
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title('Cannot remove authenticator')
+                        .htmlContent(msg)
+                        .ariaLabel('Cannot remove authenticator')
+                        .ok('Ok')
+                        .targetEvent(event)
+                );
+                return;
+            }
+            var confirm = $mdDialog.confirm()
+                .title('Unauthorize authenticator')
+                .textContent('Are you sure you want to unauthorize your authenticator application?')
+                .ariaLabel('Unauthorize authenticator')
+                .targetEvent(event)
+                .ok('Yes')
+                .cancel('No');
+            $mdDialog.show(confirm).then(function () {
+                UserService.removeAuthenticator(vm.username)
+                    .then(function () {
+                        vm.twoFAMethods.totp = false;
+                    });
+            });
         }
     }
 

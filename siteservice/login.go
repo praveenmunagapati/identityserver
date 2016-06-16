@@ -478,7 +478,7 @@ func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Requ
 		username = user.Username
 		validatedemails, err := valMgr.GetByUsernameValidatedEmailAddress(username)
 		if validatedemails == nil || len(validatedemails) == 0 {
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
 		if err != nil {

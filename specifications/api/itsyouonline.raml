@@ -578,6 +578,43 @@ securedBy: [ oauth_2_0 ]
             204:
                 description: Deleted facebook account
 
+    /twofamethods:
+      get:
+        displayName: GetTwoFAMethods
+        description: Get the possible two factor authentication methods
+        responses:
+          200:
+            body:
+              application/json:
+                properties:
+                  totp: boolean
+                  sms: Phonenumber[]
+    /totp:
+      get:
+        displayName: GetTOTPSecret
+        responses:
+          200:
+            body:
+              application/json:
+                properties:
+                  totpsecret: string
+      post:
+        displayName: SetupTOTP
+        body:
+          application/json:
+              properties:
+                  totpcode: string
+        responses:
+          422:
+            description: Invalid totpcode
+          204:
+            description: TOTP setup successfully
+      delete:
+        displayName: RemoveTOTP
+        409:
+          description: Cannot remove TOTP authentication because this is the last available login method
+        204:
+          description: TOTP successfully removed
   /{username}/info:
     get:
       securedBy: [oauth_2_0: { scopes: [ "user:info", "user:admin" ] } ]

@@ -1,0 +1,39 @@
+<md-dialog>
+    <form name="form" ng-submit="ctrl.submit()">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Setup authenticator application</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="ctrl.close()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
+                <p style="max-width:300px;">Scan this QR code with a 2-factor authentication app on your phone and enter
+                    the code.</p>
+                <div layout="column" layout-align="center center">
+                    <qrcode version="6" error-correction-level="M" size="200"
+                            data="otpauth://totp/ItsYou.online?secret={{ ::ctrl.totpsecret }}&issuer=ItsYou.Online">
+                    </qrcode>
+                    <md-input-container flex>
+                        <label for="totpcode">2-Factor authentication code</label>
+                        <input ng-model="ctrl.totpcode" md-maxlength="6" minlength="6" id="totpcode" md-autofocus="true"
+                               name="totpcode" autocomplete="off" ng-change="ctrl.resetValidation()">
+                        <div ng-messages="form.totpcode.$error" md-auto-hide="false">
+                            <div ng-message="invalid_totpcode">An invalid code was given</div>
+                        </div>
+                    </md-input-container>
+                </div>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button class="md-warn" ng-click="ctrl.close()">
+                Cancel
+            </md-button>
+            <span flex></span>
+            <md-button class="md-primary" type="submit" type="submit">Save</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

@@ -253,3 +253,9 @@ func (manager *Manager) IsPhonenumberValidated(username string, phonenumber stri
 	}
 	return
 }
+
+func (manager *Manager) HasValidatedPhones(username string) (hasValidatedPhones bool, err error) {
+	count, err := db.GetCollection(manager.session, mongoValidatedPhonenumbers).Find(bson.M{"username": username}).Count()
+	hasValidatedPhones = count > 0
+	return hasValidatedPhones, err
+}

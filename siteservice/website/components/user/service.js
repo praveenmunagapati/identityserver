@@ -98,7 +98,11 @@
             getAPIKeys: getAPIKeys,
             createAPIKey: createAPIKey,
             updateAPIKey: updateAPIKey,
-            deleteAPIKey: deleteAPIKey
+            deleteAPIKey: deleteAPIKey,
+            getTwoFAMethods: getTwoFAMethods,
+            getAuthenticatorSecret: getAuthenticatorSecret,
+            setAuthenticator: setAuthenticator,
+            removeAuthenticator: removeAuthenticator
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -288,6 +292,30 @@
 
         function deleteAPIKey(username, label) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/apikeys/' + encodeURIComponent(label);
+            return genericHttpCall($http.delete, url);
+        }
+
+        function getTwoFAMethods(username) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/twofamethods';
+            return genericHttpCall($http.get, url);
+        }
+
+        function getAuthenticatorSecret(username) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/totp';
+            return genericHttpCall($http.get, url);
+        }
+
+        function setAuthenticator(username, secret, code) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/totp';
+            var data = {
+                totpsecret: secret,
+                totpcode: code
+            };
+            return genericHttpCall($http.post, url, data);
+        }
+
+        function removeAuthenticator(username) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/totp';
             return genericHttpCall($http.delete, url);
         }
     }
