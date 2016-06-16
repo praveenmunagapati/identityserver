@@ -4,11 +4,11 @@ import (
 	"gopkg.in/validator.v2"
 )
 
-type member struct {
+type Member struct {
 	Username string `json:"username" validate:"nonzero"`
 }
 
-func (s member) Validate() error {
+func (s Member) Validate() error {
 
 	return validator.Validate(s)
 }

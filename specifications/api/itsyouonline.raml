@@ -277,7 +277,7 @@ types:
         type: string
       children: OrganizationTreeItem[]
 
-  member:
+  Member:
     properties:
       username:
         type: string
@@ -330,7 +330,7 @@ types:
             type: string
             required: false
     example:
-        globalid: ILikeCandy
+        globalid: ilikecandy
         publicKeys:
             - 18SGHYSi8JCvAvTU6Ymv1HRmmu86Mq2Ypz
         expire: 2016-02-28T16:41:41.090Z
@@ -933,13 +933,13 @@ securedBy: [ oauth_2_0 ]
         description: Assign a member to organization.
         body:
           application/json:
-            type: member
+            type: Member
         responses:
           201:
             description: Member assigned successfully
             body:
               application/json:
-                type: member
+                type: Member
           401:
             description: Unauthorized
           404:
@@ -965,13 +965,13 @@ securedBy: [ oauth_2_0 ]
         description: Invite a user to become owner of an organization.
         body:
             application/json:
-              type: member
+              type: Member
         responses:
             201:
               description: Invite created successfully
               body:
                 application/json:
-                  type: member
+                  type: Member
             401:
               description: Unauthorized
             404:
