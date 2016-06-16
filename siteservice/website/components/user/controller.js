@@ -29,6 +29,7 @@
 
         vm.loaded = {};
         vm.selectedTabIndex = 0;
+        vm.pendingCount = 0;
 
         UserDialogService.init(vm);
 
@@ -80,15 +81,10 @@
                 .then(
                     function (data) {
                         vm.notifications = data;
-                        var count = getPendingCount(data.invitations);
-
-                        if (count === 0) {
-                            vm.notificationMessage = 'No unhandled notifications';
-                        } else {
-                            vm.notificationMessage = '';
-                        }
+                        vm.pendingCount = getPendingCount('all');
+                        vm.notificationMessage = vm.pendingCount ? '' : 'No unhandled notifications';
                         vm.loaded.notifications = true;
-                        $rootScope.openRequests = count;
+                        $rootScope.openRequests = vm.pendingCount;
 
                     }
                 );
@@ -186,15 +182,19 @@
                 });
         }
 
-        function getPendingCount(invitations) {
+        function getPendingCount(obj) {
             var count = 0;
-            invitations.forEach(function(invitation) {
-                if (invitation.status === 'pending') {
-                    count += 1;
-                }
-            });
-
-            return count;
+            if (obj === 'all') {
+                count += vm.notifications.approvals.filter(pendingFilter).length;
+                count += vm.notifications.contractRequests.filter(pendingFilter).length;
+                count += vm.notifications.invitations.filter(pendingFilter).length;
+                return count;
+            } else {
+                return obj.filter(pendingFilter).length;
+            }
+            function pendingFilter(prop) {
+                return prop.status === 'pending';
+            }
         }
 
         function checkSelected() {

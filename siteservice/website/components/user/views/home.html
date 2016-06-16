@@ -242,7 +242,10 @@
                             </md-tab-body>
                         </md-tab>
                         <md-tab md-on-select="vm.tabSelected(vm.loadNotifications)">
-                            <md-tab-label><i class="fa fa-bell"></i>&nbsp;Notifications</md-tab-label>
+                            <md-tab-label>
+                                <span class="badge" ng-bind="vm.pendingCount" style="margin-left:-10px;"></span>
+                                &nbsp;Notifications
+                            </md-tab-label>
                             <md-tab-body layout="column">
                                 <div layout="row" layout-align="center center" ng-if="!vm.loaded.notifications">
                                     <md-progress-circular md-mode="indeterminate"
