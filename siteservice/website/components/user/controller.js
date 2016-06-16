@@ -64,7 +64,14 @@
 
         function init() {
             vm.selectedTabIndex = parseInt($routeParams.tab) || 0;
-            loadNotifications();
+            loadUser()
+                .then(function () {
+                    loadVerifiedPhones();
+                    loadVerifiedEmails()
+                        .then(function () {
+                            loadNotifications();
+                        });
+                });
         }
 
         function tabSelected(fx) {
@@ -81,6 +88,18 @@
                 .then(
                     function (data) {
                         vm.notifications = data;
+                        vm.notifications.security = [];
+                        var hasVerifiedEmail = vm.user.emailaddresses.filter(function (email) {
+                                return email.verified;
+                            }).length > 0;
+                        if (!hasVerifiedEmail) {
+                            vm.notifications.security.push({
+                                tabIndex: 0,
+                                subject: 'verified_emails',
+                                msg: 'You do not have any verified email addresses. You will not be able to recover your account if you do not verify at least one of them.',
+                                status: 'pending'
+                            });
+                        }
                         vm.pendingCount = getPendingCount('all');
                         vm.notificationMessage = vm.pendingCount ? '' : 'No unhandled notifications';
                         vm.loaded.notifications = true;
@@ -106,7 +125,6 @@
         }
 
         function loadAuthorizations() {
-            loadUser();
             if (vm.loaded.authorizations) {
                 return;
             }
@@ -120,19 +138,20 @@
         }
 
         function loadUser() {
-            if (vm.loaded.user) {
-                return;
-            }
-            UserService
-                .get(vm.username)
-                .then(
-                    function (data) {
-                        vm.user = data;
-                        vm.loaded.user = true;
-                        loadVerifiedPhones();
-                        loadVerifiedEmails();
-                    }
-                );
+            return $q(function (resolve, reject) {
+                if (vm.loaded.user) {
+                    return;
+                }
+                UserService
+                    .get(vm.username)
+                    .then(
+                        function (data) {
+                            vm.user = data;
+                            vm.loaded.user = true;
+                            resolve(data);
+                        }, reject
+                    );
+            });
         }
 
         function loadVerifiedPhones() {
@@ -150,17 +169,20 @@
         }
 
         function loadVerifiedEmails() {
-            if (vm.loaded.verifiedEmails) {
-                return;
-            }
-            UserService
-                .getVerifiedEmailAddresses(vm.username)
-                .then(function (confirmedEmails) {
-                    confirmedEmails.map(function (p) {
-                        findByLabel('emailaddresses', p.label).verified = true;
-                    });
-                    vm.loaded.verifiedEmails = true;
-                });
+            return $q(function (resolve, reject) {
+                if (vm.loaded.verifiedEmails) {
+                    return;
+                }
+                UserService
+                    .getVerifiedEmailAddresses(vm.username)
+                    .then(function (confirmedEmails) {
+                        confirmedEmails.map(function (p) {
+                            findByLabel('emailaddresses', p.label).verified = true;
+                        });
+                        vm.loaded.verifiedEmails = true;
+                        resolve(confirmedEmails);
+                    }, reject);
+            });
         }
 
 
@@ -188,9 +210,10 @@
                 count += vm.notifications.approvals.filter(pendingFilter).length;
                 count += vm.notifications.contractRequests.filter(pendingFilter).length;
                 count += vm.notifications.invitations.filter(pendingFilter).length;
+                count += vm.notifications.security.length;
                 return count;
             } else {
-                return obj.filter(pendingFilter).length;
+                return obj ? obj.filter(pendingFilter).length : 0;
             }
             function pendingFilter(prop) {
                 return prop.status === 'pending';

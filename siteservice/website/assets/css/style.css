@@ -397,3 +397,7 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     border: 2px solid #f3f3f3;
     border-radius: 15px;
 }
+
+.list-item-secondary-button-padding p {
+    padding-right: 120px;
+}
