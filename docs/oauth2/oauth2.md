@@ -104,20 +104,33 @@ curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/api/users/bob/i
 ```
 
 ## Client Credentials Flow
-The client credentials grant type provides an application linked to an organization to access its own account.
+
+
+The client credentials grant type can be used in two scenario's:
+1. An application linked to an **organization** to access its own account.
+2. An application linked to a **user** to access the user's account
+
 Examples of when this might be useful include if an application wants to invite someone to an organization or access other organization data using the API.
 
-### Prerequisite: clientid and client secret
+### Prerequisite: client_id and client_secret
 
 In order to acquire an oauth access token, a client id and client secret are required.
 
-In itsyou.online, organizations map to clients in the oauth2 terminology and the organization's globalid is used as the clientid. Client secrets can be created through the UI or through the `organizations/{globalid}/apikeys` api.
+#### Organization api key
+In itsyou.online, organizations map to clients in the oauth2 terminology and the organization's globalid is used as the client_id. Client secrets can be created through the UI by going to the organization's settings page or through the `api/organizations/{globalid}/apikeys` api.
 
 In order to use an apikey in a client credentials flow, *enable client credentials flow* must be set on the apikey (through the api or in the apikey detail dialog in the UI).
 
+#### User api key
+It is possible to create api keys to access a user's data through the api instead of through the UI.
+In the UI, create a new api key in the user's settings page. This will generate an *application id* and a *secret*. Use the *application id* as client_id and the *secret* as client_secret.
+
+Api keys can also be created through the `api/users/{username}/apikeys` api or by creating an user through the api ( POST on `/api/users`)
+
+
 ### Acquire an access token
 
-The application requests an access token by sending its credentials, its client ID and client secret, to the authorization server. An example POST request might look like the following:
+The application requests an access token by sending its credentials, its client_id and client secret, to the authorization server. An example POST request might look like the following:
 
 ```
 https://itsyou.online/v1/oauth/access_token?grant_type=client_credentials&client_id=CLIENT_ID&client_secret=CLIENT_SECRET
@@ -125,7 +138,7 @@ https://itsyou.online/v1/oauth/access_token?grant_type=client_credentials&client
 
 * client_id=CLIENT_ID
 
-    the application's client ID (organization name)
+    the organization's globalid or the application id as described above
 
 * client_secret=CLIENT_SECRET
 
@@ -142,4 +155,4 @@ If the application credentials check out, the authorization server returns an ac
 
 ### Use the access token to access the API
 
-The access token allows you to make requests to the API like described in the authorization code grant type above but on a behalf of the organization instead of on behalf of a user.
+The access token allows you to make requests to the API like described in the authorization code grant type above. When an organization api keys is used, the requests are a behalf of the organization instead of on behalf of a user.
