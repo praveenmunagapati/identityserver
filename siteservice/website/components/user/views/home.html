@@ -303,7 +303,7 @@
                         <md-tab-label><i class="fa fa-users"></i>&nbsp;Organizations</md-tab-label>
                         <md-tab-body>
                             <div layout="row">
-                                <md-button class="md-primary md-raised" ng-click="vm.createOrganization($event)">
+                                <md-button class="md-primary" ng-click="vm.createOrganization($event)">
                                     <i class="fa fa-plus"></i> Create new
                                 </md-button>
                             </div>
@@ -360,7 +360,7 @@
                     <!--</md-tab-body>-->
                     <!--</md-tab>-->
 
-                    <md-tab md-on-select="vm.tabSelected(vm.loadAPIKeys)">
+                    <md-tab md-on-select="vm.tabSelected(vm.loadSettings)">
                         <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
                         <md-tab-body>
                             <div layout="row" layout-align="center center" ng-if="!vm.loaded.APIKeys">
@@ -396,14 +396,24 @@
                                     <md-subheader class="md-no-sticky">Security</md-subheader>
                                     <md-list-item>
                                         <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-lock"></i>
-                                            <md-tooltip>Change password</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-button ng-click="vm.showChangePasswordDialog($event)">
-                                                Change password
-                                            </md-button>
-                                        </div>
+                                        <p>Password</p>
+                                        <md-button class="md-primary" ng-click="vm.showChangePasswordDialog($event)">
+                                            Change
+                                        </md-button>
+                                    </md-list-item>
+                                    <md-list-item>
+                                        <span flex-gt-xs="5"></span>
+                                        <p>Authenticator application</p>
+                                        <md-button class="md-primary"
+                                                   ng-click="vm.showSetupAuthenticatorApplication($event)"
+                                                   ng-hide="vm.twoFAMethods.totp">
+                                            Setup
+                                        </md-button>
+                                        <md-button class="md-warn"
+                                                   ng-click="vm.removeAuthenticatorApplication($event)"
+                                                   ng-show="vm.twoFAMethods.totp">
+                                            Remove
+                                        </md-button>
                                     </md-list-item>
                                 </md-list>
                             </div>

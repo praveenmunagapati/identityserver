@@ -70,7 +70,7 @@
                             <label for="totpcode">2-Factor authentication code</label>
                             <input ng-model="vm.totpcode" md-maxlength="6" minlength="6"
                                    ng-required="vm.twoFAMethod === 'totp'" id="totpcode"
-                                   name="totpcode" autocomplete="off" ng-change="vm.resetValidation('login')">
+                                   name="totpcode" autocomplete="off" ng-change="vm.resetValidation('totpcode')">
                             <div ng-messages="signupform.totpcode.$error" md-auto-hide="false">
                                 <div ng-message="invalid_totpcode">An invalid code was given</div>
                             </div>
