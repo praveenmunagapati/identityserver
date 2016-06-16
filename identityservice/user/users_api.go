@@ -1415,6 +1415,131 @@ func (api UsersAPI) UpdateName(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// GetTwoFAMethods is the handler for GET /users/{username}/twofamethods
+// Get the possible two factor authentication methods
+func (api UsersAPI) GetTwoFAMethods(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	userMgr := user.NewManager(r)
+	userFromDB, err := userMgr.GetByName(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Totp bool               `json:"totp"`
+		Sms  []user.Phonenumber `json:"sms"`
+	}{}
+	totpMgr := totp.NewManager(r)
+	response.Totp, err = totpMgr.HasTOTP(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	valMgr := validationdb.NewManager(r)
+	verifiedPhones, err := valMgr.GetByUsernameValidatedPhonenumbers(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	for _, validatedPhoneNumber := range verifiedPhones {
+		for _, number := range userFromDB.Phonenumbers {
+			if number.Phonenumber == string(validatedPhoneNumber.Phonenumber) {
+				response.Sms = append(response.Sms, number)
+			}
+		}
+	}
+	json.NewEncoder(w).Encode(response)
+	w.WriteHeader(http.StatusOK)
+	return
+}
+
+
+// GetTOTPSecret is the handler for GET /users/{username}/totp/
+// Gets a new TOTP secret
+func (api UsersAPI) GetTOTPSecret(w http.ResponseWriter, r *http.Request) {
+	response := struct {
+		Totpsecret string `json:"totpsecret"`
+	}{}
+	token, err := totp.NewToken()
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	response.Totpsecret = token.Secret
+	json.NewEncoder(w).Encode(response)
+	w.WriteHeader(http.StatusOK)
+}
+
+// SetupTOTP is the handler for POST /users/{username}/totp/
+// Configures TOTP authentication for this user
+func (api UsersAPI) SetupTOTP(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	values := struct {
+		TotpSecret string `json:"totpsecret"`
+		TotpCode   string `json:"totpcode"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&values); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	totpMgr := totp.NewManager(r)
+	err := totpMgr.Save(username, values.TotpSecret)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	valid, err := totpMgr.Validate(username, values.TotpCode)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !valid {
+		err := totpMgr.Remove(username)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(422)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// RemoveTOTP is the handler for DELETE /users/{username}/totp/
+// Removes TOTP authentication for this user, if possible.
+func (api UsersAPI) RemoveTOTP(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	valMngr := validationdb.NewManager(r)
+	hasValidatedPhones, err := valMngr.HasValidatedPhones(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !hasValidatedPhones {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+	totpMgr := totp.NewManager(r)
+	err = totpMgr.Remove(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func writeErrorResponse(responseWrite http.ResponseWriter, httpStatusCode int, message string) {
 	log.Debug(httpStatusCode, message)
 	errorResponse := struct {

@@ -87,3 +87,12 @@ func (pwm *Manager) Save(username, secret string) error {
 
 	return err
 }
+
+func (pwm *Manager) Remove(username string) error {
+	return pwm.collection.Remove(bson.M{"username": username})
+}
+
+func (pwm *Manager) GetSecret(username string) (err error, secret userSecret) {
+	err = pwm.collection.Find(bson.M{"username": username}).One(&secret)
+	return err, secret
+}

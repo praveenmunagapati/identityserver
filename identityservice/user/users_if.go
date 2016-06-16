@@ -112,6 +112,15 @@ type UsersInterface interface { // Post is the handler for POST /users
 	UpdateAPIKey(http.ResponseWriter, *http.Request)
 	DeleteAPIKey(http.ResponseWriter, *http.Request)
 	ListAPIKeys(http.ResponseWriter, *http.Request)
+	// GetTwoFAMethods is the handler for GET /users/{username}/twofamethods
+	// Get the possible two factor authentication methods
+	GetTwoFAMethods(http.ResponseWriter, *http.Request)
+	// GetTOTPSecret is the handler for GET /users/{username}/totp
+	GetTOTPSecret(http.ResponseWriter, *http.Request)
+	// GetTOTPSecret is the handler for POST /users/{username}/totp
+	SetupTOTP(http.ResponseWriter, *http.Request)
+	// GetTOTPSecret is the handler for DELETE /users/{username}/totp
+	RemoveTOTP(http.ResponseWriter, *http.Request)
 }
 
 // UsersInterfaceRoutes is routing for /users root endpoint
@@ -158,4 +167,8 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/authorizations/{grantedTo}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetAuthorization))).Methods("GET")
 	r.Handle("/users/{username}/authorizations/{grantedTo}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateAuthorization))).Methods("PUT")
 	r.Handle("/users/{username}/authorizations/{grantedTo}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteAuthorization))).Methods("DELETE")
+	r.Handle("/users/{username}/twofamethods", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetTwoFAMethods))).Methods("GET")
+	r.Handle("/users/{username}/totp", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetTOTPSecret))).Methods("GET")
+	r.Handle("/users/{username}/totp", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.SetupTOTP))).Methods("POST")
+	r.Handle("/users/{username}/totp", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RemoveTOTP))).Methods("DELETE")
 }
