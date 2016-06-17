@@ -97,7 +97,7 @@
                     pageTitle: 'Organization detail'
                 }
             })
-            .otherwise('/home');
+            .otherwise('/home/you');
     }
 
     function pagetitle($rootScope, $timeout) {

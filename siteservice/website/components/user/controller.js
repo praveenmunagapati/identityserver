@@ -22,6 +22,13 @@
         };
         vm.notificationMessage = '';
 
+        var TAB_YOU = 'you';
+        var TAB_NOTIFICATIONS = 'notifications';
+        var TAB_ORGANIZATIONS = 'organizations';
+        var TAB_AUTHORIZATIONS = 'authorizations';
+        var TAB_SETTINGS = 'settings';
+        var TABS = [TAB_YOU, TAB_NOTIFICATIONS, TAB_ORGANIZATIONS,TAB_AUTHORIZATIONS, TAB_SETTINGS];
+
         vm.owner = [];
         vm.member = [];
         vm.twoFAMethods = {};
@@ -65,7 +72,8 @@
         init();
 
         function init() {
-            vm.selectedTabIndex = parseInt($routeParams.tab) || 0;
+            var index = TABS.indexOf($routeParams.tab);
+            vm.selectedTabIndex = index !== -1 ? index: 0;
             loadUser()
                 .then(function () {
                     loadVerifiedPhones();
@@ -78,7 +86,7 @@
 
         function tabSelected(fx) {
             fx();
-            $location.path('/home/' + vm.selectedTabIndex, false);
+            $location.path('/home/' + TABS[vm.selectedTabIndex], false);
         }
 
         function loadNotifications() {
