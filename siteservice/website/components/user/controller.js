@@ -86,7 +86,10 @@
 
         function tabSelected(fx) {
             fx();
-            $location.path('/home/' + TABS[vm.selectedTabIndex], false);
+            var path = '/home/' + TABS[vm.selectedTabIndex];
+            if(path !== $window.location.hash.replace('#', '')){
+                $location.path(path, false);
+            }
         }
 
         function loadNotifications() {
