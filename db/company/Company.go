@@ -1,9 +1,9 @@
 package company
 
 import (
-	"strings"
 	"github.com/itsyouonline/identityserver/db"
 	"gopkg.in/mgo.v2/bson"
+	"strings"
 )
 
 type Company struct {

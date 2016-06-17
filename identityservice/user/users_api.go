@@ -433,17 +433,17 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		respBody.Lastname = userobj.Lastname
 	}
 	if authorization.Github {
-		respBody.Github = userobj.Github.Name
+		respBody.Github = userobj.Github
 	}
 	if authorization.Facebook {
-		respBody.Facebook = userobj.Facebook.Name
+		respBody.Facebook = userobj.Facebook
 	}
 	if authorization.Addresses != nil {
 		respBody.Addresses = make([]user.Address, 0)
 
 		for _, addressmap := range authorization.Addresses {
 			address, err := userobj.GetAddressByLabel(addressmap.RealLabel)
-			if err != nil {
+			if err == nil {
 				newaddress := user.Address{
 					Label:      addressmap.RequestedLabel,
 					City:       address.City,
@@ -454,6 +454,8 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 					Street:     address.Street,
 				}
 				respBody.Addresses = append(respBody.Addresses, newaddress)
+			} else {
+				log.Debug(err)
 			}
 		}
 	}
@@ -463,12 +465,14 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 
 		for _, emailmap := range authorization.EmailAddresses {
 			email, err := userobj.GetEmailAddressByLabel(emailmap.RealLabel)
-			if err != nil {
+			if err == nil {
 				newemail := user.EmailAddress{
 					Label:        emailmap.RequestedLabel,
 					EmailAddress: email.EmailAddress,
 				}
 				respBody.EmailAddresses = append(respBody.EmailAddresses, newemail)
+			} else {
+				log.Debug(err)
 			}
 		}
 	}
@@ -477,12 +481,14 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		respBody.Phonenumbers = make([]user.Phonenumber, 0)
 		for _, phonemap := range authorization.Phonenumbers {
 			phonenumber, err := userobj.GetPhonenumberByLabel(phonemap.RealLabel)
-			if err != nil {
+			if err == nil {
 				newnumber := user.Phonenumber{
 					Label:       phonemap.RequestedLabel,
 					Phonenumber: phonenumber.Phonenumber,
 				}
 				respBody.Phonenumbers = append(respBody.Phonenumbers, newnumber)
+			} else {
+				log.Debug(err)
 			}
 		}
 	}
@@ -492,7 +498,7 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 
 		for _, bankmap := range authorization.BankAccounts {
 			bank, err := userobj.GetBankAccountByLabel(bankmap.RealLabel)
-			if err != nil {
+			if err == nil {
 				newbank := user.BankAccount{
 					Label:   bankmap.RealLabel,
 					Bic:     bank.Bic,
@@ -500,6 +506,8 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 					Iban:    bank.Iban,
 				}
 				respBody.BankAccounts = append(respBody.BankAccounts, newbank)
+			} else {
+				log.Debug(err)
 			}
 		}
 	}
@@ -1456,7 +1464,6 @@ func (api UsersAPI) GetTwoFAMethods(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	return
 }
-
 
 // GetTOTPSecret is the handler for GET /users/{username}/totp/
 // Gets a new TOTP secret

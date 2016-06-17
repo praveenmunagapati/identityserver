@@ -2,11 +2,11 @@ package siteservice
 
 import (
 	"crypto/rand"
-	"strings"
 	"encoding/json"
 	"fmt"
 	"math/big"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/sessions"
