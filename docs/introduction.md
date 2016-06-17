@@ -32,6 +32,11 @@ If you have a normal oauth token, you can set it on the client as well:
 client.api.session.headers['Authorization'] = 'token <oauth token>'
 ```
 
+Or when you have a jwt:
+```
+client.api.session.headers['Authorization'] = 'bearer <jwt>'
+```
+
 ### Jumpscale
 
 The itsyou.online client is preregistered in Jumpscale: https://github.com/Jumpscale/jumpscale_core8/blob/master/lib/JumpScale/clients/itsyouonline/readme.md
