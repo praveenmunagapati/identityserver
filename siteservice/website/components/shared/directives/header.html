@@ -1,4 +1,12 @@
-<header id="header">
+<header id="header" ng-class="{'cookie-warning': showCookieWarning}">
+    <div ng-cloak class="cookie-warning-container" ng-show="showCookieWarning">
+        <div class="content">
+            <span>This site uses cookies. By continuing to browse the site you are agreeing to our use of cookies.</span>
+            <md-button class="md-raised" ng-click="hideCookieWarning()">
+                <i class="fa fa-times"></i> Dismiss
+            </md-button>
+        </div>
+    </div>
     <div class="content">
         <div id="logo"><a href="#/"> ItsYou.Online </a></div>
         <div class="sign-wrap" ng-show="$root.user">

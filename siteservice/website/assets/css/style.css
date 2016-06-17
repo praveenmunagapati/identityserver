@@ -55,6 +55,25 @@ md-dialog > md-dialog-content > h2 {
     position: relative;
     z-index: 2;
 }
+
+#header.cookie-warning{
+    height:120px;
+}
+.cookie-warning-container{
+    height:40px;
+    font-weight:bold;
+    font-size:14px;
+    line-height:40px;
+    text-align: center;
+    background: rgb(255,64,129);
+    color: #FFFFFF;
+}
+
+.cookie-warning-container > .content > .md-button{
+    height: 25px;
+    min-height:25px;
+    line-height: 25px;
+}
 #logo a { text-decoration: none; float: left; font-size: 30px; margin-top: 20px; color: #FFF; font-family: Wellfleet; font-weight: bold; }
 
 /*= QUOTES AND SOME ELEMENTS
