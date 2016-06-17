@@ -146,7 +146,7 @@ https://itsyou.online/v1/oauth/access_token?grant_type=client_credentials&client
 
 * grant_type=client_credentials
 
-    specifies that your application is requesting an access token though a client credentials flow
+    specifies that your application is requesting an access token using the client credentials flow
 
 
 
