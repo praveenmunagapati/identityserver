@@ -80,6 +80,13 @@ func (service *Service) ShowLoginForm(w http.ResponseWriter, request *http.Reque
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	loginSession, err := service.GetSession(request, SessionLogin, "lo	ginsession")
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	loginSession.Values["auth_client_id"] = request.URL.Query().Get("client_id")
 	sessions.Save(request, w)
 	w.Write(htmlData)
 
@@ -254,10 +261,16 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 		return
 	}
 	loginSession.Values["sessionkey"] = sessionInfo.SessionKey
+	authenticatingOrganization := loginSession.Values["auth_client_id"].(string)
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 	mgoCollection.Insert(sessionInfo)
-	smsmessage := fmt.Sprintf("To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
-		sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+	organizationText := ""
+	if(authenticatingOrganization != ""){
+		split := strings.Split(authenticatingOrganization, ".")
+		organizationText = fmt.Sprintf("to authorize the organization %s, ", split[len(split) - 1])
+	}
+	smsmessage := fmt.Sprintf("To continue signing in at itsyou.online %senter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
+		organizationText, sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
 	sessions.Save(request, w)
 	go service.smsService.Send(phoneNumber.Phonenumber, smsmessage)
 	w.WriteHeader(http.StatusNoContent)
