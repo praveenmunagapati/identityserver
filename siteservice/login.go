@@ -195,7 +195,6 @@ func (service *Service) GetTwoFactorAuthenticationMethods(w http.ResponseWriter,
 		}
 	}
 	json.NewEncoder(w).Encode(response)
-	w.WriteHeader(http.StatusOK)
 	return
 }
 
@@ -265,9 +264,9 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 	mgoCollection.Insert(sessionInfo)
 	organizationText := ""
-	if(authenticatingOrganization != ""){
+	if authenticatingOrganization != "" {
 		split := strings.Split(authenticatingOrganization, ".")
-		organizationText = fmt.Sprintf("to authorize the organization %s, ", split[len(split) - 1])
+		organizationText = fmt.Sprintf("to authorize the organization %s, ", split[len(split)-1])
 	}
 	smsmessage := fmt.Sprintf("To continue signing in at itsyou.online %senter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
 		organizationText, sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
