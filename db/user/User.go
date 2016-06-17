@@ -39,7 +39,7 @@ func (u *User) GetEmailAddressByLabel(label string) (email EmailAddress, err err
 			return
 		}
 	}
-	err = errors.New("Could not find EmailAddress with Label")
+	err = errors.New("Could not find EmailAddress with Label " + email.Label)
 	return
 }
 
@@ -49,7 +49,7 @@ func (u *User) GetPhonenumberByLabel(label string) (phonenumber Phonenumber, err
 			return
 		}
 	}
-	err = errors.New("Could not find Phonenumber with Label")
+	err = errors.New("Could not find Phonenumber with Label " + phonenumber.Label)
 	return
 }
 
@@ -59,7 +59,7 @@ func (u *User) GetBankAccountByLabel(label string) (bankaccount BankAccount, err
 			return
 		}
 	}
-	err = errors.New("Could not find Phonenumber with Label")
+	err = errors.New("Could not find Phonenumber with Label " + bankaccount.Label)
 	return
 }
 
@@ -69,7 +69,7 @@ func (u *User) GetAddressByLabel(label string) (address Address, err error) {
 			return
 		}
 	}
-	err = errors.New("Could not find Phonenumber with Label")
+	err = errors.New("Could not find Phonenumber with Label " + address.Label)
 	return
 }
 
