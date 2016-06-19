@@ -517,6 +517,8 @@
                         function (reason) {
                             if (reason.status == 409) {
                                 $scope.form.name.$setValidity('duplicate', false);
+                            } else if (reason.status == 400) {
+                                $scope.form.name.$setValidity('pattern', false);
                             }
                             else {
                                 $window.location.href = "error" + reason.status;
@@ -531,6 +533,7 @@
 
             function resetValidation() {
                 $scope.form.name.$setValidity('duplicate', true);
+                $scope.form.name.$setValidity('pattern', true);
             }
         }
     }

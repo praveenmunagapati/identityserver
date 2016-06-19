@@ -18,7 +18,7 @@
                 <md-input-container>
                     <label for="organizationName">Organization name</label>
                     <input ng-model="ctrl.name" required type="text" md-autofocus="true" name="name" minlength="3"
-                           ng-minlength="3" ng-change="ctrl.resetValidation()" ng-pattern="/^[a-zA-Z0-9 \-_]+$/"
+                           ng-minlength="3" ng-change="ctrl.resetValidation()" ng-pattern="/^[a-z0-9 \-_]+$/"
                            id=organizationName>
                     <div ng-messages="form.name.$error">
                         <div ng-message="duplicate">This name is already taken</div>
