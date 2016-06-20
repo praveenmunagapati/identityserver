@@ -99,7 +99,6 @@
         }
 
         function goToNextTabIfValid() {
-            basicInfoValid();
             vm.selectedTab = 1;
         }
     }
