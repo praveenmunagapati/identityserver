@@ -59,11 +59,11 @@
                 );
         }
 
-        function invite(globalid, member, role) {
+        function invite(globalid, searchString, role) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + encodeURIComponent(role) + 's';
 
             return $http
-                .post(url, {username: member})
+                .post(url, {searchstring: searchString})
                 .then(
                     function(response) {
                         return response.data;

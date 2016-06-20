@@ -14,9 +14,11 @@ import (
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	"github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/db/user"
+	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/oauthservice"
+	"gopkg.in/mgo.v2"
 )
 
 const itsyouonlineGlobalID = "itsyouonline"
@@ -236,9 +238,9 @@ func (api OrganizationsAPI) globalidPut(w http.ResponseWriter, r *http.Request) 
 func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
-	var m member
+	var s searchMember
 
-	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -253,22 +255,25 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 	}
 
 	// Check if user exists
-	userMgr := user.NewManager(r)
-
-	if ok, err := userMgr.Exists(m.Username); err != nil || !ok {
+	u, err := searchUser(r, s.SearchString)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-
 	for _, membername := range org.Members {
-		if membername == m.Username {
+		if membername == u.Username {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
 	}
 
 	for _, membername := range org.Owners {
-		if membername == m.Username {
+		if membername == u.Username {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
@@ -280,7 +285,7 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 	orgReq := &invitations.JoinOrganizationInvitation{
 		Role:         invitations.RoleMember,
 		Organization: globalid,
-		User:         m.Username,
+		User:         u.Username,
 		Status:       invitations.RequestPending,
 	}
 
@@ -323,9 +328,9 @@ func (api OrganizationsAPI) globalidmembersusernameDelete(w http.ResponseWriter,
 func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
-	var m member
+	var s searchMember
 
-	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -338,16 +343,14 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// Check if user exists
-	userMgr := user.NewManager(r)
-
-	if ok, err := userMgr.Exists(m.Username); err != nil || !ok {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	u, err := searchUser(r, s.SearchString)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
-
 	for _, membername := range org.Owners {
-		if membername == m.Username {
+		if membername == u.Username {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
@@ -358,7 +361,7 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 	orgReq := &invitations.JoinOrganizationInvitation{
 		Role:         invitations.RoleOwner,
 		Organization: globalid,
-		User:         m.Username,
+		User:         u.Username,
 		Status:       invitations.RequestPending,
 	}
 
@@ -693,4 +696,25 @@ func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func searchUser(r *http.Request, searchString string) (usr *user.User, err1 error) {
+	userMgr := user.NewManager(r)
+	usr, err1 = userMgr.GetByName(searchString)
+	if err1 == mgo.ErrNotFound {
+		valMgr := validationdb.NewManager(r)
+		validatedPhonenumber, err2 := valMgr.GetByPhoneNumber(searchString)
+		if err2 == mgo.ErrNotFound {
+			validatedEmailAddress, err3 := valMgr.GetByEmailAddress(searchString)
+			if err3 != nil {
+				return nil, err3
+			} else {
+				return userMgr.GetByName(validatedEmailAddress.Username)
+			}
+		} else {
+			return userMgr.GetByName(validatedPhonenumber.Username)
+		}
+	} else {
+		return usr, err1
+	}
 }

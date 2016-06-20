@@ -221,9 +221,9 @@
             $mdDialog.cancel();
         }
 
-        function invite(username, role){
+        function invite(searchString, role){
             $scope.validationerrors = {};
-            OrganizationService.invite(organization, username, role).then(
+            OrganizationService.invite(organization, searchString, role).then(
                 function(data){
                     $mdDialog.hide(data);
                 },

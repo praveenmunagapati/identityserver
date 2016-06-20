@@ -1,5 +1,5 @@
 package organization
 
-type member struct {
-	Username string `json:"username"`
+type searchMember struct {
+	SearchString string `json:"searchstring"`
 }
