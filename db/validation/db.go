@@ -199,13 +199,13 @@ func (manager *Manager) NewValidatedEmailAddress(username string, email string) 
 
 func (manager *Manager) SaveValidatedPhonenumber(validated *ValidatedPhonenumber) (err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoValidatedPhonenumbers)
-	err = mgoCollection.Insert(validated)
+	_, err = mgoCollection.Upsert(bson.M{"phonenumber": validated.Phonenumber}, validated)
 	return
 }
 
 func (manager *Manager) SaveValidatedEmailAddress(validated *ValidatedEmailAddress) (err error) {
 	mgoCollection := db.GetCollection(manager.session, mongoValidatedEmailAddresses)
-	err = mgoCollection.Insert(validated)
+	_, err = mgoCollection.Upsert(bson.M{"emailaddress": validated.EmailAddress}, validated)
 	return
 }
 
