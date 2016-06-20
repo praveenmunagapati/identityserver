@@ -14,7 +14,9 @@
         vm.register = register;
         vm.resetValidation = resetValidation;
         vm.basicInfoValid = basicInfoValid;
+        vm.goToNextTabIfValid = goToNextTabIfValid;
         vm.twoFAMethod = 'sms';
+        vm.selectedTab = 0;
         vm.validateUsername = $mdUtil.debounce(function () {
             $scope.signupform.login.$setValidity("duplicate_username", true);
             $scope.signupform.login.$setValidity("invalid_username_format", true);
@@ -94,6 +96,11 @@
                 && $scope.signupform.email.$valid
                 && $scope.signupform.password.$valid
                 && $scope.signupform.passwordvalidation.$valid;
+        }
+
+        function goToNextTabIfValid() {
+            basicInfoValid();
+            vm.selectedTab = 1;
         }
     }
 })();

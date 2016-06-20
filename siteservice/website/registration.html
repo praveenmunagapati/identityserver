@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,11 +16,12 @@
     </style>
 </head>
 
-<body ng-app="itsyouonline.registration" ng-strict-di>
-
+<body ng-app="itsyouonline.registration" ng-strict-di class="bg">
 <its-you-online-header register></its-you-online-header>
 
-<div class="fullscreenform" ng-view></div>
+<div ng-view class="wrapper"></div>
+<div class="push"></div>
+<its-you-online-footer></its-you-online-footer>
 
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js'></script>
 <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-animate.min.js'></script>

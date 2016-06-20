@@ -1,8 +1,13 @@
-<form ng-cloak layout="column" name="signupform" layout-align="center" ng-submit="vm.register()">
-    <div layout="row">
-        <div flex></div>
-        <div flex="100" flex-gt-sm="40">
-            <md-tabs md-align-tabs="bottom" md-dynamic-height>
+<form layout="row" name="signupform" ng-submit="vm.register()">
+    <div flex></div>
+    <md-card class="form-card" flex="100" flex-gt-xs="80" flex-gt-sm="50" flex-gt-md="40" flex-gt-lg="30">
+        <md-card-title>
+            <md-card-title-text>
+                <span class="md-headline">Register</span>
+            </md-card-title-text>
+        </md-card-title>
+        <md-card-content>
+            <md-tabs md-align-tabs="bottom" md-dynamic-height md-selected="vm.selectedTab">
                 <md-tab label="Basic info">
                     <div layout="column">
                         <md-input-container>
@@ -39,7 +44,8 @@
                         <md-input-container>
                             <label for="passwordvalidation">Password confirmation</label>
                             <input ng-model="vm.passwordvalidation" required name="passwordvalidation"
-                                   ng-pattern="vm.password" id="passwordvalidation" type="password">
+                                   ng-pattern="vm.password" id="passwordvalidation" type="password"
+                                   ng-change="vm.goToNextTabIfValid()">
                             <div ng-messages="signupform.passwordvalidation.$error">
                                 <div ng-message="pattern">The passwords do not match</div>
                             </div>
@@ -49,10 +55,10 @@
                 <md-tab label="2 Factor authentication" ng-disabled="!vm.basicInfoValid()">
                     <div layout="column">
                         <md-input-container>
-                            <label>2-Factor authentication method {{ vm.twoFAMethod }}</label>
+                            <label>2-Factor authentication method</label>
                             <md-select name="twoFAMethod" ng-model="vm.twoFAMethod" required style="min-width:180px;"
                                        ng-change="vm.resetValidation('twoFAMethod')">
-                                <md-option value="sms">sms</md-option>
+                                <md-option value="sms">SMS</md-option>
                                 <md-option value="totp">Authenticator application</md-option>
                             </md-select>
                         </md-input-container>
@@ -62,7 +68,9 @@
                                    name="phonenumber" autocomplete="off" ng-pattern="'\\+?[0-9]*'"
                                    ng-change="vm.resetValidation('phone')" id="sms">
                             <div ng-messages="signupform.phonenumber.$error">
-                                <div ng-message="pattern">Invalid phone number</div>
+                                <div ng-message="pattern">Invalid phone number. Phone number must start with the country
+                                    code. Example: +32471202020
+                                </div>
                                 <div ng-message="invalid_phonenumber">Invalid phone number</div>
                             </div>
                         </md-input-container>
@@ -87,11 +95,11 @@
                                        ng-disabled="!signupform.$valid">Sign up
                             </md-button>
                             <div flex></div>
-                        </div>
+                    </div>
                     </div>
                 </md-tab>
             </md-tabs>
-        </div>
-        <div flex></div>
-    </div>
+        </md-card-content>
+    </md-card>
+    <div flex></div>
 </form>
