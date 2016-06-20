@@ -115,12 +115,14 @@
                                                     // Manually remove phone number since the dialog which executes the updatePhoneNumber promise callback had been closed before
                                                     vm.user.phonenumbers.splice(vm.user.phonenumbers.indexOf(phone), 1);
                                                 }, function () {
-                                                    showSimpleDialog('Could not delete phone number. Please try again later.');
+                                                    errorMsg = 'Could not delete phone number. Please try again later.';
+                                                    showSimpleDialog(errorMsg, 'Error', 'Ok', ev);
                                                 });
                                         });
                                 } else {
                                     reject();
-                                    showSimpleDialog('Could not delete phone number. Please try again later.');
+                                    errorMsg = 'Could not delete phone number. Please try again later.';
+                                    showSimpleDialog(errorMsg, 'Error', 'Ok', ev);
                                 }
                             });
                     });
@@ -394,14 +396,15 @@
          * @param closeText
          * @returns promise
          */
-        function showSimpleDialog(message, title, closeText) {
+        function showSimpleDialog(message, title, closeText, event) {
             title = title || 'Alert';
             closeText = closeText || 'Close';
             return $mdDialog.show(
                 $mdDialog.alert({
                     title: title,
                     htmlContent: message,
-                    ok: closeText
+                    ok: closeText,
+                    targetEvent: event
                 })
             );
         }

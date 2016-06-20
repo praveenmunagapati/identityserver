@@ -9,6 +9,10 @@
 
     function OrganizationService($http, $q) {
         var apiURL =  'api/organizations';
+        var GET = $http.get;
+        var POST = $http.post;
+        var PUT = $http.put;
+        var DELETE = $http.delete;
 
         return {
             create: create,
@@ -24,9 +28,22 @@
             getOrganizationTree: getOrganizationTree,
             createDNS: createDNS,
             updateDNS: updateDNS,
-            deleteDNS: deleteDNS
+            deleteDNS: deleteDNS,
+            deleteOrganization: deleteOrganization
 
         };
+
+        function genericHttpCall(httpFunction, url, data) {
+            return httpFunction(url, data)
+                .then(
+                    function (response) {
+                        return response.data;
+                    },
+                    function (reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
 
         function create(name, dns, owner, parentOrganization) {
             var url = apiURL;
@@ -88,7 +105,6 @@
                     }
                 );
         }
-
 
         function getInvitations(globalid){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/invitations';
@@ -166,7 +182,6 @@
                 );
         }
 
-
         function getAPIKey(globalid, label){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys/' + encodeURIComponent(label);
 
@@ -228,18 +243,12 @@
 
         function deleteDNS(globalid, dnsName) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns/' + encodeURIComponent(dnsName);
-
-            return $http
-                .delete(url)
-                .then(
-                    function (response) {
-                        return response.data;
-                    },
-                    function (reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(DELETE, url);
         }
 
+        function deleteOrganization(globalid) {
+            var url = apiURL + '/' + encodeURIComponent(globalid);
+            return genericHttpCall(DELETE, url);
+        }
     }
 })();

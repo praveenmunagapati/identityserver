@@ -387,6 +387,9 @@ types:
           From this result, take a SHA256 followed by a RIPEMD160, next base58CheckEncode the result with a 0x00 prefix.
 
       signatures: Signature[]
+  Error:
+    properties:
+      error: string
 
 
 securedBy: [ oauth_2_0 ]
@@ -440,8 +443,7 @@ securedBy: [ oauth_2_0 ]
                   description: Invalid password format or invallid currentpassword
                   body:
                     application/json:
-                      properties:
-                        error: string
+                      type: Error
     /emailaddresses:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       get:
@@ -770,8 +772,7 @@ securedBy: [ oauth_2_0 ]
               description: invalid validationkey or code
               body:
                 application/json:
-                    properties:
-                        error: string
+                  type: Error
 
   /{username}/banks:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -982,6 +983,26 @@ securedBy: [ oauth_2_0 ]
                 type: Organization
           401:
             description: Unauthorized
+    delete:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+      displayName: DeleteOrganization
+      description: Deletes an organization and all data linked to it (join-organization-invitations, oauth_access_tokens, oauth_clients)
+      responses:
+        401:
+          description: Unauthorized
+        404:
+          description: Organization not found
+          body:
+            application/json:
+              type: Error
+        422:
+          description: The organization still has child organizations so it cannot be removed
+          body:
+            application/json:
+              type: Error
+        204:
+          description: Organization deleted
+
     /members:
       post:
         displayName: AddOrganizationMember

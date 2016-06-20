@@ -24,6 +24,9 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// globalidPut is the handler for PUT /organizations/{globalid}
 	// Update organization info
 	globalidPut(http.ResponseWriter, *http.Request)
+	// DeleteOrganization is the handler for DELETE /organizations/{globalid}
+	// Removes an organization and all associated data.
+	DeleteOrganization(http.ResponseWriter, *http.Request)
 	// GetAPIKeyLabels is the handler for GET /organizations/{globalid}/apikeys
 	// Get the list of active api keys. The secrets themselves are not included.
 	GetAPIKeyLabels(http.ResponseWriter, *http.Request)
@@ -80,6 +83,7 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:member", "organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidGet))).Methods("GET")
 	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateNewSubOrganization))).Methods("POST")
 	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidPut))).Methods("PUT")
+	r.Handle("/organizations/{globalid}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteOrganization))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/apikeys", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetAPIKeyLabels))).Methods("GET")
 	r.Handle("/organizations/{globalid}/apikeys", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateNewAPIKey))).Methods("POST")
 	r.Handle("/organizations/{globalid}/apikeys/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetAPIKey))).Methods("GET")

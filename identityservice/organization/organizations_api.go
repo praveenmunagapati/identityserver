@@ -186,11 +186,13 @@ func (api OrganizationsAPI) globalidGet(w http.ResponseWriter, r *http.Request) 
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(org)
 }
 
@@ -210,7 +212,11 @@ func (api OrganizationsAPI) globalidPut(w http.ResponseWriter, r *http.Request) 
 
 	oldOrg, err := orgMgr.GetByName(globalid)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
 		return
 	}
 
@@ -248,9 +254,12 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 	orgMgr := organization.NewManager(r)
 
 	org, err := orgMgr.GetByName(globalid)
-	if err != nil { //TODO: make a distinction with an internal server error
-		log.Debug("Error while getting the organization: ", err)
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
 		return
 	}
 
@@ -311,10 +320,13 @@ func (api OrganizationsAPI) globalidmembersusernameDelete(w http.ResponseWriter,
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
 		return
 	}
-
 	if err := orgMgr.RemoveMember(org, username); err != nil {
 		log.Error("Error adding member: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -339,7 +351,11 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
 		return
 	}
 
@@ -387,7 +403,11 @@ func (api OrganizationsAPI) globalidownersusernameDelete(w http.ResponseWriter, 
 
 	org, err := orgMgr.GetByName(globalid)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
 		return
 	}
 
@@ -594,8 +614,13 @@ func (api OrganizationsAPI) DeleteAPIKey(w http.ResponseWriter, r *http.Request)
 	label := mux.Vars(r)["label"]
 
 	mgr := oauthservice.NewManager(r)
-	mgr.DeleteClient(organization, label)
+	err := mgr.DeleteClient(organization, label)
 
+	if err != nil {
+		log.Error("Error deleting organization:", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -610,7 +635,14 @@ func (api OrganizationsAPI) CreateDns(w http.ResponseWriter, r *http.Request) {
 	}
 	orgMgr := organization.NewManager(r)
 	organization, err := orgMgr.GetByName(globalid)
-
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
+		return
+	}
 	err = orgMgr.AddDNS(organization, dnsName)
 
 	if err != nil {
@@ -651,7 +683,14 @@ func (api OrganizationsAPI) UpdateDns(w http.ResponseWriter, r *http.Request) {
 
 	orgMgr := organization.NewManager(r)
 	organization, err := orgMgr.GetByName(globalid)
-
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
+		return
+	}
 	err = orgMgr.UpdateDNS(organization, oldDns, body.Name)
 
 	if err != nil {
@@ -678,7 +717,14 @@ func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
 
 	orgMgr := organization.NewManager(r)
 	organization, err := orgMgr.GetByName(globalid)
-
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
+		return
+	}
 	sort.Strings(organization.DNS)
 	if sort.SearchStrings(organization.DNS, dnsName) == len(organization.DNS) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -696,6 +742,63 @@ func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeleteOrganization is the handler for DELETE /organizations/{globalid}
+// Deletes an organization and all data linked to it (join-organization-invitations, oauth_access_tokens, oauth_clients)
+func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	orgMgr := organization.NewManager(r)
+	if !orgMgr.Exists(globalid) {
+		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
+		return
+	}
+	suborganizations, err := orgMgr.GetSubOrganizations(globalid)
+	if handleServerError(w, "fetching suborganizations", err) {
+		return
+	}
+	if len(suborganizations) != 0 {
+		writeErrorResponse(w, 422, "organization_has_children")
+		return
+	}
+	err = orgMgr.Remove(globalid)
+	if handleServerError(w, "removing organization", err) {
+		return
+	}
+	orgReqMgr := invitations.NewInvitationManager(r)
+	err = orgReqMgr.RemoveAll(globalid)
+	if handleServerError(w, "removing organization invitations", err) {
+		return
+	}
+
+	oauthMgr := oauthservice.NewManager(r)
+	err = oauthMgr.RemoveTokensByGlobalId(globalid)
+	if handleServerError(w, "removing organization oauth accesstokens", err) {
+		return
+	}
+	err = oauthMgr.RemoveClientsById(globalid)
+	if handleServerError(w, "removing organization oauth clients", err) {
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, message string) {
+	log.Debug(httpStatusCode, message)
+	errorResponse := struct {
+		Error string `json:"error"`
+	}{message}
+	responseWriter.WriteHeader(httpStatusCode)
+	json.NewEncoder(responseWriter).Encode(&errorResponse)
+}
+
+func handleServerError(responseWriter http.ResponseWriter, actionText string, err error) (bool) {
+	if err != nil {
+		log.Error("Error while " + actionText, err)
+		http.Error(responseWriter, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return true
+	}
+	return false
 }
 
 func searchUser(r *http.Request, searchString string) (usr *user.User, err1 error) {

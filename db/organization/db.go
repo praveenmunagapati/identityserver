@@ -111,19 +111,16 @@ func (m *Manager) Get(id string) (*Organization, error) {
 }
 
 // GetByName gets an organization by Name.
-func (m *Manager) GetByName(globalID string) (*Organization, error) {
-	var organization Organization
-
-	err := m.collection.Find(bson.M{"globalid": globalID}).One(&organization)
-
-	return &organization, err
+func (m *Manager) GetByName(globalID string) (organization *Organization, err error) {
+	err = m.collection.Find(bson.M{"globalid": globalID}).One(&organization)
+	return
 }
 
 // Exists checks if an organization exists.
 func (m *Manager) Exists(globalID string) bool {
 	count, _ := m.collection.Find(bson.M{"globalid": globalID}).Count()
 
-	return count != 1
+	return count == 1
 }
 
 // Create a new organization.
@@ -196,4 +193,9 @@ func (m *Manager) RemoveDNS(organization *Organization, dns string) error {
 	return m.collection.Update(
 		bson.M{"globalid": organization.Globalid},
 		bson.M{"$pull": bson.M{"dns": dns}})
+}
+
+// Remove removes the organization
+func (m *Manager) Remove(globalid string) error {
+	return m.collection.Remove(bson.M{"globalid": globalid})
 }

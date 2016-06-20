@@ -27,6 +27,7 @@
         vm.fetchInvitations = fetchInvitations;
         vm.fetchAPIKeyLabels = fetchAPIKeyLabels;
         vm.showCreateOrganizationDialog = UserDialogService.createOrganization;
+        vm.showDeleteOrganizationDialog = showDeleteOrganizationDialog;
 
         activate();
 
@@ -110,8 +111,6 @@
                     vm.invitations.push(invitation);
                 });
         }
-
-
 
 
         function showAPIKeyCreationDialog(ev) {
@@ -198,6 +197,31 @@
                             vm.organization.dns.push(data.newDns);
                         }
                     });
+        }
+
+        function showDeleteOrganizationDialog(event) {
+            var text = 'Are you sure you want to delete the organization "' + globalid + '"?';
+            var confirm = $mdDialog.confirm()
+                .title('Delete organization')
+                .textContent(text)
+                .ariaLabel('Delete organization ' + globalid)
+                .targetEvent(event)
+                .ok('Yes')
+                .cancel('No');
+            $mdDialog.show(confirm).then(function () {
+                OrganizationService
+                    .deleteOrganization(globalid)
+                    .then(function () {
+                        $window.location.hash = '#/';
+                    }, function (response) {
+                        if (response.status === 422) {
+                            var msg = 'This organization cannot be deleted because it still has child organizations.';
+                            UserDialogService.showSimpleDialog(msg, 'Error', 'Ok', event);
+                        } else {
+                            $window.location.href = "error" + reason.status;
+                        }
+                    });
+            });
         }
     }
 

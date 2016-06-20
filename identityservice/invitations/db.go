@@ -78,3 +78,10 @@ func (o *InvitationManager) Save(invite *JoinOrganizationInvitation) error {
 
 	return err
 }
+
+// RemoveAll Removes all invitations linked to an organization
+func (o *InvitationManager) RemoveAll(globalid string) error {
+	_, err := o.collection.RemoveAll(bson.M{"organization": globalid})
+	return err
+}
+
