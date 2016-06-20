@@ -3,10 +3,10 @@
     angular
         .module('itsyouonline.registration')
         .controller('registrationController', [
-            '$scope', '$window', '$mdUtil', 'configService', 'registrationService',
+            '$scope', '$window', '$cookies', '$mdUtil', 'configService', 'registrationService',
             registrationController]);
 
-    function registrationController($scope, $window, $mdUtil, configService, registrationService) {
+    function registrationController($scope, $window, $cookies, $mdUtil, configService, registrationService) {
         var vm = this;
         configService.getConfig(function (config) {
             vm.totpsecret = config.totpsecret;
@@ -28,10 +28,15 @@
         }, 500, true);
 
         function register() {
+            var redirectparams = $window.location.search.replace('?', '');
             registrationService
-                .register(vm.twoFAMethod, vm.login, vm.email, vm.password, vm.totpcode, vm.sms)
+                .register(vm.twoFAMethod, vm.login, vm.email, vm.password, vm.totpcode, vm.sms, redirectparams)
                 .then(function (response) {
-                    $window.location.href = response.data.redirecturl;
+                    var url = response.data.redirecturl;
+                    if (url === '/') {
+                        $cookies.remove('registrationdetails');
+                    }
+                    $window.location.href = url;
                 }, function (response) {
                     switch (response.status) {
                         case 422:

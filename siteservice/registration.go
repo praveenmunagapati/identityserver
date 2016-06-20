@@ -10,12 +10,12 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/sessions"
-	"github.com/itsyouonline/identityserver/credentials/password"
-	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 	"github.com/itsyouonline/identityserver/validation"
+	"github.com/itsyouonline/identityserver/credentials/totp"
+	"github.com/itsyouonline/identityserver/credentials/password"
 )
 
 const (
@@ -235,12 +235,13 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		Error       string `json:"error"`
 	}{}
 	values := struct {
-		TwoFAMethod string `json:"twofamethod"`
-		Login       string `json:"login"`
-		Email       string `json:"email"`
-		Phonenumber string `json:"phonenumber"`
-		TotpCode    string `json:"totpcode"`
-		Password    string `json:"password"`
+		TwoFAMethod    string `json:"twofamethod"`
+		Login          string `json:"login"`
+		Email          string `json:"email"`
+		Phonenumber    string `json:"phonenumber"`
+		TotpCode       string `json:"totpcode"`
+		Password       string `json:"password"`
+		RedirectParams string `json:"redirectparams"`
 	}{}
 	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
 		log.Debug("Error decoding the registration request:", err)
@@ -347,16 +348,16 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		registrationSession, err := service.GetSession(request, SessionForRegistration, "registrationdetails")
 		registrationSession.Values["username"] = newuser.Username
 		registrationSession.Values["phonenumbervalidationkey"] = validationkey
+		registrationSession.Values["redirectparams"] = values.RedirectParams
 
 		sessions.Save(request, w)
-		response.Redirecturl = fmt.Sprintf("https://%s/register#/smsconfirmation?%s", request.Host, request.URL.Query().Encode())
+		response.Redirecturl = fmt.Sprintf("https://%s/register#/smsconfirmation", request.Host)
 		json.NewEncoder(w).Encode(&response)
 		return
 	}
 
 	totpMgr := totp.NewManager(request)
 	totpMgr.Save(newuser.Username, totpsecret)
-
 	log.Debugf("Registered %s", newuser.Username)
 	service.loginUser(w, request, newuser.Username)
 }

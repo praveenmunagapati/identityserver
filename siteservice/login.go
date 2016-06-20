@@ -448,6 +448,24 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 	if endpoint != "" {
 		queryValues.Del("endpoint")
 		redirectURL = endpoint + "?" + queryValues.Encode()
+	} else {
+		registrationSession, _ := service.GetSession(request, SessionForRegistration, "registrationdetails")
+		if !registrationSession.IsNew {
+			splitted := strings.Split(registrationSession.Values["redirectparams"].(string), "&")
+			if len(splitted) > 3 {
+				for _, part := range splitted {
+					kv := strings.Split(part, "=")
+					if len(kv) == 2 {
+						key, _ := url.QueryUnescape(kv[0])
+						value, _ := url.QueryUnescape(kv[1])
+						queryValues.Set(key, value)
+					}
+				}
+				endpoint, _ = url.QueryUnescape(queryValues.Get("endpoint"))
+				queryValues.Del("endpoint")
+				redirectURL = endpoint + "?" + queryValues.Encode()
+			}
+		}
 	}
 
 	sessions.Save(request, w)
@@ -455,6 +473,7 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 		Redirecturl string `json:"redirecturl"`
 	}{}
 	response.Redirecturl = redirectURL
+	log.Debug("Redirecting to:", redirectURL)
 	json.NewEncoder(w).Encode(response)
 }
 

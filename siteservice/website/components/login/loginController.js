@@ -1,13 +1,14 @@
 (function () {
     'use strict';
     angular.module('loginApp')
-        .controller('loginController', ['$http', '$window', '$scope', loginController]);
+        .controller('loginController', ['$http', '$window', '$scope', '$rootScope', loginController]);
 
-    function loginController($http, $window, $scope) {
+    function loginController($http, $window, $scope, $rootScope) {
         var vm = this;
         vm.submit = submit;
         vm.clearValidation = clearValidation;
         vm.externalSite = URI($window.location.href).search(true).client_id;
+        $rootScope.registrationUrl = '/register' + $window.location.search;
 
         function submit() {
             var data = {

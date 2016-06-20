@@ -118,7 +118,7 @@
                         vm.pendingCount = getPendingCount('all');
                         vm.notificationMessage = vm.pendingCount ? '' : 'No unhandled notifications';
                         vm.loaded.notifications = true;
-                        $rootScope.openRequests = vm.pendingCount;
+                        $rootScope.notificationCount = vm.pendingCount;
 
                     }
                 );
