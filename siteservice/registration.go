@@ -160,6 +160,9 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(&response)
 		return
+	} else if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 	service.loginUser(w, request, username)
 }
