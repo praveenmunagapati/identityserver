@@ -44,6 +44,8 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	DeleteAPIKey(http.ResponseWriter, *http.Request)
 	// GetOrganizationTree is the handler for GET /organizations/{globalid}/tree
 	GetOrganizationTree(http.ResponseWriter, *http.Request)
+	// UpdateOrganizationMembership is the handler for PUT /organizations/{globalid}/members
+	UpdateOrganizationMemberShip(http.ResponseWriter, *http.Request)
 	// globalidmembersPost is the handler for POST /organizations/{globalid}/members
 	// Assign a member to organization.
 	globalidmembersPost(http.ResponseWriter, *http.Request)
@@ -91,6 +93,7 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/apikeys/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteAPIKey))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/tree", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.GetOrganizationTree))).Methods("GET")
 	r.Handle("/organizations/{globalid}/members", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidmembersPost))).Methods("POST")
+	r.Handle("/organizations/{globalid}/members", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateOrganizationMemberShip))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/members/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidmembersusernameDelete))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/owners", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidownersPost))).Methods("POST")
 	r.Handle("/organizations/{globalid}/owners/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.globalidownersusernameDelete))).Methods("DELETE")

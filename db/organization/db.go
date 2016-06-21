@@ -199,3 +199,19 @@ func (m *Manager) RemoveDNS(organization *Organization, dns string) error {
 func (m *Manager) Remove(globalid string) error {
 	return m.collection.Remove(bson.M{"globalid": globalid})
 }
+
+// Remove removes the organization
+func (m *Manager) UpdateMembership(globalid string, username string, oldrole string, newrole string) error {
+	qry := bson.M{"globalid": globalid}
+	pull := bson.M{
+		"$pull": bson.M{oldrole: username},
+	}
+	push := bson.M{
+		"$addToSet": bson.M{newrole: username},
+	}
+	err := m.collection.Update(qry, pull)
+	if err != nil {
+		return err
+	}
+	return m.collection.Update(qry, push)
+}

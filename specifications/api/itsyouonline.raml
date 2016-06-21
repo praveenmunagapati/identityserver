@@ -1004,6 +1004,29 @@ securedBy: [ oauth_2_0 ]
           description: Organization deleted
 
     /members:
+      put:
+        displayName: UpdateOrganizationMemberShip
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        description: Update an organization membership
+        body:
+          application/json:
+            properties:
+              username: string
+              role: string
+        responses:
+          200:
+            description: updated successfully
+            body:
+              application/json:
+                description: The updated organization
+                type: Organization
+          401:
+            description: Unauthorized
+          403:
+            description: No permission for this action
+          404:
+            description: Organization not found
+
       post:
         displayName: AddOrganizationMember
         securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

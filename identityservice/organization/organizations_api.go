@@ -310,6 +310,46 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 	json.NewEncoder(w).Encode(orgReq)
 }
 
+func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	var membership Membership
+	if err := json.NewDecoder(r.Body).Decode(&membership); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	orgMgr := organization.NewManager(r)
+	org, err := orgMgr.GetByName(globalid)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "updating organization membership", err)
+		}
+		return
+	}
+	var oldRole string
+	for _, v := range org.Members {
+		if v == membership.Username {
+			oldRole = "members"
+		}
+	}
+	for _, v := range org.Owners {
+		if v == membership.Username {
+			oldRole = "owners"
+		}
+	}
+	err = orgMgr.UpdateMembership(globalid, membership.Username, oldRole, membership.Role)
+	if err != nil {
+		handleServerError(w, "updating organization membership", err)
+		return
+	}
+	org, err = orgMgr.GetByName(globalid)
+	if err != nil {
+		handleServerError(w, "getting organization", err)
+	}
+	json.NewEncoder(w).Encode(org)
+
+}
 // Remove a member from organization
 // It is handler for DELETE /organizations/{globalid}/members/{username}
 func (api OrganizationsAPI) globalidmembersusernameDelete(w http.ResponseWriter, r *http.Request) {

@@ -28,6 +28,8 @@
         vm.fetchAPIKeyLabels = fetchAPIKeyLabels;
         vm.showCreateOrganizationDialog = UserDialogService.createOrganization;
         vm.showDeleteOrganizationDialog = showDeleteOrganizationDialog;
+        vm.changeRole = changeRole;
+        vm.canEditRole = canEditRole;
 
         activate();
 
@@ -75,7 +77,6 @@
                 );
         }
 
-
         function fetchAPIKeyLabels(){
             if (!vm.hasEditPermission || vm.apikeylabels.length) {
                 return;
@@ -112,7 +113,6 @@
                 });
         }
 
-
         function showAPIKeyCreationDialog(ev) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
@@ -135,7 +135,6 @@
                     }
                 });
         }
-
 
         function showAPIKeyDialog(ev, label) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
@@ -172,7 +171,6 @@
                     }
                 });
         }
-
 
         function showDNSDialog(ev, dnsName) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
@@ -222,6 +220,37 @@
                         }
                     });
             });
+        }
+
+        function canEditRole(member) {
+            return vm.organization.owners.indexOf($rootScope.user) > -1 && member !== $rootScope.user;
+        }
+
+        function changeRole(event, user) {
+            var role;
+            angular.forEach(['members', 'owners'], function (r) {
+                if (vm.organization[r].indexOf(user) !== -1) {
+                    role = r;
+                }
+            });
+            var changeRoleDialog = {
+                controller: ['$mdDialog', 'OrganizationService', 'UserDialogService', 'organization', 'user', 'initialRole', ChangeRoleDialog],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/organization/views/changeRoleDialog.html',
+                targetEvent: event,
+                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
+                locals: {
+                    organization: vm.organization,
+                    user: user,
+                    initialRole: role
+                }
+            };
+
+            $mdDialog
+                .show(changeRoleDialog)
+                .then(function (data) {
+                    vm.organization = data;
+                });
         }
     }
 
@@ -444,5 +473,28 @@
         }
         return children;
 
+    }
+
+    function ChangeRoleDialog($mdDialog, OrganizationService, UserDialogService, organization, user, initialRole) {
+        var ctrl = this;
+        ctrl.role = initialRole;
+        ctrl.user = user;
+        ctrl.organization = organization;
+        ctrl.cancel = cancel;
+        ctrl.submit = submit;
+
+        function cancel() {
+            $mdDialog.cancel();
+        }
+
+        function submit() {
+            OrganizationService
+                .updateMembership(organization.globalid, ctrl.user, ctrl.role)
+                .then(function (data) {
+                    $mdDialog.hide(data);
+                }, function () {
+                    UserDialogService.showSimpleDialog('Could not change role, please try again later', 'Error', 'ok', event);
+                });
+        }
     }
 })();

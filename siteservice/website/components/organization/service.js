@@ -29,8 +29,8 @@
             createDNS: createDNS,
             updateDNS: updateDNS,
             deleteDNS: deleteDNS,
-            deleteOrganization: deleteOrganization
-
+            deleteOrganization: deleteOrganization,
+            updateMembership: updateMembership
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -249,6 +249,15 @@
         function deleteOrganization(globalid) {
             var url = apiURL + '/' + encodeURIComponent(globalid);
             return genericHttpCall(DELETE, url);
+        }
+
+        function updateMembership(globalid, username, role) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/members';
+            var data = {
+                username: username,
+                role: role
+            };
+            return genericHttpCall(PUT, url, data);
         }
     }
 })();
