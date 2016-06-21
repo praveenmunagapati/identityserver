@@ -611,10 +611,11 @@ securedBy: [ oauth_2_0 ]
             description: TOTP setup successfully
       delete:
         displayName: RemoveTOTP
-        409:
-          description: Cannot remove TOTP authentication because this is the last available login method
-        204:
-          description: TOTP successfully removed
+        responses:
+          409:
+            description: Cannot remove TOTP authentication because this is the last available login method
+          204:
+            description: TOTP successfully removed
   /{username}/info:
     get:
       securedBy: [oauth_2_0: { scopes: [ "user:info", "user:admin" ] } ]
