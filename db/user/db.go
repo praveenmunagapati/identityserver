@@ -136,6 +136,23 @@ func (m *Manager) RemovePhone(username string, label string) error {
 		bson.M{"$pull": bson.M{"phonenumbers": bson.M{"label": label}}})
 }
 
+// SaveVirtualCurrency save or update virtualcurrency along with its label
+func (m *Manager) SaveVirtualCurrency(username string, currency DigitalAssetAddress) error {
+	if err := m.RemoveVirtualCurrency(username, currency.Label); err != nil {
+		return err
+	}
+	return m.getUserCollection().Update(
+		bson.M{"username": username},
+		bson.M{"$push": bson.M{"digitalwallet": currency}})
+}
+
+// RemoveVirtualCurrency remove phone associated with label
+func (m *Manager) RemoveVirtualCurrency(username string, label string) error {
+	return m.getUserCollection().Update(
+		bson.M{"username": username},
+		bson.M{"$pull": bson.M{"digitalwallet": bson.M{"label": label}}})
+}
+
 // SaveAddress save or update address
 func (m *Manager) SaveAddress(username string, address Address) error {
 	if err := m.RemoveAddress(username, address.Label); err != nil {

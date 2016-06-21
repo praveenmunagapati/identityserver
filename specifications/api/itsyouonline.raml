@@ -76,6 +76,14 @@ types:
         label:
            type: string
 
+  DigitalAssetAddress:
+    properties:
+      address: string
+      label: string
+      expire: datetime
+      currencysymbol: string
+
+
   Phonenumber:
      properties:
        phonenumber:
@@ -148,6 +156,7 @@ types:
         lastname: string
         publicKeys: string[]
         expire?: datetime
+        digitalwallet: DigitalAssetAddress[]
         emailaddresses: EmailAddress[]
         phonenumbers: Phonenumber[]
         addresses: Address[]
@@ -169,6 +178,11 @@ types:
               emailaddress: bob@company.com
             - label: home
               emailaddress: bob@example.com
+        digitalwallet:
+           - label: bibcoin
+             address: fdfgfgergerger
+             expire: 2018-10-20T16:41:41.090Z
+             currencysymbol: bb
         phonenumbers:
             - label: be
               phonenumber: "+3212341234123"
@@ -639,24 +653,19 @@ securedBy: [ oauth_2_0 ]
             200:
                 body:
                     application/json:
-                        properties:
-                            type: Address[]
+                         type: Address[]
     post:
       displayName: RegisterNewUserAddress
       description: Register a new address
       body:
         application/json:
-            properties:
-                label: Label
-                address: Address
+             type: Address
       responses:
         201:
           description: Registered a new address
           body:
             application/json:
-                properties:
-                  label: Label
-                  address: Address
+               type: Address
         409:
            description: Label is already used.
     /{label}:
@@ -672,9 +681,7 @@ securedBy: [ oauth_2_0 ]
           description: Update the label and/or value of an existing address.
           body:
             application/json:
-              properties:
-                label: Label
-                phonenumber: Address
+               type: Address
           responses:
             201:
                 description: Updated
@@ -682,6 +689,56 @@ securedBy: [ oauth_2_0 ]
                 description: The new label is already used
       delete:
           displayName: DeleteUserAddress
+          description: Removes an address
+          responses:
+              204:
+                description: Address removed.
+
+
+  /{username}/digitalwallet:
+    securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+    get:
+      displayName: GetDigitalWallet
+      responses:
+            200:
+                body:
+                    application/json:
+                         type: DigitalAssetAddress[]
+    post:
+      displayName: RegisterNewDigitalAssetAddress
+      description: Register a new digital asset address
+      body:
+        application/json:
+           type: DigitalAssetAddress
+      responses:
+        201:
+          description: Registered a new address
+          body:
+            application/json:
+                type: DigitalAssetAddress
+        409:
+           description: Label is already used.
+    /{label}:
+      get:
+        displayName: GetDigitalAssetAddressByLabel
+        responses:
+            200:
+                body:
+                    application/json:
+                      type: DigitalAssetAddress
+      put:
+          displayName: UpdateDigitalAssetAddress
+          description: Update the label and/or value of an existing address.
+          body:
+            application/json:
+               type: DigitalAssetAddress
+          responses:
+            201:
+                description: Updated
+            409:
+                description: The new label is already used
+      delete:
+          displayName: DeleteDigitalAssetAddress
           description: Removes an address
           responses:
               204:
@@ -699,16 +756,13 @@ securedBy: [ oauth_2_0 ]
         200:
           body:
             application/json:
-                properties:
                    type: Phonenumber[]
     post:
       displayName: RegisterNewUserPhonenumber
       description: Register a new phonenumber
       body:
         application/json:
-          properties:
-            label: Label
-            phonenumber: Phonenumber
+            type: Phonenumber
       responses:
           201:
             description: Registered a new phone number
@@ -730,9 +784,7 @@ securedBy: [ oauth_2_0 ]
         description: Update the label and/or value of an existing phonenumber.
         body:
           application/json:
-            properties:
-              label: Label
-              phonenumber: Phonenumber
+              type: Phonenumber
         responses:
           201:
               description: Updated
@@ -794,8 +846,7 @@ securedBy: [ oauth_2_0 ]
             200:
                 body:
                     application/json:
-                        properties:
-                            type: BankAccount[]
+                         type: BankAccount[]
   /{username}/banks/{label}:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
