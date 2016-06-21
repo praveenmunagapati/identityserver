@@ -3,6 +3,7 @@ package assetfs
 import (
 	"bytes"
 	"errors"
+	"strings"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -153,6 +154,9 @@ func (fs *AssetFS) Open(name string) (http.File, error) {
 	if children, err := fs.AssetDir(name); err == nil {
 		return NewAssetDirectory(name, children, fs), nil
 	} else {
+		if strings.Contains(err.Error(), "not found") {
+			return nil, os.ErrNotExist
+		}
 		return nil, err
 	}
 }
