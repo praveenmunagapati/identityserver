@@ -85,3 +85,8 @@ func (o *InvitationManager) RemoveAll(globalid string) error {
 	return err
 }
 
+// HasInvite Checks if a user has an invite for an organization
+func (o *InvitationManager) HasInvite(globalid string, username string) (hasInvite bool, err error) {
+	count, err := o.collection.Find(bson.M{"organization": globalid, "user": username}).Count()
+	return count != 0, err
+}

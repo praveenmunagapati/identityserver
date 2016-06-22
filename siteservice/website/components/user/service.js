@@ -12,13 +12,11 @@
     function NotificationService($http, $q) {
         var apiURL = 'api/users';
 
-        var service = {
+        return {
             get: get,
             accept: accept,
             reject: reject
         };
-
-        return service;
 
         function get(username) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/notifications';
@@ -37,7 +35,6 @@
 
         function accept(invitation) {
             var url = apiURL + '/' + encodeURIComponent(invitation.user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role) ;
-
             return $http
                 .post(url, invitation)
                 .then(

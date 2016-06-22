@@ -24,131 +24,133 @@
         bottom: 10px;
     }
 </style>
-<md-list-item>
-    <p>
-        <i class="fa fa-user">
-            <md-tooltip>Your username</md-tooltip>
+<md-list flex="100" flex-gt-sm="80" flex-gt-md="60" style="min-width:600px;">
+    <md-list-item>
+        <p>
+            <i class="fa fa-user">
+                <md-tooltip>Your username</md-tooltip>
+            </i>
+            Your username
+        </p>
+        <p class="list-item-text-right">{{ ::vm.user.username }}</p>
+    </md-list-item>
+    <md-list-item ng-if="requested.name">
+        <p>
+            <i class="fa fa-user">
+                <md-tooltip>Your full name</md-tooltip>
+            </i>
+            Your full name
+        </p>
+        <p class="list-item-text-right">{{ ::vm.user.firstname }} {{ ::vm.user.lastname }}</p>
+        <md-checkbox class="md-secondary" ng-model="authorizations.name"></md-checkbox>
+    </md-list-item>
+    <md-list-item ng-repeat="(label, i) in requested.organizations">
+        <p><i class="fa fa-users">
+            <md-tooltip>Organization membership</md-tooltip>
         </i>
-        Your username
-    </p>
-    <p class="list-item-text-right">{{ ::vm.user.username }}</p>
-</md-list-item>
-<md-list-item ng-if="requested.name">
-    <p>
-        <i class="fa fa-user">
-            <md-tooltip>Your full name</md-tooltip>
+            Member of {{ ::label }} <span ng-if="vm.pendingOrganizationInvites[label]">(this will accept the invitation for this organization)</span>
+        </p>
+        <md-checkbox class="md-secondary" ng-model="requested.organizations[label]"></md-checkbox>
+    </md-list-item>
+    <md-list-item ng-repeat="label in requested.emailaddresses">
+        <p>
+            <i class="fa fa-at">
+                <md-tooltip>Email address</md-tooltip>
+            </i>
+            Email address <span ng-if="label && label !== 'main'">for {{ ::label }}</span>
+        </p>
+        <md-input-container>
+            <label>Email</label>
+            <md-select ng-model="getAuthorizationByLabel('emailaddresses', label).reallabel">
+                <md-option value="">None</md-option>
+                <md-option ng-repeat="email in vm.user.emailaddresses" value="{{::email.label}}"
+                           ng-bind="::email.emailaddress"></md-option>
+                <md-option ng-click="vm.showEmailDialog($event, label)" ng-if="isNew">
+                    <i class="fa fa-plus"></i> Create new
+                </md-option>
+            </md-select>
+        </md-input-container>
+    </md-list-item>
+    <md-list-item ng-repeat="label in requested.phonenumbers">
+        <p><i class="fa fa-phone">
+            <md-tooltip>Phone number</md-tooltip>
+        </i> Phone number <span ng-if="label && label !== 'main'">for {{ ::label }}</span>
+        </p>
+        <md-input-container>
+            <label>Phone number {{ authorizations.phone[label] }}</label>
+            <md-select ng-model="getAuthorizationByLabel('phonenumbers', label).reallabel">
+                <md-option value="">None</md-option>
+                <md-option ng-repeat="phone in vm.user.phonenumbers" value="{{::phone.label}}">
+                    {{ ::phone.label + ' - ' + phone.phonenumber }}
+                </md-option>
+                <md-option ng-click="vm.showPhonenumberDialog($event, label)" ng-if="isNew">
+                    <i class="fa fa-plus"></i> Create new
+                </md-option>
+            </md-select>
+        </md-input-container>
+    </md-list-item>
+    <md-list-item ng-repeat="label in requested.addresses">
+        <p><i class="fa fa-envelope-o">
+            <md-tooltip>Address</md-tooltip>
+        </i> Address <span ng-if="label && label !== 'main'">for {{ ::label }}</span>
+        </p>
+        <md-input-container>
+            <label>Address</label>
+            <md-select ng-model="getAuthorizationByLabel('addresses', label).reallabel">
+                <md-option value="">None</md-option>
+                <md-option ng-repeat="address in vm.user.addresses" value="{{::address.label}}">
+                    {{ ::address.label + ' - ' + address.street
+                    + (address.nr? ' ' + address.nr : '')
+                    + (address.city? ' ' + address.city : '')
+                    }}
+                </md-option>
+                <md-option ng-click="vm.showAddressDialog($event, label)" ng-if="isNew">
+                    <i class="fa fa-plus"></i> Create new
+                </md-option>
+            </md-select>
+        </md-input-container>
+    </md-list-item>
+    <md-list-item ng-repeat="label in requested.bankaccounts">
+        <p><i class="fa fa-bank">
+            <md-tooltip>Bank account</md-tooltip>
         </i>
-        Your full name
-    </p>
-    <p class="list-item-text-right">{{ ::vm.user.firstname }} {{ ::vm.user.lastname }}</p>
-    <md-checkbox class="md-secondary" ng-model="authorizations.name"></md-checkbox>
-</md-list-item>
-<md-list-item ng-repeat="(label, i) in requested.organizations">
-    <p><i class="fa fa-users">
-        <md-tooltip>Organization membership</md-tooltip>
-    </i>
-        Member of {{ ::label }}
-    </p>
-    <md-checkbox class="md-secondary" ng-model="requested.organizations[label]"></md-checkbox>
-</md-list-item>
-<md-list-item ng-repeat="label in requested.emailaddresses">
-    <p>
-        <i class="fa fa-at">
-            <md-tooltip>Email address</md-tooltip>
+            Bank account <span ng-if="label != '' && label != 'main'">for {{ ::label }}</span>
+        </p>
+        <md-input-container>
+            <label>Bank account</label>
+            <md-select ng-model="getAuthorizationByLabel('bankaccounts', label).reallabel">
+                <md-option value="">None</md-option>
+                <md-option ng-repeat="bank in vm.user.bankaccounts" value="{{::bank.label}}">
+                    {{ ::bank.label + ' - ' + bank.bic + ', ' + bank.iban + ', ' + bank.country }}
+                </md-option>
+                <md-option ng-click="vm.showBankAccountDialog($event, label)" ng-if="isNew">
+                    <i class="fa fa-plus"></i> Create new
+                </md-option>
+            </md-select>
+        </md-input-container>
+    </md-list-item>
+    <md-list-item ng-if="requested.github">
+        <p><i class="fa fa-github">
+            <md-tooltip>Github account</md-tooltip>
         </i>
-        Email address <span ng-if="label && label !== 'main'">for {{ ::label }}</span>
-    </p>
-    <md-input-container>
-        <label>Email</label>
-        <md-select ng-model="getAuthorizationByLabel('emailaddresses', label).reallabel">
-            <md-option value="">None</md-option>
-            <md-option ng-repeat="email in vm.user.emailaddresses" value="{{::email.label}}"
-                       ng-bind="::email.emailaddress"></md-option>
-            <md-option ng-click="vm.showEmailDialog($event, label)" ng-if="isNew">
-                <i class="fa fa-plus"></i> Create new
-            </md-option>
-        </md-select>
-    </md-input-container>
-</md-list-item>
-<md-list-item ng-repeat="label in requested.phonenumbers">
-    <p><i class="fa fa-phone">
-        <md-tooltip>Phone number</md-tooltip>
-    </i> Phone number <span ng-if="label && label !== 'main'">for {{ ::label }}</span>
-    </p>
-    <md-input-container>
-        <label>Phone number {{ authorizations.phone[label] }}</label>
-        <md-select ng-model="getAuthorizationByLabel('phonenumbers', label).reallabel">
-            <md-option value="">None</md-option>
-            <md-option ng-repeat="phone in vm.user.phonenumbers" value="{{::phone.label}}">
-                {{ ::phone.label + ' - ' + phone.phonenumber }}
-            </md-option>
-            <md-option ng-click="vm.showPhonenumberDialog($event, label)" ng-if="isNew">
-                <i class="fa fa-plus"></i> Create new
-            </md-option>
-        </md-select>
-    </md-input-container>
-</md-list-item>
-<md-list-item ng-repeat="label in requested.addresses">
-    <p><i class="fa fa-envelope-o">
-        <md-tooltip>Address</md-tooltip>
-    </i> Address <span ng-if="label && label !== 'main'">for {{ ::label }}</span>
-    </p>
-    <md-input-container>
-        <label>Address</label>
-        <md-select ng-model="getAuthorizationByLabel('addresses', label).reallabel">
-            <md-option value="">None</md-option>
-            <md-option ng-repeat="address in vm.user.addresses" value="{{::address.label}}">
-                {{ ::address.label + ' - ' + address.street
-                + (address.nr? ' ' + address.nr : '')
-                + (address.city? ' ' + address.city : '')
-                }}
-            </md-option>
-            <md-option ng-click="vm.showAddressDialog($event, label)" ng-if="isNew">
-                <i class="fa fa-plus"></i> Create new
-            </md-option>
-        </md-select>
-    </md-input-container>
-</md-list-item>
-<md-list-item ng-repeat="label in requested.bankaccounts">
-    <p><i class="fa fa-bank">
-        <md-tooltip>Bank account</md-tooltip>
-    </i>
-        Bank account <span ng-if="label != '' && label != 'main'">for {{ ::label }}</span>
-    </p>
-    <md-input-container>
-        <label>Bank account</label>
-        <md-select ng-model="getAuthorizationByLabel('bankaccounts', label).reallabel">
-            <md-option value="">None</md-option>
-            <md-option ng-repeat="bank in vm.user.bankaccounts" value="{{::bank.label}}">
-                {{ ::bank.label + ' - ' + bank.bic + ', ' + bank.iban + ', ' + bank.country }}
-            </md-option>
-            <md-option ng-click="vm.showBankAccountDialog($event, label)" ng-if="isNew">
-                <i class="fa fa-plus"></i> Create new
-            </md-option>
-        </md-select>
-    </md-input-container>
-</md-list-item>
-<md-list-item ng-if="requested.github">
-    <p><i class="fa fa-github">
-        <md-tooltip>Github account</md-tooltip>
-    </i>
-        Your Github account
-    </p>
-    <div class="list-item-text-right list-item-img" ng-if="vm.user.github.id">
-        <img class="md-avatar" ng-src="{{ vm.user.github.avatar_url }}"/>
-        <span>{{ ::vm.user.github.login }}</span>
-    </div>
-    <md-checkbox class="md-secondary" ng-model="authorizations.github"></md-checkbox>
-</md-list-item>
-<md-list-item ng-if="requested.facebook">
-    <p><i class="fa fa-facebook-official">
-        <md-tooltip>Facebook account</md-tooltip>
-    </i>
-        Your Facebook account
-    </p>
-    <div class="list-item-text-right list-item-img" ng-if="vm.user.facebook.id">
-        <img class="md-avatar" ng-src="{{ vm.user.facebook.picture }}"/>
-        <span>{{ ::vm.user.facebook.name }}</span>
-    </div>
-    <md-checkbox class="md-secondary" ng-model="authorizations.facebook"></md-checkbox>
-</md-list-item>
+            Your Github account
+        </p>
+        <div class="list-item-text-right list-item-img" ng-if="vm.user.github.id">
+            <img class="md-avatar" ng-src="{{ vm.user.github.avatar_url }}"/>
+            <span>{{ ::vm.user.github.login }}</span>
+        </div>
+        <md-checkbox class="md-secondary" ng-model="authorizations.github"></md-checkbox>
+    </md-list-item>
+    <md-list-item ng-if="requested.facebook">
+        <p><i class="fa fa-facebook-official">
+            <md-tooltip>Facebook account</md-tooltip>
+        </i>
+            Your Facebook account
+        </p>
+        <div class="list-item-text-right list-item-img" ng-if="vm.user.facebook.id">
+            <img class="md-avatar" ng-src="{{ vm.user.facebook.picture }}"/>
+            <span>{{ ::vm.user.facebook.name }}</span>
+        </div>
+        <md-checkbox class="md-secondary" ng-model="authorizations.facebook"></md-checkbox>
+    </md-list-item>
+</md-list>

@@ -7,9 +7,10 @@
         .controller("AuthorizeController", AuthorizeController);
 
 
-    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', 'UserService', 'UserDialogService'];
+    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', '$q',
+        'UserService', 'UserDialogService', 'NotificationService'];
 
-    function AuthorizeController($scope, $rootScope, $location, $window, UserService, UserDialogService) {
+    function AuthorizeController($scope, $rootScope, $location, $window, $q, UserService, UserDialogService, NotificationService) {
         var vm = this;
 
         var queryParams = $location.search();
@@ -19,12 +20,15 @@
         vm.username = $rootScope.user;
 
         vm.user = {};
+        vm.pendingNotifications = [];
+        vm.pendingOrganizationInvites = {};
 
         UserDialogService.init(vm);
         vm.showEmailDialog = addEmail;
         vm.showPhonenumberDialog = addPhone;
         vm.showAddressDialog = addAddress;
         vm.showBankAccountDialog = bank;
+        vm.submit = submit;
 
         var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts'];
         $scope.requested = {
@@ -62,6 +66,19 @@
                         $window.location.href = 'error' + reason.status;
                     }
                 );
+            NotificationService
+                .get(vm.username)
+                .then(
+                    function (data) {
+                        vm.pendingNotifications = data.invitations.filter(function (invitation) {
+                            return invitation.status === 'pending';
+                        });
+                        angular.forEach(vm.pendingNotifications, function (invite) {
+                            vm.pendingOrganizationInvites[invite.organization] = true;
+                        });
+                    }
+                );
+
         }
 
         function parseScopes() {
@@ -162,6 +179,20 @@
 
         function bank(event, label) {
             selectDefault(UserDialogService.bankAccount, event, label, 'bankaccounts');
+        }
+
+        function submit() {
+            // accept all the invites first
+            var requests = [];
+
+            vm.pendingNotifications.forEach(function (invitation) {
+                requests.push(NotificationService.accept(invitation));
+            });
+
+            $q.all(requests)
+                .then(function (data) {
+                    $scope.save();
+                });
         }
 
         function selectDefault(fx, event, label, property) {

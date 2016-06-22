@@ -25,6 +25,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/credentials/password"
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/validation"
 )
 
@@ -142,10 +143,11 @@ func (service *Service) FilterAuthorizedScopes(r *http.Request, username string,
 }
 
 //FilterPossibleScopes filters the requestedScopes to the relevant ones that are possible
-// For example, a `user:memberof:orgid1` is not possible if the user is not a member the `orgid1` organization
+// For example, a `user:memberof:orgid1` is not possible if the user is not a member the `orgid1` organization and there is no outstanding invite for this organization
 func (service *Service) FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes []string) (possibleScopes []string, err error) {
 	possibleScopes = make([]string, 0, len(requestedScopes))
 	orgmgr := organizationdb.NewManager(r)
+	invitationMgr := invitations.NewInvitationManager(r)
 	for _, rawscope := range requestedScopes {
 		scope := strings.TrimSpace(rawscope)
 		if strings.HasPrefix(scope, "user:memberof:") {
@@ -164,6 +166,15 @@ func (service *Service) FilterPossibleScopes(r *http.Request, username string, c
 			}
 			if isOwner {
 				possibleScopes = append(possibleScopes, scope)
+			} else {
+				hasInvite, err := invitationMgr.HasInvite(orgid, username)
+				if err != nil {
+					log.Error("FilterPossibleScopes: Error while checking if user has invite for organization: ", err)
+					return nil, err
+				}
+				if hasInvite {
+					possibleScopes = append(possibleScopes, scope)
+				}
 			}
 		} else {
 			possibleScopes = append(possibleScopes, scope)
