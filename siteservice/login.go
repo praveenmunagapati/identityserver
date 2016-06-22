@@ -231,13 +231,13 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	phoneLabel := mux.Vars(request)["phoneLabel"]
 	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
 	if err != nil {
-		log.Error(err)
+		log.Error("Error getting login session", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	sessionInfo, err := newLoginSessionInformation()
 	if err != nil {
-		log.Error(err)
+		log.Error("Error creating login session information", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -249,7 +249,7 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	userMgr := user.NewManager(request)
 	userFromDB, err := userMgr.GetByName(username)
 	if err != nil {
-		log.Error(err)
+		log.Error("Error getting user", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -260,7 +260,11 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 		return
 	}
 	loginSession.Values["sessionkey"] = sessionInfo.SessionKey
-	authenticatingOrganization := loginSession.Values["auth_client_id"].(string)
+	authClientId := loginSession.Values["auth_client_id"]
+	authenticatingOrganization := ""
+	if authClientId != nil {
+		authenticatingOrganization = authClientId.(string)
+	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 	mgoCollection.Insert(sessionInfo)
 	organizationText := ""
