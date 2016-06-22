@@ -121,6 +121,11 @@ type UsersInterface interface { // Post is the handler for POST /users
 	SetupTOTP(http.ResponseWriter, *http.Request)
 	// GetTOTPSecret is the handler for DELETE /users/{username}/totp
 	RemoveTOTP(http.ResponseWriter, *http.Request)
+	GetDigitalWallet(http.ResponseWriter, *http.Request)
+	RegisterNewDigitalAssetAddress(http.ResponseWriter, *http.Request)
+	GetDigitalAssetAddress(http.ResponseWriter, *http.Request)
+	UpdateDigitalAssetAddress(http.ResponseWriter, *http.Request)
+	DeleteDigitalAssetAddress(http.ResponseWriter, *http.Request)
 }
 
 // UsersInterfaceRoutes is routing for /users root endpoint
@@ -158,6 +163,11 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/addresses/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernameaddresseslabelGet))).Methods("GET")
 	r.Handle("/users/{username}/addresses/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateAddress))).Methods("PUT")
 	r.Handle("/users/{username}/addresses/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteAddress))).Methods("DELETE")
+	r.Handle("/users/{username}/digitalwallet", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetDigitalWallet))).Methods("GET")
+	r.Handle("/users/{username}/digitalwallet", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RegisterNewDigitalAssetAddress))).Methods("POST")
+	r.Handle("/users/{username}/digitalwallet/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetDigitalAssetAddress))).Methods("GET")
+	r.Handle("/users/{username}/digitalwallet/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateDigitalAssetAddress))).Methods("PUT")
+	r.Handle("/users/{username}/digitalwallet/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteDigitalAssetAddress))).Methods("DELETE")
 	r.Handle("/users/{username}/banks/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamebankslabelGet))).Methods("GET")
 	r.Handle("/users/{username}/banks/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamebankslabelPut))).Methods("PUT")
 	r.Handle("/users/{username}/banks/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.usernamebankslabelDelete))).Methods("DELETE")
