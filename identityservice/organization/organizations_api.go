@@ -350,6 +350,7 @@ func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, 
 	json.NewEncoder(w).Encode(org)
 
 }
+
 // Remove a member from organization
 // It is handler for DELETE /organizations/{globalid}/members/{username}
 func (api OrganizationsAPI) globalidmembersusernameDelete(w http.ResponseWriter, r *http.Request) {
@@ -530,7 +531,7 @@ func (api OrganizationsAPI) GetAPIKeyLabels(w http.ResponseWriter, r *http.Reque
 func isValidAPIKeyLabel(label string) (valid bool) {
 	valid = true
 	labelLength := len(label)
-	valid = valid && labelLength > 2 && labelLength < 51
+	valid = valid && labelLength > 1 && labelLength < 51
 	return valid
 }
 
@@ -832,9 +833,9 @@ func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, 
 	json.NewEncoder(responseWriter).Encode(&errorResponse)
 }
 
-func handleServerError(responseWriter http.ResponseWriter, actionText string, err error) (bool) {
+func handleServerError(responseWriter http.ResponseWriter, actionText string, err error) bool {
 	if err != nil {
-		log.Error("Error while " + actionText, err)
+		log.Error("Error while "+actionText, err)
 		http.Error(responseWriter, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return true
 	}

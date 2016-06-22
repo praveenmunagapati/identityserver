@@ -18,19 +18,19 @@ types:
         apikey: string
         applicationid: string
         scopes: string[]
-        label: string
+        label: Label
 
   PublicKey:
      description: PublicKey of a user
      properties:
-        label: string
+        label: Label
         publickey: string
 
   AuthorizationMap:
      description: Mapping between requested labels and real labels
      properties:
-        requestedlabel: string
-        reallabel: string
+        requestedlabel: Label
+        reallabel: Label
 
   Authorization:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
@@ -289,10 +289,7 @@ types:
 
   OrganizationAPIKey:
       properties:
-        label:
-          type: string
-          maxLength: 50
-          minLength: 2
+        label: Label
         callbackURL?:
           type: string
           maxLength: 250
@@ -390,7 +387,6 @@ types:
   Error:
     properties:
       error: string
-
 
 securedBy: [ oauth_2_0 ]
 /users:

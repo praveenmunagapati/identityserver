@@ -113,7 +113,7 @@ func (api UsersAPI) usernameGet(w http.ResponseWriter, r *http.Request) {
 func isValidLabel(label string) (valid bool) {
 	valid = true
 	labelLength := len(label)
-	valid = valid && labelLength > 2 && labelLength < 51
+	valid = valid && labelLength > 1 && labelLength < 51
 
 	if !valid {
 		log.Debug("Invalid label: ", label)
