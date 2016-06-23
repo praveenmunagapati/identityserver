@@ -2,7 +2,6 @@ package siteservice
 
 import (
 	"bytes"
-	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/itsyouonline/identityserver/communication"
@@ -19,6 +18,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/identityservice"
+	"github.com/itsyouonline/identityserver/tools/assetfs"
 )
 
 //Service is the identityserver http service

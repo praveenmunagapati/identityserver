@@ -19,18 +19,19 @@ type PublicKey struct {
 }
 
 type User struct {
-	ID             bson.ObjectId   `json:"-" bson:"_id,omitempty"`
-	Addresses      []Address       `json:"addresses"`
-	BankAccounts   []BankAccount   `json:"bankaccounts"`
-	EmailAddresses []EmailAddress  `json:"emailaddresses"`
-	Expire         db.Date         `json:"expire"`
-	Facebook       FacebookAccount `json:"facebook"`
-	Github         GithubAccount   `json:"github"`
-	Phonenumbers   []Phonenumber   `json:"phonenumbers"`
-	PublicKeys     []PublicKey     `json:"publicKeys"`
-	Username       string          `json:"username"`
-	Firstname      string          `json:"firstname"`
-	Lastname       string          `json:"lastname"`
+	ID             bson.ObjectId         `json:"-" bson:"_id,omitempty"`
+	Addresses      []Address             `json:"addresses"`
+	BankAccounts   []BankAccount         `json:"bankaccounts"`
+	EmailAddresses []EmailAddress        `json:"emailaddresses"`
+	Expire         db.Date               `json:"expire"`
+	Facebook       FacebookAccount       `json:"facebook"`
+	Github         GithubAccount         `json:"github"`
+	Phonenumbers   []Phonenumber         `json:"phonenumbers"`
+	DigitalWallet  []DigitalAssetAddress `json:"digitalwallet"`
+	PublicKeys     []PublicKey           `json:"publicKeys"`
+	Username       string                `json:"username"`
+	Firstname      string                `json:"firstname"`
+	Lastname       string                `json:"lastname"`
 }
 
 func (u *User) GetEmailAddressByLabel(label string) (email EmailAddress, err error) {
@@ -70,6 +71,16 @@ func (u *User) GetAddressByLabel(label string) (address Address, err error) {
 		}
 	}
 	err = errors.New("Could not find Phonenumber with Label " + address.Label)
+	return
+}
+
+func (u *User) GetDigitalAssetAddressByLabel(label string) (currency DigitalAssetAddress, err error) {
+	for _, currency = range u.DigitalWallet {
+		if currency.Label == label {
+			return
+		}
+	}
+	err = errors.New("Could not find DigitalAssetAddress with Label " + currency.Label)
 	return
 }
 
