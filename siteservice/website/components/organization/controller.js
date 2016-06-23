@@ -5,7 +5,7 @@
         .controller("OrganizationDetailController", OrganizationDetailController)
         .controller("InvitationDialogController", InvitationDialogController);
 
-
+    InvitationDialogController.$inject = ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'UserDialogService', '$window'];
     OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia', '$rootScope', 'UserDialogService'];
 
     function OrganizationDetailController($routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope, UserDialogService) {
@@ -261,7 +261,7 @@
         }
     }
 
-    function InvitationDialogController($scope, $mdDialog, organization, OrganizationService, $window) {
+    function InvitationDialogController($scope, $mdDialog, organization, OrganizationService, UserDialogService, $window) {
 
         $scope.role = "member";
 
@@ -286,9 +286,12 @@
                     }
                     else if (reason.status == 404){
                         $scope.validationerrors.nosuchuser = true;
+                    } else if (reason.status === 422) {
+                        cancel();
+                        var msg = 'Organization ' + organization + ' has reached the maximum amount of invitations.';
+                        UserDialogService.showSimpleDialog(msg, 'Error');
                     }
-                    else
-                    {
+                    else {
                         $window.location.href = "error" + reason.status;
                     }
                 }

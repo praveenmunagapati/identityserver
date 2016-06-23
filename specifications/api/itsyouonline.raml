@@ -1032,7 +1032,9 @@ securedBy: [ oauth_2_0 ]
             description: Unauthorized
           422:
             description: Maximum amount of organizations reached
-            type: Error
+            body:
+              application/json:
+                type: Error
     delete:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       displayName: DeleteOrganization
@@ -1076,6 +1078,11 @@ securedBy: [ oauth_2_0 ]
             description: No permission for this action
           404:
             description: Organization not found
+          422:
+            description: Maximum amount of invites reached
+            body:
+              application/json:
+                type: Error
 
       post:
         displayName: AddOrganizationMember

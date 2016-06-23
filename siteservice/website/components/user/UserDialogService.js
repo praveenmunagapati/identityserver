@@ -563,7 +563,9 @@
                                 $scope.form.name.$setValidity('pattern', false);
                             }
                             else if (reason.status === 422) {
-                                showSimpleDialog("You cannot create any more organizations because you have reached the maximum amount of organizations.", "Error");
+                                cancel();
+                                var msg = 'You cannot create any more organizations because you have reached the maximum amount of organizations.';
+                                showSimpleDialog(msg, "Error");
                             }
                             else {
                                 $window.location.href = "error" + reason.status;

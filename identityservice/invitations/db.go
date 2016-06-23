@@ -90,3 +90,9 @@ func (o *InvitationManager) HasInvite(globalid string, username string) (hasInvi
 	count, err := o.collection.Find(bson.M{"organization": globalid, "user": username}).Count()
 	return count != 0, err
 }
+
+// CountByOrganization Counts the amount of invitations, filtered by an organization
+func (o *InvitationManager) CountByOrganization(globalid string) (int, error) {
+	count, err := o.collection.Find(bson.M{"organization": globalid}).Count()
+	return count, err
+}

@@ -22,8 +22,11 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-const itsyouonlineGlobalID = "itsyouonline"
-const MAX_ORGANIZATIONS_PER_USER = 1000
+const (
+	itsyouonlineGlobalID                    = "itsyouonline"
+	MAX_ORGANIZATIONS_PER_USER              = 1000
+	MAX_AMOUNT_INVITATIONS_PER_ORGANIZATION = 10000
+)
 
 // OrganizationsAPI is the implementation for /organizations root endpoint
 type OrganizationsAPI struct {
@@ -303,7 +306,17 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 
 	// Create JoinRequest
 	invitationMgr := invitations.NewInvitationManager(r)
-
+	count, err := invitationMgr.CountByOrganization(globalid)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if count >= MAX_AMOUNT_INVITATIONS_PER_ORGANIZATION {
+		log.Error("Reached invitation limit for organization ", globalid)
+		writeErrorResponse(w, 422, "max_amount_of_invitations_reached")
+		return
+	}
 	orgReq := &invitations.JoinOrganizationInvitation{
 		Role:         invitations.RoleMember,
 		Organization: globalid,
