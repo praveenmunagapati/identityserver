@@ -29,7 +29,7 @@ func GetRouter(sc *siteservice.Service, is *identityservice.Service, oauthsc *oa
 	dbmw := db.DBMiddleware()
 	recovery := handlers.RecoveryHandler()
 
-	router.Use(recovery, LoggingMiddleware, dbmw, sc.SetAuthenticatedUserMiddleWare)
+	router.Use(recovery, LoggingMiddleware, dbmw, sc.SetWebUserMiddleWare)
 
 	return router.Handler()
 }

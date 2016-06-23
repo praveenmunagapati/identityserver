@@ -95,11 +95,11 @@ func (service *Service) GetLoggedInUser(request *http.Request) (username string,
 	return
 }
 
-//SetAuthenticatedUserMiddleWare puthe the authenticated user on the context
-func (service *Service) SetAuthenticatedUserMiddleWare(next http.Handler) http.Handler {
+//SetWebUserMiddleWare puthe the authenticated user on the context
+func (service *Service) SetWebUserMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		if username, err := service.GetLoggedInUser(request); err == nil {
-			context.Set(request, "authenticateduser", username)
+			context.Set(request, "webuser", username)
 		}
 
 		next.ServeHTTP(w, request)

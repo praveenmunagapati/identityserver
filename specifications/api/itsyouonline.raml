@@ -1030,6 +1030,9 @@ securedBy: [ oauth_2_0 ]
                 type: Organization
           401:
             description: Unauthorized
+          422:
+            description: Maximum amount of organizations reached
+            type: Error
     delete:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       displayName: DeleteOrganization

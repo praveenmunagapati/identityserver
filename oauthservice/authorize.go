@@ -135,7 +135,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 	}
 
 	//Check if the user is already authenticated, if not, redirect to the login page before returning here
-	username, err := service.GetAuthenticatedUser(request)
+	username, err := service.GetWebuser(request)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

@@ -215,3 +215,9 @@ func (m *Manager) UpdateMembership(globalid string, username string, oldrole str
 	}
 	return m.collection.Update(qry, push)
 }
+
+// CountByUser counts the amount of organizations by user
+func (m *Manager) CountByUser(username string) (int, error) {
+	qry := bson.M{"owners": username}
+	return m.collection.Find(qry).Count()
+}

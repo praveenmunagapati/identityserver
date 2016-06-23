@@ -10,6 +10,7 @@ import (
 
 	"sort"
 
+	"github.com/gorilla/context"
 	"github.com/itsyouonline/identityserver/db"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	"github.com/itsyouonline/identityserver/db/organization"
@@ -22,6 +23,7 @@ import (
 )
 
 const itsyouonlineGlobalID = "itsyouonline"
+const MAX_ORGANIZATIONS_PER_USER = 1000
 
 // OrganizationsAPI is the implementation for /organizations root endpoint
 type OrganizationsAPI struct {
@@ -156,9 +158,20 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 		return
 	}
 
+	username := context.Get(r, "authenticateduser").(string)
 	orgMgr := organization.NewManager(r)
-
-	err := orgMgr.Create(&org)
+	count, err := orgMgr.CountByUser(username)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if count >= MAX_ORGANIZATIONS_PER_USER {
+		log.Error("Reached organization limit for user ", username)
+		writeErrorResponse(w, 422, "maximum_amount_of_organizations_reached")
+		return
+	}
+	err = orgMgr.Create(&org)
 
 	if err != nil && err != db.ErrDuplicate {
 		log.Error(err.Error())
