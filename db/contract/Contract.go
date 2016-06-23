@@ -14,7 +14,7 @@ type Contract struct {
 	ID           bson.ObjectId `json:"-" bson:"_id,omitempty"`
 	Content      string        `json:"content"`
 	ContractType string        `json:"contractType"`
-	Expires      db.Date       `json:"expires"`
+	Expires      db.DateTime   `json:"expires"`
 	Extends      []string      `json:"extends"`
 	Invalidates  []string      `json:"invalidates"`
 	Parties      []Party       `json:"parties"`

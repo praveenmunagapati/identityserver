@@ -55,7 +55,7 @@ func (cm *CompanyManager) Get(id string) (*Company, error) {
 	return &company, nil
 }
 
-// Get company by Name.
+//GetByName get a company by globalid.
 func (cm *CompanyManager) GetByName(globalId string) (*Company, error) {
 	var company Company
 
@@ -64,7 +64,7 @@ func (cm *CompanyManager) GetByName(globalId string) (*Company, error) {
 	return &company, err
 }
 
-// Check if company exists.
+//Exists checks if a company exists.
 func (cm *CompanyManager) Exists(globalId string) bool {
 	count, _ := cm.collection.Find(bson.M{"globalid": globalId}).Count()
 
@@ -72,14 +72,14 @@ func (cm *CompanyManager) Exists(globalId string) bool {
 }
 
 func (c *Company) GetId() string {
-	return c.Id.Hex()
+	return c.ID.Hex()
 }
 
 // Create a company.
 func (cm *CompanyManager) Create(company *Company) error {
 	// TODO: Validation!
 
-	company.Id = bson.NewObjectId()
+	company.ID = bson.NewObjectId()
 	err := cm.collection.Insert(company)
 	if mgo.IsDup(err) {
 		return db.ErrDuplicate
@@ -96,9 +96,6 @@ func (cm *CompanyManager) Save(company *Company) error {
 
 // Delete a company.
 func (cm *CompanyManager) Delete(company *Company) error {
-	if company.Id == "" {
-		return errors.New("Company not stored")
-	}
-
-	return cm.collection.RemoveId(company.Id)
+	//TODO: implement delete company
+	return errors.New("Not implemented")
 }

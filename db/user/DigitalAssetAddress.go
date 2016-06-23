@@ -5,8 +5,8 @@ import (
 )
 
 type DigitalAssetAddress struct {
-	CurrencySymbol string  `json:"currencysymbol"`
-	Address        string  `json:"address"`
-	Label          string  `json:"label"`
-	Expire         db.Date `json:"expire"`
+	CurrencySymbol string      `json:"currencysymbol"`
+	Address        string      `json:"address"`
+	Label          string      `json:"label"`
+	Expire         db.DateTime `json:"expire"`
 }
