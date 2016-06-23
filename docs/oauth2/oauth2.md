@@ -54,7 +54,7 @@ When the user clicks the link, they must first log in to the service, to authent
 
 ### Step 3: Application Receives Authorization Code
 
-After the the user authorizes the application some of it's information, itsyou.online redirects the user-agent to the application redirect URI, which was specified during the client registration, along with an authorization code and a state parameter passed in step 1. If the state parameters don't match, the reqeust has been created by a third party and the process should be aborted.
+After the the user authorizes the application some of it's information, itsyou.online redirects the user-agent to the application redirect URI, which was specified during the client registration, along with an authorization code and a state parameter passed in step 1. If the state parameters don't match, the request has been created by a third party and the process should be aborted.
 The redirect would look something like this (assuming the application is "petshop.com"):
 
 ```
