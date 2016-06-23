@@ -54,7 +54,7 @@ When the user clicks the link, they must first log in to the service, to authent
 
 ### Step 3: Application Receives Authorization Code
 
-After the the user authorizes the application some of it's information, itsyou.online redirects the user-agent to the application redirect URI, which was specified during the client registration, along with an authorization code and a state parameter passed in step 1. If the state parameters don't match, the reqeust has been created by a third party and the process should be aborted.
+After the the user authorizes the application some of it's information, itsyou.online redirects the user-agent to the application redirect URI, which was specified during the client registration, along with an authorization code and a state parameter passed in step 1. If the state parameters don't match, the request has been created by a third party and the process should be aborted.
 The redirect would look something like this (assuming the application is "petshop.com"):
 
 ```
@@ -78,7 +78,7 @@ The redirect_uri must match the redirect_uri passed in the access_code request a
 If the authorization is valid, the API will send a response containing the access token (and optionally, a refresh token) to the application. The entire response will look something like this:
 
 ```
-{"access_token":"ACCESS_TOKEN","token_type":"bearer","expires_in":2592000,"refresh_token":"REFRESH_TOKEN","scope":"read","info":{"username":"bob"}}
+{"access_token":"ACCESS_TOKEN","token_type":"bearer","expires_in":86400,"refresh_token":"REFRESH_TOKEN","scope":"read","info":{"username":"bob"}}
 ```
 Now the application is authorized.
 It may use the token to access the user's account via the service API, limited to the scope of access, until the token expires or is revoked.

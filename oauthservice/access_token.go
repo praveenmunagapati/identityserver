@@ -100,11 +100,14 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		AccessToken string      `json:"access_token"`
 		TokenType   string      `json:"token_type"`
 		Scope       string      `json:"scope"`
+		ExpiresIn   int64      `json:"expires_in"`
 		Info        interface{} `json:"info"`
 	}{
 		AccessToken: at.AccessToken,
 		TokenType:   at.Type,
 		Scope:       at.Scope,
+		ExpiresIn:   int64(at.ExpirationTime().Sub(time.Now()).Seconds() - 600),
+
 		Info: struct {
 			Username string `json:"username"`
 		}{
