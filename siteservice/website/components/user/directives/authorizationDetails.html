@@ -128,6 +128,25 @@
         </md-select>
     </md-input-container>
 </md-list-item>
+<md-list-item ng-repeat="label in requested.digitalwallet">
+    <p><i class="fa fa-money">
+        <md-tooltip>Digital wallet address</md-tooltip>
+    </i>
+        Digital wallet address <span ng-if="label != '' && label != 'main'">for {{ ::label }}</span>
+    </p>
+    <md-input-container>
+        <label>Digital wallet address</label>
+        <md-select ng-model="getAuthorizationByLabel('digitalwallet', label).reallabel">
+            <md-option value="">None</md-option>
+            <md-option ng-repeat="currency in vm.user.digitalwallet" value="{{::currency.label}}">
+                {{ ::currency.label + ' - ' + currency.address + ' - ' + currency.currencysymbol }}
+            </md-option>
+            <md-option ng-click="vm.showDigitalWalletAddressDialog($event, label)" ng-if="isNew">
+                <i class="fa fa-plus"></i> Create new
+            </md-option>
+        </md-select>
+    </md-input-container>
+</md-list-item>
 <md-list-item ng-if="requested.github">
     <p><i class="fa fa-github">
         <md-tooltip>Github account</md-tooltip>
