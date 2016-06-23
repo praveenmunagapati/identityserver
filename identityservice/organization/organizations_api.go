@@ -467,7 +467,7 @@ func (api OrganizationsAPI) GetAPIKeyLabels(w http.ResponseWriter, r *http.Reque
 func isValidAPIKeyLabel(label string) (valid bool) {
 	valid = true
 	labelLength := len(label)
-	valid = valid && labelLength > 2 && labelLength < 51
+	valid = valid && labelLength > 1 && labelLength < 51
 	return valid
 }
 
