@@ -14,6 +14,7 @@ func TestLabelValidation(t *testing.T) {
 	}
 	testcases := []testcase{
 		testcase{label: "", valid: false},
+		testcase{label: "a", valid: false},
 		testcase{label: "ab", valid: true},
 		testcase{label: "abc", valid: true},
 		testcase{label: strings.Repeat("1", 50), valid: true},
