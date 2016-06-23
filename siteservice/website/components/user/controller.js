@@ -21,7 +21,6 @@
             contractRequests: []
         };
         vm.notificationMessage = '';
-        var arrayProperties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
 
         vm.owner = [];
         vm.member = [];
@@ -48,7 +47,6 @@
         vm.showGithubDialog = UserDialogService.github;
         vm.addFacebookAccount = UserDialogService.addFacebook;
         vm.addGithubAccount = UserDialogService.addGithub;
-        vm.showDigitalWalletAddressDetail = UserDialogService.digitalWalletAddressDetail;
         vm.loadNotifications = loadNotifications;
         vm.loadOrganizations = loadOrganizations;
         vm.loadUser = loadUser;
@@ -150,11 +148,6 @@
                     .get(vm.username)
                     .then(
                         function (data) {
-                            angular.forEach(arrayProperties, function (prop) {
-                                if (!data[prop]) {
-                                    data[prop] = [];
-                                }
-                            });
                             vm.user = data;
                             vm.loaded.user = true;
                             resolve(data);
@@ -193,6 +186,7 @@
                     }, reject);
             });
         }
+
 
         function findByLabel(property, label) {
             return vm.user[property].filter(function (val) {

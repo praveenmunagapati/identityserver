@@ -25,9 +25,8 @@
         vm.showPhonenumberDialog = addPhone;
         vm.showAddressDialog = addAddress;
         vm.showBankAccountDialog = bank;
-        vm.showDigitalWalletAddressDialog = digitalWalletAddress;
 
-        var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
+        var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts'];
         $scope.requested = {
             organizations: {},
             facebook: false,
@@ -93,9 +92,6 @@
                     }
                     else if (scope.startsWith('user:bankaccount:')) {
                         $scope.requested.bankaccounts.push(permissionLabel);
-                    }
-                    else if (scope.startsWith('user:digitalwalletaddress:')) {
-                        $scope.requested.digitalwallet.push(permissionLabel);
                     }
                     else if (scope === 'user:github') {
                         $scope.requested.github = true;
@@ -166,10 +162,6 @@
 
         function bank(event, label) {
             selectDefault(UserDialogService.bankAccount, event, label, 'bankaccounts');
-        }
-
-        function digitalWalletAddress(event, label) {
-            selectDefault(UserDialogService.digitalWalletAddressDetail, event, label, 'digitalwallet');
         }
 
         function selectDefault(fx, event, label, property) {
