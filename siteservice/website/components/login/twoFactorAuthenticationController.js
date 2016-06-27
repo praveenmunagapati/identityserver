@@ -36,18 +36,12 @@
                         });
                     }
                     var methods = Object.keys(vm.possibleTwoFaMethods);
-                    vm.hasMoreThanOneTwoFaMethod = methods.length > 1;
                     if (!methods.length) {
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title('Error')
-                                .htmlContent('You do not have any two factor authentication methods available. <br /> Please contact an administrator to recover your account.')
-                                .ariaLabel('Error')
-                                .ok('Ok')
-                        );
+                        // Redirect to resend sms page
+                        $window.location.hash = '#/resendsms';
                         return;
                     }
+                    vm.hasMoreThanOneTwoFaMethod = methods.length > 1;
                     if (!vm.hasMoreThanOneTwoFaMethod) {
                         vm.selectedTwoFaMethod = methods[0];
                         nextStep();
@@ -125,6 +119,9 @@
                 .then(
                     function (data) {
                         localStorage.setItem('itsyouonline.last2falabel', vm.selectedTwoFaMethod);
+                        if (interval) {
+                            $interval.cancel(interval);
+                        }
                         goToPage(data.redirecturl);
                     },
                     function (response) {
@@ -134,6 +131,9 @@
                                 break;
                             case 401:
                                 // Login session expired. Go back to username/password screen.
+                                if (interval) {
+                                    $interval.cancel(interval);
+                                }
                                 goToPage('');
                                 break;
                             default:

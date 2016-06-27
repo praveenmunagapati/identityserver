@@ -3,7 +3,7 @@
     <md-card class="form-card" flex="100" flex-gt-xs="80" flex-gt-sm="50" flex-gt-md="40" flex-gt-lg="30">
         <md-card-title>
             <md-card-title-text>
-                <span class="md-headline">Registration SMS confirmation</span>
+                <span class="md-headline">SMS confirmation</span>
                 <span class="md-subhead">Click the link in the sms sent to your phone or enter the code from the sms here if you are unable to</span>
             </md-card-title-text>
         </md-card-title>
@@ -14,12 +14,13 @@
                     <input ng-model="vm.smscode" md-maxlength="6" minlength="6" ng-required="!smsconfirmation.confirmed"
                            name="smscode" autocomplete="off">
                     <div ng-messages="phoneconfirmationform.smscode.$error" md-auto-hide="false" class="error">
-                        <div ng-message="invalidcredentials">Invalid code</div>
+                        <div ng-message="invalid_sms_code">Invalid code</div>
                     </div>
                 </md-input-container>
             </div>
         </md-card-content>
-        <md-card-actions layout="row" layout-align="end center">
+        <md-card-actions layout="row" layout-align="space-between center">
+            <md-button type="submit" class="md-raised" ng-href="#/resendsms">Resend...</md-button>
             <md-button type="submit" class="md-raised md-primary">Submit</md-button>
         </md-card-actions>
     </md-card>

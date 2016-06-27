@@ -10,12 +10,12 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/sessions"
+	"github.com/itsyouonline/identityserver/credentials/password"
+	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 	"github.com/itsyouonline/identityserver/validation"
-	"github.com/itsyouonline/identityserver/credentials/totp"
-	"github.com/itsyouonline/identityserver/credentials/password"
 )
 
 const (
@@ -137,6 +137,8 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 	validationkey, _ := registrationSession.Values["phonenumbervalidationkey"].(string)
 
 	if isConfirmed, _ := service.phonenumberValidationService.IsConfirmed(request, validationkey); isConfirmed {
+		userMgr := user.NewManager(request)
+		userMgr.RemoveExpireDate(username)
 		service.loginUser(w, request, username)
 		return
 	}
@@ -164,6 +166,8 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	userMgr := user.NewManager(request)
+	userMgr.RemoveExpireDate(username)
 	service.loginUser(w, request, username)
 }
 
@@ -179,7 +183,7 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	}{}
 
 	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
-		log.Debug("Error decoding the ResendPhonenumberConfirmation request:", err)
+		log.Debug("Error decoding the ResendPhonenumberConfirmation request: ", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -214,13 +218,13 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	uMgr := user.NewManager(request)
 	err = uMgr.SavePhone(username, phonenumber)
 	if err != nil {
-		log.Error(err)
+		log.Error("ResendPhonenumberConfirmation: Could not save phonenumber: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	validationkey, err = service.phonenumberValidationService.RequestValidation(request, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host))
 	if err != nil {
-		log.Error(err)
+		log.Error("ResendPhonenumberConfirmation: Could not get validationkey: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -266,7 +270,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		return
 	}
 	if totpsession.IsNew {
-		//TODO: indicate expired registration session
 		log.Debug("New registration session while processing the registration form")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
@@ -314,6 +317,11 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 			return
 		}
 		newuser.Phonenumbers = []user.Phonenumber{phonenumber}
+		// Remove account after 3 days if it still doesn't have a verified phone by then
+		duration := time.Duration(time.Hour * 24 * 3)
+		expiresAt := time.Now()
+		expiresAt.Add(duration)
+		newuser.Expire = db.DateTime(expiresAt)
 	} else {
 		token := totp.TokenFromSecret(totpsecret)
 		if !token.Validate(values.TotpCode) {
@@ -325,7 +333,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		}
 	}
 
-	//TODO: this should only be a temporary user registration (until the email/phone validation is completed)
 	userMgr.Save(newuser)
 	passwdMgr := password.NewManager(request)
 	err = passwdMgr.Save(newuser.Username, values.Password)
@@ -394,7 +401,6 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 		response.Error = "duplicate_username"
 		response.Valid = false
 	}
-	// TODO: validate username
 	json.NewEncoder(w).Encode(&response)
 	return
 }

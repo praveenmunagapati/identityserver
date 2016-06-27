@@ -98,13 +98,6 @@
                                             .ok('Confirm')
                                             .cancel('Cancel');
                                     }
-                                    else if (response.data.error === 'cannot_delete_last_verified_phone_number') {
-                                        errorMsg = 'You cannot delete your last verified phone number. <br />' +
-                                            'Please change your 2 factor authentication method or add another verified phone number.';
-                                        dialog = $mdDialog.alert()
-                                            .title('Error')
-                                            .ok('Close');
-                                    }
                                     dialog = dialog.htmlContent(errorMsg)
                                         .ariaLabel('Delete phone number')
                                         .targetEvent(ev);
@@ -115,8 +108,13 @@
                                                 .then(function () {
                                                     // Manually remove phone number since the dialog which executes the updatePhoneNumber promise callback had been closed before
                                                     vm.user.phonenumbers.splice(vm.user.phonenumbers.indexOf(phone), 1);
-                                                }, function () {
-                                                    errorMsg = 'Could not delete phone number. Please try again later.';
+                                                }, function (response) {
+                                                    if (response.data.error === 'cannot_delete_last_verified_phone_number') {
+                                                        errorMsg = 'You cannot delete your last verified phone number. <br />' +
+                                                            'Please change your 2 factor authentication method or add another verified phone number.';
+                                                    } else {
+                                                        errorMsg = 'Could not delete phone number. Please try again later.';
+                                                    }
                                                     showSimpleDialog(errorMsg, 'Error', 'Ok', ev);
                                                 });
                                         });

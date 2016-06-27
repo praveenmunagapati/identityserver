@@ -8,6 +8,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/itsyouonline/identityserver/db"
+	"time"
 )
 
 const (
@@ -25,6 +26,13 @@ func InitModels() {
 
 	db.EnsureIndex(mongoUsersCollectionName, index)
 
+	// Removes users without valid 2 factor authentication after 3 days
+	automaticUserExpiration := mgo.Index{
+		Key:         []string{"expire"},
+		ExpireAfter: time.Second,
+		Background:  true,
+	}
+	db.EnsureIndex(mongoUsersCollectionName, automaticUserExpiration)
 }
 
 //Manager is used to store users
@@ -247,5 +255,12 @@ func (m *Manager) UpdateName(username string, firstname string, lastname string)
 		"lastname":  lastname,
 	}
 	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": values})
+	return
+}
+
+func (m *Manager) RemoveExpireDate(username string) (err error) {
+	qry := bson.M{"username": username}
+	values := bson.M{"expire": bson.M{}}
+	_, err = m.getUserCollection().UpdateAll(qry, bson.M{"$set": values})
 	return
 }

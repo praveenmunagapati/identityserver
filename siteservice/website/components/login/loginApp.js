@@ -51,6 +51,16 @@
                 controller: 'resetPasswordController',
                 controllerAs: 'vm'
             })
+            .when('/resendsms', {
+                templateUrl: 'components/registration/views/registrationresendsms.html',
+                controller: 'resendSmsController',
+                controllerAs: 'vm'
+            })
+            .when('/smsconfirmation', {
+                templateUrl: 'components/registration/views/registrationsmsform.html',
+                controller: 'smsConfirmationController',
+                controllerAs: 'vm'
+            })
             .otherwise('/');
     }
 })();
