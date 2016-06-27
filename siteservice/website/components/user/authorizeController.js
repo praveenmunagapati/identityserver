@@ -61,11 +61,7 @@
                     function(data) {
                         vm.user = data;
                         parseScopes();
-                    },
-                    function(reason) {
-                        $window.location.href = 'error' + reason.status;
-                    }
-                );
+                    });
             NotificationService
                 .get(vm.username)
                 .then(

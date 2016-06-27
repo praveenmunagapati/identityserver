@@ -18,12 +18,6 @@
                 .then(function (response) {
                         // redirect to login
                         $window.location.hash = '';
-                    },
-                    function (response) {
-                        switch (response.status) {
-                            default:
-                                $window.location.href = 'error' + response.status;
-                        }
                     }
                 );
         }

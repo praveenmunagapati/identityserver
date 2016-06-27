@@ -414,20 +414,8 @@
                                 .targetEvent(event)
                         );
                     }, function (response) {
-                        switch (response.status) {
-                            case 422:
-                                switch (response.data.error) {
-                                    case 'incorrect_password':
-                                        $scope.changepasswordform.currentPassword.$setValidity('incorrect_password', false);
-                                        break;
-                                    case 'invalid_password':
-                                        $scope.changepasswordform.currentPassword.$setValidity('invalid_password', false);
-                                        break;
-                                }
-                                break;
-                            default:
-                                $window.location.href = 'error' + response.status;
-                                break;
+                        if (response.status === 422) {
+                            $scope.changepasswordform.currentPassword.$setValidity(response.data.error, false);
                         }
                     });
                 }
@@ -660,8 +648,6 @@
                         }, function (response) {
                             if (response.status === 422) {
                                 $scope.form.totpcode.$setValidity('invalid_totpcode', false);
-                            } else {
-                                $window.location.href = 'error' + response.status;
                             }
                         });
                 }

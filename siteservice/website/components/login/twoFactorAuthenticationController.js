@@ -53,8 +53,6 @@
                         }
                         vm.selectedTwoFaMethod = method;
                     }
-                }, function (response) {
-                    $window.location.href = 'error' + response.status;
                 });
         }
 

@@ -54,8 +54,10 @@
             },
 
             'responseError': function (rejection) {
-                if (rejection.status == 401 || rejection.status == 403 || rejection.status == 419) {
-                    $window.location.href = "";
+                if (rejection.status === 401 || rejection.status === 403 || rejection.status === 419) {
+                    $window.location.href = '/login';
+                } else if (rejection.status.toString().startsWith('5')) {
+                    $window.location.href = 'error' + rejection.status;
                 }
 
                 return $q.reject(rejection);
