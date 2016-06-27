@@ -63,13 +63,6 @@
                         case 409:
                             $scope.signupform.login.$setValidity('duplicate_username', false);
                             break;
-                        case 401:
-                            // Session expired. Reload page.
-                            $window.location.reload();
-                            break;
-                        default:
-                            $window.location.href = '/error' + response.status;
-                            break;
                     }
                 });
         }

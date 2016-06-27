@@ -2,7 +2,8 @@
     'use strict';
     angular
         .module('itsyouonline.registration', [
-            'ngMaterial', 'ngMessages', 'ngRoute', 'ngCookies', 'monospaced.qrcode', 'itsyouonline.shared', 'itsyouonline.header'])
+            'ngMaterial', 'ngMessages', 'ngRoute', 'ngCookies', 'monospaced.qrcode',
+            'itsyouonline.shared', 'itsyouonline.header', 'itsyouonline.validation'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$httpProvider', httpConfig])
         .config(['$routeProvider', routeConfig])

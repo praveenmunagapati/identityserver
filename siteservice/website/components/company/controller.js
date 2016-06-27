@@ -29,9 +29,6 @@
                     if (reason.status == 409) {
                          vm.validationerrors = {duplicate: true};
                     }
-                    else{
-                        $window.location.href = "error" + reason.status;
-                    }
                 }
             );
         }

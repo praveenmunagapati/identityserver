@@ -93,16 +93,6 @@
                 .sendSmsCode(phoneLabel)
                 .then(function () {
                     interval = $interval(checkSmsConfirmation, 1000);
-                }, function (response) {
-                    switch (response.status) {
-                        case 401:
-                            // Login session expired. Go back to username/password screen.
-                            goToPage('');
-                            break;
-                        default:
-                            goToPage('/error' + response.status);
-                            break;
-                    }
                 });
         }
 
@@ -126,16 +116,6 @@
                         switch (response.status) {
                             case 422:
                                 $scope.twoFaForm.code.$setValidity("invalid_code", false);
-                                break;
-                            case 401:
-                                // Login session expired. Go back to username/password screen.
-                                if (interval) {
-                                    $interval.cancel(interval);
-                                }
-                                goToPage('');
-                                break;
-                            default:
-                                goToPage('/error' + response.status);
                                 break;
                         }
                     });

@@ -156,9 +156,6 @@
                         u.pathname(endpoint);
                         u.search(queryParams);
                         $window.location.href = u.toString();
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
         }

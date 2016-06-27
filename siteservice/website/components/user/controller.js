@@ -274,9 +274,6 @@
                         toast('Accepted ' + responses.length + ' invitations!');
                         vm.loaded.notifications = false;
                         loadNotifications();
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
         }
@@ -297,9 +294,6 @@
                         toast('Rejected ' + responses.length + ' invitations!');
                         vm.loaded.notifications = false;
                         loadNotifications();
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
         }
@@ -571,11 +565,8 @@
                             ctrl.savedLabel = data.label;
                         },
                         function (reason) {
-                            if (reason.status == 409) {
+                            if (reason.status === 409) {
                                 $scope.APIKeyForm.label.$setValidity('duplicate', false);
-                            }
-                            else {
-                                $window.location.href = "error" + reason.status;
                             }
                         }
                     );
@@ -587,11 +578,8 @@
                             $mdDialog.hide({originalLabel: ctrl.savedLabel, newLabel: ctrl.label});
                         },
                         function (reason) {
-                            if (reason.status == 409) {
+                            if (reason.status === 409) {
                                 $scope.APIKeyForm.label.$setValidity('duplicate', false);
-                            }
-                            else {
-                                $window.location.href = "error" + reason.status;
                             }
                         }
                     );
@@ -601,9 +589,6 @@
                     UserService.deleteAPIKey(username, APIKey.label).then(
                         function (data) {
                             $mdDialog.hide({originalLabel: APIKey.label, newLabel: ""});
-                        },
-                        function (reason) {
-                            $window.location.href = "error" + reason.status;
                         }
                     );
                 }

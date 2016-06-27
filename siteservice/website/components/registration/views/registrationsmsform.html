@@ -13,7 +13,7 @@
                     <label>Code sent by sms</label>
                     <input ng-model="vm.smscode" md-maxlength="6" minlength="6" ng-required="!smsconfirmation.confirmed"
                            name="smscode" autocomplete="off">
-                    <div ng-messages="phoneconfirmationform.smscode.$error" md-auto-hide="false" class="error">
+                    <div ng-messages="phoneconfirmationform.smscode.$error" md-auto-hide="false">
                         <div ng-message="invalid_sms_code">Invalid code</div>
                     </div>
                 </md-input-container>

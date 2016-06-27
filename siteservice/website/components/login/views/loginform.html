@@ -19,7 +19,7 @@
                     <label>Password</label>
                     <input ng-model="vm.password" required name="password" type="password"
                            ng-change="vm.clearValidation()">
-                    <div ng-messages="loginform.password.$error" class="error">
+                    <div ng-messages="loginform.password.$error">
                         <div ng-message="invalidcredentials">Invalid credentials</div>
                     </div>
                 </md-input-container>
