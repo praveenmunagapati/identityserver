@@ -126,10 +126,6 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 
 #slide1 .content { margin-top: 220px; background: rgba(72, 72, 72, 0.2); }
 
-.error {
-    color: rgb(221,44,0);
-}
-
 .fullscreenform:before {
   content: "";
   position: fixed;

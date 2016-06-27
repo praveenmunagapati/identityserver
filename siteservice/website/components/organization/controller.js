@@ -46,9 +46,6 @@
                         vm.childOrganizationNames = getChildOrganizations(vm.organization.globalid);
                         vm.hasEditPermission = vm.organization.owners.indexOf($rootScope.user) !== -1;
                         fetchInvitations();
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
 
@@ -56,8 +53,6 @@
                 .then(function (data) {
                     vm.organizationRoot.children = [];
                     vm.organizationRoot.children.push(data);
-                }, function (error) {
-                    $window.location.href = "error" + error.status;
                 });
         }
 
@@ -70,9 +65,6 @@
                 .then(
                     function (data) {
                         vm.invitations = data;
-                    },
-                    function (reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
         }
@@ -86,9 +78,6 @@
                 .then(
                     function(data) {
                         vm.apikeylabels = data;
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
         }
@@ -215,8 +204,6 @@
                         if (response.status === 422) {
                             var msg = 'This organization cannot be deleted because it still has child organizations.';
                             UserDialogService.showSimpleDialog(msg, 'Error', 'Ok', event);
-                        } else {
-                            $window.location.href = "error" + reason.status;
                         }
                     });
             });
@@ -291,9 +278,6 @@
                         var msg = 'Organization ' + organization + ' has reached the maximum amount of invitations.';
                         UserDialogService.showSimpleDialog(msg, 'Error');
                     }
-                    else {
-                        $window.location.href = "error" + reason.status;
-                    }
                 }
             );
 
@@ -310,9 +294,6 @@
             OrganizationService.getAPIKey(organization, label).then(
                 function(data){
                     $scope.apikey = data;
-                },
-                function(reason){
-                    $window.location.href = "error" + reason.status;
                 }
             );
         }
@@ -350,12 +331,8 @@
                     $scope.savedLabel = data.label;
                 },
                 function(reason){
-                    if (reason.status == 409){
+                    if (reason.status === 409) {
                         $scope.validationerrors.duplicate = true;
-                    }
-                    else
-                    {
-                        $window.location.href = "error" + reason.status;
                     }
                 }
             );
@@ -368,12 +345,8 @@
                     $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel});
                 },
                 function(reason){
-                    if (reason.status == 409){
+                    if (reason.status === 409) {
                         $scope.validationerrors.duplicate = true;
-                    }
-                    else
-                    {
-                        $window.location.href = "error" + reason.status;
                     }
                 }
             );
@@ -385,9 +358,6 @@
             OrganizationService.deleteAPIKey(organization, label).then(
                 function(data){
                     $mdDialog.hide({originalLabel: label, newLabel: ""});
-                },
-                function(reason){
-                    $window.location.href = "error" + reason.status;
                 }
             );
         }
@@ -419,11 +389,8 @@
                     $mdDialog.hide({originalDns: "", newDns: data.name});
                 },
                 function (reason) {
-                    if (reason.status == 409) {
+                    if (reason.status === 409) {
                         $scope.validationerrors.duplicate = true;
-                    }
-                    else {
-                        $window.location.href = "error" + reason.status;
                     }
                 }
             );
@@ -439,11 +406,8 @@
                     $mdDialog.hide({originalDns: oldDns, newDns: data.name});
                 },
                 function (reason) {
-                    if (reason.status == 409) {
+                    if (reason.status === 409) {
                         $scope.validationerrors.duplicate = true;
-                    }
-                    else {
-                        $window.location.href = "error" + reason.status;
                     }
                 }
             );
@@ -452,14 +416,10 @@
 
         function remove(dnsName) {
             $scope.validationerrors = {};
-            OrganizationService.deleteDNS(organization, dnsName).then(
-                function () {
+            OrganizationService.deleteDNS(organization, dnsName)
+                .then(function () {
                     $mdDialog.hide({originalDns: dnsName, newDns: ""});
-                },
-                function (reason) {
-                    $window.location.href = "error" + reason.status;
-                }
-            );
+                });
         }
     }
 

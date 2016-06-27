@@ -486,11 +486,8 @@
                         $mdDialog.hide({fx: 'create', data: response});
                     },
                     function (reason) {
-                        if (reason.status == 409) {
+                        if (reason.status === 409) {
                             $scope.validationerrors.duplicate = true;
-                        }
-                        else {
-                            $window.location.href = "error" + reason.status;
                         }
                     }
                 );
@@ -509,11 +506,8 @@
                         if (response.data && response.data.error) {
                             $scope.validationerrors[response.data.error] = true;
                         }
-                        else if (response.status == 409) {
+                        else if (response.status === 409) {
                             $scope.validationerrors.duplicate = true;
-                        }
-                        else {
-                            $window.location.href = "error" + response.status;
                         }
                     }
                 );
@@ -521,16 +515,10 @@
 
             function remove(label) {
                 $scope.validationerrors = {};
-                deleteFunction(user.username, label).then(
-                    function (response) {
+                deleteFunction(user.username, label)
+                    .then(function (response) {
                         $mdDialog.hide({fx: 'delete'});
-                    },
-                    function (response) {
-                        if (response) {
-                            $window.location.href = "error" + response.status;
-                        }
-                    }
-                );
+                    });
             }
 
         }
@@ -555,18 +543,15 @@
                             $window.location.hash = '#/organization/' + encodeURIComponent(data.globalid);
                         },
                         function (reason) {
-                            if (reason.status == 409) {
+                            if (reason.status === 409) {
                                 $scope.form.name.$setValidity('duplicate', false);
-                            } else if (reason.status == 400) {
+                            } else if (reason.status === 400) {
                                 $scope.form.name.$setValidity('pattern', false);
                             }
                             else if (reason.status === 422) {
                                 cancel();
                                 var msg = 'You cannot create any more organizations because you have reached the maximum amount of organizations.';
                                 showSimpleDialog(msg, "Error");
-                            }
-                            else {
-                                $window.location.href = "error" + reason.status;
                             }
                         }
                     );

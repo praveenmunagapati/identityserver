@@ -21,8 +21,6 @@
                         case 404:
                             $scope.form.login.$setValidity("invalid", false);
                             break;
-                        default:
-                            $window.location.href = 'error' + response.status;
                     }
                 }
             );

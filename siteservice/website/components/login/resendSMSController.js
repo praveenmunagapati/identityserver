@@ -24,13 +24,6 @@
                                 $scope.phoneconfirmationform.phonenumber.$setValidity("invalid_phonenumber", false);
                             }
                             break;
-                        case 401:
-                            // Session expired. Go back to login page.
-                            $window.location.hash = '';
-                            break;
-                        default:
-                            $window.location.href = '/error' + response.status;
-                            break;
                     }
                 });
         }

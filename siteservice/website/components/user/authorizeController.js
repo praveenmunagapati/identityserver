@@ -61,11 +61,7 @@
                     function(data) {
                         vm.user = data;
                         parseScopes();
-                    },
-                    function(reason) {
-                        $window.location.href = 'error' + reason.status;
-                    }
-                );
+                    });
             NotificationService
                 .get(vm.username)
                 .then(
@@ -160,9 +156,6 @@
                         u.pathname(endpoint);
                         u.search(queryParams);
                         $window.location.href = u.toString();
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
         }

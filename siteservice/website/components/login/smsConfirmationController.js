@@ -41,13 +41,6 @@
                         case 422:
                             $scope.phoneconfirmationform.smscode.$setValidity("invalid_sms_code", false);
                             break;
-                        case 401:
-                            // Session expired. Go back to login page.
-                            $window.location.hash = '';
-                            break;
-                        default:
-                            $window.location.href = '/error' + response.status;
-                            break;
                     }
                 });
         }
