@@ -60,7 +60,7 @@ func (service *Service) FacebookCallback(w http.ResponseWriter, request *http.Re
 	}
 	// Save facebook info in database.
 	userMgr := user.NewManager(request)
-	var loggedInUser, e = service.GetLoggedInUser(request)
+	var loggedInUser, e = service.GetLoggedInUser(request, w)
 	if e != nil {
 		log.Error(e)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -149,7 +149,7 @@ func (service *Service) GithubCallback(w http.ResponseWriter, request *http.Requ
 	}
 	userMgr := user.NewManager(request)
 	// Save Github user info in db
-	var loggedInUser, e = service.GetLoggedInUser(request)
+	var loggedInUser, e = service.GetLoggedInUser(request, w)
 	if e != nil {
 		log.Error(e)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
