@@ -47,7 +47,7 @@ const (
 
 //GetWebuser returns the authenticated user if any or an empty string if not
 func (service *Service) GetWebuser(r *http.Request, w http.ResponseWriter) (username string, err error) {
-	username, err = service.sessionService.GetLoggedInUser(r)
+	username, err = service.sessionService.GetLoggedInUser(r, w)
 	return
 }
 
