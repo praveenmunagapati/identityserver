@@ -132,7 +132,7 @@ func (service *Service) APIDocs(w http.ResponseWriter, request *http.Request) {
 //HomePage shows the home page when logged in, if not, delegate to showing the public website
 func (service *Service) HomePage(w http.ResponseWriter, request *http.Request) {
 
-	loggedinuser, err := service.GetLoggedInUser(request)
+	loggedinuser, err := service.GetLoggedInUser(request, w)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
