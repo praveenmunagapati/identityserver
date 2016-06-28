@@ -36,9 +36,7 @@ func (s *SMTPEmailService) Send(recipients []string, subject string, message str
 	gomsg := gomail.NewMessage()
 	gomsg.SetHeader("Subject", subject)
 	gomsg.SetHeader("From", "noreply@itsyou.online")
-	for _, recipient := range recipients {
-		gomsg.SetHeader("To", recipient)
-	}
+	gomsg.SetHeader("To", recipients...)
 	gomsg.SetBody("text/html", message)
 	err = s.dialer.DialAndSend(gomsg)
 	if err != nil {

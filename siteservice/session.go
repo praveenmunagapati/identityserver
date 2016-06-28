@@ -29,7 +29,7 @@ func initializeSessionStore(cookieSecret string, maxAge int) (sessionStore *sess
 	sessionStore.Options.HttpOnly = true
 
 	sessionStore.Options.Secure = true
-	sessionStore.Options.MaxAge = 10 * 60 //10 minutes
+	sessionStore.Options.MaxAge = maxAge
 	return
 }
 
@@ -92,8 +92,13 @@ func (service *Service) SetAPIAccessToken(w http.ResponseWriter, token string) (
 }
 
 //GetLoggedInUser returns an authenticated user, or an empty string if there is none
-func (service *Service) GetLoggedInUser(request *http.Request) (username string, err error) {
+func (service *Service) GetLoggedInUser(request *http.Request, w http.ResponseWriter) (username string, err error) {
 	authenticatedSession, err := service.GetSession(request, SessionInteractive, "authenticatedsession")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	err = authenticatedSession.Save(request, w)
 	if err != nil {
 		log.Error(err)
 		return
@@ -108,7 +113,7 @@ func (service *Service) GetLoggedInUser(request *http.Request) (username string,
 //SetWebUserMiddleWare puthe the authenticated user on the context
 func (service *Service) SetWebUserMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
-		if username, err := service.GetLoggedInUser(request); err == nil {
+		if username, err := service.GetLoggedInUser(request, w); err == nil {
 			context.Set(request, "webuser", username)
 		}
 

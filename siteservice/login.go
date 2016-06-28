@@ -569,8 +569,8 @@ func (service *Service) ResetPassword(w http.ResponseWriter, request *http.Reque
 	pwdMngr := password.NewManager(request)
 	token, err := pwdMngr.FindResetToken(values.Token)
 	if err != nil {
-		log.Error("Failed to find password reset token password reset - ", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Debug("Failed to find password reset token - ", err)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 	err = pwdMngr.Save(token.Username, values.Password)

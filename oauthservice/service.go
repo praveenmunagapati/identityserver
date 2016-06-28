@@ -10,7 +10,7 @@ import (
 //SessionService declares a context where you can have a logged in user
 type SessionService interface {
 	//GetLoggedInUser returns an authenticated user, or an empty string if there is none
-	GetLoggedInUser(request *http.Request) (username string, err error)
+	GetLoggedInUser(request *http.Request, w http.ResponseWriter) (username string, err error)
 	//SetAPIAccessToken sets the api access token for this session
 	SetAPIAccessToken(w http.ResponseWriter, token string) (err error)
 }
@@ -46,7 +46,7 @@ const (
 )
 
 //GetWebuser returns the authenticated user if any or an empty string if not
-func (service *Service) GetWebuser(r *http.Request) (username string, err error) {
+func (service *Service) GetWebuser(r *http.Request, w http.ResponseWriter) (username string, err error) {
 	username, err = service.sessionService.GetLoggedInUser(r)
 	return
 }

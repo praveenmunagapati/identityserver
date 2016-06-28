@@ -60,7 +60,6 @@
                 } else if (rejection.status.toString().startsWith('5')) {
                     $window.location.href = 'error' + rejection.status;
                 }
-
                 return $q.reject(rejection);
             }
         };
