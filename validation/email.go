@@ -74,7 +74,7 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 		return
 	}
 
-	passwordreseturl := fmt.Sprintf("https://%s/login#/resetpassword?token=%s", request.Host, url.QueryEscape(token.Token))
+	passwordreseturl := fmt.Sprintf("https://%s/login#/resetpassword/%s", request.Host, url.QueryEscape(token.Token))
 	templateParameters := struct {
 		Url        string
 		Username   string
