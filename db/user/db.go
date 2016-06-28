@@ -264,3 +264,13 @@ func (m *Manager) RemoveExpireDate(username string) (err error) {
 	_, err = m.getUserCollection().UpdateAll(qry, bson.M{"$set": values})
 	return
 }
+
+func (m *Manager) GetPendingRegistrationsCount() (int, error) {
+	qry := bson.M{
+		"expire": bson.M{
+			"$nin":    []interface{}{"", bson.M{}},
+			"$exists": 1,
+		},
+	}
+	return m.getUserCollection().Find(qry).Count()
+}

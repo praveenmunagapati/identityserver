@@ -48,8 +48,8 @@
             'responseError': function (response) {
                 if (response.status === 401 || response.status === 403 || response.status === 419) {
                     $window.location.href = '/register';
-                } else if (rejection.status.toString().startsWith('5')) {
-                    $window.location.href = 'error' + rejection.status;
+                } else if (response.status.toString().startsWith('5')) {
+                    $window.location.href = 'error' + response.status;
                 }
 
                 return $q.reject(response);

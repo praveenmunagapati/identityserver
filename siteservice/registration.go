@@ -20,6 +20,7 @@ import (
 
 const (
 	mongoRegistrationCollectionName = "registrationsessions"
+	MAX_PENDING_REGISTRATION_COUNT  = 10000
 )
 
 //initLoginModels initialize models in mongo
@@ -295,6 +296,20 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 	//validate the username is not taken yet
 	userMgr := user.NewManager(request)
+
+	count, err := userMgr.GetPendingRegistrationsCount()
+	if err != nil {
+		log.Error("Failed to get pending registerations count: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	log.Debug("count", count)
+	if count >= MAX_PENDING_REGISTRATION_COUNT {
+		log.Warn("Maximum amount of pending registrations reached")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	//we now just depend on mongo unique index to avoid duplicates when concurrent requests are made
 	userExists, err := userMgr.Exists(newuser.Username)
 	if err != nil {
@@ -320,7 +335,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		// Remove account after 3 days if it still doesn't have a verified phone by then
 		duration := time.Duration(time.Hour * 24 * 3)
 		expiresAt := time.Now()
-		expiresAt.Add(duration)
+		expiresAt = expiresAt.Add(duration)
 		newuser.Expire = db.DateTime(expiresAt)
 	} else {
 		token := totp.TokenFromSecret(totpsecret)
