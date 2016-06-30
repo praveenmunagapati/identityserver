@@ -1,4 +1,4 @@
-package client
+package itsyouonline
 
 import (
 	"gopkg.in/validator.v2"
@@ -6,7 +6,7 @@ import (
 
 // PublicKey of a user
 type PublicKey struct {
-	Label     string `json:"label" validate:"nonzero"`
+	Label     Label  `json:"label" validate:"nonzero"`
 	Publickey string `json:"publickey" validate:"nonzero"`
 }
 

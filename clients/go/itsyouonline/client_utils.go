@@ -1,4 +1,4 @@
-package client
+package itsyouonline
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ func encodeBody(data interface{}) (io.Reader, error) {
 	return bytes.NewReader(b), nil
 }
 
-func doReqWithBody(method, urlStr string, data interface{}, client http.Client, headers map[string]interface{}, qsParam string) (*http.Response, error) {
+func (c Itsyouonline) doReqWithBody(method, urlStr string, data interface{}, headers map[string]interface{}, qsParam string) (*http.Response, error) {
 	body, err := encodeBody(data)
 	if err != nil {
 		return nil, err
@@ -29,11 +29,14 @@ func doReqWithBody(method, urlStr string, data interface{}, client http.Client, 
 		return nil, err
 	}
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
 
-	return client.Do(req)
+	return c.client.Do(req)
 }
 
 func buildQueryString(data map[string]interface{}) string {

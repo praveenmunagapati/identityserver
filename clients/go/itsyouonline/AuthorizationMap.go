@@ -1,4 +1,4 @@
-package client
+package itsyouonline
 
 import (
 	"gopkg.in/validator.v2"
@@ -6,8 +6,8 @@ import (
 
 // Mapping between requested labels and real labels
 type AuthorizationMap struct {
-	Reallabel      string `json:"reallabel" validate:"nonzero"`
-	Requestedlabel string `json:"requestedlabel" validate:"nonzero"`
+	Reallabel      Label `json:"reallabel" validate:"nonzero"`
+	Requestedlabel Label `json:"requestedlabel" validate:"nonzero"`
 }
 
 func (s AuthorizationMap) Validate() error {

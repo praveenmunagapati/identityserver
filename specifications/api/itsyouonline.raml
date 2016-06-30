@@ -1,7 +1,7 @@
 #%RAML 1.0
 title: Itsyouonline
 version: 0.1
-baseUri: /
+baseUri: https://itsyou.online
 securitySchemes:
   oauth_2_0: !include securitySchemes/oauth_2_0.raml
 
@@ -950,22 +950,20 @@ securedBy: [ oauth_2_0 ]
                 type: Authorization
 
   /{username}/organizations:
-      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-      get:
-        displayName: GetUserOrganizations
-        description: Get the list organizations a user is owner or member of
-        responses:
-          200:
-            body:
-              application/json:
-                properties:
-                  owner: string[]
-                  member: string[]
-
+    securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+    get:
+      displayName: GetUserOrganizations
+      description: Get the list organizations a user is owner or member of
+      responses:
+        200:
+          body:
+            application/json:
+              properties:
+                owner: string[]
+                member: string[]
     /{globalid}:
       /leave:
         delete:
-          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
           displayName: LeaveOrganization
           description: Removes the user from an organization
           responses:
@@ -991,12 +989,10 @@ securedBy: [ oauth_2_0 ]
                 application/json:
                   type: JoinOrganizationInvitation
         delete:
-          description: |
-            Reject membership invitation in an organization.
+          description: Reject membership invitation in an organization.
           responses:
             204:
-              description: |
-                Succesfully rejected invitation.
+              description: Succesfully rejected invitation.
 
 /organizations:
   post:
