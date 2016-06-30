@@ -319,27 +319,13 @@
                 $scope.update = update;
                 $scope.cancel = cancel;
                 $scope.remove = remove;
-                $scope.requested = {};
-                var originalAuthorization = JSON.parse(JSON.stringify(authorization));
-                angular.forEach(authorization, function (value, key) {
-                    if (Array.isArray(value)) {
-                        $scope.requested[key] = {};
-                        angular.forEach(value, function (v, i) {
-                            if (typeof v !== 'object') {
-                                $scope.requested[key][v] = true;
-                            } else {
-                                if (!Array.isArray($scope.requested[key])) {
-                                    $scope.requested[key] = [];
-                                }
-                                $scope.requested[key].push(v.requestedlabel);
-                            }
-                        });
-                    }
-                    else {
-                        $scope.requested[key] = value;
-
-                    }
+                $scope.requested = {
+                    organizations: {}
+                };
+                authorization.organizations.map(function (org) {
+                    $scope.requested.organizations[org] = true;
                 });
+                var originalAuthorization = JSON.parse(JSON.stringify(authorization));
                 $scope.authorizations = authorization;
 
                 function update(authorization) {

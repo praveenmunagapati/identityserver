@@ -430,7 +430,7 @@
                 var parents = splitted.slice(0, i + 1);
                 children.push({
                     name: splitted[i],
-                    url: '#/organizations/' + parents.join('.')
+                    url: '#/organization/' + parents.join('.')
                 });
             }
         }

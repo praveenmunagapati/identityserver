@@ -2,8 +2,8 @@
     <form name="dataform" autocomplete="off">
         <md-toolbar>
             <div class="md-toolbar-tools">
-                <h2 ng-if="!originalLabel">Register a digital wallet address</h2>
-                <h2 ng-if="originalLabel">Digital wallet address details</h2>
+                <h2 ng-if="::!originalLabel">Register a digital wallet address</h2>
+                <h2 ng-if="::originalLabel">Digital wallet address details</h2>
                 <span flex></span>
                 <md-button class="md-icon-button" ng-click="cancel()">
                     <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
@@ -15,9 +15,11 @@
                 <div layout="row">
                     <md-input-container>
                         <label>Label</label>
-                        <input ng-model="data.label" ng-minlength="2" required type="text" autofocus name="label">
+                        <input ng-model="data.label" ng-minlength="2" required type="text" autofocus name="label"
+                               md-maxlength="50">
                         <div ng-messages="dataform.label.$error">
                             <div ng-message="minlength">The label should be at least 2 characters long</div>
+                            <div ng-message="md-maxlength">The label cannot be longer than 50 characters</div>
                         </div>
                         <div ng-messages="validationerrors">
                             <div ng-message="duplicate">This label has already been used</div>
@@ -36,19 +38,19 @@
                 <md-datepicker ng-model="data.expiry" md-placeholder="Expiry date" required></md-datepicker>
             </div>
         </md-dialog-content>
-        <md-dialog-actions layout="row">
-            <md-button class="md-warn" ng-click="remove(originalLabel)" ng-if="originalLabel">
+        <md-dialog-actions layout="row" layout-align="space-between center">
+            <md-button class="md-warn" ng-click="remove(originalLabel)" ng-if="::originalLabel">
                 Delete
             </md-button>
             <span flex></span>
             <md-button ng-click="cancel()">
                 Cancel
             </md-button>
-            <md-button class="md-primary" type="submit" ng-click="create(data)" style="margin-right:20px;"
-                       ng-if="!originalLabel" ng-disabled="!dataform.$valid">
+            <md-button class="md-primary" type="submit" ng-click="create(data)" ng-if="::!originalLabel"
+                       ng-disabled="!dataform.$valid">
                 Register
             </md-button>
-            <md-button class="md-primary" type="submit" ng-click="update(originalLabel, data)" ng-if="originalLabel"
+            <md-button class="md-primary" type="submit" ng-click="update(originalLabel, data)" ng-if="::originalLabel"
                        ng-disabled="!dataform.$valid">
                 Save
             </md-button>

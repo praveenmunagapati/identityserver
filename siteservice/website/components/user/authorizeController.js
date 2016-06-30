@@ -32,15 +32,10 @@
         vm.showDigitalWalletAddressDialog = digitalWalletAddress;
         var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
         $scope.requested = {
-            organizations: {},
-            facebook: false,
-            github: false
-        };
-        $scope.authorizations = {
             organizations: {}
         };
+        $scope.authorizations = {};
         angular.forEach(properties, function (prop) {
-            $scope.requested[prop] = [];
             $scope.authorizations[prop] = [];
         });
 
@@ -79,6 +74,19 @@
 
         function parseScopes() {
             if (vm.requestedScopes) {
+                var listAuthorizations = [{
+                    scope: 'address',
+                    prop: 'addresses'
+                }, {
+                    scope: 'email',
+                    prop: 'emailaddresses'
+                }, {
+                    scope: 'phone',
+                    prop: 'phonenumbers'
+                }, {
+                    scope: 'bankaccount',
+                    prop: 'bankaccounts'
+                }];
                 var scopes = vm.requestedScopes.split(',');
                 // Filter duplicated scopes
                 scopes = scopes.filter(function (item, pos, self) {
@@ -86,58 +94,39 @@
                 });
                 angular.forEach(scopes, function (scope, i) {
                     var splitPermission = scope.split(':');
+                    if (!splitPermission.length > 1) {
+                        return;
+                    }
                     // Empty label -> 'main'
                     var permissionLabel = splitPermission.length > 2 && splitPermission[2] ? splitPermission[2] : 'main';
-                    if (scope === 'user:name') {
-                        $scope.requested.name = true;
+                    var auth = {
+                        requestedlabel: permissionLabel,
+                        reallabel: ''
+                    };
+                    var listScope = listAuthorizations.filter(function (l) {
+                        return l.scope === splitPermission[1];
+                    })[0];
+                    if (listScope) {
+                        auth.reallabel = vm.user[listScope.prop].length ? vm.user[listScope.prop][0].label : '';
+                        $scope.authorizations[listScope.prop].push(auth);
+                    }
+                    else if (scope === 'user:name') {
                         $scope.authorizations.name = true;
                     }
-                    if (scope.startsWith('user:memberof:')) {
+                    else if (scope.startsWith('user:memberof:')) {
                         $scope.requested.organizations[permissionLabel] = true;
                     }
-                    else if (scope.startsWith('user:address:')) {
-                        $scope.requested.addresses.push(permissionLabel);
-                    }
-                    else if (scope.startsWith('user:email:')) {
-                        $scope.requested.emailaddresses.push(permissionLabel);
-                    }
-                    else if (scope.startsWith('user:phone:')) {
-                        $scope.requested.phonenumbers.push(permissionLabel);
-                    }
-                    else if (scope.startsWith('user:bankaccount:')) {
-                        $scope.requested.bankaccounts.push(permissionLabel);
-                    }
                     else if (scope.startsWith('user:digitalwalletaddress:')) {
-                        $scope.requested.digitalwallet.push({
-                            label: permissionLabel,
-                            currency: splitPermission.length === 4 ? splitPermission[3] : ''
-                        });
+                        auth.reallabel = vm.user.digitalwallet.length ? vm.user.digitalwallet[0].label : '';
+                        auth.currency = splitPermission.length === 4 ? splitPermission[3] : '';
+                        $scope.authorizations.digitalwallet.push(auth);
                     }
                     else if (scope === 'user:github') {
-                        $scope.requested.github = true;
                         $scope.authorizations.github = true;
                     }
                     else if (scope === 'user:facebook') {
-                        $scope.requested.facebook = true;
                         $scope.authorizations.facebook = true;
                     }
-                });
-                angular.forEach($scope.requested, function (value, property) {
-                    if (properties.indexOf(property) === -1) {
-                        return;
-                    }
-                    // loop over requests
-                    angular.forEach(value, function (requestedLabel) {
-                        // select first by default, None if the user did not configure this property yet
-                        if (typeof requestedLabel === 'object') {
-                            requestedLabel = requestedLabel.label;
-                        }
-                        var authorization = {
-                            requestedlabel: requestedLabel,
-                            reallabel: vm.user[property].length ? vm.user[property][0].label : ''
-                        };
-                        $scope.authorizations[property].push(authorization);
-                    });
                 });
             }
         }
@@ -160,20 +149,20 @@
                 );
         }
 
-        function addEmail(event, label) {
-            selectDefault(UserDialogService.emailDetail, event, label, 'emailaddresses');
+        function addEmail(event, auth) {
+            selectDefault(UserDialogService.emailDetail, event, auth, 'emailaddresses');
         }
 
-        function addPhone(event, label) {
-            selectDefault(UserDialogService.phonenumberDetail, event, label, 'phonenumbers');
+        function addPhone(event, auth) {
+            selectDefault(UserDialogService.phonenumberDetail, event, auth, 'phonenumbers');
         }
 
-        function addAddress(event, label) {
-            selectDefault(UserDialogService.addressDetail, event, label, 'addresses');
+        function addAddress(event, auth) {
+            selectDefault(UserDialogService.addressDetail, event, auth, 'addresses');
         }
 
-        function bank(event, label) {
-            selectDefault(UserDialogService.bankAccount, event, label, 'bankaccounts');
+        function bank(event, auth) {
+            selectDefault(UserDialogService.bankAccount, event, auth, 'bankaccounts');
         }
 
         function submit() {
@@ -190,17 +179,17 @@
                 });
         }
 
-        function digitalWalletAddress(event, label) {
-            selectDefault(UserDialogService.digitalWalletAddressDetail, event, label, 'digitalwallet');
+        function digitalWalletAddress(event, auth) {
+            selectDefault(UserDialogService.digitalWalletAddressDetail, event, auth, 'digitalwallet');
         }
 
-        function selectDefault(fx, event, label, property) {
+        function selectDefault(fx, event, auth, property) {
             fx(event).then(function (data) {
-                $scope.getAuthorizationByLabel(property, label).reallabel = data.data.label;
+                auth.reallabel = data.data.label;
 
             }, function () {
                 // Select first possible value, else 'None'
-                $scope.getAuthorizationByLabel(property, label).reallabel = vm.user[property][0] ? vm.user[property][0].label : '';
+                auth.reallabel = vm.user[property][0] ? vm.user[property][0].label : '';
             });
         }
     }

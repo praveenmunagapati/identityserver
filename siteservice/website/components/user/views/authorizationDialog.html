@@ -1,8 +1,8 @@
-<md-dialog aria-label="Authorization granted to {{ ::requested.grantedTo }}">
+<md-dialog aria-label="Authorization granted to {{ ::authorization.grantedTo }}">
     <form name="dataform">
         <md-toolbar>
             <div class="md-toolbar-tools">
-                <h2>Authorization granted to <span ng-bind="requested.grantedTo"></span></h2>
+                <h2>Authorization granted to <span ng-bind="::authorization.grantedTo"></span></h2>
                 <span flex></span>
                 <md-button class="md-icon-button" ng-click="cancel()">
                     <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>

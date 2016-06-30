@@ -32,6 +32,16 @@ types:
         requestedlabel: Label
         reallabel: Label
 
+  DigitalWalletAuthorization:
+    description: Mapping between requested labels and real label. Also has a 'currency' property
+    properties:
+      requestedlabel: Label
+      reallabel: Label
+      currency:
+        type: string
+        minLength: 1
+        maxLength: 15
+
   Authorization:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
     properties:

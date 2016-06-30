@@ -1,9 +1,9 @@
 <div flex layout="row">
     <div flex></div>
     <div flex-gt-sm="80" flex="100">
-        <div>
+        <div class="breadcrumb-container">
             <p>You</p>
-            <h1 ng-bind="vm.username"></h1>
+            <h1 ng-bind="::vm.username"></h1>
         </div>
         <md-card>
             <md-card-content>
@@ -27,7 +27,10 @@
                                                 <md-list-item class="md-2-line"
                                                               ng-click="vm.showEditNameDialog($event)">
                                                     <div class="md-list-item-text">
-                                                        <h4>{{ vm.user.firstname }} {{ vm.user.lastname }}</h4>
+                                                        <h4>
+                                                            <span ng-bind="vm.user.firstname"></span>
+                                                            <span ng-bind="vm.user.lastname"></span>
+                                                        </h4>
                                                         <p>Full name</p>
                                                     </div>
                                                 </md-list-item>
@@ -52,10 +55,11 @@
                                                 <div ng-repeat="email in vm.user.emailaddresses  track by email.label"
                                                      layout="row">
                                                     <md-list-item class="md-2-line" flex="60"
-                                                                  ng-click="vm.showEmailDetailDialog($event, email)">
+                                                                  ng-click="vm.showEmailDetailDialog($event, email)"
+                                                                  aria-label="Email address">
                                                         <div class="md-list-item-text">
-                                                            <h4>{{ email.emailaddress }}</h4>
-                                                            <p>{{ email.label }}</p>
+                                                            <h4 ng-bind=email.emailaddress></h4>
+                                                            <p ng-bind="email.label"></p>
                                                         </div>
                                                     </md-list-item>
                                                     <div flex></div>
@@ -182,16 +186,20 @@
                                         </div>
                                         <div flex="60" flex-gt-xs="65">
                                             <md-list>
-                                                <md-list-item class="md-2-line"
+                                                <md-list-item class="md-3-line"
                                                               ng-repeat="address in vm.user.addresses track by address.label"
-                                                              ng-click="vm.showAddressDetailDialog($event, address)">
+                                                              ng-click="vm.showAddressDetailDialog($event, address)"
+                                                              aria-label="address {{ ::address.label }}">
                                                     <div class="md-list-item-text">
+                                                        <h3>
+                                                            <span ng-bind="address.street"></span>
+                                                            <span ng-bind="address.nr"></span>
+                                                        </h3>
                                                         <h4>
-                                                            {{ address.nr }} {{ address.street }},
-                                                            {{ address.postalcode }} {{ address.city }},
-                                                            {{ address.country }}
+                                                            <span ng-bind="address.postalcode"></span>
+                                                            <span ng-bind="address.city"></span>
                                                         </h4>
-                                                        <p>{{ address.label }}</p>
+                                                        <p ng-bind="address.label"></p>
                                                     </div>
                                                 </md-list-item>
                                             </md-list>
@@ -217,10 +225,12 @@
                                                               ng-repeat="bank in vm.user.bankaccounts track by bank.label"
                                                               ng-click="vm.showBankAccountDialog($event, bank)">
                                                     <div class="md-list-item-text">
-                                                        <h4 ng-hide="bank.iban === ''"><span>IBAN: </span> {{
-                                                            bank.iban }}</h4>
-                                                        <h4 ng-hide="bank.bic === ''"><span>BIC: </span> {{
-                                                            bank.bic }}</h4>
+                                                        <h4 ng-hide="bank.iban === ''">IBAN:
+                                                            <span ng-bind="bank.iban"></span>
+                                                        </h4>
+                                                        <h4 ng-hide="bank.bic === ''">BIC:
+                                                            <span ng-bind="bank.bic"></span>
+                                                        </h4>
                                                         <h4 ng-bind="bank.country"></h4>
                                                         <p ng-bind="bank.label"></p>
                                                     </div>
@@ -292,7 +302,10 @@
                                         <md-list-item
                                                 ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}"
                                                 class="noright">
-                                            <p><i class="fa fa-users"></i> {{ invitation.organization }}</p>
+                                            <p>
+                                                <i class="fa fa-users"></i>
+                                                <span ng-bind="invitation.organization"></span>
+                                            </p>
                                             <md-checkbox class="md-secondary" ng-model="invitation.selected"
                                                          aria-label="Select invitation">
                                             </md-checkbox>
@@ -317,8 +330,9 @@
                                         <md-subheader class="md-no-sticky">Security notifications</md-subheader>
                                         <md-list-item
                                                 class="secondary-button-padding list-item-secondary-button-padding"
-                                                ng-repeat="notification in vm.notifications.security track by notification.subject">
-                                            <p>{{ ::notification.msg }}</p>
+                                                ng-repeat="notification in vm.notifications.security track by notification.subject"
+                                                aria-label="Security notice">
+                                            <p ng-bind="::notification.msg"></p>
                                             <md-button class="md-secondary md-raised"
                                                        ng-click="vm.selectedTabIndex = notification.tabIndex">
                                                 Resolve
@@ -347,8 +361,9 @@
                                         <md-subheader>Owner</md-subheader>
                                         <md-list-item
                                                 ng-repeat="organization in vm.owner" class="noright"
-                                                ng-href="#/organization/{{ ::organization }}">
-                                            <p> {{ organization }}</p>
+                                                ng-href="#/organization/{{ ::organization }}"
+                                                aria-label="Organization">
+                                            <p ng-bind="organization"></p>
                                         </md-list-item>
                                     </md-list>
                                 </div>
@@ -409,7 +424,7 @@
                                             <md-list>
                                                 <md-list-item ng-repeat="APIKey in vm.APIKeys"
                                                               ng-click="vm.showAPIKeyDialog($event, APIKey)"
-                                                              aria-label="{{ APIKey.label }}">
+                                                              aria-label="API key">
                                                     <div class="md-list-item-text">
                                                         <h4 ng-bind="APIKey.label"></h4>
                                                     </div>

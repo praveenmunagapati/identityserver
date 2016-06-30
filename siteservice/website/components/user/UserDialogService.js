@@ -563,7 +563,6 @@
 
             function resetValidation() {
                 $scope.form.name.$setValidity('duplicate', true);
-                $scope.form.name.$setValidity('pattern', true);
             }
         }
     }

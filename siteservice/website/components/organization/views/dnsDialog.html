@@ -12,11 +12,13 @@
         <md-dialog-content>
             <div class="md-dialog-content" layout="column">
                 <md-input-container>
-                    <label>Label</label>
+                    <label>Domain name</label>
                     <input ng-model="newDnsName" ng-minlength="4" required type="text" md-autofocus="true"
-                           name="newDnsName">
+                           name="newDnsName"
+                           ng-pattern="/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/i">
                     <div ng-messages="form.newDnsName.$error">
                         <div ng-message="minlength">At least 4 characters are required</div>
+                        <div ng-message="pattern">Invalid domain name</div>
                     </div>
                     <div ng-messages="validationerrors" md-auto-hide="false">
                         <div ng-message="duplicate">This domain name is already added to this organization</div>
@@ -32,11 +34,13 @@
             <md-button ng-click="cancel()">
                 Cancel
             </md-button>
-            <md-button class="md-primary" type="submit" ng-click="create(newDnsName)" ng-if="!dnsName">
+            <md-button class="md-primary" type="submit" ng-click="create(newDnsName)" ng-if="!dnsName"
+                       ng-disabled="!form.$valid">
                 Create
             </md-button>
             <md-button class="md-primary" type="submit" ng-click="update(dnsName, newDnsName)"
-                       ng-if="dnsName"> Save
+                       ng-if="dnsName" ng-disabled="!form.$valid">
+                Save
             </md-button>
         </md-dialog-actions>
     </form>

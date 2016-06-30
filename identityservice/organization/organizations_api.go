@@ -429,7 +429,7 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 	u, err := searchUser(r, s.SearchString)
 	if err != nil {
 		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 	for _, membername := range org.Owners {

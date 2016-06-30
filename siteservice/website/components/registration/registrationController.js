@@ -45,7 +45,7 @@
                             var err = response.data.error;
                             switch (err) {
                                 case 'invalid_phonenumber':
-                                    $scope.signupform.$setValidity(err, false);
+                                    $scope.signupform.phonenumber.$setValidity(err, false);
                                     break;
                                 case 'invalid_totpcode':
                                     $scope.signupform.totpcode.$setValidity(err, false);

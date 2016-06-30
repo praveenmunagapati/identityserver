@@ -1,17 +1,16 @@
 <md-dialog>
-  <form>
-    <md-toolbar>
-        <div class="md-toolbar-tools">
-          <h2>Invite someone</h2>
-          <span flex></span>
-          <md-button class="md-icon-button" ng-click="cancel()">
-            <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
-          </md-button>
-        </div>
-    </md-toolbar>
-    <md-dialog-content>
-        <div class="md-dialog-content" layout="column">
-            <div>
+    <form>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Invite someone</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="cancel()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
                 <md-input-container>
                     <label>Role</label>
                     <md-select ng-model="role">
@@ -19,9 +18,8 @@
                         <md-option value="member">Member</md-option>
                     </md-select>
                 </md-input-container>
-                <span flex="5"></span>
                 <md-input-container flex>
-                    <label>Username, email or phonenumber</label>
+                    <label>Username, email or phone number</label>
                     <input ng-model="usertoinvite" minlength="2" required type="text" md-autofocus="true">
                     <div ng-messages="validationerrors" md-auto-hide="false">
                         <div ng-message="duplicate">This user has already joined the organization</div>
@@ -30,21 +28,20 @@
                         </div>
                     </div>
                 </md-input-container>
+                <div>
+                    <p>A request to join this organization will be sent.</p>
+                    <p>The user needs to accept this invitation before <br/> actually becoming part of this
+                        organization.</p>
+                </div>
             </div>
-            <div>
-                <p>A request to join this organization will be sent.</p>
-                <p>The user needs to accept this invitation before actually becoming part of this organization.</p>
-            </div>
-        </div>
-    </md-dialog-content>
-    <md-dialog-actions layout="row">
-        <span flex></span>
-        <md-button ng-click="cancel()">
-        Cancel
-        </md-button>
-        <md-button class="md-primary" type="submit" ng-click="invite(usertoinvite,role)" style="margin-right:20px;">
-        Invite
-        </md-button>
-    </md-dialog-actions>
-  </form>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="space-between center">
+            <md-button ng-click="cancel()">
+                Cancel
+            </md-button>
+            <md-button class="md-primary" type="submit" ng-click="invite(usertoinvite,role)">
+                Invite
+            </md-button>
+        </md-dialog-actions>
+    </form>
 </md-dialog>
