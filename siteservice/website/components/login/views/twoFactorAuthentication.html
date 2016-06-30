@@ -11,19 +11,19 @@
             <div layout="column">
                 <md-input-container ng-show="vm.step === 'choice'">
                     <label>Authentication method</label>
-                    <md-select ng-model="vm.selectedTwoFaMethod" required>
-                        <md-option ng-repeat="(method, label) in vm.possibleTwoFaMethods" value="{{ ::method }}">
-                            {{::label}}
+                    <md-select ng-model="vm.selectedTwoFaMethod">
+                        <md-option ng-repeat="(method, label) in vm.possibleTwoFaMethods" value="{{ ::method }}"
+                                   ng-bind="::label">
                         </md-option>
                     </md-select>
                 </md-input-container>
                 <md-input-container ng-show="vm.step === 'code'">
                     <label for="code">Code</label>
-                    <input type="text" md-maxlength="6" maxlength="6" ng-minlength="6" required id="code"
-                           name="code"
-                           ng-model="vm.code" autocomplete="off" ng-change="vm.resetValidation()">
+                    <input type="text" md-maxlength="6" ng-minlength="6" required id="code"
+                           name="code" ng-model="vm.code" autocomplete="off" ng-change="vm.resetValidation()">
                     <div ng-messages="twoFaForm.code.$error" md-auto-hide="false">
                         <div ng-message="invalid_code">Invalid code</div>
+                        <div ng-message="md-maxlength">The cost must be 6 characters long</div>
                     </div>
                 </md-input-container>
             </div>

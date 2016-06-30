@@ -22,6 +22,7 @@ import (
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db/user"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
+	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/tools"
 	"github.com/itsyouonline/identityserver/validation"
 	"gopkg.in/mgo.v2/bson"
@@ -115,20 +116,22 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	username := strings.ToLower(values.Login)
+	login := strings.ToLower(values.Login)
 
-	//validate the username exists
-	var userexists bool
-	userMgr := user.NewManager(request)
-
-	if userexists, err = userMgr.Exists(username); err != nil {
+	u, err := organization.SearchUser(request, login)
+	if err == mgo.ErrNotFound {
+		w.WriteHeader(422)
+		return
+	} else if err != nil {
+		log.Error("Failed to search for user: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	userexists := err != mgo.ErrNotFound
 
 	var validpassword bool
 	passwdMgr := password.NewManager(request)
-	if validpassword, err = passwdMgr.Validate(username, values.Password); err != nil {
+	if validpassword, err = passwdMgr.Validate(u.Username, values.Password); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -144,7 +147,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	loginSession.Values["username"] = username
+	loginSession.Values["username"] = u.Username
 	sessions.Save(request, w)
 	w.WriteHeader(http.StatusNoContent)
 }

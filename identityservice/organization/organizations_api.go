@@ -280,7 +280,7 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 	}
 
 	// Check if user exists
-	u, err := searchUser(r, s.SearchString)
+	u, err := SearchUser(r, s.SearchString)
 	if err != nil {
 		if err != mgo.ErrNotFound {
 			log.Error(err)
@@ -426,7 +426,7 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	u, err := searchUser(r, s.SearchString)
+	u, err := SearchUser(r, s.SearchString)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -868,7 +868,7 @@ func handleServerError(responseWriter http.ResponseWriter, actionText string, er
 	return false
 }
 
-func searchUser(r *http.Request, searchString string) (usr *user.User, err1 error) {
+func SearchUser(r *http.Request, searchString string) (usr *user.User, err1 error) {
 	userMgr := user.NewManager(r)
 	usr, err1 = userMgr.GetByName(searchString)
 	if err1 == mgo.ErrNotFound {
