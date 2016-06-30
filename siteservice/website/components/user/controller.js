@@ -269,6 +269,9 @@
                         .accept(invitation)
                         .then(function () {
                             invitation.status = 'accepted';
+                            if (vm[invitation.role]) {
+                                vm[invitation.role].push(invitation.organization);
+                            }
                             updatePendingNotificationsCount();
                         });
                 });

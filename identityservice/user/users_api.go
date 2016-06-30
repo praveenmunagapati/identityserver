@@ -14,12 +14,14 @@ import (
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
+	organizationDb "github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/validation"
+	"gopkg.in/mgo.v2"
 )
 
 type UsersAPI struct {
@@ -1552,6 +1554,31 @@ func (api UsersAPI) RemoveTOTP(w http.ResponseWriter, r *http.Request) {
 	}
 	totpMgr := totp.NewManager(r)
 	err = totpMgr.Remove(username)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// LeaveOrganization is the handler for DELETE /users/{username}/organizations/{globalid}/leave
+// Removes the user from an organization
+func (api UsersAPI) LeaveOrganization(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	organizationGlobalid := mux.Vars(r)["globalid"]
+	orgMgr := organizationDb.NewManager(r)
+	err := orgMgr.RemoveUser(organizationGlobalid, username)
+	if err == mgo.ErrNotFound {
+		writeErrorResponse(w, http.StatusNotFound, "user_not_found")
+		return
+	} else if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	userMgr := user.NewManager(r)
+	err = userMgr.DeleteAuthorization(username, organizationGlobalid)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

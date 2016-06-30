@@ -393,6 +393,7 @@
          * @param message
          * @param title
          * @param closeText
+         * @param event optional click event
          * @returns promise
          */
         function showSimpleDialog(message, title, closeText, event) {

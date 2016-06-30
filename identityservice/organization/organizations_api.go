@@ -377,9 +377,9 @@ func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, 
 
 }
 
-// Remove a member from organization
+// RemoveOrganizationMember Remove a member from organization
 // It is handler for DELETE /organizations/{globalid}/members/{username}
-func (api OrganizationsAPI) globalidmembersusernameDelete(w http.ResponseWriter, r *http.Request) {
+func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	username := mux.Vars(r)["username"]
 
@@ -460,9 +460,9 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(orgReq)
 }
 
-// Remove a member from organization
-// It is handler for DELETE /organizations/{globalid}/members/{username}
-func (api OrganizationsAPI) globalidownersusernameDelete(w http.ResponseWriter, r *http.Request) {
+// RemoveOrganizationOwner Remove a member from organization
+// It is handler for DELETE /organizations/{globalid}/owners/{username}
+func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	username := mux.Vars(r)["username"]
 

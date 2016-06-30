@@ -200,7 +200,7 @@ func (m *Manager) Remove(globalid string) error {
 	return m.collection.Remove(bson.M{"globalid": globalid})
 }
 
-// Remove removes the organization
+// UpdateMembership Updates a user his role in an organization
 func (m *Manager) UpdateMembership(globalid string, username string, oldrole string, newrole string) error {
 	qry := bson.M{"globalid": globalid}
 	pull := bson.M{
@@ -220,4 +220,11 @@ func (m *Manager) UpdateMembership(globalid string, username string, oldrole str
 func (m *Manager) CountByUser(username string) (int, error) {
 	qry := bson.M{"owners": username}
 	return m.collection.Find(qry).Count()
+}
+
+// RemoveUser Removes a user from an organization
+func (m *Manager) RemoveUser(globalId string, username string) error {
+	qry := bson.M{"globalid": globalId}
+	update := bson.M{"$pull": bson.M{"owners": username, "members": username}}
+	return m.collection.Update(qry, update)
 }

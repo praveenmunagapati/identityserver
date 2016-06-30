@@ -106,7 +106,7 @@ type UsersInterface interface { // Post is the handler for POST /users
 	// Remove the authorization for an organization, the granted organization will no longer
 	// have access the user's information.
 	DeleteAuthorization(http.ResponseWriter, *http.Request)
-	// Add API Key
+	// AddAPIKey Add an API Key
 	AddAPIKey(http.ResponseWriter, *http.Request)
 	GetAPIKey(http.ResponseWriter, *http.Request)
 	UpdateAPIKey(http.ResponseWriter, *http.Request)
@@ -117,15 +117,17 @@ type UsersInterface interface { // Post is the handler for POST /users
 	GetTwoFAMethods(http.ResponseWriter, *http.Request)
 	// GetTOTPSecret is the handler for GET /users/{username}/totp
 	GetTOTPSecret(http.ResponseWriter, *http.Request)
-	// GetTOTPSecret is the handler for POST /users/{username}/totp
+	// SetupTOTP is the handler for POST /users/{username}/totp
 	SetupTOTP(http.ResponseWriter, *http.Request)
-	// GetTOTPSecret is the handler for DELETE /users/{username}/totp
+	// RemoveTOTP is the handler for DELETE /users/{username}/totp
 	RemoveTOTP(http.ResponseWriter, *http.Request)
 	GetDigitalWallet(http.ResponseWriter, *http.Request)
 	RegisterNewDigitalAssetAddress(http.ResponseWriter, *http.Request)
 	GetDigitalAssetAddress(http.ResponseWriter, *http.Request)
 	UpdateDigitalAssetAddress(http.ResponseWriter, *http.Request)
 	DeleteDigitalAssetAddress(http.ResponseWriter, *http.Request)
+	// LeaveOrganization is the handler for DELETE /users/{username}/organizations/{globalid}/leave
+	LeaveOrganization(http.ResponseWriter, *http.Request)
 }
 
 // UsersInterfaceRoutes is routing for /users root endpoint
@@ -181,4 +183,5 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/totp", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetTOTPSecret))).Methods("GET")
 	r.Handle("/users/{username}/totp", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.SetupTOTP))).Methods("POST")
 	r.Handle("/users/{username}/totp", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RemoveTOTP))).Methods("DELETE")
+	r.Handle("/users/{username}/organizations/{globalid}/leave", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.LeaveOrganization))).Methods("DELETE")
 }

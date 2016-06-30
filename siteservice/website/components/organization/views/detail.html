@@ -25,10 +25,10 @@
                                         <div class="md-list-item-text">
                                             <p ng-bind="::owner"></p>
                                         </div>
-                                        <md-button class="md-secondary md-primary" ng-if="::vm.canEditRole(owner)"
-                                                   ng-click="vm.changeRole($event, owner)">
-                                            Change role
-                                        </md-button>
+                                        <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
+                                                 aria-label="Edit owner" ng-if="::vm.canEditRole(owner)"
+                                                 ng-click="vm.editMember($event, owner)">
+                                        </md-icon>
                                     </md-list-item>
                                 </md-list>
                                 <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
@@ -38,10 +38,10 @@
                                         <div class="md-list-item-text">
                                             <p ng-bind="::member"></p>
                                         </div>
-                                        <md-button class="md-secondary md-primary" ng-if="::vm.canEditRole(member)"
-                                                   ng-click="vm.changeRole($event, member)">
-                                            Change role
-                                        </md-button>
+                                        <md-icon md-font-icon="fa-pencil" aria-label="Edit member"
+                                                 class="fa md-secondary md-primary" ng-if="::vm.canEditRole(member)"
+                                                 ng-click="vm.editMember($event, member)">
+                                        </md-icon>
                                     </md-list-item>
                                 </md-list>
                                 <md-list ng-if="vm.hasEditPermission && vm.invitations.length > 0">
@@ -55,7 +55,7 @@
                                     </md-list-item>
                                 </md-list>
                                 <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)"
-                                           ng-if="vm.hasEditPermission">
+                                           ng-if="::vm.hasEditPermission">
                                     <i class="fa fa-user-plus"></i> Invite someone
                                     <md-tooltip ng-cloak>Invite someone to join <span
                                             ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span>
@@ -85,66 +85,82 @@
                             </div>
                         </md-tab-body>
                     </md-tab>
-                    <md-tab flex="100" ng-if="vm.hasEditPermission" md-on-select="vm.fetchAPIKeyLabels()">
+                    <md-tab flex="100" md-on-select="vm.fetchAPIKeyLabels()">
                         <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
                         <md-tab-body flex="100">
-                            <section>
-                                <md-subheader class="md-no-sticky">Domain names</md-subheader>
-                                <md-list class="md-dense">
-                                    <md-list-item class="md-1-line" ng-repeat="dns in vm.organization.dns"
-                                                  ng-click="vm.showDNSDialog($event, dns)" aria-label="Dns">
-                                        <div class="md-list-item-text" layout="column">
-                                            <h3 ng-bind="dns"></h3>
+                            <div ng-if="::vm.hasEditPermission">
+                                <section>
+                                    <md-subheader class="md-no-sticky">Domain names</md-subheader>
+                                    <md-list class="md-dense">
+                                        <md-list-item class="md-1-line" ng-repeat="dns in vm.organization.dns"
+                                                      ng-click="vm.showDNSDialog($event, dns)" aria-label="Dns">
+                                            <div class="md-list-item-text" layout="column">
+                                                <h3 ng-bind="dns"></h3>
+                                            </div>
+                                        </md-list-item>
+                                    </md-list>
+                                    <md-button class="md-primary" ng-click="vm.showDNSDialog($event)">
+                                        <i class="fa fa-plus"></i> Add domain name
+                                        <md-tooltip>Add a domain name owned by <span
+                                                ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span>
+                                        </md-tooltip>
+                                    </md-button>
+                                </section>
+                                <md-divider></md-divider>
+                                <section>
+                                    <md-subheader class="md-no-sticky">
+                                        <div layout="row">
+                                            <p>
+                                                API Access keys
+                                                <md-tooltip>API Access keys are needed to access the Itsyou.online api
+                                                    using
+                                                    oauth2
+                                                </md-tooltip>
+                                            </p>
                                         </div>
-                                    </md-list-item>
-                                </md-list>
-                                <md-button class="md-primary" ng-click="vm.showDNSDialog($event)">
-                                    <i class="fa fa-plus"></i> Add domain name
-                                    <md-tooltip>Add a domain name owned by <span
-                                            ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span>
-                                    </md-tooltip>
-                                </md-button>
-                            </section>
-                            <md-divider></md-divider>
-                            <section>
-                                <md-subheader class="md-no-sticky">
-                                    <div layout="row">
-                                        <p>
-                                            API Access keys
-                                            <md-tooltip>API Access keys are needed to access the Itsyou.online api using
-                                                oauth2
-                                            </md-tooltip>
+                                    </md-subheader>
+                                    <md-list class="md-dense">
+                                        <md-list-item class="md-1-line" ng-repeat="label in vm.apikeylabels"
+                                                      ng-click="vm.showAPIKeyDialog($event, label)"
+                                                      aria-label="{{ ::label }}">
+                                            <div class="md-list-item-text" layout="column">
+                                                <h3 ng-bind="label"></h3>
+                                            </div>
+                                        </md-list-item>
+                                    </md-list>
+                                    <md-button class="md-primary" ng-click="vm.showAPIKeyCreationDialog($event)">
+                                        <i class="fa fa-plus"></i> Add API access key
+                                        <md-tooltip>
+                                            API Access keys are needed to access the Itsyou.online api using oauth2
+                                        </md-tooltip>
+                                    </md-button>
+                                </section>
+                                <md-divider></md-divider>
+                                <section>
+                                    <md-subheader>Delete organization</md-subheader>
+                                    <div layout-padding>
+                                        <p>Deleting an organization is irreversible and will delete all domain
+                                            names and API keys associated with it.
                                         </p>
                                     </div>
-                                </md-subheader>
-                                <md-list class="md-dense">
-                                    <md-list-item class="md-1-line" ng-repeat="label in vm.apikeylabels"
-                                                  ng-click="vm.showAPIKeyDialog($event, label)"
-                                                  aria-label="{{ ::label }}">
-                                        <div class="md-list-item-text" layout="column">
-                                            <h3 ng-bind="label"></h3>
-                                        </div>
-                                    </md-list-item>
-                                </md-list>
-                                <md-button class="md-primary" ng-click="vm.showAPIKeyCreationDialog($event)">
-                                    <i class="fa fa-plus"></i> Add API access key
-                                    <md-tooltip>
-                                        API Access keys are needed to access the Itsyou.online api using oauth2
-                                    </md-tooltip>
-                                </md-button>
-                            </section>
-                            <md-divider></md-divider>
-                            <section>
-                                <md-subheader>Delete organization</md-subheader>
-                                <div layout-padding>
-                                    <p>Deleting an organization is irreversible and will delete all domain
-                                        names and API keys associated with it.
-                                    </p>
-                                </div>
-                                <md-button class="md-warn" ng-click="vm.showDeleteOrganizationDialog($event)">Delete
-                                    organization
-                                </md-button>
-                            </section>
+                                    <md-button class="md-warn" ng-click="vm.showDeleteOrganizationDialog($event)">
+                                        Delete organization
+                                    </md-button>
+                                </section>
+                            </div>
+                            <div>
+                                <md-divider ng-if="::vm.hasEditPermission"></md-divider>
+                                <section>
+                                    <md-subheader class="md-no-sticky">Leave organization</md-subheader>
+                                    <div layout-padding>
+                                        <p>If you leave an organization you cannot re-join it unless you are invited
+                                            again.</p>
+                                    </div>
+                                    <md-button class="md-warn" ng-click="vm.showLeaveOrganization($event)">
+                                        Leave organization
+                                    </md-button>
+                                </section>
+                            </div>
                         </md-tab-body>
                     </md-tab>
                 </md-tabs>

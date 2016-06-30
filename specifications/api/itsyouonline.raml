@@ -962,7 +962,23 @@ securedBy: [ oauth_2_0 ]
                   owner: string[]
                   member: string[]
 
-      /{globalid}/roles/{role}:
+    /{globalid}:
+      /leave:
+        delete:
+          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+          displayName: LeaveOrganization
+          description: Removes the user from an organization
+          responses:
+            401:
+              description: Unauthorized
+            404:
+              description: Organization or user not found
+              body:
+                application/json:
+                  type: Error
+            204:
+              description: Successfully removed user from organization
+      /roles/{role}:
         post:
           displayName: AcceptMembership
           description: Accept membership in organization
@@ -1116,7 +1132,7 @@ securedBy: [ oauth_2_0 ]
         delete:
           displayName: RemoveOrganizationMember
           securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
-          description: Remove a member from organization
+          description: Remove a member from an organization.
           responses:
             204:
               description: Member deleted successfully
@@ -1124,8 +1140,6 @@ securedBy: [ oauth_2_0 ]
               description: Unauthorized
             404:
               description: The user or the organization does not exist.
-            409:
-              description: The user already is a member.
 
     /owners:
       post:
@@ -1159,7 +1173,7 @@ securedBy: [ oauth_2_0 ]
               401:
                 description: Unauthorized
               404:
-                description: Not found
+                description: The user or the organization does not exist.
 
     /contracts:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

@@ -6,17 +6,17 @@
         .controller("InvitationDialogController", InvitationDialogController);
 
     InvitationDialogController.$inject = ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'UserDialogService', '$window'];
-    OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia', '$rootScope', 'UserDialogService'];
+    OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia',
+        '$rootScope', 'UserDialogService', 'UserService'];
 
-    function OrganizationDetailController($routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope, UserDialogService) {
+    function OrganizationDetailController($routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope,
+                                          UserDialogService, UserService) {
         var vm = this,
             globalid = $routeParams.globalid;
         vm.invitations = [];
         vm.apikeylabels = [];
         vm.organization = {};
         vm.organizationRoot = {};
-        vm.userDetails = {};
-        vm.hasEditPermission = false;
         vm.childOrganizationNames = [];
 
         vm.showInvitationDialog = showInvitationDialog;
@@ -28,8 +28,9 @@
         vm.fetchAPIKeyLabels = fetchAPIKeyLabels;
         vm.showCreateOrganizationDialog = UserDialogService.createOrganization;
         vm.showDeleteOrganizationDialog = showDeleteOrganizationDialog;
-        vm.changeRole = changeRole;
+        vm.editMember = editMember;
         vm.canEditRole = canEditRole;
+        vm.showLeaveOrganization = showLeaveOrganization;
 
         activate();
 
@@ -213,7 +214,7 @@
             return vm.organization.owners.indexOf($rootScope.user) > -1 && member !== $rootScope.user;
         }
 
-        function changeRole(event, user) {
+        function editMember(event, user) {
             var role;
             angular.forEach(['members', 'owners'], function (r) {
                 if (vm.organization[r].indexOf(user) !== -1) {
@@ -221,7 +222,7 @@
                 }
             });
             var changeRoleDialog = {
-                controller: ['$mdDialog', 'OrganizationService', 'UserDialogService', 'organization', 'user', 'initialRole', ChangeRoleDialog],
+                controller: ['$mdDialog', 'OrganizationService', 'UserDialogService', 'organization', 'user', 'initialRole', EditOrganizationMemberController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/organization/views/changeRoleDialog.html',
                 targetEvent: event,
@@ -236,15 +237,44 @@
             $mdDialog
                 .show(changeRoleDialog)
                 .then(function (data) {
-                    vm.organization = data;
+                    if (data.action === 'edit') {
+                        vm.organization = data;
+                    } else if (data.action === 'remove') {
+                        var people = vm.organization[data.data.role];
+                        people.splice(people.indexOf(data.data.username), 1);
+                    }
+                });
+        }
+
+        function showLeaveOrganization(event) {
+            var text = 'Are you sure you want to leave the organization "' + globalid + '"?';
+            var confirm = $mdDialog.confirm()
+                .title('Leave organization')
+                .textContent(text)
+                .ariaLabel('Leave organization ' + globalid)
+                .targetEvent(event)
+                .ok('Yes')
+                .cancel('No');
+            $mdDialog
+                .show(confirm)
+                .then(function () {
+                    UserService
+                        .leaveOrganization($rootScope.user, globalid)
+                        .then(function () {
+                            $window.location.hash = '#/';
+                        }, function (response) {
+                            if (response.status === 404) {
+                                UserDialogService.showSimpleDialog('User or organization not found', 'Error', null, event);
+                            }
+                        });
                 });
         }
     }
 
     function getOrganizationDisplayname(globalid) {
         if (globalid) {
-            var splitted = globalid.split('.');
-            return splitted[splitted.length - 1];
+            var split = globalid.split('.');
+            return split[split.length - 1];
         }
     }
 
@@ -438,13 +468,14 @@
 
     }
 
-    function ChangeRoleDialog($mdDialog, OrganizationService, UserDialogService, organization, user, initialRole) {
+    function EditOrganizationMemberController($mdDialog, OrganizationService, UserDialogService, organization, user, initialRole) {
         var ctrl = this;
         ctrl.role = initialRole;
         ctrl.user = user;
         ctrl.organization = organization;
         ctrl.cancel = cancel;
         ctrl.submit = submit;
+        ctrl.remove = remove;
 
         function cancel() {
             $mdDialog.cancel();
@@ -454,9 +485,19 @@
             OrganizationService
                 .updateMembership(organization.globalid, ctrl.user, ctrl.role)
                 .then(function (data) {
-                    $mdDialog.hide(data);
+                    $mdDialog.hide({action: 'edit', data: data});
                 }, function () {
                     UserDialogService.showSimpleDialog('Could not change role, please try again later', 'Error', 'ok', event);
+                });
+        }
+
+        function remove() {
+            OrganizationService
+                .removeMember(organization.globalid, user, initialRole)
+                .then(function () {
+                    $mdDialog.hide({action: 'remove', data: {role: initialRole, user: user}});
+                }, function (response) {
+                    $mdDialog.cancel(response);
                 });
         }
     }

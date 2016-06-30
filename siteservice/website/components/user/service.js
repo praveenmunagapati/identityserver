@@ -106,7 +106,8 @@
             removeAuthenticator: removeAuthenticator,
             createDigitalWalletAddress: createDigitalWalletAddress,
             updateDigitalWalletAddress: updateDigitalWalletAddress,
-            deleteDigitalWalletAddress: deleteDigitalWalletAddress
+            deleteDigitalWalletAddress: deleteDigitalWalletAddress,
+            leaveOrganization: leaveOrganization
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -335,6 +336,11 @@
 
         function deleteDigitalWalletAddress(username, label) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/digitalwallet/' + encodeURIComponent(label);
+            return genericHttpCall(DELETE, url);
+        }
+
+        function leaveOrganization(username, globalid) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/organizations/' + encodeURIComponent(globalid) + '/leave';
             return genericHttpCall(DELETE, url);
         }
     }

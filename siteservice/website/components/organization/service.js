@@ -30,7 +30,8 @@
             updateDNS: updateDNS,
             deleteDNS: deleteDNS,
             deleteOrganization: deleteOrganization,
-            updateMembership: updateMembership
+            updateMembership: updateMembership,
+            removeMember: removeMember
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -258,6 +259,11 @@
                 role: role
             };
             return genericHttpCall(PUT, url, data);
+        }
+
+        function removeMember(globalid, username, role) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + role + '/' + username;
+            return genericHttpCall(DELETE, url);
         }
     }
 })();
