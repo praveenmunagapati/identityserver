@@ -20,7 +20,7 @@
                     <md-input-container flex>
                         <label for="totpcode">2-Factor authentication code</label>
                         <input ng-model="ctrl.totpcode" md-maxlength="6" minlength="6" id="totpcode" md-autofocus="true"
-                               name="totpcode" autocomplete="off" ng-change="ctrl.resetValidation()">
+                               name="totpcode" autocomplete="off" ng-change="ctrl.resetValidation()" required>
                         <div ng-messages="form.totpcode.$error" md-auto-hide="false">
                             <div ng-message="invalid_totpcode">An invalid code was given</div>
                             <div ng-message="md-maxlength">The code must be less than 6 characters</div>

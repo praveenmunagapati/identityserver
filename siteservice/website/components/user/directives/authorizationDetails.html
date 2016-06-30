@@ -183,7 +183,7 @@
         </i>
             Your Github account
         </p>
-        <div class="list-item-text-right list-item-img" ng-if="vm.user.github.id">
+        <div class="list-item-text-right list-item-img" ng-if="vm.user.github.id" hide-xs>
             <img class="md-avatar" ng-src="{{ ::vm.user.github.avatar_url }}"/>
             <span>{{ ::vm.user.github.login }}</span>
         </div>

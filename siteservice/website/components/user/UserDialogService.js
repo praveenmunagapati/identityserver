@@ -422,11 +422,11 @@
         }
 
         function digitalWalletAddressDetail(event, walletAddress) {
-            walletAddress = walletAddress || {expiry: new Date()};
+            walletAddress = walletAddress || {expire: new Date()};
             var originalWalletAddress = JSON.parse(JSON.stringify(walletAddress));
-            walletAddress.expiry = typeof walletAddress.expiry !== 'object' ? new Date(walletAddress.expiry) : walletAddress.expiry;
-            if (walletAddress.expiry.getYear() < 2000) {
-                walletAddress.expiry = new Date();
+            walletAddress.expire = typeof walletAddress.expire !== 'object' ? new Date(walletAddress.expire) : walletAddress.expire;
+            if (walletAddress.expire.getYear() < 2000) {
+                walletAddress.expire = new Date();
             }
             return $q(function (resolve, reject) {
                 $mdDialog.show({

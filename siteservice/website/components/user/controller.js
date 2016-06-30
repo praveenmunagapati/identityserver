@@ -8,10 +8,10 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$routeParams', '$location', '$window', '$mdToast', '$mdMedia', '$mdDialog',
+        '$q', '$rootScope', '$routeParams', '$location', '$window', '$mdMedia', '$mdDialog',
         'NotificationService', 'OrganizationService', 'UserService', 'UserDialogService'];
 
-    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $mdToast, $mdMedia, $mdDialog,
+    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $mdMedia, $mdDialog,
                                 NotificationService, OrganizationService, UserService, UserDialogService) {
         var vm = this;
         vm.username = $rootScope.user;
@@ -21,7 +21,8 @@
             contractRequests: []
         };
         vm.notificationMessage = '';
-        var arrayProperties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
+        var authorizationArrayProperties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
+        var authorizationBoolProperties = ['facebook', 'github', 'name'];
 
         var TAB_YOU = 'you';
         var TAB_NOTIFICATIONS = 'notifications';
@@ -41,7 +42,6 @@
 
         UserDialogService.init(vm);
 
-        vm.checkSelected = checkSelected;
         vm.tabSelected = tabSelected;
         vm.accept = accept;
         vm.reject = reject;
@@ -117,13 +117,16 @@
                                 status: 'pending'
                             });
                         }
-                        vm.pendingCount = getPendingCount('all');
-                        vm.notificationMessage = vm.pendingCount ? '' : 'No unhandled notifications';
+                        updatePendingNotificationsCount();
                         vm.loaded.notifications = true;
-                        $rootScope.notificationCount = vm.pendingCount;
-
                     }
                 );
+        }
+
+        function updatePendingNotificationsCount() {
+            vm.pendingCount = getPendingCount('all');
+            vm.notificationMessage = vm.pendingCount ? '' : 'No unhandled notifications';
+            $rootScope.notificationCount = vm.pendingCount;
         }
 
         function loadOrganizations() {
@@ -163,7 +166,7 @@
                     .get(vm.username)
                     .then(
                         function (data) {
-                            angular.forEach(arrayProperties, function (prop) {
+                            angular.forEach(authorizationArrayProperties, function (prop) {
                                 if (!data[prop]) {
                                     data[prop] = [];
                                 }
@@ -246,79 +249,74 @@
             }
         }
 
-        function checkSelected() {
-            var selected = false;
-
-            vm.notifications.invitations.forEach(function(invitation) {
-                if (invitation.selected === true) {
-                    selected = true;
-                }
-            });
-
-            return selected;
+        function accept(event, invitation) {
+            // show authorize screen
+            var authorization = {
+                grantedTo: invitation.organization,
+                username: vm.username,
+                phonenumbers: [{
+                    requestedlabel: 'main',
+                    reallabel: ''
+                }],
+                emailaddresses: [{
+                    requestedlabel: 'main',
+                    reallabel: ''
+                }]
+            };
+            showAuthorizationDetailDialog(authorization, event, true)
+                .then(function () {
+                    NotificationService
+                        .accept(invitation)
+                        .then(function () {
+                            invitation.status = 'accepted';
+                            updatePendingNotificationsCount();
+                        });
+                });
         }
 
-        function accept() {
-            var requests = [];
-
-            vm.notifications.invitations.forEach(function(invitation) {
-                if (invitation.selected === true) {
-                    requests.push(NotificationService.accept(invitation));
-                }
-            });
-
-            $q
-                .all(requests)
-                .then(
-                    function(responses) {
-                        toast('Accepted ' + responses.length + ' invitations!');
-                        vm.loaded.notifications = false;
-                        loadNotifications();
-                    }
-                );
+        function reject(invitation) {
+            NotificationService
+                .reject(invitation)
+                .then(function () {
+                    invitation.status = 'rejected';
+                    updatePendingNotificationsCount();
+                });
         }
 
-        function reject() {
-            var requests = [];
-
-            vm.notifications.invitations.forEach(function(invitation) {
-                if (invitation.selected === true) {
-                    requests.push(NotificationService.reject(invitation));
-                }
-            });
-
-            $q
-                .all(requests)
-                .then(
-                    function(responses) {
-                        toast('Rejected ' + responses.length + ' invitations!');
-                        vm.loaded.notifications = false;
-                        loadNotifications();
-                    }
-                );
-        }
-
-        function toast(message) {
-            var toast = $mdToast
-                .simple()
-                .textContent(message)
-                .hideDelay(2500)
-                .position('top right');
-
-            // Show toast!
-            $mdToast.show(toast);
-        }
-
-        function showAuthorizationDetailDialog(authorization, event) {
+        function showAuthorizationDetailDialog(authorization, event, isNew) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
-            function authController($scope, $mdDialog, user, authorization) {
+            function authController($scope, $mdDialog, user, authorization, isNew) {
+                angular.forEach(authorizationArrayProperties, function (prop) {
+                    if (!authorization[prop]) {
+                        authorization[prop] = [];
+                    }
+
+                });
+                angular.forEach(authorizationBoolProperties, function (prop) {
+                    if (authorization[prop] === undefined || authorization[prop] === null) {
+                        authorization[prop] = false;
+                    }
+                });
+
+                angular.forEach(authorization, function (auth, prop) {
+                    if (Array.isArray(auth)) {
+                        angular.forEach(auth, function (value) {
+                            if (typeof value === 'object' && !value.reallabel) {
+                                value.reallabel = vm.user[prop][0] ? vm.user[prop][0].label : '';
+                            }
+                        });
+                    }
+                });
+                authorization.organizations = authorization.organizations || [];
+
                 var ctrl = this;
                 ctrl.user = user;
-                $scope.delete = UserService.deleteAuthorization;
+                ctrl.isNew = isNew;
+                ctrl.delete = UserService.deleteAuthorization;
                 $scope.update = update;
-                $scope.cancel = cancel;
-                $scope.remove = remove;
+                ctrl.cancel = cancel;
+                ctrl.remove = remove;
                 $scope.requested = {
                     organizations: {}
                 };
@@ -331,15 +329,22 @@
                 function update(authorization) {
                     UserService.saveAuthorization($scope.authorizations)
                         .then(function (data) {
-                            $mdDialog.cancel();
-                            vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
-                            vm.authorizations.push(data);
+                            if (vm.authorizations) {
+                                vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
+                                vm.authorizations.push(data);
+                            }
+                            $mdDialog.hide(data);
                         });
                 }
 
                 function cancel() {
-                    vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
-                    vm.authorizations.push(originalAuthorization);
+                    if (vm.authorizations) {
+                        var index = vm.authorizations.indexOf(authorization);
+                        if (index !== 1) {
+                            vm.authorizations.splice(index, 1);
+                            vm.authorizations.push(originalAuthorization);
+                        }
+                    }
                     $mdDialog.cancel();
                 }
 
@@ -347,20 +352,21 @@
                     UserService.deleteAuthorization(authorization)
                         .then(function (data) {
                             vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
-                            $mdDialog.cancel();
+                            $mdDialog.hide();
                         });
                 }
             }
 
-            $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'user', 'authorization', authController],
+            return $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'user', 'authorization', 'isNew', authController],
                 controllerAs: 'vm',
                 templateUrl: 'components/user/views/authorizationDialog.html',
                 targetEvent: event,
                 fullscreen: useFullScreen,
                 locals: {
                     user: vm.user,
-                    authorization: authorization
+                    authorization: authorization,
+                    isNew: isNew
                 }
             });
         }

@@ -259,7 +259,7 @@
                                                     <div class="md-list-item-text">
                                                         <h3 ng-bind="address.address"></h3>
                                                         <h4>Expires <span
-                                                                ng-bind="address.expiry | date:'dd/MM/yyyy'"></span>
+                                                                ng-bind="address.expire | date:'dd/MM/yyyy'"></span>
                                                         </h4>
                                                         <h4>Symbol: <span ng-bind="address.currencysymbol"></span></h4>
                                                         <p ng-bind="address.label"></p>
@@ -299,31 +299,23 @@
                                 <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
                                     <md-subheader class="md-no-sticky">Pending organization invites</md-subheader>
                                     <md-list>
-                                        <md-list-item
-                                                ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}"
-                                                class="noright">
-                                            <p>
-                                                <i class="fa fa-users"></i>
-                                                <span ng-bind="invitation.organization"></span>
-                                            </p>
-                                            <md-checkbox class="md-secondary" ng-model="invitation.selected"
-                                                         aria-label="Select invitation">
-                                            </md-checkbox>
+                                        <md-list-item class="md-1-line"
+                                                      ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}">
+                                            <div class="md-list-item-text">
+                                                <p>
+                                                    <i class="fa fa-users"></i>
+                                                    <span ng-bind="invitation.organization"></span>
+                                                </p>
+                                            </div>
+                                            <md-icon md-font-icon="fa-times" class="fa md-secondary md-warn"
+                                                     ng-click="vm.reject(invitation)"
+                                                     aria-label="Reject invitation"></md-icon>
+                                            <md-icon md-font-icon="fa-check" class="fa md-secondary md-primary"
+                                                     ng-click="vm.accept($event, invitation)"
+                                                     aria-label="Accept invitation">
+                                            </md-icon>
                                         </md-list-item>
                                     </md-list>
-                                    <div layout="row" layout-align="end center"
-                                         ng-show="vm.getPendingCount(vm.notifications.invitations) > 0">
-                                        <md-button
-                                                ng-click="vm.accept()"
-                                                ng-disabled="vm.checkSelected() === false">
-                                            Accept
-                                        </md-button>
-                                        <md-button
-                                                ng-click="vm.reject()"
-                                                ng-disabled="vm.checkSelected() === false">
-                                            Reject
-                                        </md-button>
-                                    </div>
                                 </div>
                                 <div ng-if="vm.getPendingCount(vm.notifications.security) > 0">
                                     <md-list>
@@ -333,10 +325,10 @@
                                                 ng-repeat="notification in vm.notifications.security track by notification.subject"
                                                 aria-label="Security notice">
                                             <p ng-bind="::notification.msg"></p>
-                                            <md-button class="md-secondary md-raised"
-                                                       ng-click="vm.selectedTabIndex = notification.tabIndex">
+                                            <md-icon class="md-secondary md-raised"
+                                                     ng-click="vm.selectedTabIndex = notification.tabIndex">
                                                 Resolve
-                                            </md-button>
+                                            </md-icon>
                                         </md-list-item>
                                     </md-list>
                                 </div>

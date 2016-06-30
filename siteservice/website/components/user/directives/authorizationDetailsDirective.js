@@ -1,6 +1,3 @@
-/**
- * Created by lucas on 27/05/16.
- */
 (function () {
     'use strict';
     angular.module('itsyouonlineApp')

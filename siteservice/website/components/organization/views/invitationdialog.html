@@ -1,5 +1,5 @@
 <md-dialog>
-    <form>
+    <form name="inviteform">
         <md-toolbar>
             <div class="md-toolbar-tools">
                 <h2>Invite someone</h2>
@@ -13,14 +13,15 @@
             <div class="md-dialog-content" layout="column">
                 <md-input-container>
                     <label>Role</label>
-                    <md-select ng-model="role">
+                    <md-select ng-model="role" required>
                         <md-option value="owner">Owner</md-option>
                         <md-option value="member">Member</md-option>
                     </md-select>
                 </md-input-container>
                 <md-input-container flex>
                     <label>Username, email or phone number</label>
-                    <input ng-model="usertoinvite" minlength="2" required type="text" md-autofocus="true">
+                    <input ng-model="usertoinvite" minlength="2" required type="text" md-autofocus="true"
+                           name="searchterm">
                     <div ng-messages="validationerrors" md-auto-hide="false">
                         <div ng-message="duplicate">This user has already joined the organization</div>
                         <div ng-message="nosuchuser">No user found matching this username, email address or
@@ -39,7 +40,8 @@
             <md-button ng-click="cancel()">
                 Cancel
             </md-button>
-            <md-button class="md-primary" type="submit" ng-click="invite(usertoinvite,role)">
+            <md-button class="md-primary" type="submit" ng-click="invite(usertoinvite,role)"
+                       ng-disabled="!inviteform.$valid">
                 Invite
             </md-button>
         </md-dialog-actions>
