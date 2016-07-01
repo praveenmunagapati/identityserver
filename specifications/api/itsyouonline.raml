@@ -649,6 +649,7 @@ securedBy: [ oauth_2_0 ]
                         type: userview
   /{username}/validate:
     get:
+      displayName: ValidateUsername
       queryParameters:
             token:
                 type: string
@@ -870,7 +871,13 @@ securedBy: [ oauth_2_0 ]
             application/json:
                 type: BankAccount
     delete:
+        displayName: DeleteUserBankAccount
         description: Delete a BankAccount
+        responses:
+          404:
+            description: BankAccount not found
+          204:
+            description: BankAccount deleted
   /{username}/notifications:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:

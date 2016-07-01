@@ -25,6 +25,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/credentials/password"
+	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/validation"
 )
@@ -52,6 +53,7 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	// User API
 	user.UsersInterfaceRoutes(router, user.UsersAPI{SmsService: service.smsService, PhonenumberValidationService: service.phonenumberValidationService, EmailService: service.emailService, EmailAddressValidationService: service.emailaddresValidationService})
 	userdb.InitModels()
+	totp.InitModels()
 
 	// Company API
 	company.CompaniesInterfaceRoutes(router, company.CompaniesAPI{})

@@ -353,7 +353,7 @@
 
                 function remove() {
                     UserService.deleteAuthorization(authorization)
-                        .then(function (data) {
+                        .then(function () {
                             vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
                             $mdDialog.hide();
                         });
@@ -377,7 +377,7 @@
         function showChangePasswordDialog(event) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
-            function showPasswordDialogController($scope, $mdDialog, username, updatePassword) {
+            function showPasswordDialogController($mdDialog, username, updatePassword) {
                 var ctrl = this;
                 ctrl.resetValidation = resetValidation;
                 ctrl.updatePassword = updatepwd;
@@ -411,7 +411,7 @@
             }
 
             $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'username', 'updatePassword', showPasswordDialogController],
+                controller: ['$mdDialog', 'username', 'updatePassword', showPasswordDialogController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/resetPasswordDialog.html',
                 targetEvent: event,
@@ -428,7 +428,7 @@
         function showEditNameDialog(event) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
-            function showPasswordDialogController($scope, $mdDialog, user, updateName) {
+            function EditPasswordDialogController($mdDialog, user, updateName) {
                 var ctrl = this;
                 ctrl.save = save;
                 ctrl.cancel = function () {
@@ -439,7 +439,7 @@
 
                 function save() {
                     updateName(user.username, ctrl.firstname, ctrl.lastname)
-                        .then(function (response) {
+                        .then(function () {
                             $mdDialog.hide();
                             vm.user.firstname = ctrl.firstname;
                             vm.user.lastname = ctrl.lastname;
@@ -448,7 +448,7 @@
             }
 
             $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'user', 'updateName', showPasswordDialogController],
+                controller: ['$mdDialog', 'user', 'updateName', EditPasswordDialogController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/nameDialog.html',
                 targetEvent: event,
@@ -569,7 +569,7 @@
 
                 function updateAPIKey() {
                     UserService.updateAPIKey(username, ctrl.savedLabel, ctrl.label).then(
-                        function (data) {
+                        function () {
                             $mdDialog.hide({originalLabel: ctrl.savedLabel, newLabel: ctrl.label});
                         },
                         function (reason) {
@@ -582,7 +582,7 @@
 
                 function deleteAPIKey() {
                     UserService.deleteAPIKey(username, APIKey.label).then(
-                        function (data) {
+                        function () {
                             $mdDialog.hide({originalLabel: APIKey.label, newLabel: ""});
                         }
                     );
@@ -592,7 +592,7 @@
 
         function showSetupAuthenticatorApplication(event) {
             $mdDialog.show({
-                controller: ['$scope', '$window', '$mdDialog', 'UserService', SetupAuthenticatorController],
+                controller: ['$scope', '$mdDialog', 'UserService', SetupAuthenticatorController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/setupTOTPDialog.html',
                 targetEvent: event,
@@ -601,7 +601,7 @@
                 clickOutsideToClose: true
             });
 
-            function SetupAuthenticatorController($scope, $window, $mdDialog, UserService) {
+            function SetupAuthenticatorController($scope, $mdDialog, UserService) {
                 var ctrl = this;
                 ctrl.close = close;
                 ctrl.submit = submit;

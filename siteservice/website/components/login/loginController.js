@@ -16,7 +16,7 @@
                 password: vm.password
             };
             $http.post('/login', data).then(
-                function (response) {
+                function () {
                     // Redirect 2 factor authentication page
                     $window.location.hash = '#/2fa';
                 },

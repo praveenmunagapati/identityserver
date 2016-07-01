@@ -96,8 +96,8 @@ func (api UsersAPI) Post(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&u)
 }
 
-// It is handler for GET /users/{username}
-func (api UsersAPI) usernameGet(w http.ResponseWriter, r *http.Request) {
+// GetUser is handler for GET /users/{username}
+func (api UsersAPI) GetUser(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
 	userMgr := user.NewManager(r)
@@ -350,7 +350,7 @@ func (api UsersAPI) DeleteGithubAccount(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// Delete FacebookAccount is the handler for DELETE /users/{username}/facebook
+// DeleteFacebookAccount is the handler for DELETE /users/{username}/facebook
 // Delete the associated facebook account
 func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
@@ -366,7 +366,7 @@ func (api UsersAPI) DeleteFacebookAccount(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// UpdatePassword handler
+// UpdatePassword is the handler for PUT /users/{username}/password
 func (api UsersAPI) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	body := struct {
@@ -531,8 +531,8 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(respBody)
 }
 
-// usernamevalidateGet is the handler for GET /users/{username}/validate
-func (api UsersAPI) usernamevalidateGet(w http.ResponseWriter, r *http.Request) {
+// ValidateUsername is the handler for GET /users/{username}/validate
+func (api UsersAPI) ValidateUsername(w http.ResponseWriter, r *http.Request) {
 
 	// token := req.FormValue("token")
 
@@ -590,8 +590,8 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(body)
 }
 
-// usernamephonenumbersGet is the handler for GET /users/{username}/phonenumbers
-func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Request) {
+// GetUserPhoneNumbers is the handler for GET /users/{username}/phonenumbers
+func (api UsersAPI) GetUserPhoneNumbers(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	validated := strings.Contains(r.URL.RawQuery, "validated")
 	userMgr := user.NewManager(r)
@@ -627,8 +627,8 @@ func (api UsersAPI) usernamephonenumbersGet(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(phonenumbers)
 }
 
-// usernamephonenumberslabelGet is the handler for GET /users/{username}/phonenumbers/{label}
-func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.Request) {
+// GetUserPhonenumberByLabel is the handler for GET /users/{username}/phonenumbers/{label}
+func (api UsersAPI) GetUserPhonenumberByLabel(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
@@ -649,7 +649,7 @@ func (api UsersAPI) usernamephonenumberslabelGet(w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(phonenumber)
 }
 
-// Validate phone number is the handler for POST /users/{username}/phonenumbers/{label}/validate
+// ValidatePhoneNumber is the handler for POST /users/{username}/phonenumbers/{label}/validate
 func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
@@ -672,14 +672,14 @@ func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) 
 	response := struct {
 		ValidationKey string `json:"validationkey"`
 	}{
-		validationKey,
+		ValidationKey: validationKey,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 	w.WriteHeader(http.StatusOK)
 }
 
-// Validate phone number is the handler for PUT /users/{username}/phonenumbers/{label}/validate
+// VerifyPhoneNumber is the handler for PUT /users/{username}/phonenumbers/{label}/validate
 func (api UsersAPI) VerifyPhoneNumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
@@ -861,9 +861,9 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// CreateUserBankAccount is handler for POST /users/{username}/banks
 // Create new bank account
-// It is handler for POST /users/{username}/banks
-func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
+func (api UsersAPI) CreateUserBankAccount(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := user.NewManager(r)
 
@@ -906,8 +906,8 @@ func (api UsersAPI) usernamebanksPost(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(bank)
 }
 
-// It is handler for GET /users/{username}/banks
-func (api UsersAPI) usernamebanksGet(w http.ResponseWriter, r *http.Request) {
+// GetUserBankAccounts It is handler for GET /users/{username}/banks
+func (api UsersAPI) GetUserBankAccounts(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := user.NewManager(r)
 
@@ -921,8 +921,8 @@ func (api UsersAPI) usernamebanksGet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user.BankAccounts)
 }
 
-// It is handler for GET /users/{username}/banks/{label}
-func (api UsersAPI) usernamebankslabelGet(w http.ResponseWriter, r *http.Request) {
+// GetUserBankAccountByLabel is handler for GET /users/{username}/banks/{label}
+func (api UsersAPI) GetUserBankAccountByLabel(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
@@ -943,9 +943,9 @@ func (api UsersAPI) usernamebankslabelGet(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(bank)
 }
 
+// UpdateUserBankAccount is handler for PUT /users/{username}/banks/{label}
 // Update an existing bankaccount and label.
-// It is handler for PUT /users/{username}/banks/{label}
-func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request) {
+func (api UsersAPI) UpdateUserBankAccount(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
@@ -1000,9 +1000,9 @@ func (api UsersAPI) usernamebankslabelPut(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(newbank)
 }
 
+// DeleteUserBankAccount is handler for DELETE /users/{username}/banks/{label}
 // Delete a BankAccount
-// It is handler for DELETE /users/{username}/banks/{label}
-func (api UsersAPI) usernamebankslabelDelete(w http.ResponseWriter, r *http.Request) {
+func (api UsersAPI) DeleteUserBankAccount(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
@@ -1073,8 +1073,8 @@ func (api UsersAPI) RegisterNewAddress(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(address)
 }
 
-// It is handler for GET /users/{username}/addresses
-func (api UsersAPI) usernameaddressesGet(w http.ResponseWriter, r *http.Request) {
+// GetUserAddresses is handler for GET /users/{username}/addresses
+func (api UsersAPI) GetUserAddresses(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := user.NewManager(r)
 
@@ -1088,8 +1088,8 @@ func (api UsersAPI) usernameaddressesGet(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(user.Addresses)
 }
 
-// It is handler for GET /users/{username}/addresses/{label}
-func (api UsersAPI) usernameaddresseslabelGet(w http.ResponseWriter, r *http.Request) {
+// GetUserAddressByLabel is handler for GET /users/{username}/addresses/{label}
+func (api UsersAPI) GetUserAddressByLabel(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
@@ -1196,9 +1196,9 @@ func (api UsersAPI) DeleteAddress(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// GetUserContracts is handler for GET /users/{username}/contracts
 // Get the contracts where the user is 1 of the parties. Order descending by date.
-// It is handler for GET /users/{username}/contracts
-func (api UsersAPI) usernamecontractsGet(w http.ResponseWriter, r *http.Request) {
+func (api UsersAPI) GetUserContracts(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	includedparty := contractdb.Party{Type: "user", Name: username}
 	contract.FindContracts(w, r, includedparty)
@@ -1212,9 +1212,9 @@ func (api UsersAPI) RegisterNewContract(w http.ResponseWriter, r *http.Request) 
 
 }
 
+// GetNotifications is handler for GET /users/{username}/notifications
 // Get the list of notifications, these are pending invitations or approvals
-// It is handler for GET /users/{username}/notifications
-func (api UsersAPI) usernamenotificationsGet(w http.ResponseWriter, r *http.Request) {
+func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
 	type NotificationList struct {
@@ -1413,7 +1413,7 @@ func (api UsersAPI) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(apikeys)
 }
 
-// UpdatePassword handler
+// UpdateName is the handler for PUT /users/{username}/name
 func (api UsersAPI) UpdateName(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	values := struct {
@@ -1592,7 +1592,7 @@ func writeErrorResponse(responseWrite http.ResponseWriter, httpStatusCode int, m
 	errorResponse := struct {
 		Error string `json:"error"`
 	}{
-		message,
+		Error: message,
 	}
 	responseWrite.WriteHeader(httpStatusCode)
 	json.NewEncoder(responseWrite).Encode(&errorResponse)

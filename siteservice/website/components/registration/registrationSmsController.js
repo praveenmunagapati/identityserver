@@ -20,7 +20,7 @@
                         submit();
                     }
                 },
-                function failed(response) {
+                function failed() {
                     $timeout(checkconfirmation, 1000);
                 }
             );

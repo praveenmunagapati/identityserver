@@ -394,8 +394,8 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 		Valid bool   `json:"valid"`
 		Error string `json:"error"`
 	}{
-		true,
-		"",
+		Valid: true,
+		Error: "",
 	}
 	valid := user.ValidateUsername(username)
 	if !valid {

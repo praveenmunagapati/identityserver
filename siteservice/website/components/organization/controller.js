@@ -5,7 +5,7 @@
         .controller("OrganizationDetailController", OrganizationDetailController)
         .controller("InvitationDialogController", InvitationDialogController);
 
-    InvitationDialogController.$inject = ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'UserDialogService', '$window'];
+    InvitationDialogController.$inject = ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'UserDialogService'];
     OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia',
         '$rootScope', 'UserDialogService', 'UserService'];
 
@@ -106,7 +106,7 @@
         function showAPIKeyCreationDialog(ev) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: APIKeyDialogController,
+                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'label', APIKeyDialogController],
                 templateUrl: 'components/organization/views/apikeydialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -127,9 +127,9 @@
         }
 
         function showAPIKeyDialog(ev, label) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: APIKeyDialogController,
+                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'label', APIKeyDialogController],
                 templateUrl: 'components/organization/views/apikeydialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -165,7 +165,7 @@
         function showDNSDialog(ev, dnsName) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: DNSDialogController,
+                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'dnsName', DNSDialogController],
                 templateUrl: 'components/organization/views/dnsDialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -215,7 +215,7 @@
         }
 
         function editMember(event, user) {
-            var role;
+            var role = 'members';
             angular.forEach(['members', 'owners'], function (r) {
                 if (vm.organization[r].indexOf(user) !== -1) {
                     role = r;
@@ -278,7 +278,7 @@
         }
     }
 
-    function InvitationDialogController($scope, $mdDialog, organization, OrganizationService, UserDialogService, $window) {
+    function InvitationDialogController($scope, $mdDialog, organization, OrganizationService, UserDialogService) {
 
         $scope.role = "member";
 
@@ -314,7 +314,7 @@
         }
     }
 
-    function APIKeyDialogController($scope, $mdDialog, organization, OrganizationService, $window, label) {
+    function APIKeyDialogController($scope, $mdDialog, organization, OrganizationService, label) {
         //If there is a key, it is already saved, if not, this means that a new secret is being created.
 
         $scope.apikey = {secret: ""};
@@ -371,7 +371,7 @@
         function update(oldLabel, newLabel){
             $scope.validationerrors = {};
             OrganizationService.updateAPIKey(organization, oldLabel, newLabel, $scope.apikey).then(
-                function(data){
+                function () {
                     $mdDialog.hide({originalLabel: oldLabel, newLabel: newLabel});
                 },
                 function(reason){
@@ -386,7 +386,7 @@
         function deleteAPIKey(label){
             $scope.validationerrors = {};
             OrganizationService.deleteAPIKey(organization, label).then(
-                function(data){
+                function () {
                     $mdDialog.hide({originalLabel: label, newLabel: ""});
                 }
             );
@@ -394,7 +394,7 @@
 
     }
 
-    function DNSDialogController($scope, $mdDialog, organization, OrganizationService, $window, dnsName) {
+    function DNSDialogController($scope, $mdDialog, organization, OrganizationService, dnsName) {
         $scope.organization = organization;
         $scope.dnsName = dnsName;
         $scope.newDnsName = dnsName;

@@ -105,7 +105,7 @@
     function pagetitle($rootScope, $timeout) {
         return {
             link: function (scope, element) {
-                var listener = function (event, current, previous) {
+                var listener = function (event, current) {
                     var pageTitle = 'It\'s You Online';
                     if (current.$$route && current.$$route.data && current.$$route.data.pageTitle) {
                         pageTitle = current.$$route.data.pageTitle + ' - ' + pageTitle;

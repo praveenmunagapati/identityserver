@@ -15,7 +15,7 @@
             };
             $http
                 .post('/login/resendsms', data)
-                .then(function (response) {
+                .then(function () {
                     $window.location.href = '#/smsconfirmation';
                 }, function (response) {
                     switch (response.status) {

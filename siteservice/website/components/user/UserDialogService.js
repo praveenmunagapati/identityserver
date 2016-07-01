@@ -10,7 +10,7 @@
 
     function UserDialogService($window, $q, $interval, $mdMedia, $mdDialog, UserService, configService) {
         var vm;
-        var genericDetailControllerParams = ['$scope', '$mdDialog', 'user', '$window', 'data',
+        var genericDetailControllerParams = ['$scope', '$mdDialog', 'user', 'data',
             'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
         return {
             init: init,
@@ -211,7 +211,7 @@
                         .then(function (responseData) {
                             ctrl.validationKey = responseData.validationkey;
                             interval = $interval(checkconfirmation, 1000);
-                        }, function (response) {
+                        }, function () {
                             $mdDialog.show(
                                 $mdDialog.alert()
                                     .clickOutsideToClose(true)
@@ -460,7 +460,7 @@
             });
         }
 
-        function GenericDetailDialogController($scope, $mdDialog, user, $window, data, createFunction, updateFunction, deleteFunction) {
+        function GenericDetailDialogController($scope, $mdDialog, user, data, createFunction, updateFunction, deleteFunction) {
             data = data || {};
             $scope.data = data;
 
@@ -517,7 +517,7 @@
             function remove(label) {
                 $scope.validationerrors = {};
                 deleteFunction(user.username, label)
-                    .then(function (response) {
+                    .then(function () {
                         $mdDialog.hide({fx: 'delete'});
                     });
             }

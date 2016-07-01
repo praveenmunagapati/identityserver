@@ -63,7 +63,7 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 	return
 }
 
-//RequestPassword reset
+//RequestPasswordReset Request a password reset
 func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *http.Request, username string, emails []string) (key string, err error) {
 	pwdMngr := password.NewManager(request)
 	token, err := pwdMngr.NewResetToken(username)

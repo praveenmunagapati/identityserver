@@ -92,7 +92,7 @@
                 scopes = scopes.filter(function (item, pos, self) {
                     return self.indexOf(item) === pos;
                 });
-                angular.forEach(scopes, function (scope, i) {
+                angular.forEach(scopes, function (scope) {
                     var splitPermission = scope.split(':');
                     if (!splitPermission.length > 1) {
                         return;
@@ -138,7 +138,7 @@
             UserService
                 .saveAuthorization($scope.authorizations)
                 .then(
-                    function (data) {
+                    function () {
                         var u = URI($location.absUrl());
                         var endpoint = queryParams["endpoint"];
                         delete queryParams.endpoint;
@@ -174,7 +174,7 @@
             });
 
             $q.all(requests)
-                .then(function (data) {
+                .then(function () {
                     $scope.save();
                 });
         }

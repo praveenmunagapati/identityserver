@@ -195,9 +195,9 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	json.NewEncoder(w).Encode(&org)
 }
 
-// Get organization info
+// GetOrganization Get organization info
 // It is handler for GET /organizations/{globalid}
-func (api OrganizationsAPI) globalidGet(w http.ResponseWriter, r *http.Request) {
+func (api OrganizationsAPI) GetOrganization(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	orgMgr := organization.NewManager(r)
 
@@ -213,9 +213,9 @@ func (api OrganizationsAPI) globalidGet(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(org)
 }
 
-// Update organization info
+// UpdateOrganization Updates organization info
 // It is handler for PUT /organizations/{globalid}
-func (api OrganizationsAPI) globalidPut(w http.ResponseWriter, r *http.Request) {
+func (api OrganizationsAPI) UpdateOrganization(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
 	var org organization.Organization
@@ -256,9 +256,9 @@ func (api OrganizationsAPI) globalidPut(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(oldOrg)
 }
 
-// Assign a member to organization
+// AddOrganizationMember Assign a member to organization
 // It is handler for POST /organizations/{globalid}/members
-func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.Request) {
+func (api OrganizationsAPI) AddOrganizationMember(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
 	var s searchMember
@@ -405,8 +405,8 @@ func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// It is handler for POST /organizations/{globalid}/members
-func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Request) {
+// AddOrganizationOwner It is handler for POST /organizations/{globalid}/owners
+func (api OrganizationsAPI) AddOrganizationOwner(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
 	var s searchMember
@@ -867,7 +867,7 @@ func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, 
 	log.Debug(httpStatusCode, message)
 	errorResponse := struct {
 		Error string `json:"error"`
-	}{message}
+	}{Error: message}
 	responseWriter.WriteHeader(httpStatusCode)
 	json.NewEncoder(responseWriter).Encode(&errorResponse)
 }

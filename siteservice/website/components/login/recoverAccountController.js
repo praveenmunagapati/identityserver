@@ -15,7 +15,7 @@
             };
             $http
                 .post('/login/resetpassword', data)
-                .then(function (response) {
+                .then(function () {
                         // redirect to login
                         $window.location.hash = '';
                     },

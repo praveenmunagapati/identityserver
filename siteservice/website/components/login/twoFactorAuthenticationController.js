@@ -1,10 +1,10 @@
 (function () {
     'use strict';
     angular.module('loginApp')
-        .controller('twoFactorAuthenticationController', ['$scope', '$window', '$interval', '$mdDialog', 'LoginService',
+        .controller('twoFactorAuthenticationController', ['$scope', '$window', '$interval', 'LoginService',
             twoFactorAuthenticationController]);
 
-    function twoFactorAuthenticationController($scope, $window, $interval, $mdDialog, LoginService) {
+    function twoFactorAuthenticationController($scope, $window, $interval, LoginService) {
         var STEP_CHOICE = 'choice',
             STEP_CODE = 'code';
         var vm = this;

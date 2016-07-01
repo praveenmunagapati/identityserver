@@ -3,9 +3,9 @@
 
     angular
         .module("itsyouonline.registration")
-        .service("registrationService", ['$http', '$q', RegistrationService]);
+        .service("registrationService", ['$http', RegistrationService]);
 
-    function RegistrationService($http, $q) {
+    function RegistrationService($http) {
         return {
             validateUsername: validateUsername,
             register: register
