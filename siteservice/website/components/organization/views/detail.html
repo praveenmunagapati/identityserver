@@ -46,10 +46,12 @@
                                 </md-list>
                                 <md-list ng-if="vm.hasEditPermission && vm.invitations.length > 0">
                                     <md-subheader>Pending invitations</md-subheader>
-                                    <md-list-item class="md-2-line" ng-repeat="invite in vm.invitations"
+                                    <md-list-item class="md-3-line" ng-repeat="invite in vm.invitations"
                                                   aria-label="Invite">
                                         <div class="md-list-item-text">
                                             <h3 ng-bind="::invite.user"></h3>
+                                            <h4 ng-if="::invite.created"> Invited on <span
+                                                    ng-bind="::invite.created | date: 'd MMM y H:mm:ss'"></span></h4>
                                             <p ng-bind="::{member:'Member',owner:'Owner'}[invite.role]"></p>
                                         </div>
                                     </md-list-item>

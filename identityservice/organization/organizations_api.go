@@ -20,6 +20,7 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/oauthservice"
 	"gopkg.in/mgo.v2"
+	"time"
 )
 
 const (
@@ -322,6 +323,7 @@ func (api OrganizationsAPI) globalidmembersPost(w http.ResponseWriter, r *http.R
 		Organization: globalid,
 		User:         u.Username,
 		Status:       invitations.RequestPending,
+		Created:      db.DateTime(time.Now()),
 	}
 
 	if err := invitationMgr.Save(orgReq); err != nil {
@@ -446,6 +448,7 @@ func (api OrganizationsAPI) globalidownersPost(w http.ResponseWriter, r *http.Re
 		Organization: globalid,
 		User:         u.Username,
 		Status:       invitations.RequestPending,
+		Created:      db.DateTime(time.Now()),
 	}
 
 	if err := invitationMgr.Save(orgReq); err != nil {
@@ -505,8 +508,9 @@ func (api OrganizationsAPI) GetPendingInvitations(w http.ResponseWriter, r *http
 	pendingInvites := make([]organization.Invitation, len(requests), len(requests))
 	for index, request := range requests {
 		pendingInvites[index] = organization.Invitation{
-			Role: request.Role,
-			User: request.User,
+			Role:    request.Role,
+			User:    request.User,
+			Created: request.Created,
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")

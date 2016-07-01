@@ -1,6 +1,9 @@
 package invitations
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"github.com/itsyouonline/identityserver/db"
+	"gopkg.in/mgo.v2/bson"
+)
 
 type InvitationStatus string
 
@@ -22,4 +25,5 @@ type JoinOrganizationInvitation struct {
 	Role         string           `json:"role"`
 	User         string           `json:"user"`
 	Status       InvitationStatus `json:"status"`
+	Created      db.DateTime      `json:"created"`
 }
