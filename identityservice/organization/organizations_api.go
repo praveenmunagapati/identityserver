@@ -812,7 +812,7 @@ func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteOrganization is the handler for DELETE /organizations/{globalid}
-// Deletes an organization and all data linked to it (join-organization-invitations, oauth_access_tokens, oauth_clients)
+// Deletes an organization and all data linked to it (join-organization-invitations, oauth_access_tokens, oauth_clients, authorizations)
 func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	orgMgr := organization.NewManager(r)
@@ -847,6 +847,15 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	if handleServerError(w, "removing organization oauth clients", err) {
 		return
 	}
+	userMgr := user.NewManager(r)
+	err = userMgr.DeleteAllAuthorizations(globalid)
+	if handleServerError(w, "removing all authorizations", err) {
+		return
+	}
+	err = oauthMgr.RemoveClientsById(globalid)
+	if handleServerError(w, "removing organization oauth clients", err) {
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -861,7 +870,7 @@ func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, 
 
 func handleServerError(responseWriter http.ResponseWriter, actionText string, err error) bool {
 	if err != nil {
-		log.Error("Error while "+actionText, err)
+		log.Error("Error while "+actionText, " - ", err)
 		http.Error(responseWriter, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return true
 	}

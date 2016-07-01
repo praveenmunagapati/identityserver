@@ -245,6 +245,12 @@ func (m *Manager) DeleteAuthorization(username, organization string) (err error)
 	return
 }
 
+//DeleteAllAuthorizations removes all authorizations from an organization
+func (m *Manager) DeleteAllAuthorizations(organization string) (err error) {
+	_, err = m.getAuthorizationCollection().RemoveAll(bson.M{"grantedto": organization})
+	return err
+}
+
 func (u *User) getID() string {
 	return u.ID.Hex()
 }
