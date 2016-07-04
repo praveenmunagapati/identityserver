@@ -1,464 +1,394 @@
-<div flex layout="row">
-    <div flex></div>
-    <div flex-gt-sm="80" flex="100">
-        <div class="breadcrumb-container">
-            <p>You</p>
-            <h1 ng-bind="::vm.username"></h1>
-        </div>
-        <md-card>
-            <md-card-content>
-                <md-tabs md-selected="vm.selectedTabIndex" md-dynamic-height>
-                    <md-tab md-on-select="vm.tabSelected()">
-                        <md-tab-label><i class="fa fa-user"></i>&nbsp;You</md-tab-label>
-                        <md-tab-body>
-                            <div layout="row" layout-align="center center" ng-if="!vm.loaded.user">
-                                <md-progress-circular md-mode="indeterminate"
-                                                      md-diameter="100"></md-progress-circular>
-                            </div>
-                            <div layout="row" flex ng-show="vm.loaded.user">
-                                <md-list flex flex-gt-sm="60">
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-user"></i>
-                                            <md-tooltip>Full name</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <md-list-item class="md-2-line"
-                                                              ng-click="vm.showEditNameDialog($event)">
-                                                    <div class="md-list-item-text">
-                                                        <h4>
-                                                            <span ng-bind="vm.user.firstname"></span>
-                                                            <span ng-bind="vm.user.lastname"></span>
-                                                        </h4>
-                                                        <p>Full name</p>
-                                                    </div>
-                                                </md-list-item>
-                                            </md-list>
-                                        </div>
-                                        <div flex="20" layout="row" layout-align="center center">
-                                            <md-button class="md-primary"
-                                                       ng-if="!vm.user.firstname || !vm.user.lastname"
-                                                       ng-click="vm.showEditNameDialog($event)">
-                                                <i class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-                                    <md-divider md-inset></md-divider>
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-at"></i>
-                                            <md-tooltip>Email addresses</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <div ng-repeat="email in vm.user.emailaddresses  track by email.label"
-                                                     layout="row">
-                                                    <md-list-item class="md-2-line" flex="60"
-                                                                  ng-click="vm.showEmailDetailDialog($event, email)"
-                                                                  aria-label="Email address">
-                                                        <div class="md-list-item-text">
-                                                            <h4 ng-bind=email.emailaddress></h4>
-                                                            <p ng-bind="email.label"></p>
-                                                        </div>
-                                                    </md-list-item>
-                                                    <div flex></div>
-                                                    <p ng-if="email.verified" flex="20" class="md-body-1">
-                                                        <i class="fa fa-check green"></i> Verified
-                                                    </p>
-                                                    <md-button
-                                                            ng-click="vm.verifyEmailAddress($event, email)"
-                                                            ng-if="vm.loaded.verifiedEmails && !email.verified">
-                                                        Verify
-                                                    </md-button>
-                                                </div>
-                                            </md-list>
-                                        </div>
-                                        <div flex="20" layout="row" layout-align="center center">
-                                            <md-button class="md-primary"
-                                                       ng-click="vm.showEmailDetailDialog($event)">
-                                                <i class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-                                    <md-divider md-inset></md-divider>
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-phone"></i>
-                                            <md-tooltip>Phone numbers</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <div ng-repeat="phone in vm.user.phonenumbers track by phone.label"
-                                                     layout="row">
-                                                    <md-list-item class="md-2-line" flex="60"
-                                                                  ng-click="vm.showPhonenumberDetailDialog($event, phone)"
-                                                                  aria-label="Phone {{ phone.label }} - {{ phone.phonenumber }}">
-                                                        <div class="md-list-item-text">
-                                                            <h4 ng-bind="phone.phonenumber"></h4>
-                                                            <p ng-bind="phone.label"></p>
-                                                        </div>
-                                                    </md-list-item>
-                                                    <div flex></div>
-                                                    <p ng-if="phone.verified" flex="20" class="md-body-1">
-                                                        <i class="fa fa-check green"></i> Verified
-                                                    </p>
-                                                    <md-button ng-click="vm.verifyPhone($event, phone)"
-                                                               ng-if="vm.loaded.verifiedPhones && !phone.verified">
-                                                        Verify
-                                                    </md-button>
-                                                </div>
-                                            </md-list>
-                                        </div>
-                                        <div flex="20" layout="row" layout-align="center center">
-                                            <md-button class="md-primary"
-                                                       ng-click="vm.showPhonenumberDetailDialog($event)">
-                                                <i class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-                                    <md-divider md-inset></md-divider>
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-facebook-official"></i>
-                                            <md-tooltip>Facebook account</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <md-list-item class="md-1-line"
-                                                              ng-click="vm.showFacebookDialog($event)"
-                                                              ng-if="vm.user.facebook.id"
-                                                              aria-label="{{ vm.user.facebook.name }}">
-                                                    <img ng-src="{{vm.user.facebook.picture}}" class="md-avatar"
-                                                         alt="{{vm.user.facebook.name}}"
-                                                         ng-if="vm.user.facebook.id"/>
-
-                                                    <div class="md-list-item-text" layout="column">
-                                                        <h3 ng-bind="vm.user.facebook.name"></h3>
-                                                    </div>
-                                                </md-list-item>
-                                            </md-list>
-                                        </div>
-                                        <div flex="20" layout="row" layout-align="center center">
-                                            <md-button ng-if="! vm.user.facebook.id"
-                                                       ng-click="vm.addFacebookAccount()"
-                                                       class="md-primary"><i class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-
-                                    <md-divider md-inset></md-divider>
-
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-github"></i>
-                                            <md-tooltip>Github account</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <md-list-item class="md-2-line" ng-if="vm.user.github.id"
-                                                              ng-click="vm.showGithubDialog($event)"
-                                                              aria-label="Github account {{ vm.user.github.login }}">
-                                                    <img ng-src="{{vm.user.github.avatar_url}}"
-                                                         class="md-avatar"
-                                                         alt="{{vm.user.github.login}}"/>
-                                                    <div class="md-list-item-text">
-                                                        <h4 ng-bind="vm.user.github.name"></h4>
-                                                        <p ng-bind="vm.user.github.login"></p>
-                                                    </div>
-                                                </md-list-item>
-                                            </md-list>
-                                        </div>
-                                        <div flex="20" layout="row" layout-align="center center">
-                                            <md-button ng-if="!vm.user.github.id" class="md-primary"
-                                                       ng-click="vm.addGithubAccount()"><i
-                                                    class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-
-                                    <md-divider md-inset></md-divider>
-
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-envelope-o"></i>
-                                            <md-tooltip>Addresses</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <md-list-item class="md-3-line"
-                                                              ng-repeat="address in vm.user.addresses track by address.label"
-                                                              ng-click="vm.showAddressDetailDialog($event, address)"
-                                                              aria-label="address {{ ::address.label }}">
-                                                    <div class="md-list-item-text">
-                                                        <h3>
-                                                            <span ng-bind="address.street"></span>
-                                                            <span ng-bind="address.nr"></span>
-                                                        </h3>
-                                                        <h4>
-                                                            <span ng-bind="address.postalcode"></span>
-                                                            <span ng-bind="address.city"></span>
-                                                        </h4>
-                                                        <p ng-bind="address.label"></p>
-                                                    </div>
-                                                </md-list-item>
-                                            </md-list>
-                                        </div>
-                                        <div flex="20" layout="row" layout-align="center center">
-                                            <md-button class="md-primary"
-                                                       ng-click="vm.showAddressDetailDialog($event)">
-                                                <i class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-
-                                    <md-divider md-inset></md-divider>
-
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-bank"></i>
-                                            <md-tooltip>Bank accounts</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <md-list-item class="md-3-line"
-                                                              ng-repeat="bank in vm.user.bankaccounts track by bank.label"
-                                                              ng-click="vm.showBankAccountDialog($event, bank)">
-                                                    <div class="md-list-item-text">
-                                                        <h4 ng-hide="bank.iban === ''">IBAN:
-                                                            <span ng-bind="bank.iban"></span>
-                                                        </h4>
-                                                        <h4 ng-hide="bank.bic === ''">BIC:
-                                                            <span ng-bind="bank.bic"></span>
-                                                        </h4>
-                                                        <h4 ng-bind="bank.country"></h4>
-                                                        <p ng-bind="bank.label"></p>
-                                                    </div>
-                                                </md-list-item>
-                                            </md-list>
-                                        </div>
-                                        <div flex="20" layout="row" layout-align="center center">
-                                            <md-button class="md-primary"
-                                                       ng-click="vm.showBankAccountDialog($event)">
-                                                <i class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-                                    <md-divider md-inset></md-divider>
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="15"><i class="fa fa-2x fa-money"></i>
-                                            <md-tooltip>Digital wallet</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <md-list-item class="md-3-line"
-                                                              ng-repeat="address in vm.user.digitalwallet track by address.label"
-                                                              ng-click="vm.showDigitalWalletAddressDetail($event, address)"
-                                                              aria-label="Digital wallet address {{ address.label }}">
-                                                    <div class="md-list-item-text">
-                                                        <h3 ng-bind="address.address"></h3>
-                                                        <h4>Expires <span
-                                                                ng-bind="address.expire | date:'dd/MM/yyyy'"></span>
-                                                        </h4>
-                                                        <h4>Symbol: <span ng-bind="address.currencysymbol"></span></h4>
-                                                        <p ng-bind="address.label"></p>
-                                                    </div>
-                                                </md-list-item>
-                                            </md-list>
-                                        </div>
-                                        <div flex="20" layout="row" layout-align="center center">
-                                            <md-button class="md-primary"
-                                                       ng-click="vm.showDigitalWalletAddressDetail($event)">
-                                                <i class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-                                </md-list>
-                            </div>
-                        </md-tab-body>
-                    </md-tab>
-                    <md-tab md-on-select="vm.tabSelected()">
-                        <md-tab-label>
-                            <span class="badge" ng-bind="vm.pendingCount" style="margin-left:-10px;"></span>
-                            &nbsp;Notifications
-                        </md-tab-label>
-                        <md-tab-body layout="column">
-                            <div layout="row" layout-align="center center" ng-if="!vm.loaded.notifications">
-                                <md-progress-circular md-mode="indeterminate"
-                                                      md-diameter="100"></md-progress-circular>
-                            </div>
-                            <div flex-gt-sm="80" flex-gt-md="50">
-                                <div layout="row">
-                                    <div layout="column">
-                                        <br/>
-                                        <h3 ng-bind="vm.notificationMessage"></h3>
-                                    </div>
-                                    <span flex></span>
-                                </div>
-                                <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
-                                    <md-subheader class="md-no-sticky">Pending organization invites</md-subheader>
-                                    <md-list>
-                                        <md-list-item class="md-1-line"
-                                                      ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}">
-                                            <div class="md-list-item-text">
-                                                <p>
-                                                    <i class="fa fa-users"></i>
-                                                    <span ng-bind="invitation.organization"></span>
-                                                </p>
-                                            </div>
-                                            <md-icon md-font-icon="fa-times" class="fa md-secondary md-warn"
-                                                     ng-click="vm.reject(invitation)"
-                                                     aria-label="Reject invitation"></md-icon>
-                                            <md-icon md-font-icon="fa-check" class="fa md-secondary md-primary"
-                                                     ng-click="vm.accept($event, invitation)"
-                                                     aria-label="Accept invitation">
-                                            </md-icon>
-                                        </md-list-item>
-                                    </md-list>
-                                </div>
-                                <div ng-if="vm.getPendingCount(vm.notifications.security) > 0">
-                                    <md-list>
-                                        <md-subheader class="md-no-sticky">Security notifications</md-subheader>
-                                        <md-list-item
-                                                class="secondary-button-padding list-item-secondary-button-padding"
-                                                ng-repeat="notification in vm.notifications.security track by notification.subject"
-                                                aria-label="Security notice">
-                                            <p ng-bind="::notification.msg"></p>
-                                            <md-icon class="md-secondary md-raised"
-                                                     ng-click="vm.selectedTabIndex = notification.tabIndex">
-                                                Resolve
-                                            </md-icon>
-                                        </md-list-item>
-                                    </md-list>
-                                </div>
-                            </div>
-                        </md-tab-body>
-                    </md-tab>
-                    <md-tab md-on-select="vm.tabSelected(vm.loadOrganizations)">
-                        <md-tab-label><i class="fa fa-users"></i>&nbsp;Organizations</md-tab-label>
-                        <md-tab-body>
-                            <div layout="row">
-                                <md-button class="md-primary" ng-click="vm.createOrganization($event)">
-                                    <i class="fa fa-plus"></i> Create new
-                                </md-button>
-                            </div>
-                            <div layout="row" layout-align="center center" ng-if="!vm.loaded.organizations">
-                                <md-progress-circular md-mode="indeterminate"
-                                                      md-diameter="100"></md-progress-circular>
-                            </div>
-                            <div layout ng-show="vm.loaded.organizations">
-                                <div flex flex-gt-xs="50">
-                                    <md-list>
-                                        <md-subheader>Owner</md-subheader>
-                                        <md-list-item
-                                                ng-repeat="organization in vm.owner" class="noright"
-                                                ng-href="#/organization/{{ ::organization }}"
-                                                aria-label="Organization">
-                                            <p ng-bind="organization"></p>
-                                        </md-list-item>
-                                    </md-list>
-                                </div>
-                                <div flex flex-gt-xs="50">
-                                    <md-list>
-                                        <md-subheader>Member</md-subheader>
-                                        <md-list-item
-                                                ng-repeat="organization in vm.member" class="noright"
-                                                ng-href="#/organization/{{ ::organization }}">
-                                            <p>{{ ::organization }}</p>
-                                        </md-list-item>
-                                    </md-list>
-                                </div>
-                            </div>
-                        </md-tab-body>
-                    </md-tab>
-                    <md-tab md-on-select="vm.tabSelected(vm.loadAuthorizations)">
-                        <md-tab-label><i class="fa fa-ticket"></i>&nbsp;Authorizations</md-tab-label>
-                        <md-tab-body>
-                            <div layout="row" layout-align="center center" ng-if="!vm.loaded.authorizations">
-                                <md-progress-circular md-mode="indeterminate"
-                                                      md-diameter="100"></md-progress-circular>
-                            </div>
-                            <div ng-show="vm.loaded.authorizations">
-                                <md-list>
-                                    <md-list-item
-                                            ng-repeat="authorization in vm.authorizations | orderBy : 'grantedTo'"
-                                            ng-click="vm.showAuthorizationDetailDialog(authorization, $event)">
-                                        <p>{{ ::authorization.grantedTo }}</p>
-                                    </md-list-item>
-                                </md-list>
-                            </div>
-                        </md-tab-body>
-                    </md-tab>
-
-                    <!--<md-tab>-->
-                    <!--<md-tab-label><i class="fa fa-file-text-o"></i>&nbsp;Contracts</md-tab-label>-->
-                    <!--<md-tab-body>-->
-                    <!--</md-tab-body>-->
-                    <!--</md-tab>-->
-
-                    <md-tab md-on-select="vm.tabSelected(vm.loadSettings)">
-                        <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
-                        <md-tab-body>
-                            <div layout="row" layout-align="center center" ng-if="!vm.loaded.APIKeys">
-                                <md-progress-circular md-mode="indeterminate"
-                                                      md-diameter="100"></md-progress-circular>
-                            </div>
-                            <div ng-show="vm.loaded.APIKeys">
-                                <md-list flex="100" flex-gt-xs="70" flex-gt-sm="50" flex-gt-md="40">
-                                    <md-subheader class="md-no-sticky">API keys</md-subheader>
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <div flex="20"><i class="fa fa-2x fa-key"></i>
-                                            <md-tooltip>API keys</md-tooltip>
-                                        </div>
-                                        <div flex="60" flex-gt-xs="65">
-                                            <md-list>
-                                                <md-list-item ng-repeat="APIKey in vm.APIKeys"
-                                                              ng-click="vm.showAPIKeyDialog($event, APIKey)"
-                                                              aria-label="API key">
-                                                    <div class="md-list-item-text">
-                                                        <h4 ng-bind="APIKey.label"></h4>
-                                                    </div>
-                                                </md-list-item>
-                                            </md-list>
-                                        </div>
-                                        <div flex layout="row">
-                                            <md-button class="md-primary" ng-click="vm.showAPIKeyDialog($event)">
-                                                <i class="fa fa-plus"></i> Add
-                                            </md-button>
-                                        </div>
-                                    </md-list-item>
-                                    <md-divider md-inset></md-divider>
-                                    <md-subheader class="md-no-sticky">Security</md-subheader>
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <p>Password</p>
-                                        <md-button class="md-primary" ng-click="vm.showChangePasswordDialog($event)">
-                                            Change
-                                        </md-button>
-                                    </md-list-item>
-                                    <md-list-item>
-                                        <span flex-gt-xs="5"></span>
-                                        <p>Authenticator application</p>
-                                        <md-button class="md-primary"
-                                                   ng-click="vm.showSetupAuthenticatorApplication($event)"
-                                                   ng-hide="vm.twoFAMethods.totp">
-                                            Setup
-                                        </md-button>
-                                        <md-button class="md-warn"
-                                                   ng-click="vm.removeAuthenticatorApplication($event)"
-                                                   ng-show="vm.twoFAMethods.totp">
-                                            Remove
-                                        </md-button>
-                                    </md-list-item>
-                                </md-list>
-                            </div>
-                        </md-tab-body>
-                    </md-tab>
-                </md-tabs>
-            </md-card-content>
-        </md-card>
+<div flex-gt-sm="80" flex="100" layout="column">
+    <div class="breadcrumb-container">
+        <p>You</p>
+        <h1 ng-bind="::vm.username"></h1>
     </div>
-    <div flex></div>
-</div>
+    <md-card>
+        <md-card-content>
+            <md-tabs md-selected="vm.selectedTabIndex" md-dynamic-height>
+                <md-tab md-on-select="vm.tabSelected()">
+                    <md-tab-label><i class="fa fa-user"></i>&nbsp;You</md-tab-label>
+                    <md-tab-body>
+                        <div class="loading-container" layout-align="center center" ng-if="!vm.loaded.user">
+                            <md-progress-circular md-mode="indeterminate" md-diameter="50"></md-progress-circular>
+                        </div>
+                        <div ng-show="vm.loaded.user" flex="100" flex-gt-sm="70" flex-gt-md="50"
+                             class="tab-you">
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-user"></i> Full name</span>
+                                    <md-button ng-if="!vm.user.firstname || !vm.user.lastname"
+                                               ng-click="vm.showEditNameDialog($event)">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <md-list-item class="md-2-line" ng-click="vm.showEditNameDialog($event)">
+                                    <div class="md-list-item-text">
+                                        <h4>
+                                            <span ng-bind="vm.user.firstname"></span>
+                                            <span ng-bind="vm.user.lastname"></span>
+                                        </h4>
+                                        <p>Full name</p>
+                                    </div>
+                                </md-list-item>
+                            </md-list>
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-at"></i> Email addresses</span>
+                                    <md-button ng-click="vm.showEmailDetailDialog($event)">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <div ng-repeat="email in vm.user.emailaddresses  track by email.label" layout="row"
+                                     layout-align="space-between center">
+                                    <md-list-item class="md-2-line" flex="80"
+                                                  ng-click="vm.showEmailDetailDialog($event, email)"
+                                                  aria-label="Email address">
+                                        <div class="md-list-item-text">
+                                            <h4 ng-bind=email.emailaddress></h4>
+                                            <p ng-bind="email.label"></p>
+                                        </div>
+                                    </md-list-item>
+                                    <p ng-if="email.verified" class="md-body-1 verified">
+                                        <i class="fa fa-check green"></i> Verified
+                                    </p>
+                                    <md-button ng-click="vm.verifyEmailAddress($event, email)"
+                                               class="md-primary md-secondary"
+                                               ng-if="vm.loaded.verifiedEmails && !email.verified">
+                                        Verify
+                                    </md-button>
+                                </div>
+                            </md-list>
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-phone"></i> Phone numbers</span>
+                                    <md-button ng-click="vm.showPhonenumberDetailDialog($event)">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <div ng-repeat="phone in vm.user.phonenumbers track by phone.label"
+                                     layout="row" layout-align="space-between center">
+                                    <md-list-item class="md-2-line" flex="80"
+                                                  ng-click="vm.showPhonenumberDetailDialog($event, phone)"
+                                                  aria-label="Phone {{ phone.label }} - {{ phone.phonenumber }}">
+                                        <div class="md-list-item-text">
+                                            <h4 ng-bind="phone.phonenumber"></h4>
+                                            <p ng-bind="phone.label"></p>
+                                        </div>
+                                    </md-list-item>
+                                    <p ng-if="phone.verified" class="md-body-1 verified">
+                                        <i class="fa fa-check green"></i> Verified
+                                    </p>
+                                    <md-button ng-click="vm.verifyPhone($event, phone)"
+                                               class="md-primary md-secondary"
+                                               ng-if="vm.loaded.verifiedPhones && !phone.verified">
+                                        Verify
+                                    </md-button>
+                                </div>
+                            </md-list>
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-facebook-official"></i> Facebook account</span>
+                                    <md-button ng-if="! vm.user.facebook.id" ng-click="vm.addFacebookAccount()">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <md-list-item class="md-1-line" ng-click="vm.showFacebookDialog($event)"
+                                              ng-if="vm.user.facebook.id" aria-label="{{ vm.user.facebook.name }}">
+                                    <img ng-src="{{vm.user.facebook.picture}}" class="md-avatar"
+                                         alt="{{vm.user.facebook.name}}" ng-if="vm.user.facebook.id"/>
+                                    <div class="md-list-item-text">
+                                        <h3 ng-bind="vm.user.facebook.name"></h3>
+                                    </div>
+                                </md-list-item>
+                                <p ng-if="!vm.user.facebook.id">You haven't added your Facebook account yet.</p>
+                            </md-list>
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-github"></i> GitHub account</span>
+                                    <md-button ng-if="! vm.user.github.id" ng-click="vm.addGithubAccount()">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <md-list-item class="md-2-line" ng-if="vm.user.github.id"
+                                              ng-click="vm.showGithubDialog($event)"
+                                              aria-label="Github account {{ vm.user.github.login }}">
+                                    <img ng-src="{{vm.user.github.avatar_url}}" class="md-avatar"
+                                         alt="{{vm.user.github.login}}"/>
+                                    <div class="md-list-item-text">
+                                        <h4 ng-bind="vm.user.github.name"></h4>
+                                        <p ng-bind="vm.user.github.login"></p>
+                                    </div>
+                                </md-list-item>
+                                <p ng-if="!vm.user.github.login">You haven't added your GitHub account yet.</p>
+                            </md-list>
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-envelope-o"></i> Addresses</span>
+                                    <md-button ng-click="vm.showAddressDetailDialog($event)">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <md-list-item class="md-3-line"
+                                              ng-repeat="address in vm.user.addresses track by address.label"
+                                              ng-click="vm.showAddressDetailDialog($event, address)"
+                                              aria-label="address {{ ::address.label }}">
+                                    <div class="md-list-item-text">
+                                        <h3>
+                                            <span ng-bind="address.street"></span>
+                                            <span ng-bind="address.nr"></span>
+                                        </h3>
+                                        <h4>
+                                            <span ng-bind="address.postalcode"></span>
+                                            <span ng-bind="address.city"></span>
+                                        </h4>
+                                        <p ng-bind="address.label"></p>
+                                    </div>
+                                </md-list-item>
+                            </md-list>
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-bank"></i> Bank accounts</span>
+                                    <md-button ng-click="vm.showBankAccountDialog($event)">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <md-list-item class="md-3-line"
+                                              ng-repeat="bank in vm.user.bankaccounts track by bank.label"
+                                              ng-click="vm.showBankAccountDialog($event, bank)">
+                                    <div class="md-list-item-text">
+                                        <h4 ng-hide="bank.iban === ''">IBAN:
+                                            <span ng-bind="bank.iban"></span>
+                                        </h4>
+                                        <h4 ng-hide="bank.bic === ''">BIC:
+                                            <span ng-bind="bank.bic"></span>
+                                        </h4>
+                                        <h4 ng-bind="bank.country"></h4>
+                                        <p ng-bind="bank.label"></p>
+                                    </div>
+                                </md-list-item>
+                            </md-list>
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-money"></i> Digital wallet</span>
+                                    <md-button ng-click="vm.showDigitalWalletAddressDetail($event)">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <md-list-item class="md-3-line"
+                                              ng-repeat="address in vm.user.digitalwallet track by address.label"
+                                              ng-click="vm.showDigitalWalletAddressDetail($event, address)"
+                                              aria-label="Digital wallet address {{ address.label }}">
+                                    <div class="md-list-item-text">
+                                        <h3 ng-bind="address.address"></h3>
+                                        <h4>Expires <span ng-bind="address.expire | date:'dd/MM/yyyy'"></span><span>,
+                                                                                    symbol <span
+                                                    ng-bind="address.currencysymbol"></span></span>
+                                        </h4>
+                                        <p ng-bind="address.label"></p>
+                                    </div>
+                                </md-list-item>
+                            </md-list>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab md-on-select="vm.tabSelected()">
+                    <md-tab-label>
+                        <span class="badge" ng-bind="vm.pendingCount" style="margin-left:-10px;"></span>
+                        &nbsp;Notifications
+                    </md-tab-label>
+                    <md-tab-body layout="column">
+                        <div class="loading-container" layout-align="center center"
+                             ng-if="!vm.loaded.notifications">
+                            <md-progress-circular md-mode="indeterminate"
+                                                  md-diameter="50"></md-progress-circular>
+                        </div>
+                        <div flex-gt-sm="80" flex-gt-md="50">
+                            <div layout="row">
+                                <div layout="column">
+                                    <br/>
+                                    <h3 ng-bind="vm.notificationMessage"></h3>
+                                </div>
+                                <span flex></span>
+                            </div>
+                            <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
+                                <md-subheader class="md-no-sticky">Pending organization invites</md-subheader>
+                                <md-list>
+                                    <md-list-item class="md-1-line"
+                                                  ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}">
+                                        <div class="md-list-item-text">
+                                            <p>
+                                                <i class="fa fa-users"></i>
+                                                <span ng-bind="invitation.organization"></span>
+                                            </p>
+                                        </div>
+                                        <md-icon md-font-icon="fa-times" class="fa md-secondary md-warn"
+                                                 ng-click="vm.reject(invitation)"
+                                                 aria-label="Reject invitation"></md-icon>
+                                        <md-icon md-font-icon="fa-check" class="fa md-secondary md-primary"
+                                                 ng-click="vm.accept($event, invitation)"
+                                                 aria-label="Accept invitation">
+                                        </md-icon>
+                                    </md-list-item>
+                                </md-list>
+                            </div>
+                            <div ng-if="vm.getPendingCount(vm.notifications.security) > 0">
+                                <md-list>
+                                    <md-subheader class="md-no-sticky">Security notifications</md-subheader>
+                                    <md-list-item
+                                            class="secondary-button-padding list-item-secondary-button-padding"
+                                            ng-repeat="notification in vm.notifications.security track by notification.subject"
+                                            aria-label="Security notice">
+                                        <p ng-bind="::notification.msg"></p>
+                                        <md-icon class="md-secondary md-raised"
+                                                 ng-click="vm.selectedTabIndex = notification.tabIndex">
+                                            Resolve
+                                        </md-icon>
+                                    </md-list-item>
+                                </md-list>
+                            </div>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab md-on-select="vm.tabSelected(vm.loadOrganizations)">
+                    <md-tab-label><i class="fa fa-users"></i>&nbsp;Organizations</md-tab-label>
+                    <md-tab-body>
+                        <div layout="row">
+                            <md-button class="md-primary" ng-click="vm.createOrganization($event)">
+                                <i class="fa fa-plus"></i> Create new
+                            </md-button>
+                        </div>
+                        <div class="loading-container" layout-align="center center"
+                             ng-if="!vm.loaded.organizations">
+                            <md-progress-circular md-mode="indeterminate"
+                                                  md-diameter="50"></md-progress-circular>
+                        </div>
+                        <div layout ng-show="vm.loaded.organizations">
+                            <div flex flex-gt-xs="50">
+                                <md-list>
+                                    <md-subheader>Owner</md-subheader>
+                                    <md-list-item
+                                            ng-repeat="organization in vm.owner" class="noright"
+                                            ng-href="#/organization/{{ ::organization }}"
+                                            aria-label="Organization">
+                                        <p ng-bind="organization"></p>
+                                    </md-list-item>
+                                </md-list>
+                            </div>
+                            <div flex flex-gt-xs="50">
+                                <md-list>
+                                    <md-subheader>Member</md-subheader>
+                                    <md-list-item
+                                            ng-repeat="organization in vm.member" class="noright"
+                                            ng-href="#/organization/{{ ::organization }}">
+                                        <p>{{ ::organization }}</p>
+                                    </md-list-item>
+                                </md-list>
+                            </div>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab md-on-select="vm.tabSelected(vm.loadAuthorizations)">
+                    <md-tab-label><i class="fa fa-ticket"></i>&nbsp;Authorizations</md-tab-label>
+                    <md-tab-body>
+                        <div class="loading-container" layout-align="center center"
+                             ng-if="!vm.loaded.authorizations">
+                            <md-progress-circular md-mode="indeterminate"
+                                                  md-diameter="50"></md-progress-circular>
+                        </div>
+                        <div ng-show="vm.loaded.authorizations">
+                            <md-list>
+                                <md-list-item
+                                        ng-repeat="authorization in vm.authorizations | orderBy : 'grantedTo'"
+                                        ng-click="vm.showAuthorizationDetailDialog(authorization, $event)">
+                                    <p>{{ ::authorization.grantedTo }}</p>
+                                </md-list-item>
+                            </md-list>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+
+                <!--<md-tab>-->
+                <!--<md-tab-label><i class="fa fa-file-text-o"></i>&nbsp;Contracts</md-tab-label>-->
+                <!--<md-tab-body>-->
+                <!--</md-tab-body>-->
+                <!--</md-tab>-->
+
+                <md-tab md-on-select="vm.tabSelected(vm.loadSettings)">
+                    <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
+                    <md-tab-body>
+                        <div class="loading-container" layout-align="center center" ng-if="!vm.loaded.APIKeys">
+                            <md-progress-circular md-mode="indeterminate" md-diameter="50"></md-progress-circular>
+                        </div>
+                        <div ng-if="vm.loaded.APIKeys" flex="100" flex-gt-xs="70" flex-gt-sm="50" flex-gt-md="40"
+                             class="tab-settings">
+                            <md-toolbar>
+                                <div class="md-toolbar-tools" layout-align="space-between center">
+                                    <span><i class="fa fa-key"></i> API keys</span>
+                                    <md-button ng-click="vm.showAPIKeyDialog($event)">
+                                        <i class="fa fa-plus"></i> Add
+                                    </md-button>
+                                </div>
+                            </md-toolbar>
+                            <md-list>
+                                <md-list-item ng-repeat="APIKey in vm.APIKeys"
+                                              ng-click="vm.showAPIKeyDialog($event, APIKey)"
+                                              aria-label="API key">
+                                    <div class="md-list-item-text">
+                                        <h4 ng-bind="APIKey.label"></h4>
+                                    </div>
+                                </md-list-item>
+                                <md-toolbar>
+                                    <div class="md-toolbar-tools" layout-align="space-between center">
+                                        <span><i class="fa fa-lock"></i> Security</span>
+                                    </div>
+                                </md-toolbar>
+                            </md-list>
+                            <md-list-item>
+                                <div class="md-list-item-text">
+                                    <p>Password</p>
+                                </div>
+                                <md-button class="md-primary md-secondary"
+                                           ng-click="vm.showChangePasswordDialog($event)">
+                                    Change
+                                </md-button>
+                            </md-list-item>
+                            <md-list-item>
+                                <div class="md-list-item-text">
+                                    <p>Authenticator application</p>
+                                </div>
+                                <md-button class="md-primary md-secondary"
+                                           ng-click="vm.showSetupAuthenticatorApplication($event)"
+                                           ng-if="!vm.twoFAMethods.totp">
+                                    Setup
+                                </md-button>
+                                <md-button class="md-warn md-secondary"
+                                           ng-click="vm.removeAuthenticatorApplication($event)"
+                                           ng-if="vm.twoFAMethods.totp">
+                                    Remove
+                                </md-button>
+                            </md-list-item>
+                            </md-list>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+            </md-tabs>
+        </md-card-content>
+    </md-card>
+</div>>

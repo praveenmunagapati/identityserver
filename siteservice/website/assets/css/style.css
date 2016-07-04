@@ -417,3 +417,24 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 .list-item-secondary-button-padding p {
     padding-right: 120px;
 }
+
+.tab-you, .tab-settings {
+    margin-top: 20px;
+}
+
+.tab-you md-toolbar, .tab-settings md-toolbar {
+    min-height: 48px;
+}
+
+.tab-you md-toolbar .md-toolbar-tools, .tab-settings md-toolbar .md-toolbar-tools {
+    height: 48px;
+    min-height: 48px;
+}
+
+.loading-container {
+    min-height: 300px;
+}
+
+p.verified {
+    margin-right: 20px;
+}
