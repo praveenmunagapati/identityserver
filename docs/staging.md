@@ -1,6 +1,6 @@
 ## Staging environment
 
-Next to the production itsyou.online, a staging environment is deployed on http://staging.itsyou.online
+Next to the production itsyou.online, a staging environment is deployed on https://staging.itsyou.online
 
 The staging environment uses the following public key for signing it's jwt's:
 
