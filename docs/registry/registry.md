@@ -27,7 +27,7 @@ To modify registry entries for a user, the `user:admin` scope is required, to mo
     Delete Entry:
     `DELETE /api/users/{username}/registry/{key}`
 
-Organizations:
+- Organizations:
 
     List entries:
     `GET /api/organizations/{globalid}/registry`
@@ -50,5 +50,5 @@ No oauth scope is required
 - Users:
     `GET /api/users/{username}/registry/{key}`
 
--Organizations:
+- Organizations:
     `GET /api/organizations/{globalid}/registry/{key}`
