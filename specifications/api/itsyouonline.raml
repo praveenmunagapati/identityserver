@@ -621,20 +621,6 @@ securedBy: [ oauth_2_0 ]
                 application/json:
                     type: KeyValuePair[]
     /registry/{key}:
-        put:
-          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-          displayName: UpdateUserRegistryEntry
-          description: Updates a KeyValuePair in the user's registry.
-          body:
-            application/json:
-              properties:
-                type: KeyValuePair
-          responses:
-            201:
-                description: Updated
-            404:
-                description: Key is not found
-
         delete:
           securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
           displayName: DeleteUserRegistryEntry
@@ -1384,20 +1370,6 @@ securedBy: [ oauth_2_0 ]
                 application/json:
                     type: KeyValuePair[]
     /registry/{key}:
-        put:
-          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-          displayName: UpdateOrganizationRegistryEntry
-          description: Updates a KeyValuePair in the organization's registry.
-          body:
-            application/json:
-              properties:
-                type: KeyValuePair
-          responses:
-            201:
-                description: Updated
-            404:
-                description: Key is not found
-
         delete:
           securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
           displayName: DeleteOrganizationRegistryEntry
