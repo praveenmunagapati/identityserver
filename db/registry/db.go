@@ -110,7 +110,13 @@ func (m *Manager) UpsertRegistryEntry(username string, globalid string, registry
 
 //ListRegistryEntries gets all registry entries for a user or organization
 func (m *Manager) ListRegistryEntries(username string, globalid string) (registryEntries []RegistryEntry, err error) {
-	err = m.getRegistryCollection().Find(bson.M{"username": username}).Select(bson.M{"entries": 1}).All(&registryEntries)
+	var selector bson.M
+	if username != "" {
+		selector = bson.M{"username": username}
+	} else {
+		selector = bson.M{"globalid": globalid}
+	}
+	err = m.getRegistryCollection().Find(selector).Select(bson.M{"entries": 1}).All(&registryEntries)
 	return
 }
 
