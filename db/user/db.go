@@ -7,8 +7,9 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/itsyouonline/identityserver/db"
 	"time"
+
+	"github.com/itsyouonline/identityserver/db"
 )
 
 const (
@@ -29,7 +30,7 @@ func InitModels() {
 	// Removes users without valid 2 factor authentication after 3 days
 	automaticUserExpiration := mgo.Index{
 		Key:         []string{"expire"},
-		ExpireAfter: time.Second,
+		ExpireAfter: time.Second * 3600 * 24 * 3,
 		Background:  true,
 	}
 	db.EnsureIndex(mongoUsersCollectionName, automaticUserExpiration)
