@@ -13,37 +13,31 @@ To modify registry entries for a user, the `user:admin` scope is required, to mo
 
 ### URL's
 
-- Users:
+- User registry:
 
     List entries:
     `GET /api/users/{username}/registry`
 
-    Create entry:
+    Create/Update entry:
     `POST /api/users/{username}/registry`
-
-    Update Entry:
-    `PUT /api/users/{username}/registry/{key}`
 
     Delete Entry:
     `DELETE /api/users/{username}/registry/{key}`
 
-- Organizations:
+- Organization registry:
 
     List entries:
     `GET /api/organizations/{globalid}/registry`
 
-    Create entry:
+    Create/Update entry:
     `POST /api/organizations/{globalid}/registry`
-
-    Update Entry:
-    `PUT /api/organizations/{globalid}/registry/{key}`
 
     Delete Entry:
     `DELETE /api/organizations/{globalid}/registry/{key}`
 
 ## Read an entry
 
-No oauth scope is required
+No oauth2 scope is required
 
 ### URL's
 
