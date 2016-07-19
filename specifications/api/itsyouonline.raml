@@ -413,7 +413,7 @@ types:
       error: string
 
 
-  KeyValuePair:
+  RegistryEntry:
     properties:
       Key:
         type: string
@@ -599,16 +599,16 @@ securedBy: [ oauth_2_0 ]
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       post:
         displayName: AddUserRegistryEntry
-        description: Adds a KeyValuePair to the user's registry, if the key is already used, it is overwritten.
+        description: Adds a RegistryEntry to the user's registry, if the key is already used, it is overwritten.
         body:
           application/json:
-            type: KeyValuePair
+            type: RegistryEntry
         responses:
             201:
-              description: Added the KeyValuePair to the user's registry
+              description: Added the RegistryEntry to the user's registry
               body:
                 application/json:
-                    type: KeyValuePair
+                    type: RegistryEntry
             409:
                 description: Label is already used.
       get:
@@ -619,25 +619,25 @@ securedBy: [ oauth_2_0 ]
               description: List of Registry entries
               body:
                 application/json:
-                    type: KeyValuePair[]
+                    type: RegistryEntry[]
     /registry/{key}:
         delete:
           securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
           displayName: DeleteUserRegistryEntry
-          description: Removes a KeyValuePair from the user's registry
+          description: Removes a RegistryEntry from the user's registry
           responses:
               204:
-                description: KeyValuePair removed.
+                description: RegistryEntry removed.
 
         get:
           displayName: GetUserRegistryEntry
-          description: Get a KeyValuePair from the user's registry.
+          description: Get a RegistryEntry from the user's registry.
           responses:
             200:
                 description: Registry Entry
                 body:
                   application/json:
-                    type: KeyValuePair
+                    type: RegistryEntry
             404:
                 description: Not found
 
@@ -1348,50 +1348,47 @@ securedBy: [ oauth_2_0 ]
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       post:
         displayName: AddOrganizationRegistryEntry
-        description: Adds a KeyValuePair to the organization's registry, if the key is already used, it is overwritten.
+        description: Adds a RegistryEntry to the organization's registry, if the key is already used, it is overwritten.
         body:
           application/json:
-            type: KeyValuePair
+            type: RegistryEntry
         responses:
             201:
-              description: Added the KeyValuePair to the user's registry
+              description: Added the RegistryEntry to the user's registry
               body:
                 application/json:
-                    type: KeyValuePair
+                    type: RegistryEntry
             409:
                 description: Label is already used.
       get:
         displayName: ListOrganizationRegistry
-        description: Lists the KeyValuePairs in an organization's registry.
+        description: Lists the RegistryEntries in an organization's registry.
         responses:
             200:
               description: List of Registry Entries
               body:
                 application/json:
-                    type: KeyValuePair[]
+                    type: RegistryEntry[]
     /registry/{key}:
         delete:
           securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
           displayName: DeleteOrganizationRegistryEntry
-          description: Removes a KeyValuePair from the organization's registry
+          description: Removes a RegistryEntry from the organization's registry
           responses:
               204:
-                description: KeyValuePair removed.
+                description: RegistryEntry removed.
 
         get:
           displayName: GetOrganizationRegistryEntry
-          description: Get a KeyValuePair from the organization's registry.
+          description: Get a RegistryEntry from the organization's registry.
           responses:
             200:
                 description: Registry Entry
                 body:
                   application/json:
-                    type: KeyValuePair
+                    type: RegistryEntry
             404:
                 description: Not found
-
-
-
 
     /dns:
       description: Manage domain names linked to an organization.
