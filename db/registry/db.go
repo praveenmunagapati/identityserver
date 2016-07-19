@@ -107,3 +107,23 @@ func (m *Manager) UpsertRegistryEntry(username string, globalid string, registry
 	m.getRegistryCollection().Upsert(selector, &registryEntry)
 	return
 }
+
+//ListRegistryEntries gets all registry entries for a user or organization
+func (m *Manager) ListRegistryEntries(username string, globalid string) (registryEntries []RegistryEntry, err error) {
+	err = m.getRegistryCollection().Find(bson.M{"username": username}).Select(bson.M{"entries": 1}).All(&registryEntries)
+	return
+}
+
+// GetRegistryEntry gets a registryentry for a user or organization
+// If no such entry exists, nil is returned, both for the registryEntry and error
+func (m *Manager) GetRegistryEntry(username string, globalid string, key string) (registryEntry *RegistryEntry, err error) {
+	selector, err := createSelector(username, globalid, key)
+	registryEntry = &RegistryEntry{}
+	err = m.getRegistryCollection().Find(selector).One(registryEntry)
+	if err == mgo.ErrNotFound {
+		err = nil
+		registryEntry = nil
+	}
+	return
+
+}

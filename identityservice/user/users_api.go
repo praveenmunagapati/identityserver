@@ -15,6 +15,7 @@ import (
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	organizationDb "github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/db/registry"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
@@ -1584,6 +1585,92 @@ func (api UsersAPI) LeaveOrganization(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ListUserRegistry is the handler for GET /users/{username}/registry
+// Lists the Registry entries
+func (api UsersAPI) ListUserRegistry(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	mgr := registry.NewManager(r)
+	registryEntries, err := mgr.ListRegistryEntries(username, "")
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(registryEntries)
+}
+
+// AddUserRegistryEntry is the handler for POST /users/{username}/registry
+// Adds a RegistryEntry to the user's registry, if the key is already used, it is overwritten.
+func (api UsersAPI) AddUserRegistryEntry(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	registryEntry := registry.RegistryEntry{}
+
+	if err := json.NewDecoder(r.Body).Decode(&registryEntry); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if err := registryEntry.Validate(); err != nil {
+		log.Debug("Invalid registry entry: ", registryEntry)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	mgr := registry.NewManager(r)
+	err := mgr.UpsertRegistryEntry(username, "", registryEntry)
+
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(registryEntry)
+}
+
+// GetUserRegistryEntry is the handler for GET /users/{username}/registry/{key}
+// Get a RegistryEntry from the user's registry.
+func (api UsersAPI) GetUserRegistryEntry(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	key := mux.Vars(r)["key"]
+
+	mgr := registry.NewManager(r)
+	registryEntry, err := mgr.GetRegistryEntry(username, "", key)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if registryEntry == nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(registryEntry)
+}
+
+// DeleteUserRegistryEntry is the handler for DELETE /users/{username}/registry/{key}
+// Removes a RegistryEntry from the user's registry
+func (api UsersAPI) DeleteUserRegistryEntry(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	key := mux.Vars(r)["key"]
+
+	mgr := registry.NewManager(r)
+	err := mgr.DeleteRegistryEntry(username, "", key)
+
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
