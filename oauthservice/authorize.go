@@ -108,14 +108,6 @@ func (service *Service) filterAuthorizedScopes(r *http.Request, username string,
 	return
 }
 
-func (service *Service) filterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes []string) (possibleScopes []string, err error) {
-	log.Debug("Filtering requested scopes: ", requestedScopes)
-	possibleScopes, err = service.identityService.FilterPossibleScopes(r, username, clientID, requestedScopes)
-	log.Debug("Possible scopes: ", possibleScopes)
-	//TODO: how to request required scopes, they should not just be ignored?
-	return
-}
-
 //AuthorizeHandler is the handler of the /v1/oauth/authorize endpoint
 func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Request) {
 
@@ -165,8 +157,8 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	requestedScopes := strings.Split(request.Form.Get("scope"), ",")
-	possibleScopes, err := service.filterPossibleScopes(request, username, clientID, requestedScopes)
+	requestedScopes := splitScopeString(request.Form.Get("scope"))
+	possibleScopes, err := service.filterPossibleScopes(request, username, requestedScopes, true)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -190,19 +182,19 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		// authorize the login but only with the authorized scopes
 		referrer := request.Header.Get("Referer")
 		if referrer != "" && !validAuthorization { //If we already have a valid authorization, no need to check if we come from the authorize page
-			if referrerURL, err := url.Parse(referrer); err == nil {
+			if referrerURL, e := url.Parse(referrer); e == nil {
 				validAuthorization = referrerURL.Host == request.Host && referrerURL.Path == "/authorize"
 			} else {
-				log.Debug("Error parsing referrer: ", err)
+				log.Debug("Error parsing referrer: ", e)
 			}
 		}
 	}
 
 	//If no valid authorization, ask the user for authorizations
 	if !validAuthorization {
-		token, err := service.createItsYouOnlineAdminToken(username, request)
-		if err != nil {
-			log.Error(err)
+		token, e := service.createItsYouOnlineAdminToken(username, request)
+		if e != nil {
+			log.Error(e)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

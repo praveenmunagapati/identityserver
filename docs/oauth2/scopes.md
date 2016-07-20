@@ -2,7 +2,7 @@
 
 Scopes work a bit differently then in most known OAuth2 identity providers since we want to have more control about which information is exposed to client applications.
 
-Lets explain this with an example: Bob wants to buy a dogcollar at petshop.com. When checking out his chopping cart, Bob authenticates using itsyou.online. Petshop.com needs a billing and a shipping address and asks for the scope `user:address:billing,user:address:shipping` during the authorization flow as described in the [OAuth2](oauth2.md) documentation.
+Lets explain this with an example: Bob wants to buy a dogcollar at petshop.com. When checking out his shopping cart, Bob authenticates using itsyou.online. Petshop.com needs a billing and a shipping address and asks for the scope `user:address:billing,user:address:shipping` during the authorization flow as described in the [OAuth2](oauth2.md) documentation.
 
 Bob has 3 addresses registered in itsyou.online:
 
