@@ -93,7 +93,7 @@ func (m *Manager) DeleteRegistryEntry(username string, globalid string, key stri
 	if err != nil {
 		return
 	}
-	m.getRegistryCollection().RemoveAll(selector)
+	_, err = m.getRegistryCollection().RemoveAll(selector)
 	return
 }
 
@@ -104,7 +104,7 @@ func (m *Manager) UpsertRegistryEntry(username string, globalid string, registry
 	if err != nil {
 		return
 	}
-	m.getRegistryCollection().Upsert(selector, &registryEntry)
+	_, err = m.getRegistryCollection().Upsert(selector, &registryEntry)
 	return
 }
 
