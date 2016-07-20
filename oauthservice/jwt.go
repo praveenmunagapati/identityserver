@@ -1,6 +1,7 @@
 package oauthservice
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -8,6 +9,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 )
+
+var errUnauthorized = errors.New("Unauthorized")
 
 //JWTHandler returns a JWT with claims that are a subset of the scopes available to the authorizing token
 func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,12 +45,26 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 	requestedScopeParameter := r.FormValue("scope")
 
 	extraAudiences := strings.TrimSpace(r.FormValue("aud"))
+	tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences)
+	if err == errUnauthorized {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte(tokenString))
+}
 
-	requestedScopes := splitScopeString(requestedScopeParameter)
+func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, extraAudiences string) (tokenString string, err error) {
+
+	requestedScopes := splitScopeString(requestedScopeString)
 	acquiredScopes := splitScopeString(at.Scope)
 
 	if !jwtScopesAreAllowed(acquiredScopes, requestedScopes) {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		err = errUnauthorized
 		return
 	}
 
@@ -57,8 +74,7 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 		token.Claims["username"] = at.Username
 		possibleScopes, e := service.filterPossibleScopes(r, at.Username, requestedScopes, false)
 		if e != nil {
-			log.Error(e)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			err = e
 			return
 		}
 		token.Claims["scope"] = strings.Join(possibleScopes, ",")
@@ -77,13 +93,8 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 	token.Claims["exp"] = at.ExpirationTime().Unix()
 	token.Claims["iss"] = "itsyouonline"
 
-	tokenString, err := token.SignedString(service.jwtSigningKey)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	w.Write([]byte(tokenString))
+	tokenString, err = token.SignedString(service.jwtSigningKey)
+	return
 }
 
 func jwtScopesAreAllowed(grantedScopes []string, requestedScopes []string) (valid bool) {
