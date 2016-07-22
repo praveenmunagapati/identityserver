@@ -27,7 +27,7 @@ go get -u github.com/jteeuwen/go-bindata/...
 
 After this execute `go generate` in the `siteservice/website` folder. Commit the overwritten go files in the packaged folder.
 
-### Developement mode
+### Development mode
 
 There are two ways to switch in development mode, manually and by means of a script.
 

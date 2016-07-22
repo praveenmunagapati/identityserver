@@ -1,7 +1,7 @@
 #%RAML 1.0
 title: Itsyouonline
 version: 0.1
-baseUri: /
+baseUri: https://itsyou.online
 securitySchemes:
   oauth_2_0: !include securitySchemes/oauth_2_0.raml
 
@@ -18,19 +18,29 @@ types:
         apikey: string
         applicationid: string
         scopes: string[]
-        label: string
+        label: Label
 
   PublicKey:
      description: PublicKey of a user
      properties:
-        label: string
+        label: Label
         publickey: string
 
   AuthorizationMap:
      description: Mapping between requested labels and real labels
      properties:
-        requestedlabel: string
-        reallabel: string
+        requestedlabel: Label
+        reallabel: Label
+
+  DigitalWalletAuthorization:
+    description: Mapping between requested labels and real label. Also has a 'currency' property
+    properties:
+      requestedlabel: Label
+      reallabel: Label
+      currency:
+        type: string
+        minLength: 1
+        maxLength: 15
 
   Authorization:
     description: For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
@@ -303,10 +313,7 @@ types:
 
   OrganizationAPIKey:
       properties:
-        label:
-          type: string
-          maxLength: 50
-          minLength: 2
+        label: Label
         callbackURL?:
           type: string
           maxLength: 250
@@ -401,7 +408,9 @@ types:
           From this result, take a SHA256 followed by a RIPEMD160, next base58CheckEncode the result with a 0x00 prefix.
 
       signatures: Signature[]
-
+  Error:
+    properties:
+      error: string
 
 securedBy: [ oauth_2_0 ]
 /users:
@@ -454,8 +463,7 @@ securedBy: [ oauth_2_0 ]
                   description: Invalid password format or invallid currentpassword
                   body:
                     application/json:
-                      properties:
-                        error: string
+                      type: Error
     /emailaddresses:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       get:
@@ -641,6 +649,7 @@ securedBy: [ oauth_2_0 ]
                         type: userview
   /{username}/validate:
     get:
+      displayName: ValidateUsername
       queryParameters:
             token:
                 type: string
@@ -822,8 +831,7 @@ securedBy: [ oauth_2_0 ]
               description: invalid validationkey or code
               body:
                 application/json:
-                    properties:
-                        error: string
+                  type: Error
 
   /{username}/banks:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -863,7 +871,13 @@ securedBy: [ oauth_2_0 ]
             application/json:
                 type: BankAccount
     delete:
+        displayName: DeleteUserBankAccount
         description: Delete a BankAccount
+        responses:
+          404:
+            description: BankAccount not found
+          204:
+            description: BankAccount deleted
   /{username}/notifications:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
@@ -943,19 +957,33 @@ securedBy: [ oauth_2_0 ]
                 type: Authorization
 
   /{username}/organizations:
-      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-      get:
-        displayName: GetUserOrganizations
-        description: Get the list organizations a user is owner or member of
-        responses:
-          200:
-            body:
-              application/json:
-                properties:
-                  owner: string[]
-                  member: string[]
-
-      /{globalid}/roles/{role}:
+    securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+    get:
+      displayName: GetUserOrganizations
+      description: Get the list organizations a user is owner or member of
+      responses:
+        200:
+          body:
+            application/json:
+              properties:
+                owner: string[]
+                member: string[]
+    /{globalid}:
+      /leave:
+        delete:
+          displayName: LeaveOrganization
+          description: Removes the user from an organization
+          responses:
+            401:
+              description: Unauthorized
+            404:
+              description: Organization or user not found
+              body:
+                application/json:
+                  type: Error
+            204:
+              description: Successfully removed user from organization
+      /roles/{role}:
         post:
           displayName: AcceptMembership
           description: Accept membership in organization
@@ -968,12 +996,10 @@ securedBy: [ oauth_2_0 ]
                 application/json:
                   type: JoinOrganizationInvitation
         delete:
-          description: |
-            Reject membership invitation in an organization.
+          description: Reject membership invitation in an organization.
           responses:
             204:
-              description: |
-                Succesfully rejected invitation.
+              description: Succesfully rejected invitation.
 
 /organizations:
   post:
@@ -1033,7 +1059,60 @@ securedBy: [ oauth_2_0 ]
                 type: Organization
           401:
             description: Unauthorized
+          422:
+            description: Maximum amount of organizations reached
+            body:
+              application/json:
+                type: Error
+    delete:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+      displayName: DeleteOrganization
+      description: Deletes an organization and all data linked to it (join-organization-invitations, oauth_access_tokens, oauth_clients)
+      responses:
+        401:
+          description: Unauthorized
+        404:
+          description: Organization not found
+          body:
+            application/json:
+              type: Error
+        422:
+          description: The organization still has child organizations so it cannot be removed
+          body:
+            application/json:
+              type: Error
+        204:
+          description: Organization deleted
+
     /members:
+      put:
+        displayName: UpdateOrganizationMemberShip
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        description: Update an organization membership
+        body:
+          application/json:
+            properties:
+              username: string
+              role: string
+        responses:
+          200:
+            description: updated successfully
+            body:
+              application/json:
+                description: The updated organization
+                type: Organization
+          401:
+            description: Unauthorized
+          403:
+            description: No permission for this action
+          404:
+            description: Organization not found
+          422:
+            description: Maximum amount of invites reached
+            body:
+              application/json:
+                type: Error
+
       post:
         displayName: AddOrganizationMember
         securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
@@ -1056,7 +1135,7 @@ securedBy: [ oauth_2_0 ]
         delete:
           displayName: RemoveOrganizationMember
           securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
-          description: Remove a member from organization
+          description: Remove a member from an organization.
           responses:
             204:
               description: Member deleted successfully
@@ -1064,8 +1143,6 @@ securedBy: [ oauth_2_0 ]
               description: Unauthorized
             404:
               description: The user or the organization does not exist.
-            409:
-              description: The user already is a member.
 
     /owners:
       post:
@@ -1099,7 +1176,7 @@ securedBy: [ oauth_2_0 ]
               401:
                 description: Unauthorized
               404:
-                description: Not found
+                description: The user or the organization does not exist.
 
     /contracts:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

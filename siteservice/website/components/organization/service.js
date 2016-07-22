@@ -9,6 +9,10 @@
 
     function OrganizationService($http, $q) {
         var apiURL =  'api/organizations';
+        var GET = $http.get;
+        var POST = $http.post;
+        var PUT = $http.put;
+        var DELETE = $http.delete;
 
         return {
             create: create,
@@ -24,9 +28,23 @@
             getOrganizationTree: getOrganizationTree,
             createDNS: createDNS,
             updateDNS: updateDNS,
-            deleteDNS: deleteDNS
-
+            deleteDNS: deleteDNS,
+            deleteOrganization: deleteOrganization,
+            updateMembership: updateMembership,
+            removeMember: removeMember
         };
+
+        function genericHttpCall(httpFunction, url, data) {
+            return httpFunction(url, data)
+                .then(
+                    function (response) {
+                        return response.data;
+                    },
+                    function (reason) {
+                        return $q.reject(reason);
+                    }
+                );
+        }
 
         function create(name, dns, owner, parentOrganization) {
             var url = apiURL;
@@ -59,11 +77,11 @@
                 );
         }
 
-        function invite(globalid, member, role) {
+        function invite(globalid, searchString, role) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + encodeURIComponent(role) + 's';
 
             return $http
-                .post(url, {username: member})
+                .post(url, {searchstring: searchString})
                 .then(
                     function(response) {
                         return response.data;
@@ -88,7 +106,6 @@
                     }
                 );
         }
-
 
         function getInvitations(globalid){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/invitations';
@@ -166,7 +183,6 @@
                 );
         }
 
-
         function getAPIKey(globalid, label){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys/' + encodeURIComponent(label);
 
@@ -228,18 +244,26 @@
 
         function deleteDNS(globalid, dnsName) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns/' + encodeURIComponent(dnsName);
-
-            return $http
-                .delete(url)
-                .then(
-                    function (response) {
-                        return response.data;
-                    },
-                    function (reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(DELETE, url);
         }
 
+        function deleteOrganization(globalid) {
+            var url = apiURL + '/' + encodeURIComponent(globalid);
+            return genericHttpCall(DELETE, url);
+        }
+
+        function updateMembership(globalid, username, role) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/members';
+            var data = {
+                username: username,
+                role: role
+            };
+            return genericHttpCall(PUT, url, data);
+        }
+
+        function removeMember(globalid, username, role) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + role + '/' + username;
+            return genericHttpCall(DELETE, url);
+        }
     }
 })();

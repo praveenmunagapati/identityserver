@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/sessions"
 
 	"github.com/gorilla/context"
+	"time"
 )
 
 //SessionType is used to define the type of session
@@ -41,12 +42,12 @@ func (service *Service) initializeSessions(cookieSecret string) {
 
 }
 
-//GetSession returns the a session of the specified kind and a spefic name
+//GetSession returns the a session of the specified kind and a specific name
 func (service *Service) GetSession(request *http.Request, kind SessionType, name string) (*sessions.Session, error) {
 	return service.Sessions[kind].Get(request, name)
 }
 
-//SetLoggedInUser creates a session for an authenticated user
+//SetLoggedInUser creates a session for an authenticated user and clears the login session
 func (service *Service) SetLoggedInUser(w http.ResponseWriter, request *http.Request, username string) (err error) {
 	authenticatedSession, err := service.GetSession(request, SessionInteractive, "authenticatedsession")
 	if err != nil {
@@ -63,6 +64,15 @@ func (service *Service) SetLoggedInUser(w http.ResponseWriter, request *http.Req
 		Value: username,
 	}
 	http.SetCookie(w, cookie)
+
+	// Clear login session
+	loginCookie := &http.Cookie{
+		Name:    "loginsession",
+		Path:    "/",
+		Value:   "",
+		Expires: time.Unix(1, 0),
+	}
+	http.SetCookie(w, loginCookie)
 
 	return
 }
@@ -100,11 +110,11 @@ func (service *Service) GetLoggedInUser(request *http.Request, w http.ResponseWr
 	return
 }
 
-//SetAuthenticatedUserMiddleWare puthe the authenticated user on the context
-func (service *Service) SetAuthenticatedUserMiddleWare(next http.Handler) http.Handler {
+//SetWebUserMiddleWare puthe the authenticated user on the context
+func (service *Service) SetWebUserMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		if username, err := service.GetLoggedInUser(request, w); err == nil {
-			context.Set(request, "authenticateduser", username)
+			context.Set(request, "webuser", username)
 		}
 
 		next.ServeHTTP(w, request)

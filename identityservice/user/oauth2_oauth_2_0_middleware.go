@@ -109,8 +109,8 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			atscopestring = at.Scope
 			clientID = at.ClientID
 		} else {
-			if authenticateduser, ok := context.GetOk(r, "authenticateduser"); ok {
-				if parsedusername, ok := authenticateduser.(string); ok && parsedusername != "" {
+			if webuser, ok := context.GetOk(r, "webuser"); ok {
+				if parsedusername, ok := webuser.(string); ok && parsedusername != "" {
 					username = parsedusername
 					atscopestring = "admin"
 					clientID = "itsyouonline"

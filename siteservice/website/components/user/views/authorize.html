@@ -1,21 +1,19 @@
 <div flex layout="row">
     <div flex></div>
-    <div layout="column" flex-gt-sm="80" flex-xs="100">
+    <div layout="column" flex-gt-sm="80" flex="100" layout-padding>
         <div layout ng-cloak>
             <div flex="80">
-                <h1>{{ ::vm.requestingorganization }}</h1>
+                <h1 ng-bind="::vm.requestingorganization"></h1>
                 <p>Requests authorization to see some of your information</p>
             </div>
         </div>
-        <form ng-cloak method="post" layout="column" name="authorizeform" ng-submit="save()">
-            <div layout="row">
-                <md-list flex="100" flex-gt-sm="80" flex-gt-md="60">
-                    <authorization-details></authorization-details>
-                </md-list>
-            </div>
+        <form ng-cloak method="post" layout="column" name="authorizeform" ng-submit="vm.submit()">
+            <authorization-details full></authorization-details>
             <div style="margin-top: 10px;">
-                <md-button type="submit" class="md-raised md-primary">Authorize</md-button>
-                <span flex></span>
+                <div flex="100" flex-gt-sm="80" flex-gt-md="60" layout="row" layout-align="end center">
+                    <div flex></div>
+                    <md-button type="submit" class="md-raised md-primary">Authorize</md-button>
+                </div>
             </div>
         </form>
     </div>

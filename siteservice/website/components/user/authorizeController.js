@@ -7,9 +7,10 @@
         .controller("AuthorizeController", AuthorizeController);
 
 
-    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', 'UserService', 'UserDialogService'];
+    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', '$q',
+        'UserService', 'UserDialogService', 'NotificationService'];
 
-    function AuthorizeController($scope, $rootScope, $location, $window, UserService, UserDialogService) {
+    function AuthorizeController($scope, $rootScope, $location, $window, $q, UserService, UserDialogService, NotificationService) {
         var vm = this;
 
         var queryParams = $location.search();
@@ -19,24 +20,22 @@
         vm.username = $rootScope.user;
 
         vm.user = {};
+        vm.pendingNotifications = [];
+        vm.pendingOrganizationInvites = {};
 
         UserDialogService.init(vm);
         vm.showEmailDialog = addEmail;
         vm.showPhonenumberDialog = addPhone;
         vm.showAddressDialog = addAddress;
         vm.showBankAccountDialog = bank;
-
-        var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts'];
+        vm.submit = submit;
+        vm.showDigitalWalletAddressDialog = digitalWalletAddress;
+        var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
         $scope.requested = {
-            organizations: {},
-            facebook: false,
-            github: false
-        };
-        $scope.authorizations = {
             organizations: {}
         };
+        $scope.authorizations = {};
         angular.forEach(properties, function (prop) {
-            $scope.requested[prop] = [];
             $scope.authorizations[prop] = [];
         });
 
@@ -57,72 +56,77 @@
                     function(data) {
                         vm.user = data;
                         parseScopes();
-                    },
-                    function(reason) {
-                        $window.location.href = 'error' + reason.status;
+                    });
+            NotificationService
+                .get(vm.username)
+                .then(
+                    function (data) {
+                        vm.pendingNotifications = data.invitations.filter(function (invitation) {
+                            return invitation.status === 'pending';
+                        });
+                        angular.forEach(vm.pendingNotifications, function (invite) {
+                            vm.pendingOrganizationInvites[invite.organization] = true;
+                        });
                     }
                 );
+
         }
 
         function parseScopes() {
             if (vm.requestedScopes) {
+                var listAuthorizations = [{
+                    scope: 'address',
+                    prop: 'addresses'
+                }, {
+                    scope: 'email',
+                    prop: 'emailaddresses'
+                }, {
+                    scope: 'phone',
+                    prop: 'phonenumbers'
+                }, {
+                    scope: 'bankaccount',
+                    prop: 'bankaccounts'
+                }];
                 var scopes = vm.requestedScopes.split(',');
                 // Filter duplicated scopes
                 scopes = scopes.filter(function (item, pos, self) {
                     return self.indexOf(item) === pos;
                 });
-                angular.forEach(scopes, function (scope, i) {
+                angular.forEach(scopes, function (scope) {
                     var splitPermission = scope.split(':');
-                    var permissionLabel = splitPermission[splitPermission.length - 1];
-                    if (scope === 'user:name') {
-                        $scope.requested.name = true;
+                    if (!splitPermission.length > 1) {
+                        return;
+                    }
+                    // Empty label -> 'main'
+                    var permissionLabel = splitPermission.length > 2 && splitPermission[2] ? splitPermission[2] : 'main';
+                    var auth = {
+                        requestedlabel: permissionLabel,
+                        reallabel: ''
+                    };
+                    var listScope = listAuthorizations.filter(function (l) {
+                        return l.scope === splitPermission[1];
+                    })[0];
+                    if (listScope) {
+                        auth.reallabel = vm.user[listScope.prop].length ? vm.user[listScope.prop][0].label : '';
+                        $scope.authorizations[listScope.prop].push(auth);
+                    }
+                    else if (scope === 'user:name') {
                         $scope.authorizations.name = true;
                     }
-                    if (scope.startsWith('user:memberof:')) {
+                    else if (scope.startsWith('user:memberof:')) {
                         $scope.requested.organizations[permissionLabel] = true;
                     }
-                    else if (scope.startsWith('user:address:')) {
-                        $scope.requested.addresses.push(permissionLabel);
-                    }
-                    else if (scope.startsWith('user:email:')) {
-                        $scope.requested.emailaddresses.push(permissionLabel);
-                    }
-                    else if (scope.startsWith('user:phone:')) {
-                        $scope.requested.phonenumbers.push(permissionLabel);
-                    }
-                    else if (scope.startsWith('user:bankaccount:')) {
-                        $scope.requested.bankaccounts.push(permissionLabel);
+                    else if (scope.startsWith('user:digitalwalletaddress:')) {
+                        auth.reallabel = vm.user.digitalwallet.length ? vm.user.digitalwallet[0].label : '';
+                        auth.currency = splitPermission.length === 4 ? splitPermission[3] : '';
+                        $scope.authorizations.digitalwallet.push(auth);
                     }
                     else if (scope === 'user:github') {
-                        $scope.requested.github = true;
                         $scope.authorizations.github = true;
                     }
                     else if (scope === 'user:facebook') {
-                        $scope.requested.facebook = true;
                         $scope.authorizations.facebook = true;
                     }
-                });
-                angular.forEach($scope.requested, function (value, property) {
-                    if (properties.indexOf(property) === -1) {
-                        return;
-                    }
-                    // loop over requests
-                    // Empty label -> "main"
-                    angular.forEach(value, function (requestedLabel) {
-                        if (!requestedLabel) {
-                            $scope.requested[property].splice($scope.requested[property].indexOf(requestedLabel), 1);
-                            requestedLabel = 'main';
-                            $scope.requested[property].push(requestedLabel);
-                        }
-                    });
-                    angular.forEach(value, function (requestedLabel) {
-                        // select first by default, None if the user did not configure this property yet
-                        var authorization = {
-                            requestedlabel: requestedLabel,
-                            reallabel: vm.user[property].length ? vm.user[property][0].label : ''
-                        };
-                        $scope.authorizations[property].push(authorization);
-                    });
                 });
             }
         }
@@ -134,43 +138,58 @@
             UserService
                 .saveAuthorization($scope.authorizations)
                 .then(
-                    function (data) {
+                    function () {
                         var u = URI($location.absUrl());
                         var endpoint = queryParams["endpoint"];
                         delete queryParams.endpoint;
                         u.pathname(endpoint);
                         u.search(queryParams);
                         $window.location.href = u.toString();
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
                     }
                 );
         }
 
-        function addEmail(event, label) {
-            selectDefault(UserDialogService.emailDetail, event, label, 'emailaddresses');
+        function addEmail(event, auth) {
+            selectDefault(UserDialogService.emailDetail, event, auth, 'emailaddresses');
         }
 
-        function addPhone(event, label) {
-            selectDefault(UserDialogService.phonenumberDetail, event, label, 'phonenumbers');
+        function addPhone(event, auth) {
+            selectDefault(UserDialogService.phonenumberDetail, event, auth, 'phonenumbers');
         }
 
-        function addAddress(event, label) {
-            selectDefault(UserDialogService.addressDetail, event, label, 'addresses');
+        function addAddress(event, auth) {
+            selectDefault(UserDialogService.addressDetail, event, auth, 'addresses');
         }
 
-        function bank(event, label) {
-            selectDefault(UserDialogService.bankAccount, event, label, 'bankaccounts');
+        function bank(event, auth) {
+            selectDefault(UserDialogService.bankAccount, event, auth, 'bankaccounts');
         }
 
-        function selectDefault(fx, event, label, property) {
+        function submit() {
+            // accept all the invites first
+            var requests = [];
+
+            vm.pendingNotifications.forEach(function (invitation) {
+                requests.push(NotificationService.accept(invitation));
+            });
+
+            $q.all(requests)
+                .then(function () {
+                    $scope.save();
+                });
+        }
+
+        function digitalWalletAddress(event, auth) {
+            selectDefault(UserDialogService.digitalWalletAddressDetail, event, auth, 'digitalwallet');
+        }
+
+        function selectDefault(fx, event, auth, property) {
             fx(event).then(function (data) {
-                $scope.getAuthorizationByLabel(property, label).reallabel = data.data.label;
+                auth.reallabel = data.data.label;
 
             }, function () {
                 // Select first possible value, else 'None'
-                $scope.getAuthorizationByLabel(property, label).reallabel = vm.user[property][0] ? vm.user[property][0].label : '';
+                auth.reallabel = vm.user[property][0] ? vm.user[property][0].label : '';
             });
         }
     }

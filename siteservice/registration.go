@@ -20,6 +20,7 @@ import (
 
 const (
 	mongoRegistrationCollectionName = "registrationsessions"
+	MAX_PENDING_REGISTRATION_COUNT  = 10000
 )
 
 //initLoginModels initialize models in mongo
@@ -137,6 +138,8 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 	validationkey, _ := registrationSession.Values["phonenumbervalidationkey"].(string)
 
 	if isConfirmed, _ := service.phonenumberValidationService.IsConfirmed(request, validationkey); isConfirmed {
+		userMgr := user.NewManager(request)
+		userMgr.RemoveExpireDate(username)
 		service.loginUser(w, request, username)
 		return
 	}
@@ -160,7 +163,12 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(&response)
 		return
+	} else if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
+	userMgr := user.NewManager(request)
+	userMgr.RemoveExpireDate(username)
 	service.loginUser(w, request, username)
 }
 
@@ -176,7 +184,7 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	}{}
 
 	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
-		log.Debug("Error decoding the ResendPhonenumberConfirmation request:", err)
+		log.Debug("Error decoding the ResendPhonenumberConfirmation request: ", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -211,13 +219,13 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	uMgr := user.NewManager(request)
 	err = uMgr.SavePhone(username, phonenumber)
 	if err != nil {
-		log.Error(err)
+		log.Error("ResendPhonenumberConfirmation: Could not save phonenumber: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	validationkey, err = service.phonenumberValidationService.RequestValidation(request, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host))
 	if err != nil {
-		log.Error(err)
+		log.Error("ResendPhonenumberConfirmation: Could not get validationkey: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -235,12 +243,13 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		Error       string `json:"error"`
 	}{}
 	values := struct {
-		TwoFAMethod string `json:"twofamethod"`
-		Login       string `json:"login"`
-		Email       string `json:"email"`
-		Phonenumber string `json:"phonenumber"`
-		TotpCode    string `json:"totpcode"`
-		Password    string `json:"password"`
+		TwoFAMethod    string `json:"twofamethod"`
+		Login          string `json:"login"`
+		Email          string `json:"email"`
+		Phonenumber    string `json:"phonenumber"`
+		TotpCode       string `json:"totpcode"`
+		Password       string `json:"password"`
+		RedirectParams string `json:"redirectparams"`
 	}{}
 	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
 		log.Debug("Error decoding the registration request:", err)
@@ -262,7 +271,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		return
 	}
 	if totpsession.IsNew {
-		//TODO: indicate expired registration session
 		log.Debug("New registration session while processing the registration form")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
@@ -288,6 +296,20 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 	//validate the username is not taken yet
 	userMgr := user.NewManager(request)
+
+	count, err := userMgr.GetPendingRegistrationsCount()
+	if err != nil {
+		log.Error("Failed to get pending registerations count: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	log.Debug("count", count)
+	if count >= MAX_PENDING_REGISTRATION_COUNT {
+		log.Warn("Maximum amount of pending registrations reached")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	//we now just depend on mongo unique index to avoid duplicates when concurrent requests are made
 	userExists, err := userMgr.Exists(newuser.Username)
 	if err != nil {
@@ -310,6 +332,11 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 			return
 		}
 		newuser.Phonenumbers = []user.Phonenumber{phonenumber}
+		// Remove account after 3 days if it still doesn't have a verified phone by then
+		duration := time.Duration(time.Hour * 24 * 3)
+		expiresAt := time.Now()
+		expiresAt = expiresAt.Add(duration)
+		newuser.Expire = db.DateTime(expiresAt)
 	} else {
 		token := totp.TokenFromSecret(totpsecret)
 		if !token.Validate(values.TotpCode) {
@@ -321,7 +348,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		}
 	}
 
-	//TODO: this should only be a temporary user registration (until the email/phone validation is completed)
 	userMgr.Save(newuser)
 	passwdMgr := password.NewManager(request)
 	err = passwdMgr.Save(newuser.Username, values.Password)
@@ -347,16 +373,16 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		registrationSession, err := service.GetSession(request, SessionForRegistration, "registrationdetails")
 		registrationSession.Values["username"] = newuser.Username
 		registrationSession.Values["phonenumbervalidationkey"] = validationkey
+		registrationSession.Values["redirectparams"] = values.RedirectParams
 
 		sessions.Save(request, w)
-		response.Redirecturl = fmt.Sprintf("https://%s/register#/smsconfirmation?%s", request.Host, request.URL.Query().Encode())
+		response.Redirecturl = fmt.Sprintf("https://%s/register#/smsconfirmation", request.Host)
 		json.NewEncoder(w).Encode(&response)
 		return
 	}
 
 	totpMgr := totp.NewManager(request)
 	totpMgr.Save(newuser.Username, totpsecret)
-
 	log.Debugf("Registered %s", newuser.Username)
 	service.loginUser(w, request, newuser.Username)
 }
@@ -368,8 +394,8 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 		Valid bool   `json:"valid"`
 		Error string `json:"error"`
 	}{
-		true,
-		"",
+		Valid: true,
+		Error: "",
 	}
 	valid := user.ValidateUsername(username)
 	if !valid {
@@ -390,7 +416,6 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 		response.Error = "duplicate_username"
 		response.Valid = false
 	}
-	// TODO: validate username
 	json.NewEncoder(w).Encode(&response)
 	return
 }

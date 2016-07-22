@@ -1,10 +1,10 @@
 (function () {
     'use strict';
     angular.module('loginApp')
-        .controller('twoFactorAuthenticationController', ['$scope', '$window', '$interval', '$mdDialog', 'LoginService',
+        .controller('twoFactorAuthenticationController', ['$scope', '$window', '$interval', 'LoginService',
             twoFactorAuthenticationController]);
 
-    function twoFactorAuthenticationController($scope, $window, $interval, $mdDialog, LoginService) {
+    function twoFactorAuthenticationController($scope, $window, $interval, LoginService) {
         var STEP_CHOICE = 'choice',
             STEP_CODE = 'code';
         var vm = this;
@@ -36,18 +36,12 @@
                         });
                     }
                     var methods = Object.keys(vm.possibleTwoFaMethods);
-                    vm.hasMoreThanOneTwoFaMethod = methods.length > 1;
                     if (!methods.length) {
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title('Error')
-                                .htmlContent('You do not have any two factor authentication methods available. <br /> Please contact an administrator to recover your account.')
-                                .ariaLabel('Error')
-                                .ok('Ok')
-                        );
+                        // Redirect to resend sms page
+                        $window.location.hash = '#/resendsms';
                         return;
                     }
+                    vm.hasMoreThanOneTwoFaMethod = methods.length > 1;
                     if (!vm.hasMoreThanOneTwoFaMethod) {
                         vm.selectedTwoFaMethod = methods[0];
                         nextStep();
@@ -59,8 +53,6 @@
                         }
                         vm.selectedTwoFaMethod = method;
                     }
-                }, function (response) {
-                    $window.location.href = 'error' + response.status;
                 });
         }
 
@@ -101,16 +93,6 @@
                 .sendSmsCode(phoneLabel)
                 .then(function () {
                     interval = $interval(checkSmsConfirmation, 1000);
-                }, function (response) {
-                    switch (response.status) {
-                        case 401:
-                            // Login session expired. Go back to username/password screen.
-                            goToPage('');
-                            break;
-                        default:
-                            goToPage('/error' + response.status);
-                            break;
-                    }
                 });
         }
 
@@ -125,19 +107,15 @@
                 .then(
                     function (data) {
                         localStorage.setItem('itsyouonline.last2falabel', vm.selectedTwoFaMethod);
+                        if (interval) {
+                            $interval.cancel(interval);
+                        }
                         goToPage(data.redirecturl);
                     },
                     function (response) {
                         switch (response.status) {
                             case 422:
                                 $scope.twoFaForm.code.$setValidity("invalid_code", false);
-                                break;
-                            case 401:
-                                // Login session expired. Go back to username/password screen.
-                                goToPage('');
-                                break;
-                            default:
-                                goToPage('/error' + response.status);
                                 break;
                         }
                     });

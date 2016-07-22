@@ -78,3 +78,21 @@ func (o *InvitationManager) Save(invite *JoinOrganizationInvitation) error {
 
 	return err
 }
+
+// RemoveAll Removes all invitations linked to an organization
+func (o *InvitationManager) RemoveAll(globalid string) error {
+	_, err := o.collection.RemoveAll(bson.M{"organization": globalid})
+	return err
+}
+
+// HasInvite Checks if a user has an invite for an organization
+func (o *InvitationManager) HasInvite(globalid string, username string) (hasInvite bool, err error) {
+	count, err := o.collection.Find(bson.M{"organization": globalid, "user": username}).Count()
+	return count != 0, err
+}
+
+// CountByOrganization Counts the amount of invitations, filtered by an organization
+func (o *InvitationManager) CountByOrganization(globalid string) (int, error) {
+	count, err := o.collection.Find(bson.M{"organization": globalid}).Count()
+	return count, err
+}

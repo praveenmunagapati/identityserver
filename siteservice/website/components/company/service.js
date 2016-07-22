@@ -10,14 +10,12 @@
     function CompanyService($http, $q) {
         var apiURL =  'api/companies';
 
-        var service = {
+        return {
             create: create
-        }
-        return service;
+        };
 
         function create(name, taxnr){
-            var url = apiURL;
-            return $http.post(url, {globalid:name,taxnr:taxnr}).then(
+            return $http.post(apiURL, {globalid: name, taxnr: taxnr}).then(
                 function(response) {
                     return response.data;
                 },

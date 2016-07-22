@@ -15,8 +15,8 @@ import (
 type CompaniesAPI struct {
 }
 
+// Post is handler for POST /companies
 // Register a new company
-// It is handler for POST /companies
 func (api CompaniesAPI) Post(w http.ResponseWriter, r *http.Request) {
 
 	var company companydb.Company
@@ -53,8 +53,8 @@ func (api CompaniesAPI) Post(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&company)
 }
 
+// globalIdPut is handler for PUT /companies/{globalId}
 // Update existing company. Updating ``globalId`` is not allowed.
-// It is handler for PUT /companies/{globalId}
 func (api CompaniesAPI) globalIdPut(w http.ResponseWriter, r *http.Request) {
 
 	globalID := mux.Vars(r)["globalId"]
@@ -88,7 +88,7 @@ func (api CompaniesAPI) globalIdPut(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// It is handler for GET /companies/{globalid}/info
+// globalIdinfoGet is handler for GET /companies/{globalid}/info
 func (api CompaniesAPI) globalIdinfoGet(w http.ResponseWriter, r *http.Request) {
 	companyMgr := companydb.NewCompanyManager(r)
 
@@ -106,14 +106,13 @@ func (api CompaniesAPI) globalIdinfoGet(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(&respBody)
 }
 
-// It is handler for GET /companies/{globalid}/validate
+// globalIdvalidateGet It is handler for GET /companies/{globalid}/validate
 func (api CompaniesAPI) globalIdvalidateGet(w http.ResponseWriter, r *http.Request) {
 	log.Error("globalIdvalidateGet is not implemented")
 }
 
-// Get the contracts where the organization is 1 of the parties. Order descending by
-// date.
-// It is handler for GET /companies/{globalId}/contracts
+// globalIdcontracts is handler for GET /companies/{globalId}/contracts
+// Get the contracts where the organization is 1 of the parties. Order descending by date.
 func (api CompaniesAPI) globalIdcontractsGet(w http.ResponseWriter, r *http.Request) {
 	globalID := mux.Vars(r)["globalId"]
 	includedparty := contractdb.Party{Type: "company", Name: globalID}

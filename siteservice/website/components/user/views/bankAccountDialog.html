@@ -2,7 +2,7 @@
     <form name="dataform" autocomplete="off">
         <md-toolbar>
             <div class="md-toolbar-tools">
-                <h2><span ng-if="!originalLabel">Register a b</span><span ng-if="originalLabel">B</span>ank account</h2>
+                <h2><span ng-if="::!originalLabel">Register a b</span><span ng-if="::originalLabel">B</span>ank account</h2>
                 <span flex></span>
                 <md-button class="md-icon-button" ng-click="cancel()">
                     <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
@@ -11,55 +11,51 @@
         </md-toolbar>
         <md-dialog-content>
             <div class="md-dialog-content" layout="column">
-                <div layout="row">
-                    <md-input-container>
-                        <label>Label</label>
-                        <input ng-model="data.label" ng-minlength="2" required type="text" autofocus name="label">
-                        <div ng-messages="dataform.label.$error">
-                            <div ng-message="minlength">The label should be at least 2 characters long</div>
-                        </div>
-                        <div ng-messages="validationerrors">
-                            <div ng-message="duplicate">This label has already been used</div>
-                        </div>
-                    </md-input-container>
-                </div>
-                <div layout="row">
-                    <md-input-container>
-                        <label>BIC</label>
-                        <input ng-model="data.bic" required
-                               type="text" name="bic" ng-minlength="8" ng-maxlength="8">
-                        <div ng-messages="dataform.bic.$error">
-                            <div ng-message="minlength">This value should be exactly 8 characters long.</div>
-                            <div ng-message="maxlength">This value should be exactly 8 characters long.</div>
-                        </div>
-                    </md-input-container>
-                    <md-input-container>
-                        <label>Country</label>
-                        <input ng-model="data.country" required type="text" name="country">
-                    </md-input-container>
-                </div>
-                <div layout="row">
-                    <md-input-container>
-                        <label>IBAN</label>
-                        <input ng-model="data.iban" required type="text" name="iban">
-                    </md-input-container>
-                </div>
+                <md-input-container>
+                    <label>Label</label>
+                    <input ng-model="data.label" ng-minlength="2" required type="text" autofocus name="label"
+                           md-maxlength="50">
+                    <div ng-messages="dataform.label.$error">
+                        <div ng-message="minlength">The label should be at least 2 characters long</div>
+                        <div ng-message="md-maxlength">The label cannot be longer than 50 characters</div>
+                    </div>
+                    <div ng-messages="validationerrors">
+                        <div ng-message="duplicate">This label has already been used</div>
+                    </div>
+                </md-input-container>
+                <md-input-container>
+                    <label>BIC</label>
+                    <input ng-model="data.bic" required
+                           type="text" name="bic" ng-minlength="8" ng-maxlength="8">
+                    <div ng-messages="dataform.bic.$error">
+                        <div ng-message="minlength">This value should be exactly 8 characters long.</div>
+                        <div ng-message="maxlength">This value should be exactly 8 characters long.</div>
+                    </div>
+                </md-input-container>
+                <md-input-container>
+                    <label>IBAN</label>
+                    <input ng-model="data.iban" required type="text" name="iban">
+                </md-input-container>
+                <md-input-container>
+                    <label>Country</label>
+                    <input ng-model="data.country" required type="text" name="country">
+                </md-input-container>
             </div>
         </md-dialog-content>
-        <md-dialog-actions layout="row">
-            <md-button class="md-warn" ng-click="remove(originalLabel)" ng-if="originalLabel">
+        <md-dialog-actions layout="row" layout-align="space-between center">
+            <md-button class="md-warn" ng-click="remove(originalLabel)" ng-if="::originalLabel">
                 Delete
             </md-button>
             <span flex></span>
             <md-button ng-click="cancel()">
                 Cancel
             </md-button>
-            <md-button class="md-primary" type="submit" ng-click="create(data)" style="margin-right:20px;"
-                       ng-if="!originalLabel" ng-disabled="!dataform.$valid">
+            <md-button class="md-primary" type="submit" ng-click="create(data)" ng-if="::!originalLabel"
+                       ng-disabled="!dataform.$valid">
                 Register
             </md-button>
-            <md-button class="md-primary" type="submit" ng-click="update(originalLabel, data)"
-                       style="margin-right:20px;" ng-if="originalLabel" ng-disabled="!dataform.$valid">
+            <md-button class="md-primary" type="submit" ng-click="update(originalLabel, data)" ng-if="::originalLabel"
+                       ng-disabled="!dataform.$valid">
                 Save
             </md-button>
         </md-dialog-actions>

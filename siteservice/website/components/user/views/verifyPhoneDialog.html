@@ -21,15 +21,15 @@
                     <div ng-messages="form.smscode.$error">
                         <div ng-message="minlength">The code must be at least 6 characters long</div>
                         <div ng-message="invalid_code">Invalid code supplied</div>
+                        <div ng-message="md-maxlength">The code must be less than 6 characters</div>
                     </div>
                 </md-input-container>
             </div>
         </md-dialog-content>
-        <md-dialog-actions layout="row">
-            <md-button class="md-warn" ng-click="ctrl.close()">
+        <md-dialog-actions layout="row" layout-align="space-between center">
+            <md-button ng-click="ctrl.close()">
                 Cancel
             </md-button>
-            <span flex></span>
             <md-button class="md-primary" type="submit" type="submit" ng-disabled="!form.$valid">Save</md-button>
         </md-dialog-actions>
     </form>

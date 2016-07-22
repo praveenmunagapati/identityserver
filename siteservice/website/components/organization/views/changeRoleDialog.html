@@ -1,0 +1,33 @@
+<md-dialog>
+    <form name="form" ng-submit="ctrl.submit()">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Edit organization membership</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="ctrl.cancel()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
+                <p>You can change the role of {{ ::ctrl.user }} in the organization {{ ::ctrl.organization.globalid}}
+                    here.
+                </p>
+                <md-input-container>
+                    <label>Role</label>
+                    <md-select ng-model="ctrl.role">
+                        <md-option value="owners">Owner</md-option>
+                        <md-option value="members">Member</md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="space-between center">
+            <md-button class="md-warn" ng-click="ctrl.remove()">Remove member</md-button>
+            <span flex></span>
+            <md-button ng-click="ctrl.cancel()">Cancel</md-button>
+            <md-button class="md-primary" type="submit" ng-disabled="!form.$valid">Save</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

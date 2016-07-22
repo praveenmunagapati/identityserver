@@ -55,8 +55,10 @@
             },
 
             'responseError': function (rejection) {
-                if (rejection.status == 401 || rejection.status == 403 || rejection.status == 419) {
-                    $window.location.href = "";
+                if (rejection.status === 401 || rejection.status === 403 || rejection.status === 419) {
+                    $window.location.href = '/login';
+                } else if (rejection.status.toString().startsWith('5')) {
+                    $window.location.href = 'error' + rejection.status;
                 }
                 return $q.reject(rejection);
             }
@@ -97,13 +99,13 @@
                     pageTitle: 'Organization detail'
                 }
             })
-            .otherwise('/home');
+            .otherwise('/home/you');
     }
 
     function pagetitle($rootScope, $timeout) {
         return {
             link: function (scope, element) {
-                var listener = function (event, current, previous) {
+                var listener = function (event, current) {
                     var pageTitle = 'It\'s You Online';
                     if (current.$$route && current.$$route.data && current.$$route.data.pageTitle) {
                         pageTitle = current.$$route.data.pageTitle + ' - ' + pageTitle;
@@ -132,5 +134,10 @@
             }
             return original.apply($location, [path]);
         };
+        if (!String.prototype.startsWith) {
+            String.prototype.startsWith = function (hashstack, needle) {
+                return haystack.lastIndexOf(needle, 0) === 0;
+            };
+        }
     }
 })();

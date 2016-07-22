@@ -10,7 +10,7 @@
 
     function UserDialogService($window, $q, $interval, $mdMedia, $mdDialog, UserService, configService) {
         var vm;
-        var genericDetailControllerParams = ['$scope', '$mdDialog', 'user', '$window', 'data',
+        var genericDetailControllerParams = ['$scope', '$mdDialog', 'user', 'data',
             'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
         return {
             init: init,
@@ -24,7 +24,8 @@
             github: github,
             addGithub: addGithub,
             showSimpleDialog: showSimpleDialog,
-            createOrganization: createOrganization
+            createOrganization: createOrganization,
+            digitalWalletAddressDetail: digitalWalletAddressDetail
         };
 
         function init(scope) {
@@ -97,13 +98,6 @@
                                             .ok('Confirm')
                                             .cancel('Cancel');
                                     }
-                                    else if (response.data.error === 'cannot_delete_last_verified_phone_number') {
-                                        errorMsg = 'You cannot delete your last verified phone number. <br />' +
-                                            'Please change your 2 factor authentication method or add another verified phone number.';
-                                        dialog = $mdDialog.alert()
-                                            .title('Error')
-                                            .ok('Close');
-                                    }
                                     dialog = dialog.htmlContent(errorMsg)
                                         .ariaLabel('Delete phone number')
                                         .targetEvent(ev);
@@ -114,13 +108,20 @@
                                                 .then(function () {
                                                     // Manually remove phone number since the dialog which executes the updatePhoneNumber promise callback had been closed before
                                                     vm.user.phonenumbers.splice(vm.user.phonenumbers.indexOf(phone), 1);
-                                                }, function () {
-                                                    showSimpleDialog('Could not delete phone number. Please try again later.');
+                                                }, function (response) {
+                                                    if (response.data.error === 'cannot_delete_last_verified_phone_number') {
+                                                        errorMsg = 'You cannot delete your last verified phone number. <br />' +
+                                                            'Please change your 2 factor authentication method or add another verified phone number.';
+                                                    } else {
+                                                        errorMsg = 'Could not delete phone number. Please try again later.';
+                                                    }
+                                                    showSimpleDialog(errorMsg, 'Error', 'Ok', ev);
                                                 });
                                         });
                                 } else {
                                     reject();
-                                    showSimpleDialog('Could not delete phone number. Please try again later.');
+                                    errorMsg = 'Could not delete phone number. Please try again later.';
+                                    showSimpleDialog(errorMsg, 'Error', 'Ok', ev);
                                 }
                             });
                     });
@@ -210,7 +211,7 @@
                         .then(function (responseData) {
                             ctrl.validationKey = responseData.validationkey;
                             interval = $interval(checkconfirmation, 1000);
-                        }, function (response) {
+                        }, function () {
                             $mdDialog.show(
                                 $mdDialog.alert()
                                     .clickOutsideToClose(true)
@@ -392,16 +393,18 @@
          * @param message
          * @param title
          * @param closeText
+         * @param event optional click event
          * @returns promise
          */
-        function showSimpleDialog(message, title, closeText) {
+        function showSimpleDialog(message, title, closeText, event) {
             title = title || 'Alert';
             closeText = closeText || 'Close';
             return $mdDialog.show(
                 $mdDialog.alert({
                     title: title,
                     htmlContent: message,
-                    ok: closeText
+                    ok: closeText,
+                    targetEvent: event
                 })
             );
         }
@@ -419,7 +422,45 @@
             });
         }
 
-        function GenericDetailDialogController($scope, $mdDialog, user, $window, data, createFunction, updateFunction, deleteFunction) {
+        function digitalWalletAddressDetail(event, walletAddress) {
+            walletAddress = walletAddress || {expire: new Date()};
+            var originalWalletAddress = JSON.parse(JSON.stringify(walletAddress));
+            walletAddress.expire = ['string'].indexOf(typeof walletAddress.expire) !== -1 ? new Date(walletAddress.expire) : walletAddress.expire;
+            if (walletAddress.expire.getFullYear() < 2000) {
+                walletAddress.expire = new Date();
+            }
+            return $q(function (resolve, reject) {
+                $mdDialog.show({
+                    controller: genericDetailControllerParams,
+                    templateUrl: 'components/user/views/digitalWalletAddressDialog.html',
+                    targetEvent: event,
+                    fullscreen: $mdMedia('sm') || $mdMedia('xs'),
+                    locals: {
+                        user: vm.user,
+                        data: walletAddress,
+                        createFunction: UserService.createDigitalWalletAddress,
+                        updateFunction: UserService.updateDigitalWalletAddress,
+                        deleteFunction: UserService.deleteDigitalWalletAddress
+                    }
+                }).then(
+                    function (data) {
+                        if (data.fx === 'delete') {
+                            vm.user.digitalwallet.splice(vm.user.digitalwallet.indexOf(walletAddress), 1);
+                        }
+                        else if (data.fx === 'create') {
+                            vm.user.digitalwallet.push(data.data);
+                        }
+                        resolve(data);
+                    }, function (response) {
+                        angular.forEach(originalWalletAddress, function (value, key) {
+                            walletAddress[key] = value;
+                        });
+                        reject(response);
+                    });
+            });
+        }
+
+        function GenericDetailDialogController($scope, $mdDialog, user, data, createFunction, updateFunction, deleteFunction) {
             data = data || {};
             $scope.data = data;
 
@@ -446,11 +487,8 @@
                         $mdDialog.hide({fx: 'create', data: response});
                     },
                     function (reason) {
-                        if (reason.status == 409) {
+                        if (reason.status === 409) {
                             $scope.validationerrors.duplicate = true;
-                        }
-                        else {
-                            $window.location.href = "error" + reason.status;
                         }
                     }
                 );
@@ -469,11 +507,8 @@
                         if (response.data && response.data.error) {
                             $scope.validationerrors[response.data.error] = true;
                         }
-                        else if (response.status == 409) {
+                        else if (response.status === 409) {
                             $scope.validationerrors.duplicate = true;
-                        }
-                        else {
-                            $window.location.href = "error" + response.status;
                         }
                     }
                 );
@@ -481,16 +516,10 @@
 
             function remove(label) {
                 $scope.validationerrors = {};
-                deleteFunction(user.username, label).then(
-                    function (response) {
+                deleteFunction(user.username, label)
+                    .then(function () {
                         $mdDialog.hide({fx: 'delete'});
-                    },
-                    function (response) {
-                        if (response) {
-                            $window.location.href = "error" + response.status;
-                        }
-                    }
-                );
+                    });
             }
 
         }
@@ -515,13 +544,15 @@
                             $window.location.hash = '#/organization/' + encodeURIComponent(data.globalid);
                         },
                         function (reason) {
-                            if (reason.status == 409) {
+                            if (reason.status === 409) {
                                 $scope.form.name.$setValidity('duplicate', false);
-                            } else if (reason.status == 400) {
+                            } else if (reason.status === 400) {
                                 $scope.form.name.$setValidity('pattern', false);
                             }
-                            else {
-                                $window.location.href = "error" + reason.status;
+                            else if (reason.status === 422) {
+                                cancel();
+                                var msg = 'You cannot create any more organizations because you have reached the maximum amount of organizations.';
+                                showSimpleDialog(msg, "Error");
                             }
                         }
                     );
@@ -533,7 +564,6 @@
 
             function resetValidation() {
                 $scope.form.name.$setValidity('duplicate', true);
-                $scope.form.name.$setValidity('pattern', true);
             }
         }
     }

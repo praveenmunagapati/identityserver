@@ -45,8 +45,8 @@ const (
 	ClientCredentialsGrantCodeType = "client_credentials"
 )
 
-//GetAuthenticatedUser returns the authenticated user if any or an empty string if not
-func (service *Service) GetAuthenticatedUser(r *http.Request, w http.ResponseWriter) (username string, err error) {
+//GetWebuser returns the authenticated user if any or an empty string if not
+func (service *Service) GetWebuser(r *http.Request, w http.ResponseWriter) (username string, err error) {
 	username, err = service.sessionService.GetLoggedInUser(r, w)
 	return
 }

@@ -11,15 +11,14 @@
         </md-toolbar>
         <md-dialog-content>
             <div class="md-dialog-content" layout="column" style="min-width:350px;">
-                <p ng-if="ctrl.parentOrganization">Create a suborganization in
-                    {{ ctrl.parentOrganization.split('.').splice(-1,1)[0] }}</p>
-                <p ng-if="!ctrl.parentOrganization">Create a new organization</p>
-                <br/>
+                <p ng-if="::ctrl.parentOrganization">Create a suborganization in
+                    <span ng-bind="::ctrl.parentOrganization.split('.').splice(-1,1)[0]"></span></p>
+                <p ng-if="::!ctrl.parentOrganization">Create a new organization</p>
                 <md-input-container>
                     <label for="organizationName">Organization name</label>
                     <input ng-model="ctrl.name" required type="text" md-autofocus="true" name="name" minlength="3"
                            ng-minlength="3" ng-change="ctrl.resetValidation()" ng-pattern="/^[a-z0-9 \-_]+$/"
-                           id=organizationName>
+                           id=organizationName md-maxlength="150">
                     <div ng-messages="form.name.$error">
                         <div ng-message="duplicate">This name is already taken</div>
                         <div ng-message="pattern">Invalid organization name. <br/>
@@ -27,6 +26,7 @@
                             underscores and space are allowed
                         </div>
                         <div ng-message="minlength">Minimum 3 characters are required</div>
+                        <div ng-message="md-maxlength">The organization name cannot be longer than 150 characters</div>
                     </div>
                 </md-input-container>
             </div>
@@ -36,7 +36,7 @@
             <md-button ng-click="ctrl.cancel()">
                 Cancel
             </md-button>
-            <md-button class="md-primary" type="submit">
+            <md-button class="md-primary" type="submit" ng-disabled="!form.$valid">
                 Create
             </md-button>
         </md-dialog-actions>

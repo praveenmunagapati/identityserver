@@ -15,7 +15,7 @@
             };
             $http
                 .post('/login/resetpassword', data)
-                .then(function (response) {
+                .then(function () {
                         // redirect to login
                         $window.location.hash = '';
                     },
@@ -25,8 +25,6 @@
                                 var msg = 'The password reset token was already used or was not found.';
                                 showErrorMessage(msg);
                                 break;
-                            default:
-                                $window.location.href = 'error' + response.status;
                         }
                     }
                 );

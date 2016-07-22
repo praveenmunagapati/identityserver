@@ -9,7 +9,7 @@ import (
 	"github.com/itsyouonline/identityserver/db/user"
 )
 
-// RegisterNewVirtualCurrency is the handler for POST /users/{username}/digitalwallet
+// RegisterNewDigitalAssetAddress is the handler for POST /users/{username}/digitalwallet
 // Register a new address
 func (api UsersAPI) RegisterNewDigitalAssetAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
@@ -54,7 +54,7 @@ func (api UsersAPI) RegisterNewDigitalAssetAddress(w http.ResponseWriter, r *htt
 	json.NewEncoder(w).Encode(currency)
 }
 
-//ListVirtualCurrencies is handler for GET /users/{username}/digitalwallet
+// GetDigitalWallet is handler for GET /users/{username}/digitalwallet
 func (api UsersAPI) GetDigitalWallet(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := user.NewManager(r)
@@ -73,7 +73,7 @@ func (api UsersAPI) GetDigitalWallet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(useobj.DigitalWallet)
 }
 
-//GetVirtualCurrency It is handler for GET /users/{username}/digitalwallet/{label}
+// GetDigitalAssetAddress It is handler for GET /users/{username}/digitalwallet/{label}
 func (api UsersAPI) GetDigitalAssetAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
@@ -95,7 +95,7 @@ func (api UsersAPI) GetDigitalAssetAddress(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(currency)
 }
 
-// UpdateVirtualCurrnecy is the handler for PUT /users/{username}/digitalwallet/{label}
+// UpdateDigitalAssetAddress is the handler for PUT /users/{username}/digitalwallet/{label}
 // Update the label and/or value of an existing address.
 func (api UsersAPI) UpdateDigitalAssetAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
@@ -153,7 +153,7 @@ func (api UsersAPI) UpdateDigitalAssetAddress(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(newcurrency)
 }
 
-// DeleteVirtualCurrency is the handler for DELETE /users/{username}/digitalwallet/{label}
+// DeleteDigitalAssetAddress is the handler for DELETE /users/{username}/digitalwallet/{label}
 func (api UsersAPI) DeleteDigitalAssetAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]

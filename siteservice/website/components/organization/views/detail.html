@@ -1,134 +1,169 @@
-<div flex layout="row">
-    <div flex></div>
-    <div flex="100" flex-gt-sm="80">
-        <div>
-            <p ng-if="vm.childOrganizationNames.length === 0">Organization</p>
-            <p ng-if="vm.childOrganizationNames.length !== 0">
-                <span ng-repeat="org in vm.childOrganizationNames">
-                    <a class="breadcrumb-link" ng-href="{{ ::org.url }}">{{ ::org.name }}</a>
-                    <span ng-if="!$last">&raquo; </span>
-                </span>
-            </p>
-            <h1 ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></h1>
-        </div>
-        <md-card>
-            <md-card-content>
-                <md-tabs md-dynamic-height>
-                    <md-tab md-on-select="vm.fetchInvitations()">
-                        <md-tab-label><i class="fa fa-user"></i>&nbsp;People</md-tab-label>
-                        <md-tab-body layout="row">
+<div flex="100" flex-gt-sm="80">
+    <div class="breadcrumb-container">
+        <p ng-if="vm.childOrganizationNames.length === 0">Organization</p>
+        <p ng-if="vm.childOrganizationNames.length !== 0">
+            <span ng-repeat="org in vm.childOrganizationNames">
+                <a class="breadcrumb-link" ng-href="{{ ::org.url }}" ng-bind="::org.name"></a>
+                <span ng-if="::!$last">&raquo; </span>
+            </span>
+        </p>
+        <h1 ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></h1>
+    </div>
+    <md-card>
+        <md-card-content>
+            <md-tabs md-dynamic-height>
+                <md-tab md-on-select="vm.fetchInvitations()">
+                    <md-tab-label><i class="fa fa-user"></i>&nbsp;People</md-tab-label>
+                    <md-tab-body layout="row">
+                        <div flex="100" flex-gt-xs="60" flex-gt-sm="40">
                             <md-list class="md-dense">
                                 <md-subheader class="md-no-sticky">Owners</md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="owner in vm.organization.owners">
+                                <md-list-item class="md-1-line" ng-repeat="owner in vm.organization.owners"
+                                              aria-label="Owner">
                                     <div class="md-list-item-text">
-                                        <h4> {{ owner }}</h4>
+                                        <p ng-bind="::owner"></p>
                                     </div>
+                                    <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
+                                             aria-label="Edit owner" ng-if="::vm.canEditRole(owner)"
+                                             ng-click="vm.editMember($event, owner)">
+                                    </md-icon>
                                 </md-list-item>
                             </md-list>
                             <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
                                 <md-subheader class="md-no-sticky">Members</md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="member in vm.organization.members">
+                                <md-list-item class="md-1-line" ng-repeat="member in vm.organization.members"
+                                              aria-label="Member">
                                     <div class="md-list-item-text">
-                                        <h4>{{ member }}</h4>
+                                        <p ng-bind="::member"></p>
                                     </div>
+                                    <md-icon md-font-icon="fa-pencil" aria-label="Edit member"
+                                             class="fa md-secondary md-primary" ng-if="::vm.canEditRole(member)"
+                                             ng-click="vm.editMember($event, member)">
+                                    </md-icon>
                                 </md-list-item>
                             </md-list>
-                            <md-list class="md-dense" ng-if="vm.hasEditPermission && vm.invitations.length > 0">
+                            <md-list ng-if="vm.hasEditPermission && vm.invitations.length > 0">
                                 <md-subheader>Pending invitations</md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="invite in vm.invitations">
-                                    <h4 flex="30"> {{ invite.user }}</h4><h4 flex class="md-subhead">{{
-                                    {member:"Member",owner:"Owner"}[invite.role] }}</h4>
+                                <md-list-item class="md-3-line" ng-repeat="invite in vm.invitations"
+                                              aria-label="Invite">
+                                    <div class="md-list-item-text">
+                                        <h3 ng-bind="::invite.user"></h3>
+                                        <h4 ng-if="::invite.created"> Invited on <span
+                                                ng-bind="::invite.created | date: 'd MMM y H:mm:ss'"></span></h4>
+                                        <p ng-bind="::{member:'Member',owner:'Owner'}[invite.role]"></p>
+                                    </div>
                                 </md-list-item>
                             </md-list>
-
                             <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)"
-                                       ng-if="vm.hasEditPermission">
+                                       ng-if="::vm.hasEditPermission">
                                 <i class="fa fa-user-plus"></i> Invite someone
-                                <md-tooltip ng-cloak>Invite someone to join
-                                    {{::vm.getOrganizationDisplayname(vm.organization.globalid)}}
+                                <md-tooltip ng-cloak>Invite someone to join <span
+                                        ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span>
                                 </md-tooltip>
                             </md-button>
-
-                        </md-tab-body>
-                    </md-tab>
-                    <md-tab>
-                        <md-tab-label><i class="fa fa-sitemap"></i>&nbsp;Structure</md-tab-label>
-                        <md-tab-body>
-                            <div layout="row">
-                                <md-button class="md-primary"
-                                           ng-click="vm.showCreateOrganizationDialog($event, vm.organization.globalid)">
-                                    <i class="fa fa-plus"></i> Create suborganization
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab>
+                    <md-tab-label><i class="fa fa-sitemap"></i>&nbsp;Structure</md-tab-label>
+                    <md-tab-body>
+                        <div layout="row">
+                            <md-button class="md-primary"
+                                       ng-click="vm.showCreateOrganizationDialog($event, vm.organization.globalid)">
+                                <i class="fa fa-plus"></i> Create suborganization
+                            </md-button>
+                        </div>
+                        <div class="tree">
+                            <ul ng-repeat="tree in vm.organizationRoot.children">
+                                <li ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
+                                    <a ng-href="#/organization/{{ ::tree.globalid }}"
+                                       ng-bind="::vm.getOrganizationDisplayname(tree.globalid)"></a>
+                                    <ng-include
+                                            src="'/components/organization/views/treeItem.html'"></ng-include>
+                                </li>
+                            </ul>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab flex="100" md-on-select="vm.fetchAPIKeyLabels()">
+                    <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
+                    <md-tab-body flex="100">
+                        <div ng-if="::vm.hasEditPermission">
+                            <section>
+                                <md-subheader class="md-no-sticky">Domain names</md-subheader>
+                                <md-list class="md-dense">
+                                    <md-list-item class="md-1-line" ng-repeat="dns in vm.organization.dns"
+                                                  ng-click="vm.showDNSDialog($event, dns)" aria-label="Dns">
+                                        <div class="md-list-item-text" layout="column">
+                                            <h3 ng-bind="dns"></h3>
+                                        </div>
+                                    </md-list-item>
+                                </md-list>
+                                <md-button class="md-primary" ng-click="vm.showDNSDialog($event)">
+                                    <i class="fa fa-plus"></i> Add domain name
+                                    <md-tooltip>Add a domain name owned by <span
+                                            ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span>
+                                    </md-tooltip>
                                 </md-button>
-                            </div>
-                            <div class="tree">
-                                <ul ng-repeat="tree in vm.organizationRoot.children">
-                                    <li ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
-                                        <a ng-href="#/organization/{{ ::tree.globalid }}"
-                                           ng-bind="::vm.getOrganizationDisplayname(tree.globalid)"></a>
-                                        <ng-include
-                                                src="'/components/organization/views/treeItem.html'"></ng-include>
-                                    </li>
-                                </ul>
-                            </div>
-                        </md-tab-body>
-                    </md-tab>
-                    <md-tab flex="100" ng-if="vm.hasEditPermission" md-on-select="vm.fetchAPIKeyLabels()">
-                        <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
-                        <md-tab-body flex="100">
-                            <md-list class="md-dense">
+                            </section>
+                            <md-divider></md-divider>
+                            <section>
                                 <md-subheader class="md-no-sticky">
-                                    <div layout>
-                                        <p flex="initial">Domain names</p>
-                                        <span flex></span>
-                                    </div>
-                                </md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="dns in vm.organization.dns"
-                                              ng-click="vm.showDNSDialog($event, dns)" aria-label="{{ ::dns }}">
-                                    <div class="md-list-item-text" layout="column">
-                                        <h3 ng-bind="dns"></h3>
-                                    </div>
-                                </md-list-item>
-                            </md-list>
-
-                            <md-button class="md-primary" ng-click="vm.showDNSDialog($event)">
-                                <i class="fa fa-plus"></i> Add domain name
-                                <md-tooltip>Add a domain name owned by
-                                    {{::vm.getOrganizationDisplayname(vm.organization.globalid)}}
-                                </md-tooltip>
-                            </md-button>
-
-                            <md-list class="md-dense">
-                                <md-subheader class="md-no-sticky">
-                                    <div layout>
-                                        <p flex="initial">API Access keys
-                                            <md-tooltip>API Access keys are needed to access the Itsyou.online
-                                                api
-                                                using oauth2
+                                    <div layout="row">
+                                        <p>
+                                            API Access keys
+                                            <md-tooltip>API Access keys are needed to access the Itsyou.online api
+                                                using
+                                                oauth2
                                             </md-tooltip>
                                         </p>
-                                        <span flex></span>
                                     </div>
                                 </md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="label in vm.apikeylabels"
-                                              ng-click="vm.showAPIKeyDialog($event, label)"
-                                              aria-label="{{ ::label }}">
-                                    <div class="md-list-item-text" layout="column">
-                                        <h3 ng-bind="label"></h3>
-                                    </div>
-                                </md-list-item>
-                            </md-list>
-
-                            <md-button class="md-primary" ng-click="vm.showAPIKeyCreationDialog($event)">
-                                <i class="fa fa-plus"></i> Add API access key
-                                <md-tooltip>API Access keys are needed to access the Itsyou.online api using
-                                    oauth2
-                                </md-tooltip>
-                            </md-button>
-                        </md-tab-body>
-                    </md-tab>
-                </md-tabs>
-            </md-card-content>
-        </md-card>
-    </div>
-    <div flex></div>
+                                <md-list class="md-dense">
+                                    <md-list-item class="md-1-line" ng-repeat="label in vm.apikeylabels"
+                                                  ng-click="vm.showAPIKeyDialog($event, label)"
+                                                  aria-label="{{ ::label }}">
+                                        <div class="md-list-item-text" layout="column">
+                                            <h3 ng-bind="label"></h3>
+                                        </div>
+                                    </md-list-item>
+                                </md-list>
+                                <md-button class="md-primary" ng-click="vm.showAPIKeyCreationDialog($event)">
+                                    <i class="fa fa-plus"></i> Add API access key
+                                    <md-tooltip>
+                                        API Access keys are needed to access the Itsyou.online api using oauth2
+                                    </md-tooltip>
+                                </md-button>
+                            </section>
+                            <md-divider></md-divider>
+                            <section>
+                                <md-subheader>Delete organization</md-subheader>
+                                <div layout-padding>
+                                    <p>Deleting an organization is irreversible and will delete all domain
+                                        names and API keys associated with it.
+                                    </p>
+                                </div>
+                                <md-button class="md-warn" ng-click="vm.showDeleteOrganizationDialog($event)">
+                                    Delete organization
+                                </md-button>
+                            </section>
+                        </div>
+                        <div>
+                            <md-divider ng-if="::vm.hasEditPermission"></md-divider>
+                            <section>
+                                <md-subheader class="md-no-sticky">Leave organization</md-subheader>
+                                <div layout-padding>
+                                    <p>If you leave an organization you cannot re-join it unless you are invited
+                                        again.</p>
+                                </div>
+                                <md-button class="md-warn" ng-click="vm.showLeaveOrganization($event)">
+                                    Leave organization
+                                </md-button>
+                            </section>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+            </md-tabs>
+        </md-card-content>
+    </md-card>
 </div>

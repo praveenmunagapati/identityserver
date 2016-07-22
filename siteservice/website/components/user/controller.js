@@ -8,10 +8,10 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$routeParams', '$location', '$window', '$mdToast', '$mdMedia', '$mdDialog',
+        '$q', '$rootScope', '$routeParams', '$location', '$window', '$mdMedia', '$mdDialog',
         'NotificationService', 'OrganizationService', 'UserService', 'UserDialogService'];
 
-    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $mdToast, $mdMedia, $mdDialog,
+    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $mdMedia, $mdDialog,
                                 NotificationService, OrganizationService, UserService, UserDialogService) {
         var vm = this;
         vm.username = $rootScope.user;
@@ -21,6 +21,15 @@
             contractRequests: []
         };
         vm.notificationMessage = '';
+        var authorizationArrayProperties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
+        var authorizationBoolProperties = ['facebook', 'github', 'name'];
+
+        var TAB_YOU = 'you';
+        var TAB_NOTIFICATIONS = 'notifications';
+        var TAB_ORGANIZATIONS = 'organizations';
+        var TAB_AUTHORIZATIONS = 'authorizations';
+        var TAB_SETTINGS = 'settings';
+        var TABS = [TAB_YOU, TAB_NOTIFICATIONS, TAB_ORGANIZATIONS,TAB_AUTHORIZATIONS, TAB_SETTINGS];
 
         vm.owner = [];
         vm.member = [];
@@ -33,7 +42,6 @@
 
         UserDialogService.init(vm);
 
-        vm.checkSelected = checkSelected;
         vm.tabSelected = tabSelected;
         vm.accept = accept;
         vm.reject = reject;
@@ -47,6 +55,7 @@
         vm.showGithubDialog = UserDialogService.github;
         vm.addFacebookAccount = UserDialogService.addFacebook;
         vm.addGithubAccount = UserDialogService.addGithub;
+        vm.showDigitalWalletAddressDetail = UserDialogService.digitalWalletAddressDetail;
         vm.loadNotifications = loadNotifications;
         vm.loadOrganizations = loadOrganizations;
         vm.loadUser = loadUser;
@@ -65,7 +74,8 @@
         init();
 
         function init() {
-            vm.selectedTabIndex = parseInt($routeParams.tab) || 0;
+            var index = TABS.indexOf($routeParams.tab);
+            vm.selectedTabIndex = index !== -1 ? index: 0;
             loadUser()
                 .then(function () {
                     loadVerifiedPhones();
@@ -77,8 +87,13 @@
         }
 
         function tabSelected(fx) {
-            fx();
-            $location.path('/home/' + vm.selectedTabIndex, false);
+            if(fx) {
+                fx();
+            }
+            var path = '/home/' + TABS[vm.selectedTabIndex];
+            if(path !== $window.location.hash.replace('#', '')){
+                $location.path(path, false);
+            }
         }
 
         function loadNotifications() {
@@ -102,13 +117,16 @@
                                 status: 'pending'
                             });
                         }
-                        vm.pendingCount = getPendingCount('all');
-                        vm.notificationMessage = vm.pendingCount ? '' : 'No unhandled notifications';
+                        updatePendingNotificationsCount();
                         vm.loaded.notifications = true;
-                        $rootScope.openRequests = vm.pendingCount;
-
                     }
                 );
+        }
+
+        function updatePendingNotificationsCount() {
+            vm.pendingCount = getPendingCount('all');
+            vm.notificationMessage = vm.pendingCount ? '' : 'No unhandled notifications';
+            $rootScope.notificationCount = vm.pendingCount;
         }
 
         function loadOrganizations() {
@@ -148,6 +166,11 @@
                     .get(vm.username)
                     .then(
                         function (data) {
+                            angular.forEach(authorizationArrayProperties, function (prop) {
+                                if (!data[prop]) {
+                                    data[prop] = [];
+                                }
+                            });
                             vm.user = data;
                             vm.loaded.user = true;
                             resolve(data);
@@ -186,7 +209,6 @@
                     }, reject);
             });
         }
-
 
         function findByLabel(property, label) {
             return vm.user[property].filter(function (val) {
@@ -227,141 +249,127 @@
             }
         }
 
-        function checkSelected() {
-            var selected = false;
-
-            vm.notifications.invitations.forEach(function(invitation) {
-                if (invitation.selected === true) {
-                    selected = true;
-                }
-            });
-
-            return selected;
+        function accept(event, invitation) {
+            // show authorize screen
+            var authorization = {
+                grantedTo: invitation.organization,
+                username: vm.username,
+                phonenumbers: [{
+                    requestedlabel: 'main',
+                    reallabel: ''
+                }],
+                emailaddresses: [{
+                    requestedlabel: 'main',
+                    reallabel: ''
+                }]
+            };
+            showAuthorizationDetailDialog(authorization, event, true)
+                .then(function () {
+                    NotificationService
+                        .accept(invitation)
+                        .then(function () {
+                            invitation.status = 'accepted';
+                            if (vm[invitation.role]) {
+                                vm[invitation.role].push(invitation.organization);
+                            }
+                            updatePendingNotificationsCount();
+                        });
+                });
         }
 
-        function accept() {
-            var requests = [];
-
-            vm.notifications.invitations.forEach(function(invitation) {
-                if (invitation.selected === true) {
-                    requests.push(NotificationService.accept(invitation));
-                }
-            });
-
-            $q
-                .all(requests)
-                .then(
-                    function(responses) {
-                        toast('Accepted ' + responses.length + ' invitations!');
-                        vm.loaded.notifications = false;
-                        loadNotifications();
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
-                    }
-                );
+        function reject(invitation) {
+            NotificationService
+                .reject(invitation)
+                .then(function () {
+                    invitation.status = 'rejected';
+                    updatePendingNotificationsCount();
+                });
         }
 
-        function reject() {
-            var requests = [];
-
-            vm.notifications.invitations.forEach(function(invitation) {
-                if (invitation.selected === true) {
-                    requests.push(NotificationService.reject(invitation));
-                }
-            });
-
-            $q
-                .all(requests)
-                .then(
-                    function(responses) {
-                        toast('Rejected ' + responses.length + ' invitations!');
-                        vm.loaded.notifications = false;
-                        loadNotifications();
-                    },
-                    function(reason) {
-                        $window.location.href = "error" + reason.status;
-                    }
-                );
-        }
-
-        function toast(message) {
-            var toast = $mdToast
-                .simple()
-                .textContent(message)
-                .hideDelay(2500)
-                .position('top right');
-
-            // Show toast!
-            $mdToast.show(toast);
-        }
-
-        function showAuthorizationDetailDialog(authorization, event) {
+        function showAuthorizationDetailDialog(authorization, event, isNew) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
-            function authController($scope, $mdDialog, user, authorization) {
-                var ctrl = this;
-                ctrl.user = user;
-                $scope.delete = UserService.deleteAuthorization;
-                $scope.update = update;
-                $scope.cancel = cancel;
-                $scope.remove = remove;
-                $scope.requested = {};
-                var originalAuthorization = JSON.parse(JSON.stringify(authorization));
-                angular.forEach(authorization, function (value, key) {
-                    if (Array.isArray(value)) {
-                        $scope.requested[key] = {};
-                        angular.forEach(value, function (v, i) {
-                            if (typeof v !== 'object') {
-                                $scope.requested[key][v] = true;
-                            } else {
-                                if (!Array.isArray($scope.requested[key])) {
-                                    $scope.requested[key] = [];
-                                }
-                                $scope.requested[key].push(v.requestedlabel);
+            function authController($scope, $mdDialog, user, authorization, isNew) {
+                angular.forEach(authorizationArrayProperties, function (prop) {
+                    if (!authorization[prop]) {
+                        authorization[prop] = [];
+                    }
+
+                });
+                angular.forEach(authorizationBoolProperties, function (prop) {
+                    if (authorization[prop] === undefined || authorization[prop] === null) {
+                        authorization[prop] = false;
+                    }
+                });
+
+                angular.forEach(authorization, function (auth, prop) {
+                    if (Array.isArray(auth)) {
+                        angular.forEach(auth, function (value) {
+                            if (typeof value === 'object' && !value.reallabel) {
+                                value.reallabel = vm.user[prop][0] ? vm.user[prop][0].label : '';
                             }
                         });
                     }
-                    else {
-                        $scope.requested[key] = value;
-
-                    }
                 });
+                authorization.organizations = authorization.organizations || [];
+
+                var ctrl = this;
+                ctrl.user = user;
+                ctrl.isNew = isNew;
+                ctrl.delete = UserService.deleteAuthorization;
+                $scope.update = update;
+                ctrl.cancel = cancel;
+                ctrl.remove = remove;
+                $scope.requested = {
+                    organizations: {}
+                };
+                authorization.organizations.map(function (org) {
+                    $scope.requested.organizations[org] = true;
+                });
+                var originalAuthorization = JSON.parse(JSON.stringify(authorization));
                 $scope.authorizations = authorization;
 
                 function update(authorization) {
                     UserService.saveAuthorization($scope.authorizations)
                         .then(function (data) {
-                            $mdDialog.cancel();
-                            vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
-                            vm.authorizations.push(data);
+                            if (vm.authorizations) {
+                                vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
+                                vm.authorizations.push(data);
+                            }
+                            $mdDialog.hide(data);
                         });
                 }
 
                 function cancel() {
-                    vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
-                    vm.authorizations.push(originalAuthorization);
+                    if (vm.authorizations) {
+                        var index = vm.authorizations.indexOf(authorization);
+                        if (index !== 1) {
+                            vm.authorizations.splice(index, 1);
+                            vm.authorizations.push(originalAuthorization);
+                        }
+                    }
                     $mdDialog.cancel();
                 }
 
                 function remove() {
                     UserService.deleteAuthorization(authorization)
-                        .then(function (data) {
+                        .then(function () {
                             vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
-                            $mdDialog.cancel();
+                            $mdDialog.hide();
                         });
                 }
             }
 
-            $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'user', 'authorization', authController],
+            return $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'user', 'authorization', 'isNew', authController],
                 controllerAs: 'vm',
                 templateUrl: 'components/user/views/authorizationDialog.html',
                 targetEvent: event,
                 fullscreen: useFullScreen,
                 locals: {
                     user: vm.user,
-                    authorization: authorization
+                    authorization: authorization,
+                    isNew: isNew
                 }
             });
         }
@@ -369,7 +377,7 @@
         function showChangePasswordDialog(event) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
-            function showPasswordDialogController($scope, $mdDialog, username, updatePassword) {
+            function showPasswordDialogController($mdDialog, username, updatePassword) {
                 var ctrl = this;
                 ctrl.resetValidation = resetValidation;
                 ctrl.updatePassword = updatepwd;
@@ -395,27 +403,15 @@
                                 .targetEvent(event)
                         );
                     }, function (response) {
-                        switch (response.status) {
-                            case 422:
-                                switch (response.data.error) {
-                                    case 'incorrect_password':
-                                        $scope.changepasswordform.currentPassword.$setValidity('incorrect_password', false);
-                                        break;
-                                    case 'invalid_password':
-                                        $scope.changepasswordform.currentPassword.$setValidity('invalid_password', false);
-                                        break;
-                                }
-                                break;
-                            default:
-                                $window.location.href = 'error' + response.status;
-                                break;
+                        if (response.status === 422) {
+                            $scope.changepasswordform.currentPassword.$setValidity(response.data.error, false);
                         }
                     });
                 }
             }
 
             $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'username', 'updatePassword', showPasswordDialogController],
+                controller: ['$mdDialog', 'username', 'updatePassword', showPasswordDialogController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/resetPasswordDialog.html',
                 targetEvent: event,
@@ -432,7 +428,7 @@
         function showEditNameDialog(event) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
-            function showPasswordDialogController($scope, $mdDialog, user, updateName) {
+            function EditPasswordDialogController($mdDialog, user, updateName) {
                 var ctrl = this;
                 ctrl.save = save;
                 ctrl.cancel = function () {
@@ -443,7 +439,7 @@
 
                 function save() {
                     updateName(user.username, ctrl.firstname, ctrl.lastname)
-                        .then(function (response) {
+                        .then(function () {
                             $mdDialog.hide();
                             vm.user.firstname = ctrl.firstname;
                             vm.user.lastname = ctrl.lastname;
@@ -452,7 +448,7 @@
             }
 
             $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'user', 'updateName', showPasswordDialogController],
+                controller: ['$mdDialog', 'user', 'updateName', EditPasswordDialogController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/nameDialog.html',
                 targetEvent: event,
@@ -564,11 +560,8 @@
                             ctrl.savedLabel = data.label;
                         },
                         function (reason) {
-                            if (reason.status == 409) {
+                            if (reason.status === 409) {
                                 $scope.APIKeyForm.label.$setValidity('duplicate', false);
-                            }
-                            else {
-                                $window.location.href = "error" + reason.status;
                             }
                         }
                     );
@@ -576,15 +569,12 @@
 
                 function updateAPIKey() {
                     UserService.updateAPIKey(username, ctrl.savedLabel, ctrl.label).then(
-                        function (data) {
+                        function () {
                             $mdDialog.hide({originalLabel: ctrl.savedLabel, newLabel: ctrl.label});
                         },
                         function (reason) {
-                            if (reason.status == 409) {
+                            if (reason.status === 409) {
                                 $scope.APIKeyForm.label.$setValidity('duplicate', false);
-                            }
-                            else {
-                                $window.location.href = "error" + reason.status;
                             }
                         }
                     );
@@ -592,11 +582,8 @@
 
                 function deleteAPIKey() {
                     UserService.deleteAPIKey(username, APIKey.label).then(
-                        function (data) {
+                        function () {
                             $mdDialog.hide({originalLabel: APIKey.label, newLabel: ""});
-                        },
-                        function (reason) {
-                            $window.location.href = "error" + reason.status;
                         }
                     );
                 }
@@ -605,7 +592,7 @@
 
         function showSetupAuthenticatorApplication(event) {
             $mdDialog.show({
-                controller: ['$scope', '$window', '$mdDialog', 'UserService', SetupAuthenticatorController],
+                controller: ['$scope', '$mdDialog', 'UserService', SetupAuthenticatorController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/setupTOTPDialog.html',
                 targetEvent: event,
@@ -614,7 +601,7 @@
                 clickOutsideToClose: true
             });
 
-            function SetupAuthenticatorController($scope, $window, $mdDialog, UserService) {
+            function SetupAuthenticatorController($scope, $mdDialog, UserService) {
                 var ctrl = this;
                 ctrl.close = close;
                 ctrl.submit = submit;
@@ -641,8 +628,6 @@
                         }, function (response) {
                             if (response.status === 422) {
                                 $scope.form.totpcode.$setValidity('invalid_totpcode', false);
-                            } else {
-                                $window.location.href = 'error' + response.status;
                             }
                         });
                 }

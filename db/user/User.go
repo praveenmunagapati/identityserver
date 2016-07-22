@@ -23,7 +23,7 @@ type User struct {
 	Addresses      []Address             `json:"addresses"`
 	BankAccounts   []BankAccount         `json:"bankaccounts"`
 	EmailAddresses []EmailAddress        `json:"emailaddresses"`
-	Expire         db.Date               `json:"expire"`
+	Expire         db.DateTime           `json:"expire"`
 	Facebook       FacebookAccount       `json:"facebook"`
 	Github         GithubAccount         `json:"github"`
 	Phonenumbers   []Phonenumber         `json:"phonenumbers"`
@@ -74,13 +74,13 @@ func (u *User) GetAddressByLabel(label string) (address Address, err error) {
 	return
 }
 
-func (u *User) GetDigitalAssetAddressByLabel(label string) (currency DigitalAssetAddress, err error) {
-	for _, currency = range u.DigitalWallet {
-		if currency.Label == label {
+func (u *User) GetDigitalAssetAddressByLabel(label string) (walletAddress DigitalAssetAddress, err error) {
+	for _, walletAddress = range u.DigitalWallet {
+		if walletAddress.Label == label {
 			return
 		}
 	}
-	err = errors.New("Could not find DigitalAssetAddress with Label " + currency.Label)
+	err = errors.New("Could not find DigitalAssetAddress with Label " + walletAddress.Label)
 	return
 }
 

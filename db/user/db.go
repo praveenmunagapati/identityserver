@@ -8,6 +8,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/itsyouonline/identityserver/db"
+	"time"
 )
 
 const (
@@ -25,6 +26,13 @@ func InitModels() {
 
 	db.EnsureIndex(mongoUsersCollectionName, index)
 
+	// Removes users without valid 2 factor authentication after 3 days
+	automaticUserExpiration := mgo.Index{
+		Key:         []string{"expire"},
+		ExpireAfter: time.Second,
+		Background:  true,
+	}
+	db.EnsureIndex(mongoUsersCollectionName, automaticUserExpiration)
 }
 
 //Manager is used to store users
@@ -237,6 +245,12 @@ func (m *Manager) DeleteAuthorization(username, organization string) (err error)
 	return
 }
 
+//DeleteAllAuthorizations removes all authorizations from an organization
+func (m *Manager) DeleteAllAuthorizations(organization string) (err error) {
+	_, err = m.getAuthorizationCollection().RemoveAll(bson.M{"grantedto": organization})
+	return err
+}
+
 func (u *User) getID() string {
 	return u.ID.Hex()
 }
@@ -248,4 +262,21 @@ func (m *Manager) UpdateName(username string, firstname string, lastname string)
 	}
 	_, err = m.getUserCollection().UpdateAll(bson.M{"username": username}, bson.M{"$set": values})
 	return
+}
+
+func (m *Manager) RemoveExpireDate(username string) (err error) {
+	qry := bson.M{"username": username}
+	values := bson.M{"expire": bson.M{}}
+	_, err = m.getUserCollection().UpdateAll(qry, bson.M{"$set": values})
+	return
+}
+
+func (m *Manager) GetPendingRegistrationsCount() (int, error) {
+	qry := bson.M{
+		"expire": bson.M{
+			"$nin":    []interface{}{"", bson.M{}},
+			"$exists": 1,
+		},
+	}
+	return m.getUserCollection().Find(qry).Count()
 }

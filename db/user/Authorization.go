@@ -5,22 +5,29 @@ import "strings"
 // Authorization defines what userinformation is authorized to be seen by an organization
 // For an explanation about scopes and scopemapping, see https://github.com/itsyouonline/identityserver/blob/master/docs/oauth2/scopes.md
 type Authorization struct {
-	Addresses      []AuthorizationMap `json:"addresses,omitempty"`
-	BankAccounts   []AuthorizationMap `json:"bankaccounts,omitempty"`
-	EmailAddresses []AuthorizationMap `json:"emailaddresses,omitempty"`
-	Facebook       bool               `json:"facebook,omitempty"`
-	Github         bool               `json:"github,omitempty"`
-	GrantedTo      string             `json:"grantedTo"`
-	Organizations  []string           `json:"organizations"`
-	Phonenumbers   []AuthorizationMap `json:"phonenumbers,omitempty"`
-	PublicKeys     []AuthorizationMap `json:"publicKeys,omitempty"`
-	Username       string             `json:"username"`
-	Name           bool               `json:"name"`
+	Addresses      []AuthorizationMap           `json:"addresses,omitempty"`
+	BankAccounts   []AuthorizationMap           `json:"bankaccounts,omitempty"`
+	DigitalWallet  []DigitalWalletAuthorization `json:"digitalwallet,omitempty"`
+	EmailAddresses []AuthorizationMap           `json:"emailaddresses,omitempty"`
+	Facebook       bool                         `json:"facebook,omitempty"`
+	Github         bool                         `json:"github,omitempty"`
+	GrantedTo      string                       `json:"grantedTo"`
+	Organizations  []string                     `json:"organizations"`
+	Phonenumbers   []AuthorizationMap           `json:"phonenumbers,omitempty"`
+	PublicKeys     []AuthorizationMap           `json:"publicKeys,omitempty"`
+	Username       string                       `json:"username"`
+	Name           bool                         `json:"name"`
 }
 
 type AuthorizationMap struct {
 	RequestedLabel string `json:"requestedlabel"`
 	RealLabel      string `json:"reallabel"`
+}
+
+type DigitalWalletAuthorization struct {
+	RequestedLabel string `json:"requestedlabel"`
+	RealLabel      string `json:"reallabel"`
+	Currency       string `json:"currency"`
 }
 
 //FilterAuthorizedScopes filters the requested scopes to the ones this Authorization covers
@@ -49,6 +56,9 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 		if strings.HasPrefix(scope, "user:bankaccount") && labelledPropertyIsAuthorized(scope, "user:bankaccount", authorization.BankAccounts) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
+		if strings.HasPrefix(scope, "user:digitalwalletaddress") && digitalWalletIsAuthorized(scope, "user:digitalwalletaddress", authorization.DigitalWallet) {
+			authorizedScopes = append(authorizedScopes, scope)
+		}
 		if strings.HasPrefix(scope, "user:email") && labelledPropertyIsAuthorized(scope, "user:email", authorization.EmailAddresses) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
@@ -69,6 +79,7 @@ func (authorization Authorization) containsOrganization(globalid string) bool {
 	return false
 }
 
+//labelledPropertyIsAuthorized checks if a labelled property is authorized
 func labelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLabels []AuthorizationMap) (authorized bool) {
 	if authorizedLabels == nil {
 		return
@@ -78,9 +89,30 @@ func labelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLa
 		return
 	}
 	if strings.HasPrefix(scope, scopePrefix+":") {
-		requestedLabel := strings.TrimPrefix(scope, scopePrefix+":")
+		requestedLabel := strings.Split(strings.TrimPrefix(scope, scopePrefix+":"), ":")[0]
 		for _, authorizationmap := range authorizedLabels {
-			if authorizationmap.RequestedLabel == requestedLabel {
+			if authorizationmap.RequestedLabel == requestedLabel || authorizationmap.RequestedLabel == "main" && requestedLabel == "" {
+				authorized = true
+				return
+			}
+		}
+	}
+	return
+}
+
+//digitalWalletIsAuthorized checks if a digital wallet is authorized
+func digitalWalletIsAuthorized(scope string, scopePrefix string, authorizedLabels []DigitalWalletAuthorization) (authorized bool) {
+	if authorizedLabels == nil {
+		return
+	}
+	if scope == scopePrefix {
+		authorized = len(authorizedLabels) > 0
+		return
+	}
+	if strings.HasPrefix(scope, scopePrefix+":") {
+		requestedLabel := strings.Split(strings.TrimPrefix(scope, scopePrefix+":"), ":")[0]
+		for _, authorizationmap := range authorizedLabels {
+			if authorizationmap.RequestedLabel == requestedLabel || authorizationmap.RequestedLabel == "main" && requestedLabel == "" {
 				authorized = true
 				return
 			}

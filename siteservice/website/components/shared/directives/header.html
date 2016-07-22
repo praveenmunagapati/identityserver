@@ -1,35 +1,48 @@
-<header id="header">
-    <div class="content">
-        <div id="logo"><a href="#/"> ItsYou.Online </a></div>
-        <div class="sign-wrap" ng-show="$root.user">
-            <a href="#/home/1" ng-show="$root.openRequests !== undefined">
-                <div class="notification-bell">
-                    <i class="fa fa-bell"></i>
-                    <span class="notification-bell-unread" ng-show="$root.openRequests > 0"></span>
-                </div>
-                <md-tooltip ng-cloak> You have {{ $root.openRequests? $root.openRequests : 'no'}} open
-                    <ng-pluralize count="$root.openRequests"
-                                  when="{'1': 'request', 'other': 'requests'}"></ng-pluralize>
-                </md-tooltip>
-            </a>
-            <md-menu md-offset="-5 30" ng-cloak>
-                <a ng-click="$mdOpenMenu($event)"><i class="fa fa-user"></i><span ng-bind="$root.user"></span><i
-                        class="fa fa-caret-down"></i></a>
-                <md-menu-content ng-cloak>
-                    <md-menu-item>
-                        <md-button href="#/">Home</md-button>
-                    </md-menu-item>
-                    <md-menu-item>
-                        <md-button href="logout">Signout</md-button>
-                    </md-menu-item>
-                </md-menu-content>
-            </md-menu>
+<header id="header" ng-class="{'cookie-warning': showCookieWarning}">
+    <div ng-cloak class="cookie-warning-container" ng-if="showCookieWarning">
+        <span>This site uses cookies. By continuing to browse the site you are agreeing to our use of cookies.</span>
+        <md-button class="md-raised" ng-click="hideCookieWarning()">
+            <i class="fa fa-times"></i> Dismiss
+        </md-button>
+    </div>
+    <div div layout="row">
+        <div flex></div>
+        <div flex="90" flex-gt-sm="80" layout="row" layout-align="space-between center">
+            <div id="logo"><a href="#/"> ItsYou.Online </a></div>
+            <div class="sign-wrap" ng-if="::$root.user">
+                <a href="#/home/notifications" ng-show="$root.notificationCount !== undefined"
+                   style="margin-right:10px;">
+                    <div class="notification-bell">
+                        <i class="fa fa-bell"></i>
+                        <span class="notification-bell-unread" ng-show="$root.notificationCount > 0"></span>
+                    </div>
+                    <md-tooltip ng-cloak> You have {{ $root.notificationCount? $root.notificationCount : 'no'}} unread
+                        <ng-pluralize count="$root.notificationCount"
+                                      when="{'1': 'notification', 'other': 'notifications'}"></ng-pluralize>
+                    </md-tooltip>
+                </a>
+                <md-menu md-offset="-5 30" ng-cloak>
+                    <a ng-click="$mdOpenMenu($event)">
+                        <i class="fa fa-user"></i>
+                        <span ng-bind="::$root.user"></span>
+                        <i class="fa fa-caret-down"></i></a>
+                    <md-menu-content>
+                        <md-menu-item>
+                            <md-button href="#/">Home</md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button href="logout">Signout</md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </div>
+            <div class="sign-wrap" ng-if="::!$root.user && ! header_login">
+                <a ng-href="{{ $root.registrationUrl || 'register' }}"><i class="fa fa-user-plus"></i>Register</a>
+            </div>
+            <div class="sign-wrap" ng-if="::!$root.user && header_login">
+                <a href="login"><i class="fa fa-sign-in"></i>Sign in</a>
+            </div>
         </div>
-        <div class="sign-wrap" ng-show="!$root.user && ! header_login">
-            <a href="register"><i class="fa fa-user-plus"></i>Register</a>
-        </div>
-        <div class="sign-wrap" ng-show="!$root.user && header_login">
-            <a href="login"><i class="fa fa-sign-in"></i>Sign in</a>
-        </div>
+        <div flex></div>
     </div>
 </header>

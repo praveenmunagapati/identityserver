@@ -19,7 +19,7 @@ type userSecret struct {
 	Secret   string
 }
 
-//InitModels initializes models in mongo, if required.
+// InitModels initializes models in mongo, if required.
 func InitModels() {
 	index := mgo.Index{
 		Key:      []string{"username"},

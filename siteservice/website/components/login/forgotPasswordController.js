@@ -1,9 +1,9 @@
 (function () {
     'use strict';
     angular.module('loginApp')
-        .controller('forgotPasswordController', ['$http', '$window', '$scope', forgotPasswordController]);
+        .controller('forgotPasswordController', ['$http', '$scope', forgotPasswordController]);
 
-    function forgotPasswordController($http, $window, $scope) {
+    function forgotPasswordController($http, $scope) {
         var vm = this;
         vm.submit = submit;
         vm.clearValidation = clearValidation;
@@ -13,7 +13,7 @@
                 login: vm.login
             };
             $http.post('/login/forgotpassword', data).then(
-                function (response) {
+                function () {
                     vm.emailSend = true;
                 },
                 function (response) {
@@ -21,8 +21,6 @@
                         case 404:
                             $scope.form.login.$setValidity("invalid", false);
                             break;
-                        default:
-                            $window.location.href = 'error' + response.status;
                     }
                 }
             );

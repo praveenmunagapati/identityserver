@@ -2,9 +2,9 @@
     'use strict';
     angular
         .module('itsyouonline.registration')
-        .controller('smsController', ['$http', '$timeout', '$window', smsController]);
+        .controller('smsController', ['$http', '$timeout', '$window', '$scope', '$cookies', smsController]);
 
-    function smsController($http, $timeout, $window) {
+    function smsController($http, $timeout, $window, $scope, $cookies) {
         var vm = this;
         vm.submit = submit;
         vm.smsconfirmation = {confirmed: false};
@@ -20,7 +20,7 @@
                         submit();
                     }
                 },
-                function failed(response) {
+                function failed() {
                     $timeout(checkconfirmation, 1000);
                 }
             );
@@ -33,20 +33,12 @@
             $http
                 .post('register/smsconfirmation', data)
                 .then(function (response) {
+                    $cookies.remove('registrationdetails');
                     $window.location.href = response.data.redirecturl;
                 }, function (response) {
                     switch (response.status) {
                         case 422:
-                            if (response.data.error === 'invalid_sms_code') {
-                                $scope.phoneconfirmationform.phonenumber.$setValidity("invalid_phonenumber", false);
-                            }
-                            break;
-                        case 401:
-                            // Session expired. Go back to registration page.
-                            $window.location.hash = '';
-                            break;
-                        default:
-                            $window.location.href = '/error' + response.status;
+                            $scope.phoneconfirmationform.smscode.$setValidity("invalid_sms_code", false);
                             break;
                     }
                 });

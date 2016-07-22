@@ -22,7 +22,9 @@ import (
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/db/user"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
+	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/tools"
+	"github.com/itsyouonline/identityserver/validation"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -80,6 +82,13 @@ func (service *Service) ShowLoginForm(w http.ResponseWriter, request *http.Reque
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	loginSession.Values["auth_client_id"] = request.URL.Query().Get("client_id")
 	sessions.Save(request, w)
 	w.Write(htmlData)
 
@@ -107,20 +116,22 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	username := strings.ToLower(values.Login)
+	login := strings.ToLower(values.Login)
 
-	//validate the username exists
-	var userexists bool
-	userMgr := user.NewManager(request)
-
-	if userexists, err = userMgr.Exists(username); err != nil {
+	u, err := organization.SearchUser(request, login)
+	if err == mgo.ErrNotFound {
+		w.WriteHeader(422)
+		return
+	} else if err != nil {
+		log.Error("Failed to search for user: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	userexists := err != mgo.ErrNotFound
 
 	var validpassword bool
 	passwdMgr := password.NewManager(request)
-	if validpassword, err = passwdMgr.Validate(username, values.Password); err != nil {
+	if validpassword, err = passwdMgr.Validate(u.Username, values.Password); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -136,7 +147,7 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	loginSession.Values["username"] = username
+	loginSession.Values["username"] = u.Username
 	sessions.Save(request, w)
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -188,7 +199,6 @@ func (service *Service) GetTwoFactorAuthenticationMethods(w http.ResponseWriter,
 		}
 	}
 	json.NewEncoder(w).Encode(response)
-	w.WriteHeader(http.StatusOK)
 	return
 }
 
@@ -225,13 +235,13 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	phoneLabel := mux.Vars(request)["phoneLabel"]
 	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
 	if err != nil {
-		log.Error(err)
+		log.Error("Error getting login session", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	sessionInfo, err := newLoginSessionInformation()
 	if err != nil {
-		log.Error(err)
+		log.Error("Error creating login session information", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -243,7 +253,7 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	userMgr := user.NewManager(request)
 	userFromDB, err := userMgr.GetByName(username)
 	if err != nil {
-		log.Error(err)
+		log.Error("Error getting user", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -254,10 +264,20 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 		return
 	}
 	loginSession.Values["sessionkey"] = sessionInfo.SessionKey
+	authClientId := loginSession.Values["auth_client_id"]
+	authenticatingOrganization := ""
+	if authClientId != nil {
+		authenticatingOrganization = authClientId.(string)
+	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 	mgoCollection.Insert(sessionInfo)
-	smsmessage := fmt.Sprintf("To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
-		sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+	organizationText := ""
+	if authenticatingOrganization != "" {
+		split := strings.Split(authenticatingOrganization, ".")
+		organizationText = fmt.Sprintf("to authorize the organization %s, ", split[len(split)-1])
+	}
+	smsmessage := fmt.Sprintf("To continue signing in at itsyou.online %senter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
+		organizationText, sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
 	sessions.Save(request, w)
 	go service.smsService.Send(phoneNumber.Phonenumber, smsmessage)
 	w.WriteHeader(http.StatusNoContent)
@@ -356,7 +376,7 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	service.renderSMSConfirmationPage(w, request, "You should be logged in on your computer in a few seconds")
+	service.renderSMSConfirmationPage(w, request, "You should be logged in within a few seconds")
 }
 
 //Check2FASMSConfirmation is called by the sms code form to check if the sms is already confirmed on the mobile phone
@@ -406,22 +426,40 @@ func (service *Service) Process2FASMSConfirmation(w http.ResponseWriter, request
 		return
 	}
 	if sessionInfo == nil {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
-	if !sessionInfo.Confirmed { //Already confirmed on the phone
+		loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
+		if err != nil {
+			if err == mgo.ErrNotFound {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		validationkey, _ := loginSession.Values["phonenumbervalidationkey"].(string)
+		err = service.phonenumberValidationService.ConfirmValidation(request, validationkey, values.Smscode)
+		if err == validation.ErrInvalidCode {
+			// TODO: limit to 3 failed attempts
+			w.WriteHeader(422)
+			log.Debug("invalid code")
+			return
+		}
+	} else if !sessionInfo.Confirmed {
+		//Already confirmed on the phone
 		validsmscode := (values.Smscode == sessionInfo.SMSCode)
 
-		if !validsmscode { //TODO: limit to 3 failed attempts
+		if !validsmscode {
+			// TODO: limit to 3 failed attempts
 			w.WriteHeader(422)
+			log.Debugf("Expected code %s, got %s", sessionInfo.SMSCode, values.Smscode)
 			return
 		}
 	}
+	userMgr := user.NewManager(request)
+	userMgr.RemoveExpireDate(username)
 	service.loginUser(w, request, username)
 }
 
 func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, username string) {
-	//TODO: Clear login session
 	if err := service.SetLoggedInUser(w, request, username); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -436,6 +474,24 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 	if endpoint != "" {
 		queryValues.Del("endpoint")
 		redirectURL = endpoint + "?" + queryValues.Encode()
+	} else {
+		registrationSession, _ := service.GetSession(request, SessionForRegistration, "registrationdetails")
+		if !registrationSession.IsNew && registrationSession.Values["redirectparams"] != nil {
+			splitted := strings.Split(registrationSession.Values["redirectparams"].(string), "&")
+			if len(splitted) > 3 {
+				for _, part := range splitted {
+					kv := strings.Split(part, "=")
+					if len(kv) == 2 {
+						key, _ := url.QueryUnescape(kv[0])
+						value, _ := url.QueryUnescape(kv[1])
+						queryValues.Set(key, value)
+					}
+				}
+				endpoint, _ = url.QueryUnescape(queryValues.Get("endpoint"))
+				queryValues.Del("endpoint")
+				redirectURL = endpoint + "?" + queryValues.Encode()
+			}
+		}
 	}
 
 	sessions.Save(request, w)
@@ -443,6 +499,7 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 		Redirecturl string `json:"redirecturl"`
 	}{}
 	response.Redirecturl = redirectURL
+	log.Debug("Redirecting to:", redirectURL)
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -531,4 +588,65 @@ func (service *Service) ResetPassword(w http.ResponseWriter, request *http.Reque
 	}
 	w.WriteHeader(http.StatusNoContent)
 	return
+}
+
+//LoginResendPhonenumberConfirmation resend the phone number confirmation after logging in to a possibly new phone number
+func (service *Service) LoginResendPhonenumberConfirmation(w http.ResponseWriter, request *http.Request) {
+	values := struct {
+		PhoneNumber string `json:"phonenumber"`
+	}{}
+
+	response := struct {
+		Error string `json:"error"`
+	}{}
+
+	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the ResendPhonenumberConfirmation request: ", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if loginSession.IsNew {
+		sessions.Save(request, w)
+		log.Debug("Login session expired")
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+
+	username, _ := loginSession.Values["username"].(string)
+
+	//Invalidate the previous validation request, ignore a possible error
+	validationkey, _ := loginSession.Values["phonenumbervalidationkey"].(string)
+	_ = service.phonenumberValidationService.ExpireValidation(request, validationkey)
+
+	phonenumber := user.Phonenumber{Label: "main", Phonenumber: values.PhoneNumber}
+	if !phonenumber.IsValid() {
+		log.Debug("Invalid phone number")
+		w.WriteHeader(422)
+		response.Error = "invalid_phonenumber"
+		json.NewEncoder(w).Encode(&response)
+		return
+	}
+
+	uMgr := user.NewManager(request)
+	err = uMgr.SavePhone(username, phonenumber)
+	if err != nil {
+		log.Error("ResendPhonenumberConfirmation: Could not save phonenumber: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	validationkey, err = service.phonenumberValidationService.RequestValidation(request, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host))
+	if err != nil {
+		log.Error("ResendPhonenumberConfirmation: Could not get validationkey: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	loginSession.Values["phonenumbervalidationkey"] = validationkey
+	sessions.Save(request, w)
+	w.WriteHeader(http.StatusNoContent)
 }

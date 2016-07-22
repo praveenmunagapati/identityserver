@@ -259,3 +259,15 @@ func (manager *Manager) HasValidatedPhones(username string) (hasValidatedPhones 
 	hasValidatedPhones = count > 0
 	return hasValidatedPhones, err
 }
+
+func (manager *Manager) GetByPhoneNumber(searchString string) (validatedPhonenumber ValidatedPhonenumber, err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedPhonenumbers)
+	err = mgoCollection.Find(bson.M{"phonenumber": searchString}).One(&validatedPhonenumber)
+	return validatedPhonenumber, err
+}
+
+func (manager *Manager) GetByEmailAddress(searchString string) (validatedEmailaddress ValidatedEmailAddress, err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoValidatedEmailAddresses)
+	err = mgoCollection.Find(bson.M{"emailaddress": searchString}).One(&validatedEmailaddress)
+	return validatedEmailaddress, err
+}

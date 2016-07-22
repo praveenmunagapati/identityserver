@@ -12,13 +12,11 @@
     function NotificationService($http, $q) {
         var apiURL = 'api/users';
 
-        var service = {
+        return {
             get: get,
             accept: accept,
             reject: reject
         };
-
-        return service;
 
         function get(username) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/notifications';
@@ -37,7 +35,6 @@
 
         function accept(invitation) {
             var url = apiURL + '/' + encodeURIComponent(invitation.user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role) ;
-
             return $http
                 .post(url, invitation)
                 .then(
@@ -68,6 +65,10 @@
 
     function UserService($http, $q) {
         var apiURL = 'api/users';
+        var GET = $http.get,
+            POST = $http.post,
+            PUT = $http.put,
+            DELETE = $http.delete;
 
         return {
             get: get,
@@ -102,7 +103,11 @@
             getTwoFAMethods: getTwoFAMethods,
             getAuthenticatorSecret: getAuthenticatorSecret,
             setAuthenticator: setAuthenticator,
-            removeAuthenticator: removeAuthenticator
+            removeAuthenticator: removeAuthenticator,
+            createDigitalWalletAddress: createDigitalWalletAddress,
+            updateDigitalWalletAddress: updateDigitalWalletAddress,
+            deleteDigitalWalletAddress: deleteDigitalWalletAddress,
+            leaveOrganization: leaveOrganization
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -203,7 +208,7 @@
         }
 
         function saveAuthorization(authorization) {
-            var url = apiURL + '/' +  encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo);
+            var url = apiURL + '/' + encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo);
             return genericHttpCall($http.put, url, authorization);
         }
 
@@ -317,6 +322,26 @@
         function removeAuthenticator(username) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/totp';
             return genericHttpCall($http.delete, url);
+        }
+
+        function createDigitalWalletAddress(username, walletAddress) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/digitalwallet';
+            return genericHttpCall(POST, url, walletAddress);
+        }
+
+        function updateDigitalWalletAddress(username, oldLabel, walletAddress) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/digitalwallet/' + encodeURIComponent(oldLabel);
+            return genericHttpCall(PUT, url, walletAddress);
+        }
+
+        function deleteDigitalWalletAddress(username, label) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/digitalwallet/' + encodeURIComponent(label);
+            return genericHttpCall(DELETE, url);
+        }
+
+        function leaveOrganization(username, globalid) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/organizations/' + encodeURIComponent(globalid) + '/leave';
+            return genericHttpCall(DELETE, url);
         }
     }
 })();

@@ -7,19 +7,23 @@
                 <span ng-if="vm.externalSite" class="md-subhead">
                     You are about to login to <span ng-bind="vm.externalSite"></span>.
                 </span>
+                <span class="md-subhead">
+                    You can login using your username, verified email address or verified phone number.
+                </span>
+                </span>
             </md-card-title-text>
         </md-card-title>
         <md-card-content>
             <div layout="column">
                 <md-input-container>
-                    <label>Username</label>
+                    <label>Login</label>
                     <input ng-model="vm.login" ng-minlength="2" required name="login" type="text" autofocus>
                 </md-input-container>
                 <md-input-container>
                     <label>Password</label>
                     <input ng-model="vm.password" required name="password" type="password"
                            ng-change="vm.clearValidation()">
-                    <div ng-messages="loginform.password.$error" class="error">
+                    <div ng-messages="loginform.password.$error">
                         <div ng-message="invalidcredentials">Invalid credentials</div>
                     </div>
                 </md-input-container>

@@ -3,10 +3,10 @@
     angular
         .module('itsyouonline.registration')
         .controller('registrationController', [
-            '$scope', '$window', '$mdUtil', 'configService', 'registrationService',
+            '$scope', '$window', '$cookies', '$mdUtil', 'configService', 'registrationService',
             registrationController]);
 
-    function registrationController($scope, $window, $mdUtil, configService, registrationService) {
+    function registrationController($scope, $window, $cookies, $mdUtil, configService, registrationService) {
         var vm = this;
         configService.getConfig(function (config) {
             vm.totpsecret = config.totpsecret;
@@ -14,7 +14,9 @@
         vm.register = register;
         vm.resetValidation = resetValidation;
         vm.basicInfoValid = basicInfoValid;
+        vm.goToNextTabIfValid = goToNextTabIfValid;
         vm.twoFAMethod = 'sms';
+        vm.selectedTab = 0;
         vm.validateUsername = $mdUtil.debounce(function () {
             $scope.signupform.login.$setValidity("duplicate_username", true);
             $scope.signupform.login.$setValidity("invalid_username_format", true);
@@ -28,17 +30,22 @@
         }, 500, true);
 
         function register() {
+            var redirectparams = $window.location.search.replace('?', '');
             registrationService
-                .register(vm.twoFAMethod, vm.login, vm.email, vm.password, vm.totpcode, vm.sms)
+                .register(vm.twoFAMethod, vm.login, vm.email, vm.password, vm.totpcode, vm.sms, redirectparams)
                 .then(function (response) {
-                    $window.location.href = response.data.redirecturl;
+                    var url = response.data.redirecturl;
+                    if (url === '/') {
+                        $cookies.remove('registrationdetails');
+                    }
+                    $window.location.href = url;
                 }, function (response) {
                     switch (response.status) {
                         case 422:
                             var err = response.data.error;
                             switch (err) {
                                 case 'invalid_phonenumber':
-                                    $scope.signupform.$setValidity(err, false);
+                                    $scope.signupform.phonenumber.$setValidity(err, false);
                                     break;
                                 case 'invalid_totpcode':
                                     $scope.signupform.totpcode.$setValidity(err, false);
@@ -55,13 +62,6 @@
                             break;
                         case 409:
                             $scope.signupform.login.$setValidity('duplicate_username', false);
-                            break;
-                        case 401:
-                            // Session expired. Reload page.
-                            $window.location.reload();
-                            break;
-                        default:
-                            $window.location.href = '/error' + response.status;
                             break;
                     }
                 });
@@ -89,6 +89,10 @@
                 && $scope.signupform.email.$valid
                 && $scope.signupform.password.$valid
                 && $scope.signupform.passwordvalidation.$valid;
+        }
+
+        function goToNextTabIfValid() {
+            vm.selectedTab = 1;
         }
     }
 })();

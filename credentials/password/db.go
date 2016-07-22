@@ -113,7 +113,7 @@ func (pwm *Manager) Save(username, password string) error {
 	return err
 }
 
-// get new reset token
+// NewResetToken get new reset token
 func (pwm *Manager) NewResetToken(username string) (token *ResetToken, err error) {
 	tokenstring, err := tools.GenerateRandomString()
 	if err != nil {
@@ -123,20 +123,20 @@ func (pwm *Manager) NewResetToken(username string) (token *ResetToken, err error
 	return
 }
 
-// save reset token
+// SaveResetToken save reset token
 func (pwm *Manager) SaveResetToken(token *ResetToken) (err error) {
 	err = pwm.tokencollection.Insert(token)
 	return
 }
 
-// find reset token by token
+// FindResetToken find reset token by token
 func (pwm *Manager) FindResetToken(token string) (tokenobj *ResetToken, err error) {
 	tokenobj = &ResetToken{}
 	err = pwm.tokencollection.Find(bson.M{"token": token}).One(tokenobj)
 	return
 }
 
-// delete reset token by token
+// DeleteResetToken delete reset token by token
 func (pwm *Manager) DeleteResetToken(token string) (err error) {
 	_, err = pwm.tokencollection.RemoveAll(bson.M{"token": token})
 	return
