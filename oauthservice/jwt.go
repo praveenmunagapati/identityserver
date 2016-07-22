@@ -55,6 +55,7 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-type", "application/jwt")
 	w.Write([]byte(tokenString))
 }
 
