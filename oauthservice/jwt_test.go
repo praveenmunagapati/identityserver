@@ -1,7 +1,6 @@
 package oauthservice
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,13 +14,15 @@ func TestJWTScopesAreAllowed(t *testing.T) {
 	}
 	testcases := []testcase{
 		testcase{allowed: "", requested: "", valid: true},
-		testcase{allowed: "user:memberOf:org1", requested: "", valid: true},
-		testcase{allowed: "user:memberOf:org2", requested: "user:memberOf:org1", valid: false},
-		testcase{allowed: "user:memberOf:org1, user:memberOf:org2", requested: "user:memberOf:org1", valid: true},
-		testcase{allowed: "user:memberOf:org1", requested: "user:memberOf:org1, user:memberOf:org2", valid: false},
+		testcase{allowed: "", requested: "user:memberof:org1", valid: false},
+		testcase{allowed: "user:memberof:org1", requested: "", valid: true},
+		testcase{allowed: "user:memberof:org2", requested: "user:memberof:org1", valid: false},
+		testcase{allowed: "user:memberof:org1, user:memberof:org2", requested: "user:memberof:org1", valid: true},
+		testcase{allowed: "user:memberof:org1", requested: "user:memberof:org1, user:memberof:org2", valid: false},
+		testcase{allowed: "user:admin", requested: "user:memberof:org1", valid: true},
 	}
-	for i, test := range testcases {
-		valid := jwtScopesAreAllowed(test.allowed, test.requested)
-		assert.Equal(t, test.valid, valid, strconv.Itoa(i))
+	for _, test := range testcases {
+		valid := jwtScopesAreAllowed(splitScopeString(test.allowed), splitScopeString(test.requested))
+		assert.Equal(t, test.valid, valid, "Allowed: \"%s\" - Requested: \"%s\"", test.allowed, test.requested)
 	}
 }

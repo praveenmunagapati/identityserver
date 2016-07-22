@@ -80,15 +80,16 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 	var at *AccessToken
 	httpStatusCode := http.StatusOK
 
+	mgr := NewManager(r)
 	if grantType != "" {
 		if grantType == ClientCredentialsGrantCodeType {
-			at, httpStatusCode = clientCredentialsTokenHandler(clientID, clientSecret, r)
+			at, httpStatusCode = clientCredentialsTokenHandler(clientID, clientSecret, mgr, r)
 		} else {
 			httpStatusCode = http.StatusBadRequest
 		}
 	} else {
 		redirectURI := r.FormValue("redirect_uri")
-		at, httpStatusCode = convertCodeToAccessTokenHandler(code, clientID, clientSecret, redirectURI, r)
+		at, httpStatusCode = convertCodeToAccessTokenHandler(code, clientID, clientSecret, redirectURI, mgr, r)
 	}
 
 	if httpStatusCode != http.StatusOK {
@@ -96,11 +97,35 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	//It is also possible to immediately get a JWT by specifying 'id_token' as the response type
+	// In this case, the scope parameter needs to be given to prevent consumers to accidentially handing out too powerful tokens to third party services
+	// It is also possible to specify additional audiences
+	responseType := r.FormValue("response_type")
+
+	if responseType == "id_token" {
+		requestedScopeParameter := r.FormValue("scope")
+		extraAudiences := r.FormValue("aud")
+		tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences)
+		if err == errUnauthorized {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-type", "application/jwt")
+		w.Write([]byte(tokenString))
+		return
+	}
+	mgr.saveAccessToken(at)
+
 	response := struct {
 		AccessToken string      `json:"access_token"`
 		TokenType   string      `json:"token_type"`
 		Scope       string      `json:"scope"`
-		ExpiresIn   int64      `json:"expires_in"`
+		ExpiresIn   int64       `json:"expires_in"`
 		Info        interface{} `json:"info"`
 	}{
 		AccessToken: at.AccessToken,
@@ -119,12 +144,11 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-type", "application/json")
 }
 
-func clientCredentialsTokenHandler(clientID string, secret string, r *http.Request) (at *AccessToken, httpStatusCode int) {
+func clientCredentialsTokenHandler(clientID string, secret string, mgr *Manager, r *http.Request) (at *AccessToken, httpStatusCode int) {
 	httpStatusCode = http.StatusOK
 	var scopes string
 	username := ""
 
-	mgr := NewManager(r)
 	client, err := mgr.getClientByCredentials(clientID, secret)
 	if err != nil {
 		log.Error("Error getting the oauth client: ", err)
@@ -149,14 +173,12 @@ func clientCredentialsTokenHandler(clientID string, secret string, r *http.Reque
 	}
 
 	at = newAccessToken(username, clientID, clientID, scopes)
-	mgr.saveAccessToken(at)
 	return
 }
 
-func convertCodeToAccessTokenHandler(code string, clientID string, secret string, redirectURI string, r *http.Request) (at *AccessToken, httpStatusCode int) {
+func convertCodeToAccessTokenHandler(code string, clientID string, secret string, redirectURI string, mgr *Manager, r *http.Request) (at *AccessToken, httpStatusCode int) {
 	httpStatusCode = http.StatusOK
 
-	mgr := NewManager(r)
 	ar, err := mgr.Get(code)
 	if err != nil {
 		log.Error("ERROR getting the original authorization request:", err)
@@ -201,7 +223,6 @@ func convertCodeToAccessTokenHandler(code string, clientID string, secret string
 	}
 
 	at = newAccessToken(ar.Username, "", ar.ClientID, ar.Scope)
-	mgr.saveAccessToken(at)
 	return
 }
 

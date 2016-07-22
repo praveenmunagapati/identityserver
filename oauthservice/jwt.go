@@ -1,6 +1,7 @@
 package oauthservice
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -8,6 +9,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 )
+
+var errUnauthorized = errors.New("Unauthorized")
 
 //JWTHandler returns a JWT with claims that are a subset of the scopes available to the authorizing token
 func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,20 +42,47 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestedScopes := r.FormValue("scope")
-	extraAudiences := strings.TrimSpace(r.FormValue("aud"))
+	requestedScopeParameter := r.FormValue("scope")
 
-	if !jwtScopesAreAllowed(at.Scope, requestedScopes) {
+	extraAudiences := strings.TrimSpace(r.FormValue("aud"))
+	tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences)
+	if err == errUnauthorized {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-type", "application/jwt")
+	w.Write([]byte(tokenString))
+}
+
+func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, extraAudiences string) (tokenString string, err error) {
+
+	requestedScopes := splitScopeString(requestedScopeString)
+	acquiredScopes := splitScopeString(at.Scope)
+
+	if !jwtScopesAreAllowed(acquiredScopes, requestedScopes) {
+		err = errUnauthorized
 		return
 	}
 
 	token := jwt.New(jwt.SigningMethodES384)
+
 	if at.Username != "" {
 		token.Claims["username"] = at.Username
+		possibleScopes, e := service.filterPossibleScopes(r, at.Username, requestedScopes, false)
+		if e != nil {
+			err = e
+			return
+		}
+		token.Claims["scope"] = strings.Join(possibleScopes, ",")
 	}
 	if at.GlobalID != "" {
 		token.Claims["globalid"] = at.GlobalID
+		token.Claims["scope"] = requestedScopes
 	}
 
 	audiences := []string{at.ClientID}
@@ -63,48 +93,30 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 	token.Claims["aud"] = audiences
 	token.Claims["exp"] = at.ExpirationTime().Unix()
 	token.Claims["iss"] = "itsyouonline"
-	token.Claims["scope"] = requestedScopes
 
-	tokenString, err := token.SignedString(service.jwtSigningKey)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	w.Write([]byte(tokenString))
+	tokenString, err = token.SignedString(service.jwtSigningKey)
+	return
 }
 
-func jwtScopesAreAllowed(allowedScopes string, requestedScopes string) (valid bool) {
-	if strings.TrimSpace(requestedScopes) == "" {
-		valid = true
-		return
-	}
-
-	//Split and clean the scope string in to seperate scopes
-	var allowedScopesList []string
-
-	for _, value := range strings.Split(allowedScopes, ",") {
-		scope := strings.TrimSpace(value)
-		if scope != "" {
-			allowedScopesList = append(allowedScopesList, scope)
-		}
-	}
-	requestedScopesList := strings.Split(requestedScopes, ",")
-	for i, value := range requestedScopesList {
-		requestedScopesList[i] = strings.TrimSpace(value)
-	}
-
+func jwtScopesAreAllowed(grantedScopes []string, requestedScopes []string) (valid bool) {
 	valid = true
-	for _, rs := range requestedScopesList {
-		log.Info(fmt.Sprintf("Checking if '%s' is allowed", rs))
-		valid = valid && checkIfScopeInList(allowedScopesList, rs)
+	for _, rs := range requestedScopes {
+		log.Debug(fmt.Sprintf("Checking if '%s' is allowed", rs))
+		valid = valid && checkIfScopeInList(grantedScopes, rs)
 	}
 
 	return
 }
 
-func checkIfScopeInList(allowedScopes []string, scope string) (valid bool) {
-	for _, as := range allowedScopes {
+func checkIfScopeInList(grantedScopes []string, scope string) (valid bool) {
+	for _, as := range grantedScopes {
+		//Allow all user scopes if the 'user:admin' scope is part of the autorized scopes
+		if as == "user:admin" {
+			if strings.HasPrefix(scope, "user:") {
+				valid = true
+				return
+			}
+		}
 		if strings.HasPrefix(scope, as) {
 			valid = true
 			return

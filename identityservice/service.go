@@ -146,7 +146,8 @@ func (service *Service) FilterAuthorizedScopes(r *http.Request, username string,
 
 //FilterPossibleScopes filters the requestedScopes to the relevant ones that are possible
 // For example, a `user:memberof:orgid1` is not possible if the user is not a member the `orgid1` organization and there is no outstanding invite for this organization
-func (service *Service) FilterPossibleScopes(r *http.Request, username string, clientID string, requestedScopes []string) (possibleScopes []string, err error) {
+// If allowInvitations is true, invitations to organizations allows the "user:memberof:organization" as possible scopes
+func (service *Service) FilterPossibleScopes(r *http.Request, username string, requestedScopes []string, allowInvitations bool) (possibleScopes []string, err error) {
 	possibleScopes = make([]string, 0, len(requestedScopes))
 	orgmgr := organizationdb.NewManager(r)
 	invitationMgr := invitations.NewInvitationManager(r)
@@ -168,7 +169,9 @@ func (service *Service) FilterPossibleScopes(r *http.Request, username string, c
 			}
 			if isOwner {
 				possibleScopes = append(possibleScopes, scope)
-			} else {
+				continue
+			}
+			if allowInvitations {
 				hasInvite, err := invitationMgr.HasInvite(orgid, username)
 				if err != nil {
 					log.Error("FilterPossibleScopes: Error while checking if user has invite for organization: ", err)

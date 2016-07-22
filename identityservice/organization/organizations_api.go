@@ -10,17 +10,19 @@ import (
 
 	"sort"
 
+	"time"
+
 	"github.com/gorilla/context"
 	"github.com/itsyouonline/identityserver/db"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	"github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/db/registry"
 	"github.com/itsyouonline/identityserver/db/user"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/oauthservice"
 	"gopkg.in/mgo.v2"
-	"time"
 )
 
 const (
@@ -860,6 +862,92 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	if handleServerError(w, "removing organization oauth clients", err) {
 		return
 	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ListOrganizationRegistry is the handler for GET /organizations/{globalid}/registry
+// Lists the Registry entries
+func (api OrganizationsAPI) ListOrganizationRegistry(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+
+	mgr := registry.NewManager(r)
+	registryEntries, err := mgr.ListRegistryEntries("", globalid)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(registryEntries)
+}
+
+// AddOrganizationRegistryEntry is the handler for POST /organizations/{globalid}/registry
+// Adds a RegistryEntry to the organization's registry, if the key is already used, it is overwritten.
+func (api OrganizationsAPI) AddOrganizationRegistryEntry(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+
+	registryEntry := registry.RegistryEntry{}
+
+	if err := json.NewDecoder(r.Body).Decode(&registryEntry); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if err := registryEntry.Validate(); err != nil {
+		log.Debug("Invalid registry entry: ", registryEntry)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	mgr := registry.NewManager(r)
+	err := mgr.UpsertRegistryEntry("", globalid, registryEntry)
+
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(registryEntry)
+}
+
+// GetOrganizationRegistryEntry is the handler for GET /organizations/{username}/globalid/{key}
+// Get a RegistryEntry from the organization's registry.
+func (api OrganizationsAPI) GetOrganizationRegistryEntry(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	key := mux.Vars(r)["key"]
+
+	mgr := registry.NewManager(r)
+	registryEntry, err := mgr.GetRegistryEntry("", globalid, key)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if registryEntry == nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(registryEntry)
+}
+
+// DeleteOrganizationRegistryEntry is the handler for DELETE /organizations/{username}/globalid/{key}
+// Removes a RegistryEntry from the organization's registry
+func (api OrganizationsAPI) DeleteOrganizationRegistryEntry(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	key := mux.Vars(r)["key"]
+
+	mgr := registry.NewManager(r)
+	err := mgr.DeleteRegistryEntry("", globalid, key)
+
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 

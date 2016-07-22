@@ -412,6 +412,17 @@ types:
     properties:
       error: string
 
+
+  RegistryEntry:
+    properties:
+      Key:
+        type: string
+        minLength: 1
+        maxLength: 256
+      Value:
+        type: string
+        maxLength: 1024
+
 securedBy: [ oauth_2_0 ]
 /users:
   post:
@@ -582,6 +593,54 @@ securedBy: [ oauth_2_0 ]
             responses:
                 204:
                   description: API key removed.
+
+
+    /registry:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+      post:
+        displayName: AddUserRegistryEntry
+        description: Adds a RegistryEntry to the user's registry, if the key is already used, it is overwritten.
+        body:
+          application/json:
+            type: RegistryEntry
+        responses:
+            201:
+              description: Added the RegistryEntry to the user's registry
+              body:
+                application/json:
+                    type: RegistryEntry
+            409:
+                description: Label is already used.
+      get:
+        displayName: ListUserRegistry
+        description: Lists the Registry entries
+        responses:
+            200:
+              description: List of Registry entries
+              body:
+                application/json:
+                    type: RegistryEntry[]
+    /registry/{key}:
+        delete:
+          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+          displayName: DeleteUserRegistryEntry
+          description: Removes a RegistryEntry from the user's registry
+          responses:
+              204:
+                description: RegistryEntry removed.
+
+        get:
+          displayName: GetUserRegistryEntry
+          description: Get a RegistryEntry from the user's registry.
+          responses:
+            200:
+                description: Registry Entry
+                body:
+                  application/json:
+                    type: RegistryEntry
+            404:
+                description: Not found
+
 
     /github:
       delete:
@@ -1283,6 +1342,54 @@ securedBy: [ oauth_2_0 ]
           responses:
               204:
                 description: API key removed
+
+
+    /registry:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+      post:
+        displayName: AddOrganizationRegistryEntry
+        description: Adds a RegistryEntry to the organization's registry, if the key is already used, it is overwritten.
+        body:
+          application/json:
+            type: RegistryEntry
+        responses:
+            201:
+              description: Added the RegistryEntry to the user's registry
+              body:
+                application/json:
+                    type: RegistryEntry
+            409:
+                description: Label is already used.
+      get:
+        displayName: ListOrganizationRegistry
+        description: Lists the RegistryEntries in an organization's registry.
+        responses:
+            200:
+              description: List of Registry Entries
+              body:
+                application/json:
+                    type: RegistryEntry[]
+    /registry/{key}:
+        delete:
+          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+          displayName: DeleteOrganizationRegistryEntry
+          description: Removes a RegistryEntry from the organization's registry
+          responses:
+              204:
+                description: RegistryEntry removed.
+
+        get:
+          displayName: GetOrganizationRegistryEntry
+          description: Get a RegistryEntry from the organization's registry.
+          responses:
+            200:
+                description: Registry Entry
+                body:
+                  application/json:
+                    type: RegistryEntry
+            404:
+                description: Not found
+
     /dns:
       description: Manage domain names linked to an organization.
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
