@@ -105,6 +105,6 @@ For example:
 https://itsyou.online/v1/oauth/access_token?grant_type=client_credentials&client_id=CLIENT_ID&client_secret=CLIENT_SECRET&reponse_type=id_token&scope=user:memberof:org1&aud=external1
 ```
 
-In this case, the scope parameter needs to be given to prevent consumers to accidentially handing out too `user:admin` or `organization:owner` scoped tokens to third party services
+In this case, the scope parameter needs to be given to prevent consumers to accidentially handing out `user:admin` or `organization:owner` scoped tokens to third party services
 
 As shown in the example. it is also possible to specify additional audiences in the `/v1/oauth/access_token` call.
