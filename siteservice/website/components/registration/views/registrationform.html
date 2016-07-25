@@ -58,10 +58,10 @@
                     <div layout="column">
                         <md-input-container>
                             <label>2-Factor authentication method</label>
-                            <md-select name="twoFAMethod" ng-model="vm.twoFAMethod" required style="min-width:180px;"
+                            <md-select name="twoFAMethod" ng-model="vm.twoFAMethod" ng-required style="min-width:180px;"
                                        ng-change="vm.resetValidation('twoFAMethod')">
-                                <md-option value="sms">SMS</md-option>
-                                <md-option value="totp">Authenticator application</md-option>
+                                <md-option ng-value="'sms'">SMS</md-option>
+                                <md-option ng-value="'totp'">Authenticator application</md-option>
                             </md-select>
                         </md-input-container>
                         <md-input-container ng-if="vm.twoFAMethod === 'sms'">
