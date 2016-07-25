@@ -76,6 +76,19 @@ func (m *Manager) GetByName(username string) (*User, error) {
 
 	err := m.getUserCollection().Find(bson.M{"username": username}).One(&user)
 
+	if user.Addresses == nil {
+		user.Addresses = []Address{}
+	}
+	if user.BankAccounts == nil {
+		user.BankAccounts = []BankAccount{}
+	}
+	if user.Phonenumbers == nil {
+		user.Phonenumbers = []Phonenumber{}
+	}
+	if user.EmailAddresses == nil {
+		user.EmailAddresses = []EmailAddress{}
+	}
+
 	return &user, err
 }
 
