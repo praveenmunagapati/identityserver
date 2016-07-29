@@ -100,7 +100,7 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		AccessToken string      `json:"access_token"`
 		TokenType   string      `json:"token_type"`
 		Scope       string      `json:"scope"`
-		ExpiresIn   int64      `json:"expires_in"`
+		ExpiresIn   int64       `json:"expires_in"`
 		Info        interface{} `json:"info"`
 	}{
 		AccessToken: at.AccessToken,
@@ -190,6 +190,7 @@ func convertCodeToAccessTokenHandler(code string, clientID string, secret string
 		return
 	}
 	if client == nil {
+		log.Info("(client_id - secret) combination not found")
 		httpStatusCode = http.StatusBadRequest
 		return
 	}
