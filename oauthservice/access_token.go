@@ -212,6 +212,7 @@ func convertCodeToAccessTokenHandler(code string, clientID string, secret string
 		return
 	}
 	if client == nil {
+		log.Info("(client_id - secret) combination not found")
 		httpStatusCode = http.StatusBadRequest
 		return
 	}

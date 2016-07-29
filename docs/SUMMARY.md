@@ -6,4 +6,5 @@
    * [Scope Concept](oauth2/scopes.md)
    * [Available Scopes](oauth2/availableScopes.md)
    * [JWT Support](oauth2/jwt.md)
+   * [Suborganization globalid composition](oauth2/suborganizations.md)
 * [Staging environment](staging.md)
