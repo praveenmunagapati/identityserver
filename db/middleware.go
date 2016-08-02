@@ -16,16 +16,11 @@ func (d *DBHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		panic(errors.New("Failed to retrieve a DB session!"))
 	}
 
-	defer d.closeSession(r)
+	defer func() {
+		session.Close()
+	}()
 
 	d.handler.ServeHTTP(w, r)
-}
-
-func (d *DBHandler) closeSession(r *http.Request) {
-	session := GetDBSession(r)
-	if session != nil {
-		session.Close()
-	}
 }
 
 func DBMiddleware() func(h http.Handler) http.Handler {
