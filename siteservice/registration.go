@@ -337,6 +337,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		expiresAt := time.Now()
 		expiresAt = expiresAt.Add(duration)
 		newuser.Expire = db.DateTime(expiresAt)
+		userMgr.Save(newuser)
 	} else {
 		token := totp.TokenFromSecret(totpsecret)
 		if !token.Validate(values.TotpCode) {
@@ -346,9 +347,10 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 			json.NewEncoder(w).Encode(&response)
 			return
 		}
+		userMgr.Save(newuser)
+		userMgr.RemoveExpireDate(newuser.Username)
 	}
 
-	userMgr.Save(newuser)
 	passwdMgr := password.NewManager(request)
 	err = passwdMgr.Save(newuser.Username, values.Password)
 	if err != nil {
