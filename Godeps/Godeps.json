@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/itsyouonline/identityserver",
 	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -73,6 +74,10 @@
 			"ImportPath": "gopkg.in/mgo.v2/internal/scram",
 			"Comment": "r2015.06.03-5-g22287ba",
 			"Rev": "22287bab4379e1fbf6002fb4eb769888f3fb224c"
+		},
+		{
+			"ImportPath": "gopkg.in/validator.v2",
+			"Rev": "3e4f037f12a1221a0864cf0dd2e81c452ab22448"
 		}
 	]
 }
