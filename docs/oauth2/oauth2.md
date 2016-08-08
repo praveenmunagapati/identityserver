@@ -87,17 +87,12 @@ If a refresh token was issued, it may be used to request new access tokens if th
 
 ### Use the access token to access the API
 
-The access token allows you to make requests to the API on a behalf of a user.
-
-```
-GET https://itsyou.online/api/users/bob/info?access_token=...
-```
-You can pass the token in the query params like shown above, but a cleaner approach is to include it in the Authorization header
+The access token allows you to make requests to the API on a behalf of a user by passing the token in the Authorization header.
 
 ```
 Authorization: token OAUTH-TOKEN
 ```
-For example, in curl you can set the Authorization header like this:
+For example, in curl you can set the Authorization header and issue an info request on the user 'bob' like this:
 
 ```
 curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/api/users/bob/info
