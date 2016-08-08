@@ -481,9 +481,9 @@ securedBy: [ oauth_2_0 ]
         displayName: GetEmailAddresses
         description: Get a list of the user his email addresses.
         queryParameters:
-          validated:
-            type: string
-            description: optional queryParameter to filter on only validated email addressses
+          validated?:
+            type: boolean
+            description: optional parameter to filter on only validated email addressses
         responses:
           200:
             body:
