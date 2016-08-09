@@ -11,21 +11,22 @@ Browse to https://dev.itsyou.online:8443
 
 When building for production usage, a reproducible build and a minimal docker to run it is wanted.
 
-The `build.sh` script builds the identityserver in a docker and places the statically linked binary in the`dist`.
-After this, a minimal docker `itsyouonline:latest` is created that can be pushed to docker repositories for deployment.
+The `publish.sh` script builds the identityserver in a docker and places the statically linked binary in the`dist`.
+After this, a minimal docker `itsyouonline:latest` is created that is pushed to docker hub for deployment.
 
 ## Changes to the website
 
-In order to make the html files and assets available for the identityserver, you neede to regenerate the assets.
+In order to make the html files and assets available for the identityserver, you need to regenerate the assets.
 This can be done in two modes development mode and production mode,
 
 ### Production Mode
-Make sure you have go-bindata installed:
+Make sure you have go-bindata and go-raml installed:
 ```
 go get -u github.com/jteeuwen/go-bindata/...
+go get -u github.com/Jumpscale/go-raml
 ```
 
-After this execute `go generate` in the `siteservice/website` folder. Commit the overwritten go files in the packaged folder.
+After this execute `go generate` in the root folder of the repository. Commit the overwritten go files in the packaged folder.
 
 ### Development mode
 
