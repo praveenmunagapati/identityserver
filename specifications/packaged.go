@@ -104,7 +104,7 @@ func securityschemesOauth_2_0Raml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "securitySchemes/oauth_2_0.raml", size: 1096, mode: os.FileMode(420), modTime: time.Unix(1465910933, 0)}
+	info := bindataFileInfo{name: "securitySchemes/oauth_2_0.raml", size: 1096, mode: os.FileMode(420), modTime: time.Unix(1470667630, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
