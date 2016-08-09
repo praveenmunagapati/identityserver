@@ -64,7 +64,22 @@ func (service *Service) filterPossibleScopes(r *http.Request, username string, r
 func (service *Service) AddRoutes(router *mux.Router) {
 	service.router = router
 	router.HandleFunc("/v1/oauth/authorize", service.AuthorizeHandler).Methods("GET")
+	router.HandleFunc("/v1/oauth/authorize",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Allow", "GET")
+		}).Methods("OPTIONS")
+
 	router.HandleFunc("/v1/oauth/access_token", service.AccessTokenHandler).Methods("POST")
+	router.HandleFunc("/v1/oauth/access_token",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Allow", "POST")
+		}).Methods("OPTIONS")
+
 	router.HandleFunc("/v1/oauth/jwt", service.JWTHandler).Methods("POST", "GET")
+	router.HandleFunc("/v1/oauth/jwt",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Allow", "GET,POST")
+		}).Methods("OPTIONS")
+
 	InitModels()
 }
