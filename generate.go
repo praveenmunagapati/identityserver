@@ -22,4 +22,4 @@ package main
 //go:generate go-bindata -pkg components -prefix siteservice/website/components -o siteservice/website/packaged/components/components.go siteservice/website/components/...
 
 //package the html files
-//go:generate go-bindata -pkg html -o siteservice/website/packaged/html/html.go siteservice/website/index.html siteservice/website/registration.html siteservice/website/login.html siteservice/website/base.html siteservice/website/error.html siteservice/website/apidocumentation.html siteservice/website/smsconfirmation.html siteservice/website/emailconfirmation.html
+//go:generate go-bindata -pkg html -prefix siteservice/website -o siteservice/website/packaged/html/html.go siteservice/website/index.html siteservice/website/registration.html siteservice/website/login.html siteservice/website/base.html siteservice/website/error.html siteservice/website/apidocumentation.html siteservice/website/smsconfirmation.html siteservice/website/emailconfirmation.html
