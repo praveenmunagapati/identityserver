@@ -2,7 +2,7 @@
 
 Next to the production itsyou.online, a staging environment is deployed on https://staging.itsyou.online
 
-JWT's issued by the staging environment can be verified with the the following public key:
+JWT's issued by the staging environment can be verified with the following ecdsa public key:
 
 ```
 -----BEGIN PUBLIC KEY-----
