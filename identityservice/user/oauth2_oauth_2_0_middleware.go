@@ -4,33 +4,25 @@ import (
 	"net/http"
 	"strings"
 
-	"crypto/ecdsa"
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"github.com/itsyouonline/identityserver/identityservice/security"
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
 type Oauth2oauth_2_0Middleware struct {
-	DescribedBy string
-	Field       string
-	Scopes      []string
+	security.OAuth2Middleware
 }
-
-//JWTPublicKey has the public key of the allowed JWT issuer
-var JWTPublicKey ecdsa.PublicKey
 
 // newOauth2oauth_2_0Middlewarecreate new Oauth2oauth_2_0Middleware struct
 func newOauth2oauth_2_0Middleware(scopes []string) *Oauth2oauth_2_0Middleware {
-	om := Oauth2oauth_2_0Middleware{
-		Scopes:      scopes,
-		DescribedBy: "headers",
-		Field:       "Authorization",
-	}
+	om := Oauth2oauth_2_0Middleware{}
+	om.Scopes = scopes
 	return &om
 }
 
@@ -53,28 +45,21 @@ func (om *Oauth2oauth_2_0Middleware) CheckScopes(scopes []string) bool {
 // Handler return HTTP handler representation of this middleware
 func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var accessToken string
 		var atscopestring string
 		var username string
 		var clientID string
 		scopes := []string{}
 
-		// access token checking
-		if om.DescribedBy == "queryParameters" {
-			accessToken = r.URL.Query().Get(om.Field)
-		} else if om.DescribedBy == "headers" {
-			accessToken = r.Header.Get(om.Field)
-		}
-		//Get the actual token out of the header (accept 'token ABCD' as well as just 'ABCD' and ignore some possible whitespace)
-		if strings.HasPrefix(accessToken, "bearer") {
-			jwtstring := strings.TrimSpace(strings.TrimPrefix(accessToken, "bearer"))
+		jwtstring := om.GetJWT(r)
+		accessToken := om.GetAccessToken(r)
+
+		if jwtstring != "" {
 			token, err := jwt.Parse(jwtstring, func(token *jwt.Token) (interface{}, error) {
 				// Don't forget to validate the alg is what you expect:
-
 				if token.Method != jwt.SigningMethodES384 {
 					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 				}
-				return &JWTPublicKey, nil
+				return &security.JWTPublicKey, nil
 			})
 			if err != nil || !token.Valid {
 				log.Error(err)
@@ -85,14 +70,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			clientID = token.Claims["aud"].(string)
 			atscopestring = token.Claims["scope"].(string)
 
-		} else if strings.HasPrefix(accessToken, "token") {
-			accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
-			if accessToken == "" {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-
-			log.Debug("Access Token: ", accessToken)
+		} else if accessToken != "" {
 			//TODO: cache
 			oauthMgr := oauthservice.NewManager(r)
 			at, err := oauthMgr.GetAccessToken(accessToken)

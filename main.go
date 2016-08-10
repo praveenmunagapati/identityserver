@@ -13,7 +13,7 @@ import (
 	"github.com/itsyouonline/identityserver/globalconfig"
 	"github.com/itsyouonline/identityserver/https"
 	"github.com/itsyouonline/identityserver/identityservice"
-	"github.com/itsyouonline/identityserver/identityservice/user"
+	"github.com/itsyouonline/identityserver/identityservice/security"
 	"github.com/itsyouonline/identityserver/oauthservice"
 	"github.com/itsyouonline/identityserver/routes"
 	"github.com/itsyouonline/identityserver/siteservice"
@@ -161,7 +161,7 @@ func main() {
 			jwtKey = []byte(jwtKeyConfig.Value)
 		} else {
 			if err == nil {
-				if _, err := os.Stat("devcert/jwt_key.pem"); err == nil {
+				if _, e := os.Stat("devcert/jwt_key.pem"); e == nil {
 					log.Warning("===============================================================================")
 					log.Warning("This instance uses a development JWT signing key, don't do this in production !")
 					log.Warning("===============================================================================")
@@ -177,12 +177,12 @@ func main() {
 		if err != nil {
 			log.Fatal("Unable to load a valid key for signing JWT's: ", err)
 		}
-		user.JWTPublicKey = ecdsaKey.PublicKey
+		security.JWTPublicKey = ecdsaKey.PublicKey
 		oauthsc, err := oauthservice.NewService(sc, is, ecdsaKey)
 		if err != nil {
 			log.Fatal("Unable to create the oauthservice: ", err)
 		}
-		// Get router!
+
 		r := routes.GetRouter(sc, is, oauthsc)
 
 		server := https.PrepareHTTP(bindAddress, r)

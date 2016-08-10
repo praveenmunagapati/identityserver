@@ -12,8 +12,5 @@ func newOauth2oauth_2_0Middleware(scopes []string) *Oauth2oauth_2_0Middleware {
 	om := &Oauth2oauth_2_0Middleware{}
 	om.Scopes = scopes
 
-	om.DescribedBy = "headers"
-	om.Field = "Authorization"
-
 	return om
 }
