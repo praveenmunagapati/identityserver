@@ -2,7 +2,7 @@
 
 Next to the production itsyou.online, a staging environment is deployed on https://staging.itsyou.online
 
-The staging environment uses the following public key for signing it's jwt's:
+JWT's issued by the staging environment can be verified with the the following public key:
 
 ```
 -----BEGIN PUBLIC KEY-----
