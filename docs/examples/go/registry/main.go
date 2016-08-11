@@ -38,17 +38,19 @@ func main() {
 
 	entry := itsyouonline.RegistryEntry{Key: "testscriptkey", Value: "testscriptvalue"}
 	if username != "" {
-		fmt.Printf("Creating a registry entry for user: %s\n", username)
+		fmt.Printf("Creating/updating a registry entry for user: %s\n", username)
 		authenticatedClient.AddUserRegistryEntry(username, entry, nil, nil)
+
 	}
 	if globalid != "" {
-		fmt.Printf("Creating a registry entry for organization: %s\n", globalid)
+		fmt.Printf("Creating/updating a registry entry for organization: %s\n", globalid)
 		authenticatedClient.AddOrganizationRegistryEntry(globalid, entry, nil, nil)
 	}
 
 	//Step 2: Get the registry entry using a anonymous client
 	anonymousClient := itsyouonline.NewItsyouonline()
 	var requestedEntry itsyouonline.RegistryEntry
+	fmt.Println("Getting the registry entry using an unauthenticated client")
 	if username != "" {
 		requestedEntry, _, err = anonymousClient.GetUserRegistryEntry("testscriptkey", username, nil, nil)
 	}
