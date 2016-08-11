@@ -104,7 +104,16 @@ func (m *Manager) UpsertRegistryEntry(username string, globalid string, registry
 	if err != nil {
 		return
 	}
-	_, err = m.getRegistryCollection().Upsert(selector, &registryEntry)
+	result, err := m.getRegistryCollection().UpdateAll(selector, bson.M{"$set": bson.M{"entries.$.value": registryEntry.Value}})
+	if err == nil && result.Updated == 0 {
+		//Negate the selector on push so it is never pushed twice
+		if username != "" {
+			selector = bson.M{"username": username, "entries.key": bson.M{"$ne": registryEntry.Key}}
+		} else {
+			selector = bson.M{"globalid": globalid, "entries.key": bson.M{"$ne": registryEntry.Key}}
+		}
+		_, err = m.getRegistryCollection().Upsert(selector, bson.M{"$push": bson.M{"entries": &registryEntry}})
+	}
 	return
 }
 
