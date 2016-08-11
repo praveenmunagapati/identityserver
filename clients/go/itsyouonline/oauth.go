@@ -13,9 +13,10 @@ import (
 //  - the authenticated user in the username or the globalid of the authenticated organization
 //  - returns the oauth2 access token
 //  - set AuthHeader to `token TOKEN_VALUE`.
-func (c *Itsyouonline) LoginWithClientCredentials(clientID, clientSecret string) (token, username, globalid string, err error) {
+func (c *Itsyouonline) LoginWithClientCredentials(clientID, clientSecret string) (username, globalid, token string, err error) {
 	// build request
-	req, err := http.NewRequest("POST", rootURL+"/v1/oauth/access_token", nil)
+	url := strings.TrimSuffix(c.BaseURI, "/api")
+	req, err := http.NewRequest("POST", url+"/v1/oauth/access_token", nil)
 	if err != nil {
 		return
 	}
@@ -54,8 +55,20 @@ func (c *Itsyouonline) LoginWithClientCredentials(clientID, clientSecret string)
 		err = fmt.Errorf("no token found")
 		return
 	}
-
 	token = fmt.Sprintf("%v", val)
+
+	if val, ok = jsonResp["info"]; ok {
+		if info, ok := val.(map[string]interface{}); ok {
+			usernameInterface := info["username"]
+			if usernameInterface != nil {
+				username = usernameInterface.(string)
+			}
+			globalidInterface := info["globalid"]
+			if globalidInterface != nil {
+				globalid = globalidInterface.(string)
+			}
+		}
+	}
 
 	c.AuthHeader = "token " + token
 
@@ -68,7 +81,8 @@ func (c *Itsyouonline) LoginWithClientCredentials(clientID, clientSecret string)
 // To execute it, client need to be logged in.
 func (c *Itsyouonline) CreateJWTToken(scopes, auds []string) (string, error) {
 	// build request
-	req, err := http.NewRequest("GET", rootURL+"/v1/oauth/jwt", nil)
+	url := strings.TrimSuffix(c.BaseURI, "/api")
+	req, err := http.NewRequest("GET", url+"/v1/oauth/jwt", nil)
 	if err != nil {
 		return "", err
 	}
