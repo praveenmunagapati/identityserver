@@ -46,3 +46,8 @@ No oauth2 scope is required
 
 - Organizations:
     `GET /api/organizations/{globalid}/registry/{key}`
+
+
+## Examples
+
+- ** GO ** : [Access the registry](https://github.com/itsyouonline/identityserver/tree/master/docs/examples/go/registry)
