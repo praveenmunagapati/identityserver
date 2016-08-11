@@ -10,13 +10,14 @@ import (
 
 // LoginWithClientCredentials login to itsyouonline using the client ID and client secret.
 // If succeed:
-//	- returns the oauth2 access token
+//  - the authenticated user in the username or the globalid of the authenticated organization
+//  - returns the oauth2 access token
 //  - set AuthHeader to `token TOKEN_VALUE`.
-func (c *Itsyouonline) LoginWithClientCredentials(clientID, clientSecret string) (string, error) {
+func (c *Itsyouonline) LoginWithClientCredentials(clientID, clientSecret string) (token, username, globalid string, err error) {
 	// build request
 	req, err := http.NewRequest("POST", rootURL+"/v1/oauth/access_token", nil)
 	if err != nil {
-		return "", err
+		return
 	}
 
 	// request query params
@@ -34,29 +35,31 @@ func (c *Itsyouonline) LoginWithClientCredentials(clientID, clientSecret string)
 	// do the request
 	rsp, err := c.client.Do(req)
 	if err != nil {
-		return "", err
+		return
 	}
 	defer rsp.Body.Close()
 
 	if rsp.StatusCode != 200 {
-		return "", fmt.Errorf("invalid response's status code :%v", rsp.StatusCode)
+		err = fmt.Errorf("invalid response's status code :%v", rsp.StatusCode)
+		return
 	}
 
 	// decode
 	var jsonResp map[string]interface{}
-	if err := json.NewDecoder(rsp.Body).Decode(&jsonResp); err != nil {
-		return "", err
+	if err = json.NewDecoder(rsp.Body).Decode(&jsonResp); err != nil {
+		return
 	}
 	val, ok := jsonResp["access_token"]
 	if !ok {
-		return "", fmt.Errorf("no token found")
+		err = fmt.Errorf("no token found")
+		return
 	}
 
-	token := fmt.Sprintf("%v", val)
+	token = fmt.Sprintf("%v", val)
 
 	c.AuthHeader = "token " + token
 
-	return token, nil
+	return
 
 }
 
@@ -72,7 +75,7 @@ func (c *Itsyouonline) CreateJWTToken(scopes, auds []string) (string, error) {
 
 	// set auth header
 	if c.AuthHeader == "" {
-		return "", fmt.Errorf("you need to create oauth token in order to create JWT token")
+		return "", fmt.Errorf("you need to create an oauth token in order to create JWT token")
 	}
 
 	req.Header.Set("Authorization", c.AuthHeader)

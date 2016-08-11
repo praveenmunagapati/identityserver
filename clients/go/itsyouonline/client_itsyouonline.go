@@ -7,16 +7,19 @@ import (
 )
 
 const (
-	rootURL = "https://itsyou.online"
+	defaultBaseURI = "https://itsyou.online/api"
 )
 
 type Itsyouonline struct {
 	client     http.Client
 	AuthHeader string // Authorization header, will be sent on each request if not empty
+	BaseURI    string
 }
 
 func NewItsyouonline() *Itsyouonline {
-	c := new(Itsyouonline)
+	c := &Itsyouonline{
+		BaseURI: defaultBaseURI,
+	}
 	c.client = http.Client{}
 	return c
 }
@@ -25,7 +28,7 @@ func NewItsyouonline() *Itsyouonline {
 func (c *Itsyouonline) CreateCompany(company Company, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/companies", &company, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/companies", &company, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +43,7 @@ func (c *Itsyouonline) GetCompanyList(headers, queryParams map[string]interface{
 	var u []Company
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/companies"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/companies"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -68,7 +71,7 @@ func (c *Itsyouonline) UpdateCompany(globalId string, headers, queryParams map[s
 	qsParam := buildQueryString(queryParams)
 	var u Company
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/companies/"+globalId, nil, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/companies/"+globalId, nil, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -83,7 +86,7 @@ func (c *Itsyouonline) GetCompany(globalId string, headers, queryParams map[stri
 	var u Company
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/companies/"+globalId+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/companies/"+globalId+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -111,7 +114,7 @@ func (c *Itsyouonline) GetCompanyContracts(globalId string, headers, queryParams
 	qsParam := buildQueryString(queryParams)
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/companies/"+globalId+"/contracts"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/companies/"+globalId+"/contracts"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +142,7 @@ func (c *Itsyouonline) CreateCompanyContract(globalId string, contract Contract,
 	qsParam := buildQueryString(queryParams)
 	var u Contract
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/companies/"+globalId+"/contracts", &contract, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/companies/"+globalId+"/contracts", &contract, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -153,7 +156,7 @@ func (c *Itsyouonline) GetCompanyInfo(globalId string, headers, queryParams map[
 	var u companyview
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/companies/"+globalId+"/info"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/companies/"+globalId+"/info"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -180,7 +183,7 @@ func (c *Itsyouonline) CompaniesGlobalIdValidateGet(globalId string, headers, qu
 	qsParam := buildQueryString(queryParams)
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/companies/"+globalId+"/validate"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/companies/"+globalId+"/validate"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +212,7 @@ func (c *Itsyouonline) GetContract(contractId string, headers, queryParams map[s
 	var u Contract
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/contracts/"+contractId+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/contracts/"+contractId+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -236,7 +239,7 @@ func (c *Itsyouonline) GetContract(contractId string, headers, queryParams map[s
 func (c *Itsyouonline) SignContract(contractId string, signature Signature, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/contracts/"+contractId+"/signatures", &signature, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/contracts/"+contractId+"/signatures", &signature, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +253,7 @@ func (c *Itsyouonline) CreateNewOrganization(organization Organization, headers,
 	qsParam := buildQueryString(queryParams)
 	var u Organization
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/organizations", &organization, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations", &organization, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -265,7 +268,7 @@ func (c *Itsyouonline) GetOrganization(globalid string, headers, queryParams map
 	var u Organization
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/organizations/"+globalid+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -293,7 +296,7 @@ func (c *Itsyouonline) UpdateOrganization(globalid string, organization Organiza
 	qsParam := buildQueryString(queryParams)
 	var u Organization
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/organizations/"+globalid, &organization, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/organizations/"+globalid, &organization, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -306,7 +309,7 @@ func (c *Itsyouonline) UpdateOrganization(globalid string, organization Organiza
 func (c *Itsyouonline) DeleteOrganization(globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/organizations/"+globalid+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -324,7 +327,7 @@ func (c *Itsyouonline) CreateNewSubOrganization(globalid string, organization Or
 	qsParam := buildQueryString(queryParams)
 	var u Organization
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/organizations/"+globalid, &organization, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations/"+globalid, &organization, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -339,7 +342,7 @@ func (c *Itsyouonline) GetOrganizationAPIKeyLabels(globalid string, headers, que
 	var u []string
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/organizations/"+globalid+"/apikeys"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/apikeys"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -367,7 +370,7 @@ func (c *Itsyouonline) CreateNewOrganizationAPIKey(globalid string, organization
 	qsParam := buildQueryString(queryParams)
 	var u OrganizationAPIKey
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/organizations/"+globalid+"/apikeys", &organizationapikey, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations/"+globalid+"/apikeys", &organizationapikey, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -381,7 +384,7 @@ func (c *Itsyouonline) GetOrganizationAPIKey(label, globalid string, headers, qu
 	var u OrganizationAPIKey
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/organizations/"+globalid+"/apikeys/"+label+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/apikeys/"+label+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -408,7 +411,7 @@ func (c *Itsyouonline) GetOrganizationAPIKey(label, globalid string, headers, qu
 func (c *Itsyouonline) DeleteOrganizationAPIKey(label, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/organizations/"+globalid+"/apikeys/"+label+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid+"/apikeys/"+label+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -425,7 +428,7 @@ func (c *Itsyouonline) DeleteOrganizationAPIKey(label, globalid string, headers,
 func (c *Itsyouonline) UpdateOrganizationAPIKey(label, globalid string, organizationsglobalidapikeyslabelputreqbody OrganizationsGlobalidApikeysLabelPutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/organizations/"+globalid+"/apikeys/"+label, &organizationsglobalidapikeyslabelputreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/organizations/"+globalid+"/apikeys/"+label, &organizationsglobalidapikeyslabelputreqbody, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -439,7 +442,7 @@ func (c *Itsyouonline) GetOrganizationContracts(globalid string, headers, queryP
 	qsParam := buildQueryString(queryParams)
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/organizations/"+globalid+"/contracts"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/contracts"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +470,7 @@ func (c *Itsyouonline) CreateOrganizationContracty(globalid string, contract Con
 	qsParam := buildQueryString(queryParams)
 	var u Contract
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/organizations/"+globalid+"/contracts", &contract, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations/"+globalid+"/contracts", &contract, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -480,7 +483,7 @@ func (c *Itsyouonline) CreateOrganizationContracty(globalid string, contract Con
 func (c *Itsyouonline) DeleteOrganizaitonDNS(dnsname, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/organizations/"+globalid+"/dns/"+dnsname+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid+"/dns/"+dnsname+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -498,7 +501,7 @@ func (c *Itsyouonline) CreateOrganizationDNS(dnsname, globalid string, organizat
 	qsParam := buildQueryString(queryParams)
 	var u OrganizationsGlobalidDnsDnsnamePostRespBody
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/organizations/"+globalid+"/dns/"+dnsname, &organizationsglobaliddnsdnsnamepostreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations/"+globalid+"/dns/"+dnsname, &organizationsglobaliddnsdnsnamepostreqbody, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -511,7 +514,7 @@ func (c *Itsyouonline) CreateOrganizationDNS(dnsname, globalid string, organizat
 func (c *Itsyouonline) UpdateOrganizationDNS(dnsname, globalid string, organizationsglobaliddnsdnsnameputreqbody OrganizationsGlobalidDnsDnsnamePutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/organizations/"+globalid+"/dns/"+dnsname, &organizationsglobaliddnsdnsnameputreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/organizations/"+globalid+"/dns/"+dnsname, &organizationsglobaliddnsdnsnameputreqbody, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -526,7 +529,7 @@ func (c *Itsyouonline) GetPendingOrganizationInvitations(globalid string, header
 	var u []JoinOrganizationInvitation
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/organizations/"+globalid+"/invitations"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/invitations"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -553,7 +556,7 @@ func (c *Itsyouonline) GetPendingOrganizationInvitations(globalid string, header
 func (c *Itsyouonline) RemovePendingOrganizationInvitation(username, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/organizations/"+globalid+"/invitations/"+username+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid+"/invitations/"+username+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -571,7 +574,7 @@ func (c *Itsyouonline) UpdateOrganizationMemberShip(globalid string, organizatio
 	qsParam := buildQueryString(queryParams)
 	var u Organization
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/organizations/"+globalid+"/members", &organizationsglobalidmembersputreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/organizations/"+globalid+"/members", &organizationsglobalidmembersputreqbody, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -585,7 +588,7 @@ func (c *Itsyouonline) AddOrganizationMember(globalid string, member Member, hea
 	qsParam := buildQueryString(queryParams)
 	var u Member
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/organizations/"+globalid+"/members", &member, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations/"+globalid+"/members", &member, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -598,7 +601,7 @@ func (c *Itsyouonline) AddOrganizationMember(globalid string, member Member, hea
 func (c *Itsyouonline) RemoveOrganizationMember(username, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/organizations/"+globalid+"/members/"+username+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid+"/members/"+username+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -616,7 +619,7 @@ func (c *Itsyouonline) AddOrganizationOwner(globalid string, member Member, head
 	qsParam := buildQueryString(queryParams)
 	var u Member
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/organizations/"+globalid+"/owners", &member, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations/"+globalid+"/owners", &member, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -629,7 +632,7 @@ func (c *Itsyouonline) AddOrganizationOwner(globalid string, member Member, head
 func (c *Itsyouonline) RemoveOrganizationOwner(username, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/organizations/"+globalid+"/owners/"+username+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid+"/owners/"+username+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -647,7 +650,7 @@ func (c *Itsyouonline) GetOrganizationTree(globalid string, headers, queryParams
 	var u []OrganizationTreeItem
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/organizations/"+globalid+"/tree"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/tree"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -674,7 +677,7 @@ func (c *Itsyouonline) GetOrganizationTree(globalid string, headers, queryParams
 func (c *Itsyouonline) CreateUser(user User, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users", &user, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users", &user, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -688,7 +691,7 @@ func (c *Itsyouonline) GetUser(username string, headers, queryParams map[string]
 	var u User
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -716,7 +719,7 @@ func (c *Itsyouonline) RegisterNewUserAddress(username string, address Address, 
 	qsParam := buildQueryString(queryParams)
 	var u Address
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/addresses", &address, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/addresses", &address, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -730,7 +733,7 @@ func (c *Itsyouonline) GetUserAddresses(username string, headers, queryParams ma
 	var u []Address
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/addresses"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/addresses"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -757,7 +760,7 @@ func (c *Itsyouonline) GetUserAddresses(username string, headers, queryParams ma
 func (c *Itsyouonline) DeleteUserAddress(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/addresses/"+label+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/addresses/"+label+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -774,7 +777,7 @@ func (c *Itsyouonline) DeleteUserAddress(label, username string, headers, queryP
 func (c *Itsyouonline) UpdateUserAddress(label, username string, address Address, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/addresses/"+label, &address, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/addresses/"+label, &address, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -788,7 +791,7 @@ func (c *Itsyouonline) GetUserAddressByLabel(label, username string, headers, qu
 	var u Address
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/addresses/"+label+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/addresses/"+label+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -817,7 +820,7 @@ func (c *Itsyouonline) ListAPIKeys(username string, headers, queryParams map[str
 	var u []UserAPIKey
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/apikeys"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/apikeys"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -845,7 +848,7 @@ func (c *Itsyouonline) AddApiKey(username string, usersusernameapikeyspostreqbod
 	qsParam := buildQueryString(queryParams)
 	var u UserAPIKey
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/apikeys", &usersusernameapikeyspostreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/apikeys", &usersusernameapikeyspostreqbody, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -860,7 +863,7 @@ func (c *Itsyouonline) GetAPIkey(label, username string, headers, queryParams ma
 	var u UserAPIKey
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/apikeys/"+label+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/apikeys/"+label+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -887,7 +890,7 @@ func (c *Itsyouonline) GetAPIkey(label, username string, headers, queryParams ma
 func (c *Itsyouonline) UpdateAPIkey(label, username string, usersusernameapikeyslabelputreqbody UsersUsernameApikeysLabelPutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/apikeys/"+label, &usersusernameapikeyslabelputreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/apikeys/"+label, &usersusernameapikeyslabelputreqbody, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -900,7 +903,7 @@ func (c *Itsyouonline) UpdateAPIkey(label, username string, usersusernameapikeys
 func (c *Itsyouonline) DeleteAPIkey(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/apikeys/"+label+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/apikeys/"+label+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -919,7 +922,7 @@ func (c *Itsyouonline) GetAllAuthorizations(username string, headers, queryParam
 	var u []Authorization
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/authorizations"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/authorizations"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -946,7 +949,7 @@ func (c *Itsyouonline) GetAllAuthorizations(username string, headers, queryParam
 func (c *Itsyouonline) DeleteAuthorization(grantedTo, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/authorizations/"+grantedTo+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/authorizations/"+grantedTo+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -963,7 +966,7 @@ func (c *Itsyouonline) DeleteAuthorization(grantedTo, username string, headers, 
 func (c *Itsyouonline) UpdateAuthorization(grantedTo, username string, authorization Authorization, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/authorizations/"+grantedTo, &authorization, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/authorizations/"+grantedTo, &authorization, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -978,7 +981,7 @@ func (c *Itsyouonline) GetAuthorization(grantedTo, username string, headers, que
 	var u Authorization
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/authorizations/"+grantedTo+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/authorizations/"+grantedTo+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1006,7 +1009,7 @@ func (c *Itsyouonline) CreateUserBankAccount(username string, usersusernamebanks
 	qsParam := buildQueryString(queryParams)
 	var u UsersUsernameBanksPostRespBody
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/banks", &usersusernamebankspostreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/banks", &usersusernamebankspostreqbody, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1020,7 +1023,7 @@ func (c *Itsyouonline) GetUserBankAccounts(username string, headers, queryParams
 	var u []BankAccount
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/banks"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/banks"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1047,7 +1050,7 @@ func (c *Itsyouonline) GetUserBankAccounts(username string, headers, queryParams
 func (c *Itsyouonline) UpdateUserBankAccount(username, label string, bankaccount BankAccount, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/banks/"+label, &bankaccount, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/banks/"+label, &bankaccount, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1060,7 +1063,7 @@ func (c *Itsyouonline) UpdateUserBankAccount(username, label string, bankaccount
 func (c *Itsyouonline) UsersUsernameBanksLabelDelete(username, label string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/banks/"+label+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/banks/"+label+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1078,7 +1081,7 @@ func (c *Itsyouonline) GetUserBankAccountByLabel(username, label string, headers
 	var u BankAccount
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/banks/"+label+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/banks/"+label+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1106,7 +1109,7 @@ func (c *Itsyouonline) CreateUserContract(username string, contract Contract, he
 	qsParam := buildQueryString(queryParams)
 	var u Contract
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/contracts", &contract, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/contracts", &contract, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1120,7 +1123,7 @@ func (c *Itsyouonline) GetUserContracts(username string, headers, queryParams ma
 	qsParam := buildQueryString(queryParams)
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/contracts"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/contracts"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1148,7 +1151,7 @@ func (c *Itsyouonline) GetDigitalWallet(username string, headers, queryParams ma
 	var u []DigitalAssetAddress
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/digitalwallet"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/digitalwallet"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1176,7 +1179,7 @@ func (c *Itsyouonline) RegisterNewDigitalAssetAddress(username string, digitalas
 	qsParam := buildQueryString(queryParams)
 	var u DigitalAssetAddress
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/digitalwallet", &digitalassetaddress, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/digitalwallet", &digitalassetaddress, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1189,7 +1192,7 @@ func (c *Itsyouonline) RegisterNewDigitalAssetAddress(username string, digitalas
 func (c *Itsyouonline) DeleteDigitalAssetAddress(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/digitalwallet/"+label+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/digitalwallet/"+label+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1206,7 +1209,7 @@ func (c *Itsyouonline) DeleteDigitalAssetAddress(label, username string, headers
 func (c *Itsyouonline) UpdateDigitalAssetAddress(label, username string, digitalassetaddress DigitalAssetAddress, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/digitalwallet/"+label, &digitalassetaddress, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/digitalwallet/"+label, &digitalassetaddress, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1220,7 +1223,7 @@ func (c *Itsyouonline) GetDigitalAssetAddressByLabel(label, username string, hea
 	var u DigitalAssetAddress
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/digitalwallet/"+label+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/digitalwallet/"+label+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1248,7 +1251,7 @@ func (c *Itsyouonline) RegisterNewEmailAddress(username string, usersusernameema
 	qsParam := buildQueryString(queryParams)
 	var u UsersUsernameEmailaddressesPostRespBody
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/emailaddresses", &usersusernameemailaddressespostreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/emailaddresses", &usersusernameemailaddressespostreqbody, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1263,7 +1266,7 @@ func (c *Itsyouonline) GetEmailAddresses(username string, headers, queryParams m
 	var u []EmailAddress
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/emailaddresses"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/emailaddresses"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1290,7 +1293,7 @@ func (c *Itsyouonline) GetEmailAddresses(username string, headers, queryParams m
 func (c *Itsyouonline) UpdateEmailAddress(label, username string, usersusernameemailaddresseslabelputreqbody UsersUsernameEmailaddressesLabelPutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/emailaddresses/"+label, &usersusernameemailaddresseslabelputreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/emailaddresses/"+label, &usersusernameemailaddresseslabelputreqbody, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1303,7 +1306,7 @@ func (c *Itsyouonline) UpdateEmailAddress(label, username string, usersusernamee
 func (c *Itsyouonline) DeleteEmailAddress(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/emailaddresses/"+label+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/emailaddresses/"+label+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1320,7 +1323,7 @@ func (c *Itsyouonline) DeleteEmailAddress(label, username string, headers, query
 func (c *Itsyouonline) ValidateEmailAddress(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/emailaddresses/"+label+"/validate", nil, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/emailaddresses/"+label+"/validate", nil, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1333,7 +1336,7 @@ func (c *Itsyouonline) ValidateEmailAddress(label, username string, headers, que
 func (c *Itsyouonline) DeleteFacebookAccount(username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/facebook"+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/facebook"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1350,7 +1353,7 @@ func (c *Itsyouonline) DeleteFacebookAccount(username string, headers, queryPara
 func (c *Itsyouonline) DeleteGithubAccount(username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/github"+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/github"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1368,7 +1371,7 @@ func (c *Itsyouonline) GetUserInformation(username string, headers, queryParams 
 	var u userview
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/info"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/info"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1395,7 +1398,7 @@ func (c *Itsyouonline) GetUserInformation(username string, headers, queryParams 
 func (c *Itsyouonline) UpdateUserName(username string, usersusernamenameputreqbody UsersUsernameNamePutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/name", &usersusernamenameputreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/name", &usersusernamenameputreqbody, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1410,7 +1413,7 @@ func (c *Itsyouonline) GetNotifications(username string, headers, queryParams ma
 	var u UsersUsernameNotificationsGetRespBody
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/notifications"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/notifications"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1439,7 +1442,7 @@ func (c *Itsyouonline) GetUserOrganizations(username string, headers, queryParam
 	var u UsersUsernameOrganizationsGetRespBody
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/organizations"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/organizations"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1466,7 +1469,7 @@ func (c *Itsyouonline) GetUserOrganizations(username string, headers, queryParam
 func (c *Itsyouonline) LeaveOrganization(globalid, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/organizations/"+globalid+"/leave"+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/organizations/"+globalid+"/leave"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1483,7 +1486,7 @@ func (c *Itsyouonline) LeaveOrganization(globalid, username string, headers, que
 func (c *Itsyouonline) UsersUsernameOrganizationsGlobalidRolesRoleDelete(role, globalid, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/organizations/"+globalid+"/roles/"+role+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/organizations/"+globalid+"/roles/"+role+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1501,7 +1504,7 @@ func (c *Itsyouonline) AcceptMembership(role, globalid, username string, joinorg
 	qsParam := buildQueryString(queryParams)
 	var u JoinOrganizationInvitation
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/organizations/"+globalid+"/roles/"+role, &joinorganizationinvitation, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/organizations/"+globalid+"/roles/"+role, &joinorganizationinvitation, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1514,7 +1517,7 @@ func (c *Itsyouonline) AcceptMembership(role, globalid, username string, joinorg
 func (c *Itsyouonline) UpdatePassword(username string, usersusernamepasswordputreqbody UsersUsernamePasswordPutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/password", &usersusernamepasswordputreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/password", &usersusernamepasswordputreqbody, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1528,7 +1531,7 @@ func (c *Itsyouonline) GetUserPhoneNumbers(username string, headers, queryParams
 	var u []Phonenumber
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/phonenumbers"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/phonenumbers"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1556,7 +1559,7 @@ func (c *Itsyouonline) RegisterNewUserPhonenumber(username string, phonenumber P
 	qsParam := buildQueryString(queryParams)
 	var u Phonenumber
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/phonenumbers", &phonenumber, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/phonenumbers", &phonenumber, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1570,7 +1573,7 @@ func (c *Itsyouonline) GetUserPhonenumberByLabel(label, username string, headers
 	var u Phonenumber
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/phonenumbers/"+label+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/phonenumbers/"+label+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1597,7 +1600,7 @@ func (c *Itsyouonline) GetUserPhonenumberByLabel(label, username string, headers
 func (c *Itsyouonline) UpdateUserPhonenumber(label, username string, phonenumber Phonenumber, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/phonenumbers/"+label, &phonenumber, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/phonenumbers/"+label, &phonenumber, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1610,7 +1613,7 @@ func (c *Itsyouonline) UpdateUserPhonenumber(label, username string, phonenumber
 func (c *Itsyouonline) DeleteUserPhonenumber(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/phonenumbers/"+label+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/phonenumbers/"+label+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1627,7 +1630,7 @@ func (c *Itsyouonline) DeleteUserPhonenumber(label, username string, headers, qu
 func (c *Itsyouonline) VerifyPhoneNumber(label, username string, usersusernamephonenumberslabelactivateputreqbody UsersUsernamePhonenumbersLabelActivatePutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("PUT", rootURL+"/users/"+username+"/phonenumbers/"+label+"/activate", &usersusernamephonenumberslabelactivateputreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/phonenumbers/"+label+"/activate", &usersusernamephonenumberslabelactivateputreqbody, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1641,7 +1644,7 @@ func (c *Itsyouonline) ValidatePhonenumber(label, username string, headers, quer
 	qsParam := buildQueryString(queryParams)
 	var u UsersUsernamePhonenumbersLabelActivatePostRespBody
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/phonenumbers/"+label+"/activate", nil, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/phonenumbers/"+label+"/activate", nil, headers, qsParam)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1653,7 +1656,7 @@ func (c *Itsyouonline) ValidatePhonenumber(label, username string, headers, quer
 func (c *Itsyouonline) RemoveTOTP(username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 	// create request object
-	req, err := http.NewRequest("DELETE", rootURL+"/users/"+username+"/totp"+qsParam, nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/totp"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1671,7 +1674,7 @@ func (c *Itsyouonline) GetTOTPSecret(username string, headers, queryParams map[s
 	var u UsersUsernameTotpGetRespBody
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/totp"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/totp"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1697,7 +1700,7 @@ func (c *Itsyouonline) GetTOTPSecret(username string, headers, queryParams map[s
 func (c *Itsyouonline) SetupTOTP(username string, usersusernametotppostreqbody UsersUsernameTotpPostReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	qsParam := buildQueryString(queryParams)
 
-	resp, err := c.doReqWithBody("POST", rootURL+"/users/"+username+"/totp", &usersusernametotppostreqbody, headers, qsParam)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/totp", &usersusernametotppostreqbody, headers, qsParam)
 	if err != nil {
 		return nil, err
 	}
@@ -1712,7 +1715,7 @@ func (c *Itsyouonline) GetTwoFAMethods(username string, headers, queryParams map
 	var u UsersUsernameTwofamethodsGetRespBody
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/twofamethods"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/twofamethods"+qsParam, nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1739,7 +1742,7 @@ func (c *Itsyouonline) UsersUsernameValidateGet(username string, headers, queryP
 	qsParam := buildQueryString(queryParams)
 
 	// create request object
-	req, err := http.NewRequest("GET", rootURL+"/users/"+username+"/validate"+qsParam, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/validate"+qsParam, nil)
 	if err != nil {
 		return nil, err
 	}
