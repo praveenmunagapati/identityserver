@@ -20,6 +20,15 @@ class Oauth:
         token = data.json()['access_token']
         self.session.headers['Authorization'] = 'token {token}'.format(token=token)
 
+    def CreateJWTToken(self, scopes=None, audiences=None):
+        url = urllib.parse.urljoin(self.url, 'jwt')
+        params = {
+            'scope': scopes,
+            'aud': audiences
+        }
+        data = self.session.get(url, params=params)
+        return data.text
+
 
 class Client:
     def __init__(self):
