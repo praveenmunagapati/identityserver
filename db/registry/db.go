@@ -133,11 +133,16 @@ func (m *Manager) ListRegistryEntries(username string, globalid string) (registr
 // If no such entry exists, nil is returned, both for the registryEntry and error
 func (m *Manager) GetRegistryEntry(username string, globalid string, key string) (registryEntry *RegistryEntry, err error) {
 	selector, err := createSelector(username, globalid, key)
-	registryEntry = &RegistryEntry{}
-	err = m.getRegistryCollection().Find(selector).One(registryEntry)
+	result := struct {
+		Entries []RegistryEntry
+	}{}
+	err = m.getRegistryCollection().Find(selector).Select(bson.M{"entries.$": 1}).One(&result)
 	if err == mgo.ErrNotFound {
 		err = nil
-		registryEntry = nil
+		return
+	}
+	if result.Entries != nil && len(result.Entries) > 0 {
+		registryEntry = &result.Entries[0]
 	}
 	return
 

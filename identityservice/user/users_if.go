@@ -200,7 +200,7 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/organizations/{globalid}/leave", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.LeaveOrganization))).Methods("DELETE")
 	r.Handle("/users/{username}/registry", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.ListUserRegistry))).Methods("GET")
 	r.Handle("/users/{username}/registry", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.AddUserRegistryEntry))).Methods("POST")
-	r.Handle("/users/{username}/registry/{key}", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.GetUserRegistryEntry))).Methods("GET")
+	r.Handle("/users/{username}/registry/{key}", http.HandlerFunc(i.GetUserRegistryEntry)).Methods("GET")
 	r.Handle("/users/{username}/registry/{key}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteUserRegistryEntry))).Methods("DELETE")
 
 }
