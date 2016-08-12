@@ -125,7 +125,16 @@ func (m *Manager) ListRegistryEntries(username string, globalid string) (registr
 	} else {
 		selector = bson.M{"globalid": globalid}
 	}
-	err = m.getRegistryCollection().Find(selector).Select(bson.M{"entries": 1}).All(&registryEntries)
+	result := struct {
+		Entries []RegistryEntry
+	}{}
+	err = m.getRegistryCollection().Find(selector).Select(bson.M{"entries": 1}).One(&result)
+	if err == mgo.ErrNotFound {
+		err = nil
+		registryEntries = []RegistryEntry{}
+		return
+	}
+	registryEntries = result.Entries
 	return
 }
 
