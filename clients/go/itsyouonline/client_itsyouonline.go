@@ -270,6 +270,19 @@ func (c *Itsyouonline) CreateNewSubOrganization(globalid string, organization Or
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Update organization info
+func (c *Itsyouonline) UpdateOrganization(globalid string, organization Organization, headers, queryParams map[string]interface{}) (Organization, *http.Response, error) {
+	var u Organization
+
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/organizations/"+globalid, &organization, headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
 // Get organization info
 func (c *Itsyouonline) GetOrganization(globalid string, headers, queryParams map[string]interface{}) (Organization, *http.Response, error) {
 	var u Organization
@@ -299,44 +312,12 @@ func (c *Itsyouonline) GetOrganization(globalid string, headers, queryParams map
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Update organization info
-func (c *Itsyouonline) UpdateOrganization(globalid string, organization Organization, headers, queryParams map[string]interface{}) (Organization, *http.Response, error) {
-	var u Organization
-
-	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/organizations/"+globalid, &organization, headers, queryParams)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
 // Deletes an organization and all data linked to it (join-organization-invitations, oauth_access_tokens, oauth_clients)
 func (c *Itsyouonline) DeleteOrganization(globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create request object
 	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid, nil)
 	if err != nil {
 		return nil, err
-	}
-	req.URL.RawQuery = buildQueryString(req, queryParams)
-
-	for k, v := range headers {
-		req.Header.Set(k, fmt.Sprintf("%v", v))
-	}
-
-	//do the request
-	return c.client.Do(req)
-}
-
-// Get the list of active api keys.
-func (c *Itsyouonline) GetOrganizationAPIKeyLabels(globalid string, headers, queryParams map[string]interface{}) ([]string, *http.Response, error) {
-	var u []string
-
-	// create request object
-	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/apikeys", nil)
-	if err != nil {
-		return u, nil, err
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
@@ -349,13 +330,7 @@ func (c *Itsyouonline) GetOrganizationAPIKeyLabels(globalid string, headers, que
 	}
 
 	//do the request
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+	return c.client.Do(req)
 }
 
 // Create a new API Key, a secret itself should not be provided, it will be generated serverside.
@@ -371,11 +346,12 @@ func (c *Itsyouonline) CreateNewOrganizationAPIKey(globalid string, organization
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-func (c *Itsyouonline) GetOrganizationAPIKey(label, globalid string, headers, queryParams map[string]interface{}) (OrganizationAPIKey, *http.Response, error) {
-	var u OrganizationAPIKey
+// Get the list of active api keys.
+func (c *Itsyouonline) GetOrganizationAPIKeyLabels(globalid string, headers, queryParams map[string]interface{}) ([]string, *http.Response, error) {
+	var u []string
 
 	// create request object
-	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/apikeys/"+label, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/apikeys", nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -408,12 +384,44 @@ func (c *Itsyouonline) DeleteOrganizationAPIKey(label, globalid string, headers,
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
 
 	//do the request
 	return c.client.Do(req)
+}
+
+func (c *Itsyouonline) GetOrganizationAPIKey(label, globalid string, headers, queryParams map[string]interface{}) (OrganizationAPIKey, *http.Response, error) {
+	var u OrganizationAPIKey
+
+	// create request object
+	req, err := http.NewRequest("GET", c.BaseURI+"/organizations/"+globalid+"/apikeys/"+label, nil)
+	if err != nil {
+		return u, nil, err
+	}
+	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, fmt.Sprintf("%v", v))
+	}
+
+	//do the request
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
 // Updates the label or other properties of a key.
@@ -426,19 +434,6 @@ func (c *Itsyouonline) UpdateOrganizationAPIKey(label, globalid string, organiza
 	defer resp.Body.Close()
 
 	return resp, nil
-}
-
-// Create a new contract.
-func (c *Itsyouonline) CreateOrganizationContracty(globalid string, contract Contract, headers, queryParams map[string]interface{}) (Contract, *http.Response, error) {
-	var u Contract
-
-	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations/"+globalid+"/contracts", &contract, headers, queryParams)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
 // Get the contracts where the organization is 1 of the parties. Order descending by date.
@@ -469,16 +464,17 @@ func (c *Itsyouonline) GetOrganizationContracts(globalid string, headers, queryP
 	return resp, nil
 }
 
-// Updates an existing DNS name associated with an organization
-func (c *Itsyouonline) UpdateOrganizationDNS(dnsname, globalid string, organizationsglobaliddnsdnsnameputreqbody OrganizationsGlobalidDnsDnsnamePutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
+// Create a new contract.
+func (c *Itsyouonline) CreateOrganizationContracty(globalid string, contract Contract, headers, queryParams map[string]interface{}) (Contract, *http.Response, error) {
+	var u Contract
 
-	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/organizations/"+globalid+"/dns/"+dnsname, &organizationsglobaliddnsdnsnameputreqbody, headers, queryParams)
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/organizations/"+globalid+"/contracts", &contract, headers, queryParams)
 	if err != nil {
-		return nil, err
+		return u, nil, err
 	}
 	defer resp.Body.Close()
 
-	return resp, nil
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
 // Creates a new DNS name associated with an organization
@@ -494,6 +490,18 @@ func (c *Itsyouonline) CreateOrganizationDNS(dnsname, globalid string, organizat
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Updates an existing DNS name associated with an organization
+func (c *Itsyouonline) UpdateOrganizationDNS(dnsname, globalid string, organizationsglobaliddnsdnsnameputreqbody OrganizationsGlobalidDnsDnsnamePutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
+
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/organizations/"+globalid+"/dns/"+dnsname, &organizationsglobaliddnsdnsnameputreqbody, headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
+}
+
 // Removes a DNS name
 func (c *Itsyouonline) DeleteOrganizaitonDNS(dnsname, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create request object
@@ -502,6 +510,10 @@ func (c *Itsyouonline) DeleteOrganizaitonDNS(dnsname, globalid string, headers, 
 		return nil, err
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
 
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
@@ -549,6 +561,10 @@ func (c *Itsyouonline) RemovePendingOrganizationInvitation(username, globalid st
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
@@ -592,6 +608,10 @@ func (c *Itsyouonline) RemoveOrganizationMember(username, globalid string, heade
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
@@ -621,6 +641,10 @@ func (c *Itsyouonline) RemoveOrganizationOwner(username, globalid string, header
 		return nil, err
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
 
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
@@ -672,23 +696,6 @@ func (c *Itsyouonline) AddOrganizationRegistryEntry(globalid string, registryent
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Removes a RegistryEntry from the organization's registry
-func (c *Itsyouonline) DeleteOrganizationRegistryEntry(key, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid+"/registry/"+key, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.URL.RawQuery = buildQueryString(req, queryParams)
-
-	for k, v := range headers {
-		req.Header.Set(k, fmt.Sprintf("%v", v))
-	}
-
-	//do the request
-	return c.client.Do(req)
-}
-
 // Get a RegistryEntry from the organization's registry.
 func (c *Itsyouonline) GetOrganizationRegistryEntry(key, globalid string, headers, queryParams map[string]interface{}) (RegistryEntry, *http.Response, error) {
 	var u RegistryEntry
@@ -716,6 +723,27 @@ func (c *Itsyouonline) GetOrganizationRegistryEntry(key, globalid string, header
 	defer resp.Body.Close()
 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Removes a RegistryEntry from the organization's registry
+func (c *Itsyouonline) DeleteOrganizationRegistryEntry(key, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/organizations/"+globalid+"/registry/"+key, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, fmt.Sprintf("%v", v))
+	}
+
+	//do the request
+	return c.client.Do(req)
 }
 
 func (c *Itsyouonline) GetOrganizationTree(globalid string, headers, queryParams map[string]interface{}) ([]OrganizationTreeItem, *http.Response, error) {
@@ -827,21 +855,32 @@ func (c *Itsyouonline) RegisterNewUserAddress(username string, address Address, 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Removes an address
-func (c *Itsyouonline) DeleteUserAddress(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+func (c *Itsyouonline) GetUserAddressByLabel(label, username string, headers, queryParams map[string]interface{}) (Address, *http.Response, error) {
+	var u Address
+
 	// create request object
-	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/addresses/"+label, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/addresses/"+label, nil)
 	if err != nil {
-		return nil, err
+		return u, nil, err
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
 
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
 
 	//do the request
-	return c.client.Do(req)
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
 // Update the label and/or value of an existing address.
@@ -856,11 +895,33 @@ func (c *Itsyouonline) UpdateUserAddress(label, username string, address Address
 	return resp, nil
 }
 
-func (c *Itsyouonline) GetUserAddressByLabel(label, username string, headers, queryParams map[string]interface{}) (Address, *http.Response, error) {
-	var u Address
+// Removes an address
+func (c *Itsyouonline) DeleteUserAddress(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/addresses/"+label, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, fmt.Sprintf("%v", v))
+	}
+
+	//do the request
+	return c.client.Do(req)
+}
+
+// Lists the API keys
+func (c *Itsyouonline) ListAPIKeys(username string, headers, queryParams map[string]interface{}) ([]UserAPIKey, *http.Response, error) {
+	var u []UserAPIKey
 
 	// create request object
-	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/addresses/"+label, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/apikeys", nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -897,14 +958,12 @@ func (c *Itsyouonline) AddApiKey(username string, usersusernameapikeyspostreqbod
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Lists the API keys
-func (c *Itsyouonline) ListAPIKeys(username string, headers, queryParams map[string]interface{}) ([]UserAPIKey, *http.Response, error) {
-	var u []UserAPIKey
-
+// Removes an API key
+func (c *Itsyouonline) DeleteAPIkey(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create request object
-	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/apikeys", nil)
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/apikeys/"+label, nil)
 	if err != nil {
-		return u, nil, err
+		return nil, err
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
@@ -917,13 +976,7 @@ func (c *Itsyouonline) ListAPIKeys(username string, headers, queryParams map[str
 	}
 
 	//do the request
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+	return c.client.Do(req)
 }
 
 // Get an API key by label
@@ -953,23 +1006,6 @@ func (c *Itsyouonline) GetAPIkey(label, username string, headers, queryParams ma
 	defer resp.Body.Close()
 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
-// Removes an API key
-func (c *Itsyouonline) DeleteAPIkey(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/apikeys/"+label, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.URL.RawQuery = buildQueryString(req, queryParams)
-
-	for k, v := range headers {
-		req.Header.Set(k, fmt.Sprintf("%v", v))
-	}
-
-	//do the request
-	return c.client.Do(req)
 }
 
 // Updates the label for the api key
@@ -1013,23 +1049,6 @@ func (c *Itsyouonline) GetAllAuthorizations(username string, headers, queryParam
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Remove the authorization for an organization, the granted organization will no longer have access the user's information.
-func (c *Itsyouonline) DeleteAuthorization(grantedTo, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/authorizations/"+grantedTo, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.URL.RawQuery = buildQueryString(req, queryParams)
-
-	for k, v := range headers {
-		req.Header.Set(k, fmt.Sprintf("%v", v))
-	}
-
-	//do the request
-	return c.client.Do(req)
-}
-
 // Modify which information an organization is able to see.
 func (c *Itsyouonline) UpdateAuthorization(grantedTo, username string, authorization Authorization, headers, queryParams map[string]interface{}) (*http.Response, error) {
 
@@ -1071,17 +1090,25 @@ func (c *Itsyouonline) GetAuthorization(grantedTo, username string, headers, que
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Create new bank account
-func (c *Itsyouonline) CreateUserBankAccount(username string, usersusernamebankspostreqbody UsersUsernameBanksPostReqBody, headers, queryParams map[string]interface{}) (UsersUsernameBanksPostRespBody, *http.Response, error) {
-	var u UsersUsernameBanksPostRespBody
-
-	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/banks", &usersusernamebankspostreqbody, headers, queryParams)
+// Remove the authorization for an organization, the granted organization will no longer have access the user's information.
+func (c *Itsyouonline) DeleteAuthorization(grantedTo, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/authorizations/"+grantedTo, nil)
 	if err != nil {
-		return u, nil, err
+		return nil, err
 	}
-	defer resp.Body.Close()
+	req.URL.RawQuery = buildQueryString(req, queryParams)
 
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, fmt.Sprintf("%v", v))
+	}
+
+	//do the request
+	return c.client.Do(req)
 }
 
 func (c *Itsyouonline) GetUserBankAccounts(username string, headers, queryParams map[string]interface{}) ([]BankAccount, *http.Response, error) {
@@ -1112,6 +1139,19 @@ func (c *Itsyouonline) GetUserBankAccounts(username string, headers, queryParams
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Create new bank account
+func (c *Itsyouonline) CreateUserBankAccount(username string, usersusernamebankspostreqbody UsersUsernameBanksPostReqBody, headers, queryParams map[string]interface{}) (UsersUsernameBanksPostRespBody, *http.Response, error) {
+	var u UsersUsernameBanksPostRespBody
+
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/banks", &usersusernamebankspostreqbody, headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
 // Delete a BankAccount
 func (c *Itsyouonline) DeleteUserBankAccount(username, label string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create request object
@@ -1121,24 +1161,16 @@ func (c *Itsyouonline) DeleteUserBankAccount(username, label string, headers, qu
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
 
 	//do the request
 	return c.client.Do(req)
-}
-
-// Update an existing bankaccount and label.
-func (c *Itsyouonline) UpdateUserBankAccount(username, label string, bankaccount BankAccount, headers, queryParams map[string]interface{}) (*http.Response, error) {
-
-	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/banks/"+label, &bankaccount, headers, queryParams)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return resp, nil
 }
 
 func (c *Itsyouonline) GetUserBankAccountByLabel(username, label string, headers, queryParams map[string]interface{}) (BankAccount, *http.Response, error) {
@@ -1167,6 +1199,18 @@ func (c *Itsyouonline) GetUserBankAccountByLabel(username, label string, headers
 	defer resp.Body.Close()
 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Update an existing bankaccount and label.
+func (c *Itsyouonline) UpdateUserBankAccount(username, label string, bankaccount BankAccount, headers, queryParams map[string]interface{}) (*http.Response, error) {
+
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/banks/"+label, &bankaccount, headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
 }
 
 // Get the contracts where the user is 1 of the parties. Order descending by date.
@@ -1210,6 +1254,19 @@ func (c *Itsyouonline) CreateUserContract(username string, contract Contract, he
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Register a new digital asset address
+func (c *Itsyouonline) RegisterNewDigitalAssetAddress(username string, digitalassetaddress DigitalAssetAddress, headers, queryParams map[string]interface{}) (DigitalAssetAddress, *http.Response, error) {
+	var u DigitalAssetAddress
+
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/digitalwallet", &digitalassetaddress, headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
 func (c *Itsyouonline) GetDigitalWallet(username string, headers, queryParams map[string]interface{}) ([]DigitalAssetAddress, *http.Response, error) {
 	var u []DigitalAssetAddress
 
@@ -1238,11 +1295,26 @@ func (c *Itsyouonline) GetDigitalWallet(username string, headers, queryParams ma
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Register a new digital asset address
-func (c *Itsyouonline) RegisterNewDigitalAssetAddress(username string, digitalassetaddress DigitalAssetAddress, headers, queryParams map[string]interface{}) (DigitalAssetAddress, *http.Response, error) {
+func (c *Itsyouonline) GetDigitalAssetAddressByLabel(label, username string, headers, queryParams map[string]interface{}) (DigitalAssetAddress, *http.Response, error) {
 	var u DigitalAssetAddress
 
-	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/digitalwallet", &digitalassetaddress, headers, queryParams)
+	// create request object
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/digitalwallet/"+label, nil)
+	if err != nil {
+		return u, nil, err
+	}
+	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, fmt.Sprintf("%v", v))
+	}
+
+	//do the request
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1272,6 +1344,10 @@ func (c *Itsyouonline) DeleteDigitalAssetAddress(label, username string, headers
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
@@ -1280,11 +1356,12 @@ func (c *Itsyouonline) DeleteDigitalAssetAddress(label, username string, headers
 	return c.client.Do(req)
 }
 
-func (c *Itsyouonline) GetDigitalAssetAddressByLabel(label, username string, headers, queryParams map[string]interface{}) (DigitalAssetAddress, *http.Response, error) {
-	var u DigitalAssetAddress
+// Get a list of the user his email addresses.
+func (c *Itsyouonline) GetEmailAddresses(username string, headers, queryParams map[string]interface{}) ([]EmailAddress, *http.Response, error) {
+	var u []EmailAddress
 
 	// create request object
-	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/digitalwallet/"+label, nil)
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/emailaddresses", nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1321,35 +1398,6 @@ func (c *Itsyouonline) RegisterNewEmailAddress(username string, usersusernameema
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Get a list of the user his email addresses.
-func (c *Itsyouonline) GetEmailAddresses(username string, headers, queryParams map[string]interface{}) ([]EmailAddress, *http.Response, error) {
-	var u []EmailAddress
-
-	// create request object
-	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/emailaddresses", nil)
-	if err != nil {
-		return u, nil, err
-	}
-	req.URL.RawQuery = buildQueryString(req, queryParams)
-
-	if c.AuthHeader != "" {
-		req.Header.Set("Authorization", c.AuthHeader)
-	}
-
-	for k, v := range headers {
-		req.Header.Set(k, fmt.Sprintf("%v", v))
-	}
-
-	//do the request
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
 // Updates the label and/or value of an email address
 func (c *Itsyouonline) UpdateEmailAddress(label, username string, usersusernameemailaddresseslabelputreqbody UsersUsernameEmailaddressesLabelPutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 
@@ -1370,6 +1418,10 @@ func (c *Itsyouonline) DeleteEmailAddress(label, username string, headers, query
 		return nil, err
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
 
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
@@ -1400,6 +1452,10 @@ func (c *Itsyouonline) DeleteFacebookAccount(username string, headers, queryPara
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
@@ -1416,6 +1472,10 @@ func (c *Itsyouonline) DeleteGithubAccount(username string, headers, queryParams
 		return nil, err
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
 
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
@@ -1532,22 +1592,9 @@ func (c *Itsyouonline) LeaveOrganization(globalid, username string, headers, que
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
-	for k, v := range headers {
-		req.Header.Set(k, fmt.Sprintf("%v", v))
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
 	}
-
-	//do the request
-	return c.client.Do(req)
-}
-
-// Reject membership invitation in an organization.
-func (c *Itsyouonline) UsersUsernameOrganizationsGlobalidRolesRoleDelete(role, globalid, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/organizations/"+globalid+"/roles/"+role, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.URL.RawQuery = buildQueryString(req, queryParams)
 
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
@@ -1568,6 +1615,27 @@ func (c *Itsyouonline) AcceptMembership(role, globalid, username string, joinorg
 	defer resp.Body.Close()
 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Reject membership invitation in an organization.
+func (c *Itsyouonline) UsersUsernameOrganizationsGlobalidRolesRoleDelete(role, globalid, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	req, err := http.NewRequest("DELETE", c.BaseURI+"/users/"+username+"/organizations/"+globalid+"/roles/"+role, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, fmt.Sprintf("%v", v))
+	}
+
+	//do the request
+	return c.client.Do(req)
 }
 
 // Update the user his password
@@ -1623,18 +1691,6 @@ func (c *Itsyouonline) GetUserPhoneNumbers(username string, headers, queryParams
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Update the label and/or value of an existing phonenumber.
-func (c *Itsyouonline) UpdateUserPhonenumber(label, username string, phonenumber Phonenumber, headers, queryParams map[string]interface{}) (*http.Response, error) {
-
-	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/phonenumbers/"+label, &phonenumber, headers, queryParams)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return resp, nil
-}
-
 func (c *Itsyouonline) GetUserPhonenumberByLabel(label, username string, headers, queryParams map[string]interface{}) (Phonenumber, *http.Response, error) {
 	var u Phonenumber
 
@@ -1672,12 +1728,28 @@ func (c *Itsyouonline) DeleteUserPhonenumber(label, username string, headers, qu
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
 
 	//do the request
 	return c.client.Do(req)
+}
+
+// Update the label and/or value of an existing phonenumber.
+func (c *Itsyouonline) UpdateUserPhonenumber(label, username string, phonenumber Phonenumber, headers, queryParams map[string]interface{}) (*http.Response, error) {
+
+	resp, err := c.doReqWithBody("PUT", c.BaseURI+"/users/"+username+"/phonenumbers/"+label, &phonenumber, headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
 }
 
 // Verifies a phone number
@@ -1697,19 +1769,6 @@ func (c *Itsyouonline) ValidatePhonenumber(label, username string, headers, quer
 	var u UsersUsernamePhonenumbersLabelActivatePostRespBody
 
 	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/phonenumbers/"+label+"/activate", nil, headers, queryParams)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
-// Adds a RegistryEntry to the user's registry, if the key is already used, it is overwritten.
-func (c *Itsyouonline) AddUserRegistryEntry(username string, registryentry RegistryEntry, headers, queryParams map[string]interface{}) (RegistryEntry, *http.Response, error) {
-	var u RegistryEntry
-
-	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/registry", &registryentry, headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1747,6 +1806,19 @@ func (c *Itsyouonline) ListUserRegistry(username string, headers, queryParams ma
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Adds a RegistryEntry to the user's registry, if the key is already used, it is overwritten.
+func (c *Itsyouonline) AddUserRegistryEntry(username string, registryentry RegistryEntry, headers, queryParams map[string]interface{}) (RegistryEntry, *http.Response, error) {
+	var u RegistryEntry
+
+	resp, err := c.doReqWithBody("POST", c.BaseURI+"/users/"+username+"/registry", &registryentry, headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
 // Removes a RegistryEntry from the user's registry
 func (c *Itsyouonline) DeleteUserRegistryEntry(key, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create request object
@@ -1755,6 +1827,10 @@ func (c *Itsyouonline) DeleteUserRegistryEntry(key, username string, headers, qu
 		return nil, err
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
 
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
@@ -1770,34 +1846,6 @@ func (c *Itsyouonline) GetUserRegistryEntry(key, username string, headers, query
 
 	// create request object
 	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/registry/"+key, nil)
-	if err != nil {
-		return u, nil, err
-	}
-	req.URL.RawQuery = buildQueryString(req, queryParams)
-
-	if c.AuthHeader != "" {
-		req.Header.Set("Authorization", c.AuthHeader)
-	}
-
-	for k, v := range headers {
-		req.Header.Set(k, fmt.Sprintf("%v", v))
-	}
-
-	//do the request
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
-func (c *Itsyouonline) GetTOTPSecret(username string, headers, queryParams map[string]interface{}) (UsersUsernameTotpGetRespBody, *http.Response, error) {
-	var u UsersUsernameTotpGetRespBody
-
-	// create request object
-	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/totp", nil)
 	if err != nil {
 		return u, nil, err
 	}
@@ -1840,12 +1888,44 @@ func (c *Itsyouonline) RemoveTOTP(username string, headers, queryParams map[stri
 	}
 	req.URL.RawQuery = buildQueryString(req, queryParams)
 
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
 	for k, v := range headers {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
 
 	//do the request
 	return c.client.Do(req)
+}
+
+func (c *Itsyouonline) GetTOTPSecret(username string, headers, queryParams map[string]interface{}) (UsersUsernameTotpGetRespBody, *http.Response, error) {
+	var u UsersUsernameTotpGetRespBody
+
+	// create request object
+	req, err := http.NewRequest("GET", c.BaseURI+"/users/"+username+"/totp", nil)
+	if err != nil {
+		return u, nil, err
+	}
+	req.URL.RawQuery = buildQueryString(req, queryParams)
+
+	if c.AuthHeader != "" {
+		req.Header.Set("Authorization", c.AuthHeader)
+	}
+
+	for k, v := range headers {
+		req.Header.Set(k, fmt.Sprintf("%v", v))
+	}
+
+	//do the request
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
 // Get the possible two factor authentication methods

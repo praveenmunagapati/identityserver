@@ -93,7 +93,11 @@ func (m *Manager) DeleteRegistryEntry(username string, globalid string, key stri
 	if err != nil {
 		return
 	}
-	_, err = m.getRegistryCollection().RemoveAll(selector)
+
+	_, err = m.getRegistryCollection().UpdateAll(
+		selector,
+		bson.M{"$pull": bson.M{"entries": bson.M{"key": key}}})
+
 	return
 }
 

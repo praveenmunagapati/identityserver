@@ -37,19 +37,23 @@ func main() {
 	}
 
 	entry := itsyouonline.RegistryEntry{Key: "testscriptkey", Value: "testscriptvalue"}
-	var entries []itsyouonline.RegistryEntry
 
 	if username != "" {
 		fmt.Printf("Creating/updating a registry entry for user: %s\n", username)
 		authenticatedClient.AddUserRegistryEntry(username, entry, nil, nil)
-
-		entries, _, _ = authenticatedClient.ListUserRegistry(username, nil, nil)
-
 	}
 	if globalid != "" {
 		fmt.Printf("Creating/updating a registry entry for organization: %s\n", globalid)
 		authenticatedClient.AddOrganizationRegistryEntry(globalid, entry, nil, nil)
+	}
 
+	//Step 2: List the registry entries
+
+	var entries []itsyouonline.RegistryEntry
+	if username != "" {
+		entries, _, _ = authenticatedClient.ListUserRegistry(username, nil, nil)
+	}
+	if globalid != "" {
 		entries, _, _ = authenticatedClient.ListOrganizationRegistry(globalid, nil, nil)
 	}
 
@@ -57,7 +61,7 @@ func main() {
 		fmt.Printf("Key: %s - Value: %s\n", e.Key, e.Value)
 	}
 
-	//Step 2: Get the registry entry using a anonymous client
+	//Step 3: Get the registry entry using an anonymous client
 	anonymousClient := itsyouonline.NewItsyouonline()
 	anonymousClient.BaseURI = host + "/api"
 
@@ -76,4 +80,14 @@ func main() {
 	}
 
 	fmt.Printf("Key: %s - Value: %s\n", requestedEntry.Key, requestedEntry.Value)
+
+	//Step 4: Delete the entry from step 1
+	if username != "" {
+		fmt.Printf("Deleting a registry entry for user: %s\n", username)
+		authenticatedClient.DeleteUserRegistryEntry("testscriptkey", username, nil, nil)
+	}
+	if globalid != "" {
+		fmt.Printf("Deleting a registry entry for organization: %s\n", globalid)
+		authenticatedClient.DeleteOrganizationRegistryEntry("testscriptkey", globalid, nil, nil)
+	}
 }
