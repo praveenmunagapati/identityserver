@@ -24,7 +24,7 @@ In itsyou.online, organizations map to clients in the oauth2 terminology and the
 First, the user is given an authorization code link that looks like the following:
 
 ```
-https://itsyou.online/v1/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=CALLBACK_URL&scope=read&state=STATE
+https://itsyou.online/v1/oauth/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=CALLBACK_URL&scope=user:name&state=STATE
 ```
 
 * https://itsyou.online/v1/oauth/authorize: the API authorization endpoint
@@ -40,9 +40,12 @@ https://itsyou.online/v1/oauth/authorize?response_type=code&client_id=CLIENT_ID&
 * response_type=code
 
     specifies that your application is requesting an authorization code grant
-* scope=read
+* scope=user:name
 
     specifies the level of access that the application is requesting
+
+    here we specify the scope "user:name", see the [available scopes](availableScopes.md) for all other supported scopes.
+
 
 * state=STATE
 
