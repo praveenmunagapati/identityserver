@@ -42,7 +42,8 @@
 
         UserDialogService.init(vm);
 
-        vm.tabSelected = tabSelected;
+        /*vm.tabSelected = tabSelected;*/
+        vm.pageSelected = pageSelected;
         vm.accept = accept;
         vm.reject = reject;
         vm.getPendingCount = getPendingCount;
@@ -86,13 +87,24 @@
                 });
         }
 
-        function tabSelected(fx) {
+        /*function tabSelected(fx) {
             if(fx) {
                 fx();
             }
             var path = '/home/' + TABS[vm.selectedTabIndex];
             if(path !== $window.location.hash.replace('#', '')){
                 $location.path(path, false);
+            }
+        }*/
+
+        //redirect notification to right page
+        function pageSelected(tabNum) {
+            if(!(tabNum in TABS)) {
+                return;
+            }
+            var path = '/' + TABS[tabNum];
+            if(path !== $window.location.hash.replace('#', '')){
+                $location.path(path);
             }
         }
 
