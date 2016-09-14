@@ -1,40 +1,74 @@
 <header id="header" ng-class="{'cookie-warning': showCookieWarning}">
+    <!--cookie warning-->
     <div ng-cloak class="cookie-warning-container" ng-if="showCookieWarning">
         <span>This site uses cookies. By continuing to browse the site you are agreeing to our use of cookies.</span>
         <md-button class="md-raised" ng-click="hideCookieWarning()">
             <i class="fa fa-times"></i> Dismiss
         </md-button>
     </div>
+    <!--end cookie warning-->
     <div div layout="row">
         <div flex></div>
         <div flex="90" flex-gt-sm="80" layout="row" layout-align="space-between center">
-            <div id="logo"><a href="#/"> ItsYou.Online </a></div>
-            <div class="sign-wrap" ng-if="::$root.user">
-                <a href="#/home/notifications" ng-show="$root.notificationCount !== undefined"
+            <div class="logo-base">
+                <div id="logo-itsyou"><a href="#/"></a></div>
+                <div class="logo-moving-base">
+                    <div id="logo-incontrol"><a href="#/"></a></div>
+                    <div id="logo-identity"><a href="#/"></a></div>
+                    <div id="logo-privacy"><a href="#/"></a></div>
+                    <div id="logo-online"><a href="#/"></a></div>
+                </div>
+            </div>
+            <div class="header-sign-wrap" ng-if="::$root.user">
+                <!--notification icon-->
+                <a href="#/notifications" ng-show="$root.notificationCount !== undefined"
                    style="margin-right:10px;">
                     <div class="notification-bell">
-                        <i class="fa fa-bell"></i>
-                        <span class="notification-bell-unread" ng-show="$root.notificationCount > 0"></span>
+                        <i class="fa fa-flag fa-lg"></i>
+                        <span class="notification-bell-unread" ng-show="$root.notificationCount > 0">
+                            <span id="notificationsCount" ng-bind="$root.notificationCount"
+                              ng-show="$root.notificationCount < 10"></span>
+                            <span id="notificationsCountMany" ng-bind="$root.notificationCount"
+                              ng-show="$root.notificationCount > 9"></span>
+                        </span>
                     </div>
                     <md-tooltip ng-cloak> You have {{ $root.notificationCount? $root.notificationCount : 'no'}} unread
                         <ng-pluralize count="$root.notificationCount"
                                       when="{'1': 'notification', 'other': 'notifications'}"></ng-pluralize>
                     </md-tooltip>
                 </a>
+                <!--end notification icon-->
+                <!--drop down main menu-->
                 <md-menu md-offset="-5 30" ng-cloak>
-                    <a ng-click="$mdOpenMenu($event)">
-                        <i class="fa fa-user"></i>
-                        <span ng-bind="::$root.user"></span>
-                        <i class="fa fa-caret-down"></i></a>
+                    <a id="profilemenu" ng-click="$mdOpenMenu($event)" style="margin-right:10px">
+                        <i class="fa fa-user fa-lg"></i>
+                    </a>
                     <md-menu-content>
-                        <md-menu-item>
-                            <md-button href="#/">Home</md-button>
+                        <md-menu-item class="header-menu-item">
+                            <md-button href="#/profile" ng-click="$mdClose.hide()">Profile</md-button>
                         </md-menu-item>
-                        <md-menu-item>
-                            <md-button href="logout">Signout</md-button>
+                        <md-menu-item class="header-menu-item">
+                            <md-button href="#/organizations" ng-click="$mdClose.hide()">Organizations</md-button>
+                        </md-menu-item>
+                        <md-menu-item class="header-menu-item">
+                            <md-button href="#/authorizations" ng-click="$mdClose.hide()">Authorizations</md-button>
+                        </md-menu-item>
+                        <!--
+                        <md-menu-item class="header-menu-item">
+                            <md-button href="#/home/you" ng-click="$mdClose.hide()">Add</md-button>
+                        </md-menu-item>
+                        -->
+                        <md-menu-item class="header-menu-item">
+                            <md-button href="logout" ng-click="$mdClose.hide()">Signout</md-button>
                         </md-menu-item>
                     </md-menu-content>
                 </md-menu>
+                <!--end drop down main menu-->
+                <!--add settings to header-->
+                <a href="#/settings" style="">
+                    <i class="fa fa-cog fa-lg"></i>
+                </a>
+                <!--end header settings-->
             </div>
             <div class="sign-wrap" ng-if="::!$root.user && ! header_login">
                 <a ng-href="{{ $root.registrationUrl || 'register' }}"><i class="fa fa-user-plus"></i>Register</a>

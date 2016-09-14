@@ -1,0 +1,59 @@
+<div flex-gt-sm="80" flex="100" layout="column">
+    <div class="breadcrumb-container">
+        <p ng-bind="::vm.username"></p>
+        <h1>Notifications</h1>
+    </div>
+    <md-card>
+        <md-card-content>
+            <div class="loading-container" layout-align="center center"
+                 ng-if="!vm.loaded.notifications">
+                <md-progress-circular md-mode="indeterminate"
+                                      md-diameter="50"></md-progress-circular>
+            </div>
+            <div flex-gt-sm="80" flex-gt-md="50">
+                <div layout="row">
+                    <div layout="column">
+                        <br/>
+                        <h3 ng-bind="vm.notificationMessage"></h3>
+                    </div>
+                    <span flex></span>
+                </div>
+                <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
+                    <md-subheader class="md-no-sticky">Pending organization invites</md-subheader>
+                    <md-list>
+                        <md-list-item class="md-1-line"
+                                      ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}">
+                            <div class="md-list-item-text">
+                                <p>
+                                    <i class="fa fa-users"></i>
+                                    <span ng-bind="invitation.organization"></span>
+                                </p>
+                            </div>
+                            <md-icon md-font-icon="fa-times" class="fa md-secondary md-warn"
+                                     ng-click="vm.reject(invitation)"
+                                     aria-label="Reject invitation"></md-icon>
+                            <md-icon md-font-icon="fa-check" class="fa md-secondary md-primary"
+                                     ng-click="vm.accept($event, invitation)"
+                                     aria-label="Accept invitation">
+                            </md-icon>
+                        </md-list-item>
+                    </md-list>
+                </div>
+                <div ng-if="vm.getPendingCount(vm.notifications.security) > 0">
+                    <md-list>
+                        <md-subheader class="md-no-sticky">Security notifications</md-subheader>
+                        <md-list-item
+                                class="secondary-button-padding list-item-secondary-button-padding"
+                                ng-repeat="notification in vm.notifications.security track by notification.subject"
+                                aria-label="Security notice">
+                            <p ng-bind="::notification.msg"></p>
+                            <md-button class="md-secondary md-raised" ng-click="vm.pageSelected(notification.tabIndex)">
+                                Resolve
+                            </md-button>
+                        </md-list-item>
+                    </md-list>
+                </div>
+            </div>
+        </md-card-content>
+    </md-card>
+</div>

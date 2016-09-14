@@ -64,7 +64,7 @@ md-dialog md-dialog-actions {
 --------------------------------------------------------*/
 #header {
     width: 100%;
-    background: rgba(48, 145, 187, 0.92);
+    background: #939598;
     height: 80px;
     position: relative;
     z-index: 2;
@@ -98,7 +98,100 @@ md-dialog md-dialog-actions {
     line-height: 25px;
 }
 
-#logo a { text-decoration: none; float: left; font-size: 30px; margin-top: 20px; color: #FFF; font-family: Wellfleet, sans-serif; font-weight: bold; }
+#logo a {
+    text-decoration: none;
+    float: left;
+    background: url(../img/Logo_itsyou.png);
+    margin-top: 20px;
+    height: 40px;
+    width: 250px;
+    background-size: 250px 40px;
+}
+
+
+/*= LOGO ANIMATION
+--------------------------------------------------------*/
+
+.logo-base a {
+    text-decoration: none;
+    float: left;
+}
+
+#logo-itsyou a {
+    background: url(../img/Logo_itsyou_2-itsyou.png);
+    margin-top: 20px;
+    height: 40px;
+    width: 92px;
+    background-size: 92px 40px;
+}
+
+.logo-moving-base a {
+    margin-top: -40px;
+    margin-left: 92px;
+    height: 40px;
+    width: 158px;
+    overflow-y: hidden;
+}
+
+#logo-incontrol a {
+    background: url(../img/Logo_itsyou_2-incontrol.png);
+    background-size: 158px 40px;
+
+    -webkit-animation: movein 1s; 
+    animation: movein 1s;
+    animation-fill-mode: forwards;
+}
+
+#logo-identity a {
+    background: url(../img/Logo_itsyou_2-identity.png);
+    background-size: 158px 40px;
+
+    -webkit-animation: movein 1s 1s;
+    animation: movein 1s 1s;
+    animation-fill-mode:  both;
+}
+
+#logo-privacy a {
+    background: url(../img/Logo_itsyou_2-privacy.png);
+    background-size: 158px 40px;
+
+    -webkit-animation: movein 1s 2s;
+    animation: movein 1s 2s;
+    animation-fill-mode:  both;
+}
+
+#logo-online a {
+    background: url(../img/Logo_itsyou_2-online.png);
+    background-size: 158px 40px;
+
+    -webkit-animation: move-and-stay 0.5s 3s;
+    animation: move-and-stay 0.5s 3s;
+    animation-fill-mode:  both;
+}
+
+@-webkit-keyframes movein {
+    0%   {-webkit-transform: translateY(100px); opacity: 0; }
+    20%  {-webkit-transform: translateY(0px); opacity: 1; }
+    80%  {-webkit-transform: translateY(0px)}
+    100% {-webkit-transform: translateY(-100px)}
+}
+
+@keyframes movein {
+    0%   {transform: translateY(100px); opacity: 0; }
+    20%  {transform: translateY(0px); opacity: 1; }
+    80%  {transform: translateY(0px)}
+    100% {transform: translateY(-100px)}
+}
+
+@-webkit-keyframes move-and-stay {
+    0%   {-webkit-transform: translateY(100px); opacity: 0; }
+    100% {-webkit-transform: translateY(0px); opacity: 1; }
+}
+
+@keyframes move-and-stay {
+    0%   {transform: translateY(100px); opacity: 0; }
+    100% {transform: translateY(0px); opacity: 1; }
+}
 
 /*= QUOTES AND SOME ELEMENTS
 --------------------------------------------------------*/
@@ -141,7 +234,7 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 #slide1 .content { margin-top: 220px; background: rgba(72, 72, 72, 0.2); }
 
 .bg {
-    background: #eeeeee url(../img/bg.png);
+    background: #eeeeee
 }
 
 .form-card {
@@ -230,6 +323,21 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     font-size: 15px;
 }
 
+.header-sign-wrap a {
+    text-decoration: none;
+}
+
+.header-sign-wrap i {
+  align-content: center;
+  color: #FFF;
+  text-decoration: none;
+  margin: 20px 6px 0 0;
+}
+
+.header-sign-wrap i:active {
+  color: rgba(48, 145, 187);
+}
+
 .homepage .sign-wrap {
     float: right;
     margin-top: 31px;
@@ -238,6 +346,15 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 .homepage .sign-wrap a {
     margin-left: 10px;
 }
+
+.header-menu-item+.header-menu-item:before {
+    content: "";
+    position: absolute;
+    left: 10%;
+    width: 80%;
+    border-top: 1px solid #AAAAAA;
+}
+
 /*= PUBLIC KEYS
 --------------------------------------------------------*/
 .public-key {
@@ -402,16 +519,41 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 
 .notification-bell-unread {
     position: absolute;
-    top: -8px;
-    right: 1px;
+    top: 13px;
+    right: -2px;
     z-index: 2;
-    width: 10px;
-    height: 10px;
+    width: 14px;
+    height: 14px;
     color: #ffffff;
-    text-align: center;
-    background-color: rgb(255, 64, 129); /*Same as md-ink-bar */
-    border: 2px solid #f3f3f3;
-    border-radius: 15px;
+    background-color: rgb(87, 207, 235);
+    border: 0px solid #f3f3f3;
+    border-radius: 20px;
+}
+
+#notificationsCount {
+    position: absolute;
+    line-height: 1;
+    font-size: 10px;
+    font-weight: bold;
+    top: 3px;
+    right: 4.5px;
+}
+
+#notificationsCountMany {
+    position: absolute;
+    line-height: 1;
+    font-size: 9px;
+    font-weight: bold;
+    top: 3px;
+    right: 2px;
+}
+
+#profilemenu {
+    cursor: pointer;
+}
+
+#profilemenu:hover, #profilemenu:active, #profilemenu:a {
+    color: rgba(255, 0, 0, 0.5);
 }
 
 .list-item-secondary-button-padding p {
