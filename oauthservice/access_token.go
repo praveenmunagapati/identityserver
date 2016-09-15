@@ -146,8 +146,8 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		},
 	}
 
-	json.NewEncoder(w).Encode(&response)
 	w.Header().Set("Content-type", "application/json")
+	json.NewEncoder(w).Encode(&response)
 }
 
 func clientCredentialsTokenHandler(clientID string, secret string, mgr *Manager, r *http.Request) (at *AccessToken, httpStatusCode int) {
