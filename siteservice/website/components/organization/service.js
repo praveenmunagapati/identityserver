@@ -31,7 +31,10 @@
             deleteDNS: deleteDNS,
             deleteOrganization: deleteOrganization,
             updateMembership: updateMembership,
-            removeMember: removeMember
+            removeMember: removeMember,
+            getLogo: getLogo,
+            setLogo: setLogo,
+            deleteLogo: deleteLogo
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -263,6 +266,25 @@
 
         function removeMember(globalid, username, role) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + role + '/' + username;
+            return genericHttpCall(DELETE, url);
+        }
+
+        function getLogo(globalid) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/logo';
+            return genericHttpCall(GET, url);
+        }
+
+        function setLogo(globalid, logo) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/logo';
+            var data = {
+                globalid: globalid,
+                logo: logo
+            }
+            return genericHttpCall(PUT, url, data);
+        }
+
+        function deleteLogo(globalid) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/logo';
             return genericHttpCall(DELETE, url);
         }
     }

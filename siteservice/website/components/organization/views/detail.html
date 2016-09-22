@@ -85,7 +85,7 @@
                         </div>
                     </md-tab-body>
                 </md-tab>
-                <md-tab flex="100" md-on-select="vm.fetchAPIKeyLabels()">
+                <md-tab flex="100" md-on-select="vm.initSettings()">
                     <md-tab-label><i class="fa fa-cog"></i>&nbsp;Settings</md-tab-label>
                     <md-tab-body flex="100">
                         <div ng-if="::vm.hasEditPermission">
@@ -134,6 +134,40 @@
                                         API Access keys are needed to access the Itsyou.online api using oauth2
                                     </md-tooltip>
                                 </md-button>
+                            </section>
+                            <md-divider></md-divider>
+                            <section>
+                                <md-subheader class="md-no-sticky">
+                                    <div layout="row">
+                                        <p>
+                                            Organization logo
+                                            <md-tooltip>
+                                                The logo is displayed when the user logs in from an external site using oauth2
+                                            </md-tooltip>
+                                        </p>
+                                    </div>
+                                </md-subheader>
+                                <div layout="column">
+                                    <div>
+                                        <canvas id="logoview" height="300px" width="500px" ng-show="vm.logo"></canvas>
+                                    </div>
+                                    <div ng-if="!vm.logo">
+                                        <md-button class="md-primary" ng-click="vm.showLogoDialog($event)">
+                                            <i class="fa fa-plus"></i> Set organization logo
+                                            <md-tooltip>
+                                                The logo is displayed when the user logs in from an external site using oauth2
+                                            </md-tooltip>
+                                        </md-button>
+                                    </div>
+                                    <div ng-if="vm.logo">
+                                        <md-button class="md-primary" ng-click="vm.showLogoDialog($event)">
+                                            Change organization logo
+                                            <md-tooltip>
+                                                Change the logo that is displayed zhen the user logs in from an external site using oauth2
+                                            </md-tooltip>
+                                        </md-button>
+                                    </div>
+                                </div>
                             </section>
                             <md-divider></md-divider>
                             <section>

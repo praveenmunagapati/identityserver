@@ -1,0 +1,38 @@
+<md-dialog>
+    <form name="form">
+      <md-toolbar>
+          <div class="md-toolbar-tools">
+              <h2><span ng-if="!logo">New</span><span ng-if="logo">Update</span> logo</h2>
+              <span flex></span>
+              <md-button class="md-icon-button" ng-click="cancel()">
+                  <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+              </md-button>
+          </div>
+      </md-toolbar>
+      <md-dialog-content>
+          <div class="md-dialog-content" layout="column">
+              <md-input-container md-no-float>
+                  <label>Logo</label>
+                  <input type="file" accept="image/*" ng-model-instant id="fileToUpload" custom-on-change="uploadFile" placeholder="logo"/>
+                  <div ng-messages="validationerrors" md-auto-hide="false">
+                      <div ng-message="filesize">The file size of the (resized) file is too large.</div>
+              </md-input-container>
+              <canvas id="preview" height="300px" width="500px"></canvas>
+          </div>
+      </md-dialog-content>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+        <md-button class="md-warn" ng-click="remove()" ng-disabled="!logo">
+            Delete
+        </md-button>
+        <span flex></span>
+        <md-button ng-click="cancel()">
+            Cancel
+        </md-button>
+        <md-button class="md-primary" type="submit" ng-click="update(dataurl)"
+                   ng-disabled="!dataurl">
+            Update
+        </md-button>
+    </md-dialog-actions>
+    </form>
+</md-dialog>

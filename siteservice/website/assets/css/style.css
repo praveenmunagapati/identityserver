@@ -137,7 +137,7 @@ md-dialog md-dialog-actions {
     background: url(../img/Logo_itsyou_2-incontrol.png);
     background-size: 158px 40px;
 
-    -webkit-animation: movein 1s; 
+    -webkit-animation: movein 1s;
     animation: movein 1s;
     animation-fill-mode: forwards;
 }
@@ -495,6 +495,16 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 
 .breadcrumb-link:hover, .breadcrumb-link:active {
     text-decoration: underline;
+}
+
+.loginprompt {
+    color: #939598;
+    text-align: center;
+}
+
+#login-logo {
+    margin: auto;
+    display: block;
 }
 
 .badge {

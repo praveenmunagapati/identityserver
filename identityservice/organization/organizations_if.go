@@ -90,6 +90,15 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// DeleteOrganizationRegistryEntry is the handler for DELETE /organizations/{username}/globalid/{key}
 	// Removes a RegistryEntry from the organization's registry
 	DeleteOrganizationRegistryEntry(http.ResponseWriter, *http.Request)
+	// SetOrganizationLogo is the handle for PUT /organizations/globalid/logo
+	// Set the organization Logo for the organization
+	SetOrganizationLogo(http.ResponseWriter, *http.Request)
+	// GetOrganizationLogo is the handler for GET /organizations/globalid/logo
+	// Get the Logo from an organization
+	GetOrganizationLogo(http.ResponseWriter, *http.Request)
+	// DeleteOrganizationLogo is the handler for DELETE /organizations/globalid/logo
+	// Removes the Logo from an organization
+	DeleteOrganizationLogo(http.ResponseWriter, *http.Request)
 }
 
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
@@ -122,5 +131,8 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/registry", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddOrganizationRegistryEntry))).Methods("POST")
 	r.Handle("/organizations/{globalid}/registry/{key}", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.GetOrganizationRegistryEntry))).Methods("GET")
 	r.Handle("/organizations/{globalid}/registry/{key}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteOrganizationRegistryEntry))).Methods("DELETE")
-
+	r.Handle("/organizations/{globalid}/logo", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.SetOrganizationLogo))).Methods("PUT")
+	//r.Handle("/organizations/{globalid}/logo", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.GetOrganizationLogo))).Methods("GET")
+	r.Handle("/organizations/{globalid}/logo", http.HandlerFunc(i.GetOrganizationLogo)).Methods("GET")
+	r.Handle("/organizations/{globalid}/logo", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteOrganizationLogo))).Methods("DELETE")
 }

@@ -166,6 +166,7 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 
 	username := context.Get(r, "authenticateduser").(string)
 	orgMgr := organization.NewManager(r)
+	logoMgr := organization.NewLogoManager(r)
 	count, err := orgMgr.CountByUser(username)
 	if err != nil {
 		log.Error(err.Error())
@@ -188,6 +189,13 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	if err == db.ErrDuplicate {
 		log.Debug("Duplicate organization")
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	err = logoMgr.Create(&org)
+
+	if err != nil && err != db.ErrDuplicate {
+		log.Error(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
@@ -822,6 +830,7 @@ func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
 func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	orgMgr := organization.NewManager(r)
+	logoMgr := organization.NewLogoManager(r)
 	if !orgMgr.Exists(globalid) {
 		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
 		return
@@ -837,6 +846,14 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	err = orgMgr.Remove(globalid)
 	if handleServerError(w, "removing organization", err) {
 		return
+	}
+	if logoMgr.Exists(globalid) {
+		log.Info("document exists, attempt to remove")
+		err = logoMgr.Remove(globalid)
+		log.Info("document should be gone now")
+		if handleServerError(w, "removing organization logo", err) {
+			return
+		}
 	}
 	orgReqMgr := invitations.NewInvitationManager(r)
 	err = orgReqMgr.RemoveAll(globalid)
@@ -947,6 +964,82 @@ func (api OrganizationsAPI) DeleteOrganizationRegistryEntry(w http.ResponseWrite
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// SetOrganizationLogo is the handler for PUT /organizations/globalid/logo
+// Set the organization Logo for the organization
+func (api OrganizationsAPI) SetOrganizationLogo(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+
+	body := struct {
+		Logo string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Error("Error while saving logo: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	logoMgr := organization.NewLogoManager(r)
+
+	// server side file size validation check. Normally uploaded files should never get this large due to size constraints, but check anyway
+	if len(body.Logo) > 1024*1024*5 {
+		log.Error("Error while saving file: file too large")
+		http.Error(w, http.StatusText(http.StatusRequestEntityTooLarge), http.StatusRequestEntityTooLarge)
+		return
+	}
+	_, err := logoMgr.SaveLogo(globalid, body.Logo)
+	if err != nil {
+		log.Error("Error while saving logo: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// GetOrganizationLogo is the handler for GET /organizations/globalid/logo
+// Get the Logo from an organization
+func (api OrganizationsAPI) GetOrganizationLogo(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	logoMgr := organization.NewLogoManager(r)
+
+	logo, err := logoMgr.GetLogo(globalid)
+
+	if err != nil && err.Error() != "not found" {
+		log.Error("Error getting logo", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Logo string `json:"logo"`
+	}{
+		Logo: logo,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// DeleteOrganizationLogo is the handler for DELETE /organizations/globalid/logo
+// Removes the Logo from an organization
+func (api OrganizationsAPI) DeleteOrganizationLogo(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	logoMgr := organization.NewLogoManager(r)
+
+	err := logoMgr.RemoveLogo(globalid)
+
+	if err != nil {
+		log.Error("Error removing logo", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusNoContent)
 }
