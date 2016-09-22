@@ -1143,6 +1143,52 @@ securedBy: [ oauth_2_0 ]
         204:
           description: Organization deleted
 
+    /logo:
+      get:
+        displayName: GetOrganizationLogo
+        description: Get the Logo from an organization
+        responses:
+          200:
+            body:
+              application/json:
+                type: string
+
+
+      put:
+        displayName: SetOrganizationLogo
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        description: Set the organization Logo for the organization
+        body:
+          application/json:
+            properties:
+              logo: string
+        responses:
+          200:
+            description: updated successfully
+            body:
+              application/json:
+                description: The updated logo
+                type: string
+          401:
+            description: Unauthorized
+          403:
+            description: no permission for this action
+          413:
+            description: file size too large
+
+      delete:
+        displayName: DeleteOrganizationLogo
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        description: Removes the Logo from an organization
+        responses:
+          401:
+            description: Unauthorized
+          404:
+            description: Organization not found
+          204:
+            description: Logo deleted
+
+
     /members:
       put:
         displayName: UpdateOrganizationMemberShip

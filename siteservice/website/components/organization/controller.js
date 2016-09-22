@@ -3,7 +3,8 @@
     angular
         .module("itsyouonlineApp")
         .controller("OrganizationDetailController", OrganizationDetailController)
-        .controller("InvitationDialogController", InvitationDialogController);
+        .controller("InvitationDialogController", InvitationDialogController)
+        .directive('customOnChange', customOnChange);
 
     InvitationDialogController.$inject = ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'UserDialogService'];
     OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia',
@@ -18,7 +19,9 @@
         vm.organization = {};
         vm.organizationRoot = {};
         vm.childOrganizationNames = [];
+        vm.logo = "";
 
+        vm.initSettings = initSettings;
         vm.showInvitationDialog = showInvitationDialog;
         vm.showAPIKeyCreationDialog = showAPIKeyCreationDialog;
         vm.showAPIKeyDialog = showAPIKeyDialog;
@@ -31,6 +34,7 @@
         vm.editMember = editMember;
         vm.canEditRole = canEditRole;
         vm.showLeaveOrganization = showLeaveOrganization;
+        vm.showLogoDialog = showLogoDialog;
 
         activate();
 
@@ -55,6 +59,28 @@
                     vm.organizationRoot.children = [];
                     vm.organizationRoot.children.push(data);
                 });
+
+            OrganizationService.getLogo(globalid).then(
+                function(data) {
+                    vm.logo = data.logo;
+                }
+            );
+        }
+
+        function renderLogo() {
+            if (vm.logo !== "") {
+                var img = new Image();
+                img.src = vm.logo;
+
+                var c = document.getElementById("logoview");
+                if (!c) {
+                    console.log("aborting logo render - canvas not loaded");
+                    return;
+                }
+                var ctx = c.getContext("2d");
+                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.drawImage(img, 0, 0);
+            }
         }
 
         function fetchInvitations() {
@@ -81,6 +107,11 @@
                         vm.apikeylabels = data;
                     }
                 );
+        }
+
+        function initSettings() {
+            fetchAPIKeyLabels();
+            renderLogo();
         }
 
         function showInvitationDialog(ev) {
@@ -185,6 +216,33 @@
                             vm.organization.dns.push(data.newDns);
                         }
                     });
+        }
+
+        function showLogoDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', logoDialogController],
+                templateUrl: 'components/organization/views/logoDialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals: {
+                    OrganizationService: OrganizationService,
+                    organization: vm.organization.globalid,
+                    $window: $window
+                }
+            }).then(
+                function() {
+                    OrganizationService.getLogo(vm.organization.globalid).then(
+                        function(data) {
+                            vm.logo = data.logo;
+                        }
+                    ).then(
+                        function() {
+                            renderLogo();
+                        }
+                    );
+                }
+            );
         }
 
         function showDeleteOrganizationDialog(event) {
@@ -501,4 +559,111 @@
                 });
         }
     }
+
+    function logoDialogController($scope, $mdDialog, organization, OrganizationService) {
+        $scope.organization = organization;
+        $scope.setFile = setFile;
+        $scope.cancel = cancel;
+        $scope.validationerrors = {};
+        $scope.update = update;
+        $scope.remove = remove;
+
+        OrganizationService.getLogo(organization).then(
+            function(data) {
+                $scope.logo = data.logo;
+                if ($scope.logo !== "") {
+                    var img = new Image()
+                    img.src = $scope.logo;
+
+                    var c = document.getElementById("preview");
+                    var ctx = c.getContext("2d");
+                    ctx.clearRect(0, 0, c.width, c.height);
+                    ctx.drawImage(img, 0, 0);
+                }
+            }
+        );
+
+        $scope.uploadFile = function(event){
+                var files = event.target.files;
+                setFile(files);
+            };
+
+        function setFile(element) {
+            //$scope.logo = element[0];
+            var c = document.getElementById("preview");
+            var ctx = c.getContext("2d");
+            ctx.clearRect(0, 0, c.width, c.height);
+            var upload = document.getElementById("fileToUpload");
+            var url = URL.createObjectURL(element[0]);
+            var img = new Image();
+            img.src = url;
+
+            img.onload = function() {
+                var wscale = 1;
+                if (img.width > c.width) {
+                    wscale = c.width / img.width;
+                }
+                var hscale = 1;
+                if (img.height > c.height) {
+                    hscale = c.height / img.height;
+                }
+                var canvasCopy = document.createElement("canvas");
+                var copyContext = canvasCopy.getContext("2d");
+
+                canvasCopy.width = img.width;
+                canvasCopy.height = img.height;
+                copyContext.drawImage(img, 0, 0);
+
+                var ratio = (wscale <= hscale ? wscale : hscale);
+
+                var widthOffset = (c.width - img.width * ratio) / 2;
+                var heightOffset = (c.height - img.height * ratio) / 2;
+                ctx.drawImage(canvasCopy, widthOffset, heightOffset, canvasCopy.width * ratio, canvasCopy.height * ratio);
+
+                $scope.dataurl = c.toDataURL();
+            }
+
+        }
+
+        function cancel() {
+            $mdDialog.cancel();
+        }
+
+        function update(logo) {
+            if (!$scope.form.$valid) {
+                return;
+            }
+            $scope.validationerrors = {};
+            OrganizationService.setLogo(organization, logo).then(
+                function (data) {
+                    $mdDialog.hide({logo: logo});
+                },
+                function (reason) {
+                    if (reason.status === 413) {
+                        $scope.validationerrors.filesize = true;
+                    }
+                }
+            );
+        }
+
+
+        function remove() {
+            $scope.validationerrors = {};
+            OrganizationService.deleteLogo(organization)
+                .then(function () {
+                    $mdDialog.hide({logo: ""});
+                });
+        }
+    }
+
+    function customOnChange() {
+        return {
+            restrict: 'A',
+            link: function (scope, element, attrs) {
+                var onChangeHandler = scope.$eval(attrs.customOnChange);
+                element.bind('change', onChangeHandler);
+            }
+        };
+    }
+
 })();

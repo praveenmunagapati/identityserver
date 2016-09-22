@@ -12,6 +12,7 @@ import (
 
 const (
 	mongoCollectionName = "organizations"
+	logoCollectionName = "organizationLogos"
 )
 
 //InitModels initialize models in mongo, if required.
@@ -23,6 +24,14 @@ func InitModels() {
 	}
 
 	db.EnsureIndex(mongoCollectionName, index)
+
+	// Index the logo collection
+	index = mgo.Index {
+		Key:		[]string{"globalid"},
+		Unique:	true,
+	}
+
+	db.EnsureIndex(logoCollectionName, index)
 }
 
 //Manager is used to store organizations
@@ -31,8 +40,19 @@ type Manager struct {
 	collection *mgo.Collection
 }
 
+//LogoManager is used to save the logo for an organization
+type LogoManager struct {
+	session		 *mgo.Session
+	collection *mgo.Collection
+}
+
 func getCollection(session *mgo.Session) *mgo.Collection {
 	return db.GetCollection(session, mongoCollectionName)
+}
+
+//get the logo collection
+func getLogoCollection(session *mgo.Session) *mgo.Collection {
+	return db.GetCollection(session, logoCollectionName)
 }
 
 //NewManager creates and initializes a new Manager
@@ -41,6 +61,15 @@ func NewManager(r *http.Request) *Manager {
 	return &Manager{
 		session:    session,
 		collection: getCollection(session),
+	}
+}
+
+//NewLogoManager creates and initializes a new LogoManager
+func NewLogoManager(r *http.Request) *LogoManager {
+	session := db.GetDBSession(r)
+	return &LogoManager{
+		session:		session,
+		collection:	getLogoCollection(session),
 	}
 }
 
@@ -116,8 +145,20 @@ func (m *Manager) GetByName(globalID string) (organization *Organization, err er
 	return
 }
 
+func (m *LogoManager) GetByName(globalID string) (organization *Organization, err error) {
+	err = m.collection.Find(bson.M{"globalid": globalID}).One(&organization)
+	return
+}
+
 // Exists checks if an organization exists.
 func (m *Manager) Exists(globalID string) bool {
+	count, _ := m.collection.Find(bson.M{"globalid": globalID}).Count()
+
+	return count == 1
+}
+
+// Exists checks if an organization and logo entry exists.
+func (m *LogoManager) Exists(globalID string) bool {
 	count, _ := m.collection.Find(bson.M{"globalid": globalID}).Count()
 
 	return count == 1
@@ -128,6 +169,19 @@ func (m *Manager) Create(organization *Organization) error {
 	// TODO: Validation!
 
 	err := m.collection.Insert(organization)
+	if mgo.IsDup(err) {
+		return db.ErrDuplicate
+	}
+	return err
+}
+
+// Create a new organization entry in the organization logo collection
+func (m *LogoManager) Create(organization *Organization) error {
+	var orgLogo OrganizationLogo
+
+	orgLogo.Globalid = organization.Globalid
+
+	err := m.collection.Insert(orgLogo)
 	if mgo.IsDup(err) {
 		return db.ErrDuplicate
 	}
@@ -200,6 +254,11 @@ func (m *Manager) Remove(globalid string) error {
 	return m.collection.Remove(bson.M{"globalid": globalid})
 }
 
+// Remove the organization logo
+func (m *LogoManager) Remove(globalid string) error {
+	return m.collection.Remove(bson.M{"globalid": globalid})
+}
+
 // UpdateMembership Updates a user his role in an organization
 func (m *Manager) UpdateMembership(globalid string, username string, oldrole string, newrole string) error {
 	qry := bson.M{"globalid": globalid}
@@ -226,5 +285,29 @@ func (m *Manager) CountByUser(username string) (int, error) {
 func (m *Manager) RemoveUser(globalId string, username string) error {
 	qry := bson.M{"globalid": globalId}
 	update := bson.M{"$pull": bson.M{"owners": username, "members": username}}
+	return m.collection.Update(qry, update)
+}
+
+// SaveLogo save or update logo
+func (m *LogoManager) SaveLogo(globalId string, logo string) (*mgo.ChangeInfo, error) {
+	return m.collection.Upsert(
+		bson.M{"globalid": globalId},
+		bson.M{"$set": bson.M{"logo": logo}})
+}
+
+// GetLogo Gets the logo from an organization
+func(m *LogoManager) GetLogo(globalId string) (string, error) {
+	var org *OrganizationLogo
+	err := m.collection.Find(bson.M{"globalid": globalId}).One(&org)
+	if err != nil {
+		return "", err
+	}
+	return org.Logo, err
+}
+
+// RemoveLogo Removes the logo from an organization
+func (m *LogoManager) RemoveLogo(globalId string) error {
+	qry := bson.M{"globalid": globalId}
+	update := bson.M{"$unset": bson.M{"logo": 1}}
 	return m.collection.Update(qry, update)
 }

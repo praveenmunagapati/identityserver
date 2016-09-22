@@ -16,7 +16,8 @@
             sendSmsCode: sendSmsCode,
             submitTotpCode: submitTotpCode,
             submitSmsCode: submitSmsCode,
-            checkSmsConfirmation: checkSmsConfirmation
+            checkSmsConfirmation: checkSmsConfirmation,
+            getLogo: getLogo
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -73,6 +74,11 @@
         function checkSmsConfirmation() {
             var url = apiURL + '/smsconfirmed';
             return genericHttpCall($http.get, url);
+        }
+
+        function getLogo(globalid) {
+            var url = '/api/organizations/' + encodeURIComponent(globalid) + '/logo';
+            return genericHttpCall($http.get, url)
         }
     }
 })();
