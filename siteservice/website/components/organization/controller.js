@@ -571,30 +571,50 @@
         OrganizationService.getLogo(organization).then(
             function(data) {
                 $scope.logo = data.logo;
+                makeFileDrop();
                 if ($scope.logo !== "") {
                     var img = new Image()
                     img.src = $scope.logo;
 
-                    var c = document.getElementById("preview");
+                    var c = document.getElementById("logo-upload-preview");
                     var ctx = c.getContext("2d");
                     ctx.clearRect(0, 0, c.width, c.height);
                     ctx.drawImage(img, 0, 0);
+                } else {
+                    var c = document.getElementById("logo-upload-preview");
+                    c.className += " dirty-background";
                 }
             }
         );
 
+        function makeFileDrop() {
+            var target = document.getElementById("logo-upload-preview");
+            target.addEventListener("dragover", function(e){e.preventDefault();}, true);
+            target.addEventListener("drop", function(src){
+	              src.preventDefault();
+                //only allow image files, ignore others
+                if (!src.dataTransfer.files[0].type.match(/image.*/)) {
+                    return;
+                }
+                var reader = new FileReader();
+	              reader.onload = function(e){
+		                setFile(e.target.result);
+	              };
+	              reader.readAsDataURL(src.dataTransfer.files[0]);
+            }, true);
+        }
+
         $scope.uploadFile = function(event){
                 var files = event.target.files;
-                setFile(files);
+                var url = URL.createObjectURL(files[0]);
+                setFile(url);
             };
 
-        function setFile(element) {
-            //$scope.logo = element[0];
-            var c = document.getElementById("preview");
+
+        function setFile(url) {
+            var c = document.getElementById("logo-upload-preview");
             var ctx = c.getContext("2d");
             ctx.clearRect(0, 0, c.width, c.height);
-            var upload = document.getElementById("fileToUpload");
-            var url = URL.createObjectURL(element[0]);
             var img = new Image();
             img.src = url;
 
@@ -620,7 +640,15 @@
                 var heightOffset = (c.height - img.height * ratio) / 2;
                 ctx.drawImage(canvasCopy, widthOffset, heightOffset, canvasCopy.width * ratio, canvasCopy.height * ratio);
 
+                //check if the dirty-background css class is applied to the canvas
+                if (c.className.match(/(?:^|\s)dirty-background(?!\S)/) ) {
+                    //remove the dirty-background css class from the canvas
+                    c.className = c.className.replace( /(?:^|\s)dirty-background(?!\S)/g , '' );
+                }
+
                 $scope.dataurl = c.toDataURL();
+                // forces the update button after a file drop, migh fix safari issues?
+                $scope.$digest();
             }
 
         }
