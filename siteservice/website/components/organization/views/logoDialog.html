@@ -13,11 +13,13 @@
           <div class="md-dialog-content" layout="column">
               <md-input-container md-no-float>
                   <label>Logo</label>
-                  <input type="file" accept="image/*" ng-model-instant id="fileToUpload" custom-on-change="uploadFile" placeholder="logo"/>
+                  <input type="file" class="file-input" accept="image/*" ng-model-instant id="fileToUpload" custom-on-change="uploadFile" placeholder="logo"/>
                   <div ng-messages="validationerrors" md-auto-hide="false">
                       <div ng-message="filesize">The file size of the (resized) file is too large.</div>
               </md-input-container>
-              <canvas id="preview" height="300px" width="500px"></canvas>
+              <h3 class="file-drop-info">Or drop a file in the area below</h3>
+              <canvas id="logo-upload-preview" height="300px" width="500px">
+              </canvas>
           </div>
       </md-dialog-content>
     </md-dialog-content>
