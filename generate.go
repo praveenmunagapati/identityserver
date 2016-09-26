@@ -23,3 +23,6 @@ package main
 
 //package the html files
 //go:generate go-bindata -pkg html -prefix siteservice/website -o siteservice/website/packaged/html/html.go siteservice/website/index.html siteservice/website/registration.html siteservice/website/login.html siteservice/website/base.html siteservice/website/error.html siteservice/website/apidocumentation.html siteservice/website/smsconfirmation.html siteservice/website/emailconfirmation.html
+
+// ## Email templates ##
+//go:generate go-bindata -pkg templates -prefix templates/templates -o templates/packaged/templates.go templates/templates/...
