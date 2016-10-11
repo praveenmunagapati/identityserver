@@ -2,9 +2,9 @@
 
 ### Show an organization logo on the login/register screen
 
-When you use the authorization code flow to authenticate your users using itsyou.online, you can provide a better user experience by showing your logo on the login page.
+When you use the authorization code flow to authenticate your users using Itsyou.Online, you can provide a better user experience by showing your logo on the login page.
 
-To set an organization logo go to the settings page of an organization
+To set an organization logo go to the settings page of an organization:
 
 ![Organization Settings](OrganizationSettingsTab.png)
 
@@ -22,9 +22,9 @@ When a user is asked to login, this logo is added to the login/register page:
 
 When logging in to an external site using Itsyou.Online, a successful 2 factor authentication will gain a validity period, for which no further 2FA's are required. This 2FA validity is bound to the external site. As long as the user does not provide an invalid password, and the validity period hasn't expired, the 2FA step is not required for logging in. As soon as an invalid password is provided, the validity of the 2FA, if one is still active, is revoked. When no active validity for the user is detected, they will have to do the 2FA step, and will acquire a new validity period for their successful authentication. The default validity period duration is 7 days.
 
-Currently, it is only possible to view or modify the validity period using the `organizations/{globalid}/2fa/validity` api. The validity period is expressed in seconds. The api suports both **GET** requests to retrieve the validity duration, and **PUT** requests to change the validity duration. Note that the validity period should be anywhere between 0 and 2678400 (31 days).
+Currently, it is only possible to view or modify the validity period using the `organizations/{globalid}/2fa/validity` api. The validity period is expressed in seconds. The api supports both **GET** requests to retrieve the validity duration, and **PUT** requests to change the validity duration. Note that the validity period should be between 0 and 2678400 (31 days).
 
-Lets take a look at an example, where we will attempt to retrieve and modify the validity period of an organization with globalid `mycompany`.
+Example to retrieve and modify the validity period of an organization with globalid `mycompany`:
 
 1. Inspect the validity duration
 ```
