@@ -106,6 +106,12 @@ For example, in curl you can set the Authorization header like this:
 curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/api/users/bob/info
 ```
 
+### Customize the user experience
+
+Small customizations can be configured such as an organization logo and 2 factor authentication validity.
+
+Details are described in the [Customize Authorization Code Flow documentation](CustomizeAuthorizationCodeFlow.md).
+
 ## Client Credentials Flow
 
 
