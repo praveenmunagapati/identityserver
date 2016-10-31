@@ -296,7 +296,7 @@
                 .show(changeRoleDialog)
                 .then(function (data) {
                     if (data.action === 'edit') {
-                        vm.organization = data;
+                        vm.organization = data.data;
                     } else if (data.action === 'remove') {
                         var people = vm.organization[data.data.role];
                         people.splice(people.indexOf(data.data.username), 1);
