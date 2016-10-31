@@ -92,7 +92,9 @@ types:
       label: string
       expire: datetime
       currencysymbol: string
-
+      noexpiration?:
+        type: boolean
+        description: Flag that represents whether or not this digital asset expires. If true, the expire field can be ignored.
 
   Phonenumber:
      properties:

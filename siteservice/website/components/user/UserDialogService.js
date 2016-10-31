@@ -423,7 +423,10 @@
         }
 
         function digitalWalletAddressDetail(event, walletAddress) {
-            walletAddress = walletAddress || {expire: new Date()};
+            walletAddress = walletAddress || {expire: new Date(new Date().setFullYear(new Date().getFullYear() + 1))};
+            if (walletAddress.noexpiration == null) {
+                walletAddress.noexpiration = true;
+            }
             var originalWalletAddress = JSON.parse(JSON.stringify(walletAddress));
             walletAddress.expire = ['string'].indexOf(typeof walletAddress.expire) !== -1 ? new Date(walletAddress.expire) : walletAddress.expire;
             if (walletAddress.expire.getFullYear() < 2000) {

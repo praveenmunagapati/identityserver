@@ -9,4 +9,5 @@ type DigitalAssetAddress struct {
 	Address        string      `json:"address"`
 	Label          string      `json:"label"`
 	Expire         db.DateTime `json:"expire"`
+	Noexpiration	 bool				 `json:"noexpiration"`
 }
