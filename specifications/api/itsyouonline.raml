@@ -1010,12 +1010,18 @@ securedBy: [ oauth_2_0 ]
       delete:
         displayName: DeleteAuthorization
         description: Remove the authorization for an organization, the granted organization will no longer have access the user's information.
+        responses:
+            204:
+                description: Successfully revoked authorization.
       put:
         displayName: UpdateAuthorization
         description: Modify which information an organization is able to see.
         body:
             application/json:
                 type: Authorization
+        responses:
+            201:
+                description: Authorization updated successfully.
 
   /{username}/organizations:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
