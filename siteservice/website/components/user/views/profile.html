@@ -193,7 +193,8 @@
                                 aria-label="Digital wallet address {{ address.label }}">
                       <div class="md-list-item-text">
                           <h3 ng-bind="address.address"></h3>
-                          <h4>Expires <span ng-bind="address.expire | date:'dd/MM/yyyy'"></span><span>,
+                          <h4>Expires <span ng-bind="address.expire | date:'dd/MM/yyyy'" ng-if="!address.noexpiration"></span>
+                                      <span ng-if="address.noexpiration">never</span><span>,
                                                                       symbol <span
                                       ng-bind="address.currencysymbol"></span></span>
                           </h4>
