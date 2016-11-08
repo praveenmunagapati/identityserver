@@ -124,6 +124,21 @@ func isValidLabel(label string) (valid bool) {
 	return valid
 }
 
+func isValidBankAccount(bank user.BankAccount) (valid bool) {
+	if !isValidLabel(bank.Label) {
+		return false
+	}
+	if len(bank.Bic) != 8 && len(bank.Bic) != 11 {
+		log.Debug("Invalid bic: ", bank.Bic)
+		return false
+	}
+	if len(bank.Iban) > 30 || len(bank.Iban) < 1 {
+		log.Debug("Invalid iban: ", bank.Iban)
+		return false
+	}
+	return true
+}
+
 // RegisterNewEmailAddress is the handler for POST /users/{username}/emailaddresses
 // Register a new email address
 func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Request) {
@@ -883,7 +898,7 @@ func (api UsersAPI) CreateUserBankAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if !isValidLabel(bank.Label) {
+	if !isValidBankAccount(bank) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -965,7 +980,7 @@ func (api UsersAPI) UpdateUserBankAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if !isValidLabel(newbank.Label) {
+	if !isValidBankAccount(newbank) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}

@@ -26,15 +26,17 @@
                 <md-input-container>
                     <label>BIC</label>
                     <input ng-model="data.bic" required
-                           type="text" name="bic" ng-minlength="8" ng-maxlength="8">
+                           type="text" name="bic" ng-pattern="/^(?=[0-9a-zA-Z]*$)(?:.{8}|.{11})$/">
                     <div ng-messages="dataform.bic.$error">
-                        <div ng-message="minlength">This value should be exactly 8 characters long.</div>
-                        <div ng-message="maxlength">This value should be exactly 8 characters long.</div>
+                        <div ng-message="pattern">This value should be either 8 or 11 characters long.</div>
                     </div>
                 </md-input-container>
                 <md-input-container>
                     <label>IBAN</label>
-                    <input ng-model="data.iban" required type="text" name="iban">
+                    <input ng-model="data.iban" required type="text" name="iban" md-maxlength="30">
+                    <div ng-messages="dataform.iban.$error">
+                        <div ng-message="maxlength">This value should be at most 30 characters long.</div>
+                    </div>
                 </md-input-container>
                 <md-input-container>
                     <label>Country</label>
