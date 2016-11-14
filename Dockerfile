@@ -8,7 +8,7 @@ RUN go get github.com/jteeuwen/go-bindata/...
 
 RUN git clone https://github.com/Jumpscale/go-raml.git $GOPATH/src/github.com/Jumpscale/go-raml
 WORKDIR $GOPATH/src/github.com/Jumpscale/go-raml
-RUN git checkout f51adf00a0868be154a67396ad50f6d4d8be7cf0
+RUN git checkout b1b1d7ba50eb4189deeb29e38ebb358d298bf630
 RUN ./build.sh
 
 ENV CGO_ENABLED 0

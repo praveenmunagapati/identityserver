@@ -5,7 +5,7 @@ import (
 )
 
 type BankAccount struct {
-	Bic     string `json:"bic" validate:"max=10,nonzero"`
+	Bic     string `json:"bic" validate:"max=11,nonzero"`
 	Country string `json:"country" validate:"max=40,nonzero"`
 	Iban    string `json:"iban" validate:"max=30,nonzero"`
 	Label   string `json:"label" validate:"nonzero"`

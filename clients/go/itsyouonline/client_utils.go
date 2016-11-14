@@ -17,12 +17,21 @@ func encodeBody(data interface{}) (io.Reader, error) {
 	return bytes.NewReader(b), nil
 }
 
+// do HTTP request with request body
 func (c Itsyouonline) doReqWithBody(method, urlStr string, data interface{}, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	body, err := encodeBody(data)
 	if err != nil {
 		return nil, err
 	}
+	return c.doReq(method, urlStr, body, headers, queryParams)
+}
 
+// do http request without request body
+func (c Itsyouonline) doReqNoBody(method, urlStr string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	return c.doReq(method, urlStr, nil, headers, queryParams)
+}
+
+func (c Itsyouonline) doReq(method, urlStr string, body io.Reader, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create the request
 	req, err := http.NewRequest(method, urlStr, body)
 	if err != nil {

@@ -9,6 +9,7 @@ type DigitalAssetAddress struct {
 	Currencysymbol string   `json:"currencysymbol" validate:"nonzero"`
 	Expire         DateTime `json:"expire" validate:"nonzero"`
 	Label          string   `json:"label" validate:"nonzero"`
+	Noexpiration   bool     `json:"noexpiration,omitempty"`
 }
 
 func (s DigitalAssetAddress) Validate() error {

@@ -41,7 +41,7 @@ func (om *Oauth2oauth_2_0Middleware) CheckScopes(scopes []string) bool {
 	return false
 }
 
-func ScopeStringContainsScope(scopestring, scope string) bool {
+func scopeStringContainsScope(scopestring, scope string) bool {
 	for _, availablescope := range strings.Split(scopestring, ",") {
 		availablescope = strings.Trim(availablescope, " ")
 		if scope == availablescope {
@@ -106,7 +106,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				return
 			}
 
-			if isOwner && ((clientID == "itsyouonline" && atscopestring == "admin") || ScopeStringContainsScope(atscopestring, "user:admin")) {
+			if isOwner && ((clientID == "itsyouonline" && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
 				scopes = []string{"organization:owner"}
 			} else {
 				isMember, err := orgMgr.IsMember(protectedOrganization, username)
@@ -115,7 +115,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 					return
 				}
-				if isMember && ((clientID == "itsyouonline" && atscopestring == "admin") || ScopeStringContainsScope(atscopestring, "user:admin")) {
+				if isMember && ((clientID == "itsyouonline" && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
 					scopes = []string{"organization:member"}
 				}
 			}
