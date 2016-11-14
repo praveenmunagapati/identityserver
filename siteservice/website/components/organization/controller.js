@@ -23,6 +23,7 @@
 
         vm.initSettings = initSettings;
         vm.showInvitationDialog = showInvitationDialog;
+        vm.showAddOrganizationDialog = showAddOrganizationDialog;
         vm.showAPIKeyCreationDialog = showAPIKeyCreationDialog;
         vm.showAPIKeyDialog = showAPIKeyDialog;
         vm.showDNSDialog = showDNSDialog;
@@ -32,6 +33,7 @@
         vm.showCreateOrganizationDialog = UserDialogService.createOrganization;
         vm.showDeleteOrganizationDialog = showDeleteOrganizationDialog;
         vm.editMember = editMember;
+        vm.editOrgMember = editOrgMember;
         vm.canEditRole = canEditRole;
         vm.showLeaveOrganization = showLeaveOrganization;
         vm.showLogoDialog = showLogoDialog;
@@ -131,6 +133,36 @@
             .then(
                 function(invitation) {
                     vm.invitations.push(invitation);
+                });
+        }
+
+        function showAddOrganizationDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            $mdDialog.show({
+                controller: AddOrganizationDialogController,
+                templateUrl: 'components/organization/views/addOrganizationMemberDialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals:
+                    {
+                        OrganizationService: OrganizationService,
+                        organization : vm.organization.globalid,
+                        $window: $window
+                    }
+            })
+            .then(
+                function(data) {
+                  if (data.role === "member") {
+                      if (vm.organization.orgmembers == null) {
+                          vm.organization.orgmembers = [];
+                      }
+                      vm.organization.orgmembers.push(data.organization);
+                  } else {
+                      if (vm.organization.orgowners == null) {
+                          vm.organization.orgowners = []
+                      }
+                      vm.organization.orgowners.push(data.organization);
+                  }
                 });
         }
 
@@ -304,6 +336,43 @@
                 });
         }
 
+        function editOrgMember(event, org) {
+            var role = 'orgmembers';
+            angular.forEach(['orgmembers', 'orgowners'], function (r) {
+                if (vm.organization[r].indexOf(org) !== -1) {
+                    role = r;
+                }
+            });
+            var changeOrgRoleDialog = {
+                controller: ['$mdDialog', 'OrganizationService', 'UserDialogService', 'organization', 'org', 'initialRole', EditOrganizationMemberOrgController],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/organization/views/changeOrganizationRoleDialog.html',
+                targetEvent: event,
+                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
+                locals: {
+                    organization: vm.organization,
+                    org: org,
+                    initialRole: role
+                }
+            };
+
+            $mdDialog
+                .show(changeOrgRoleDialog)
+                .then(function (data) {
+                    if (data.action === 'edit') {
+                        vm.organization = data.data;
+                    } else if (data.action === 'remove') {
+                        var collection;
+                        if (data.data.role === 'orgmembers') {
+                            collection = vm.organization.orgmembers;
+                        } else {
+                            collection = vm.organization.orgowners;
+                        }
+                        collection.splice(collection.indexOf(data.data.org), 1);
+                    }
+                });
+        }
+
         function showLeaveOrganization(event) {
             var text = 'Are you sure you want to leave the organization "' + globalid + '"?';
             var confirm = $mdDialog.confirm()
@@ -365,6 +434,40 @@
                         cancel();
                         var msg = 'Organization ' + organization + ' has reached the maximum amount of invitations.';
                         UserDialogService.showSimpleDialog(msg, 'Error');
+                    }
+                }
+            );
+
+        }
+    }
+
+    function AddOrganizationDialogController($scope, $mdDialog, organization, OrganizationService, UserDialogService) {
+
+        $scope.role = "member";
+
+        $scope.organization = organization;
+
+        $scope.cancel = cancel;
+        $scope.addOrganization = addOrganization;
+        $scope.validationerrors = {};
+
+
+        function cancel(){
+            $mdDialog.cancel();
+        }
+
+        function addOrganization(searchString, role){
+            $scope.validationerrors = {};
+            OrganizationService.addOrganization(organization, searchString, role).then(
+                function(data){
+                    $mdDialog.hide({organization: searchString,role: role});
+                },
+                function(reason){
+                    if (reason.status == 409){
+                        $scope.validationerrors.duplicate = true;
+                    }
+                    else if (reason.status == 404){
+                        $scope.validationerrors.nosuchorganization = true;
                     }
                 }
             );
@@ -554,6 +657,40 @@
                 .removeMember(organization.globalid, user, initialRole)
                 .then(function () {
                     $mdDialog.hide({action: 'remove', data: {role: initialRole, user: user}});
+                }, function (response) {
+                    $mdDialog.cancel(response);
+                });
+        }
+    }
+
+    function EditOrganizationMemberOrgController($mdDialog, OrganizationService, UserDialogService, organization, org, initialRole) {
+        var ctrl = this;
+        ctrl.role = initialRole;
+        ctrl.org = org;
+        ctrl.organization = organization;
+        ctrl.cancel = cancel;
+        ctrl.submit = submit;
+        ctrl.remove = remove;
+
+        function cancel() {
+            $mdDialog.cancel();
+        }
+
+        function submit() {
+            OrganizationService
+                .updateOrgMembership(organization.globalid, ctrl.org, ctrl.role)
+                .then(function (data) {
+                    $mdDialog.hide({action: 'edit', data: data});
+                }, function () {
+                    UserDialogService.showSimpleDialog('Could not change role, please try again later', 'Error', 'ok', event);
+                });
+        }
+
+        function remove() {
+            OrganizationService
+                .removeOrgMember(organization.globalid, org, initialRole)
+                .then(function () {
+                    $mdDialog.hide({action: 'remove', data: {role: initialRole, org: org}});
                 }, function (response) {
                     $mdDialog.cancel(response);
                 });

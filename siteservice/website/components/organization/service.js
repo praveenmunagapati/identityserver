@@ -18,6 +18,7 @@
             create: create,
             get: get,
             invite: invite,
+            addOrganization: addOrganization,
             getUserOrganizations: getUserOrganizations,
             getInvitations: getInvitations,
             createAPIKey: createAPIKey,
@@ -31,7 +32,9 @@
             deleteDNS: deleteDNS,
             deleteOrganization: deleteOrganization,
             updateMembership: updateMembership,
+            updateOrgMembership: updateOrgMembership,
             removeMember: removeMember,
+            removeOrgMember: removeOrgMember,
             getLogo: getLogo,
             setLogo: setLogo,
             deleteLogo: deleteLogo,
@@ -95,6 +98,27 @@
                         return $q.reject(reason);
                     }
                 );
+        }
+
+        function addOrganization(globalid, searchString, role) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + 'org' + encodeURIComponent(role) + 's';
+
+            var data;
+            if (role === "member") {
+                data = {orgmember: searchString}
+            } else {
+                data = {orgowner: searchString}
+            }
+            return $http
+                .post(url, data)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+                )
         }
 
         function getUserOrganizations(username) {
@@ -266,8 +290,22 @@
             return genericHttpCall(PUT, url, data);
         }
 
+        function updateOrgMembership(globalid, org, role) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/orgmembers';
+            var data = {
+                org: org,
+                role: role
+            };
+            return genericHttpCall(PUT, url, data);
+        }
+
         function removeMember(globalid, username, role) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + role + '/' + username;
+            return genericHttpCall(DELETE, url);
+        }
+
+        function removeOrgMember(globalid, org, role) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + role + '/' + encodeURIComponent(org);
             return genericHttpCall(DELETE, url);
         }
 

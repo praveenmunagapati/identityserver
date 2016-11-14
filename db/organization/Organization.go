@@ -9,6 +9,8 @@ type Organization struct {
 	Owners     		 	[]string `json:"owners"`
 	PublicKeys 		 	[]string `json:"publicKeys"`
 	SecondsValidity	int			 `json:"secondsvalidity"`
+	OrgOwners				[]string `json:"orgowners"`
+	OrgMembers			[]string `json:"orgmembers"`
 }
 
 // IsValid performs basic validation on the content of an organizations fields
