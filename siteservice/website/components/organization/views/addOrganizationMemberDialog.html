@@ -1,0 +1,46 @@
+<md-dialog>
+    <form name="inviteform">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Add an organization</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="cancel()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
+                <md-input-container>
+                    <label>Role</label>
+                    <md-select ng-model="role">
+                        <md-option value="owner">Owner</md-option>
+                        <md-option value="member">Member</md-option>
+                    </md-select>
+                </md-input-container>
+                <md-input-container flex>
+                    <label>globalid</label>
+                    <input ng-model="organizationtoadd" minlength="2" required type="text" md-autofocus="true"
+                           name="searchterm">
+                    <div ng-messages="validationerrors" md-auto-hide="false">
+                        <div ng-message="duplicate">This organization is already part of this organization</div>
+                        <div ng-message="nosuchorganization">No organization found matching this globalid
+                        </div>
+                    </div>
+                </md-input-container>
+                <div>
+                    <p>This will add the organization to {{::organization}}</p>
+                </div>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="space-between center">
+            <md-button ng-click="cancel()">
+                Cancel
+            </md-button>
+            <md-button class="md-primary" type="submit" ng-click="addOrganization(organizationtoadd,role)"
+                       ng-disabled="!inviteform.$valid">
+                Add
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

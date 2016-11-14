@@ -29,6 +29,19 @@
                                     </md-icon>
                                 </md-list-item>
                             </md-list>
+                            <md-list class="md-dense" ng-if="vm.organization.orgowners.length > 0">
+                                <md-subheader class="md-no-sticky"> Organization owners</md-subheader>
+                                <md-list-item class="md-1-line" ng-repeat="orgowner in vm.organization.orgowners"
+                                             aria-label="Organization owner">
+                                    <div class="md-list-item-text">
+                                        <p ng-bind="::orgowner"></p>
+                                    </div>
+                                    <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
+                                             aria-label="Edit owner" ng-if="::vm.canEditRole(owner)"
+                                             ng-click="vm.editOrgMember($event, orgowner)">
+                                    <md-icon>
+                                </md-list-item>
+                            </md-list>
                             <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
                                 <md-subheader class="md-no-sticky">Members</md-subheader>
                                 <md-list-item class="md-1-line" ng-repeat="member in vm.organization.members"
@@ -40,6 +53,19 @@
                                              class="fa md-secondary md-primary" ng-if="::vm.canEditRole(member)"
                                              ng-click="vm.editMember($event, member)">
                                     </md-icon>
+                                </md-list-item>
+                            </md-list>
+                            <md-list class="md-dense" ng-if="vm.organization.orgmembers.length > 0">
+                                <md-subheader class="md-no-sticky"> Organization members</md-subheader>
+                                <md-list-item class="md-1-line" ng-repeat="orgmember in vm.organization.orgmembers"
+                                             aria-label="Organization member">
+                                    <div class="md-list-item-text">
+                                        <p ng-bind="::orgmember"></p>
+                                    </div>
+                                    <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
+                                             aria-label="Edit owner" ng-if="::vm.canEditRole(owner)"
+                                             ng-click="vm.editOrgMember($event, orgmember)">
+                                    <md-icon>
                                 </md-list-item>
                             </md-list>
                             <md-list ng-if="vm.hasEditPermission && vm.invitations.length > 0">
@@ -58,6 +84,13 @@
                                        ng-if="::vm.hasEditPermission">
                                 <i class="fa fa-user-plus"></i> Invite someone
                                 <md-tooltip ng-cloak>Invite someone to join <span
+                                        ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span>
+                                </md-tooltip>
+                            </md-button>
+                            <md-button class="md-primary" ng-click="vm.showAddOrganizationDialog($event)"
+                                       ng-if="::vm.hasEditPermission">
+                                <i class="fa fa-users"></i> Add organization
+                                <md-tooltip ng-cloak>Add another organization as a member or owner of <span
                                         ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span>
                                 </md-tooltip>
                             </md-button>

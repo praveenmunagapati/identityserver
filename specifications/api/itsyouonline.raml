@@ -277,6 +277,12 @@ types:
         type: string[]
         maxItems: 2000
         description: List of users who are member in this organization.
+      orgowners:
+        type: string[]
+        description: List of other organizations who act as an owner in this organization.
+      orgmembers:
+        type: string[]
+        description: List of other organizations who act as a member in this organization.
       includes:
         type: string[]
         maxItems: 100
@@ -294,6 +300,11 @@ types:
         - user3
       members:
         - user4
+      orgowners:
+        - organization1
+      orgmembers:
+        - organization2
+        - organization3
       includes:
         - admin.greenitglobe.com
 
@@ -1228,6 +1239,102 @@ securedBy: [ oauth_2_0 ]
               description: No permission for this action
             404:
               description: Organization not found
+
+    /orgmembers:
+      post:
+        displayName: SetOrgMember
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        description: Add another organization as a member of this one
+        body:
+          application/json:
+            properties:
+              orgmember: string
+        responses:
+          201:
+            description: Organization successfully added as a member
+          401:
+            description: Unauthorized
+          403:
+            description: No permission for this action
+          404:
+            description: Organization not found
+          409:
+            description: Organization is already an owner or a member
+
+      put:
+        displayName: UpdateOrganizationOrgMemberShip
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        description: Update the membership status of an organization
+        body:
+          application/json:
+            properties:
+              org: string
+              role: string
+        responses:
+          200:
+            description: updated organization membership successfulyy
+            body:
+              application/json:
+                properties:
+                  org: Organization
+          401:
+            description: Unauthorized
+          403:
+            description: No permission for this action
+          404:
+            description: Organization not found
+
+      /{globalid2}:
+        delete:
+          displayName: DeleteOrgMember
+          securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+          description: Remove an organization as a member
+          responses:
+            204:
+              description: Organization member removed successfully
+            401:
+              description: Unauthorized
+            403:
+              description: No permission for this action
+            404:
+              description: The user or the organization does not exist.
+
+    /orgowners:
+      post:
+        displayName: SetOrgOwner
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        description: Add another organization as an owner of this one
+        body:
+          application/json:
+            properties:
+              orgowner: string
+        responses:
+          201:
+            description: Organization successfully added as an owner
+          401:
+            description: Unauthorized
+          403:
+            description: No permission for this action
+          404:
+            description: Organization not found
+          409:
+            description: Organization is already an owner or a member
+
+      /{globalid2}:
+        delete:
+          displayName: DeleteOrgOwner
+          securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+          description: Remove an organization as an owner
+          responses:
+            204:
+              description: Organization owner removed successfully
+            401:
+              description: Unauthorized
+            403:
+              description: No permission for this action
+            404:
+              description: The organization does not exist.
+
 
     /members:
       put:

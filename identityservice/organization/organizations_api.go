@@ -389,6 +389,78 @@ func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, 
 
 }
 
+func (api OrganizationsAPI) UpdateOrganizationOrgMemberShip(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+
+  body := struct {
+		Org string
+		Role string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	orgMgr := organization.NewManager(r)
+	org, err := orgMgr.GetByName(globalid)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "updating organization membership", err)
+		}
+		return
+	}
+
+	if !orgMgr.Exists(body.Org) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// check if the authenticated user is an owner of the Org
+	// the user is known to be an owner of the first organization since we've required the organization:owner scope
+	authenticateduser := context.Get(r, "authenticateduser").(string)
+	isOwner, err := orgMgr.IsOwner(body.Org, authenticateduser)
+	if err != nil {
+		log.Error("Error while checking if user is owner of an organization: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !isOwner {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	var oldRole string
+	for _, v := range org.OrgMembers {
+		if v == body.Org {
+			oldRole = "orgmembers"
+		}
+	}
+	for _, v := range org.OrgOwners {
+		if v == body.Org {
+			oldRole = "orgowners"
+		}
+	}
+	if body.Role == "members" {
+		body.Role = "orgmembers"
+	} else {
+		body.Role = "orgowners"
+	}
+	err = orgMgr.UpdateOrgMembership(globalid, body.Org, oldRole, body.Role)
+	if err != nil {
+		handleServerError(w, "updating organizations membership in another org", err)
+		return
+	}
+	org, err = orgMgr.GetByName(globalid)
+	if err != nil {
+		handleServerError(w, "getting organization", err)
+	}
+	json.NewEncoder(w).Encode(org)
+
+}
+
 // RemoveOrganizationMember Remove a member from organization
 // It is handler for DELETE /organizations/{globalid}/members/{username}
 func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *http.Request) {
@@ -847,6 +919,17 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	if handleServerError(w, "removing organization", err) {
 		return
 	}
+	// Remove the organizations as a member/ an owner of other organizations
+	organizations, err := orgMgr.AllByOrg(globalid)
+	if handleServerError(w, "fetching organizations where this org is an owner/a member", err) {
+		return
+	}
+	for _, org := range organizations {
+		err = orgMgr.RemoveOrganization(org.Globalid, globalid)
+		if handleServerError(w, "removing organizations as a member / an owner of another organization", err) {
+			return
+		}
+	}
 	if logoMgr.Exists(globalid) {
 		err = logoMgr.Remove(globalid)
 		if handleServerError(w, "removing organization logo", err) {
@@ -1111,6 +1194,248 @@ func (api OrganizationsAPI) Set2faValidityTime(w http.ResponseWriter, r *http.Re
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// SetOrgMember is the handler for POST /organizations/globalid/orgmember
+// Sets an organization as a member of this one.
+func (api OrganizationsAPI) SetOrgMember(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+
+	body := struct {
+		OrgMember string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Debug("Error while adding another organization as member: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	mgr := organization.NewManager(r)
+
+	// load organization for globalid
+	organization, err := mgr.GetByName(globalid)
+
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
+		return
+	}
+
+	// check if OrgMember exists
+	if !mgr.Exists(body.OrgMember) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// now that we know both organizations exists, check if the authenticated user is an owner of the OrgMember
+	// the user is known to be an owner of the first organization since we've required the organization:owner scope
+	authenticateduser := context.Get(r, "authenticateduser").(string)
+	isOwner, err := mgr.IsOwner(body.OrgMember, authenticateduser)
+	if err != nil {
+		log.Error("Error while adding another organization as member: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !isOwner {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	// check if thie organization we want to add already exists as a member or an owner
+	exists, err := mgr.OrganizationIsPartOf(globalid, body.OrgMember)
+	if err != nil {
+		log.Error("Error while checking if this organization is part of another: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if exists {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	err = mgr.SaveOrgMember(organization, body.OrgMember)
+	if err != nil {
+		log.Error("Error while adding another organization as member: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+// DeleteOrgMember is the handler for Delete /organizations/globalid/orgmember/globalid2
+// Removes an organization as a member of this one.
+func (api OrganizationsAPI) DeleteOrgMember(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	orgMember := mux.Vars(r)["globalid2"]
+
+	mgr := organization.NewManager(r)
+
+	if !mgr.Exists(globalid) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// check if OrgMember is a member of the organization
+	isMember, err := mgr.OrganizationIsMember(globalid, orgMember)
+	if err != nil {
+		log.Error("Error while removing another organization as member: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if !isMember {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// now that we know OrgMember is a member of {globalid}, check if the authenticated user is an owner of the OrgMember
+	// the user is known to be an owner of {globalid} since we've required the organization:owner scope
+	authenticateduser := context.Get(r, "authenticateduser").(string)
+	isOwner, err := mgr.IsOwner(orgMember, authenticateduser)
+	if err != nil {
+		log.Error("Error while removing another organization as member: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !isOwner {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	err = mgr.RemoveOrganization(globalid, orgMember)
+	if err != nil {
+		log.Error("Error while removing another organization as member: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// SetOrgOwner is the handler for POST /organizations/globalid/orgowner
+// Sets an organization as an owner of this one.
+func (api OrganizationsAPI) SetOrgOwner(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+
+	body := struct {
+		OrgOwner string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Debug("Error while adding another organization as owner: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	mgr := organization.NewManager(r)
+
+	// load organization for globalid
+	organization, err := mgr.GetByName(globalid)
+
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
+		return
+	}
+
+	// check if OrgOwner exists
+	if !mgr.Exists(body.OrgOwner) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// now that we know both organizations exists, check if the authenticated user is an owner of the OrgOwner
+	// the user is known to be an owner of the first organization since we've required the organization:owner scope
+	authenticateduser := context.Get(r, "authenticateduser").(string)
+	isOwner, err := mgr.IsOwner(body.OrgOwner, authenticateduser)
+	if err != nil {
+		log.Error("Error while adding another organization as owner: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !isOwner {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	// check if the organization we want to add already exists as a member or an owner
+	exists, err := mgr.OrganizationIsPartOf(globalid, body.OrgOwner)
+	if err != nil {
+		log.Error("Error while checking if this organization is part of another: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if exists {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	err = mgr.SaveOrgOwner(organization, body.OrgOwner)
+	if err != nil {
+		log.Error("Error while adding another organization as owner: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+// DeleteOrgOwner is the handler for Delete /organizations/globalid/orgowner/globalid2
+// Removes an organization as an owner of this one.
+func (api OrganizationsAPI) DeleteOrgOwner(w http.ResponseWriter, r *http.Request) {
+	globalid := mux.Vars(r)["globalid"]
+	orgOwner := mux.Vars(r)["globalid2"]
+
+	mgr := organization.NewManager(r)
+
+	if !mgr.Exists(globalid) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// check if OrgOwner is an owner of the organization
+	isOwner, err := mgr.OrganizationIsOwner(globalid, orgOwner)
+	if err != nil {
+		log.Error("Error while removing another organization as owner: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if !isOwner {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// now that we know OrgOwner is an OrgOwner of {globalid}, check if the authenticated user is an owner of the OrgOwner
+	// the user is known to be an owner of {globalid} since we've required the organization:owner scope
+	authenticateduser := context.Get(r, "authenticateduser").(string)
+	isOwner, err = mgr.IsOwner(orgOwner, authenticateduser)
+	if err != nil {
+		log.Error("Error while removing another organization as owner: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !isOwner {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	err = mgr.RemoveOrganization(globalid, orgOwner)
+	if err != nil {
+		log.Error("Error while removing another organization as owner: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, message string) {

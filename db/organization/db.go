@@ -140,11 +140,39 @@ func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
 	return
 }
 
+//OrganizationIsOwner checks if organization2 is an owner of organization1
+func (m *Manager) OrganizationIsOwner(globalID, organization string) (isowner bool, err error) {
+	matches, err := m.collection.Find(bson.M{"globalid": globalID, "orgowners": organization}).Count()
+	isowner = (matches > 0)
+	return
+}
+
 //IsMember checks if a specific user is in the members list of an organization
 func (m *Manager) IsMember(globalID, username string) (ismember bool, err error) {
 	matches, err := m.collection.Find(bson.M{"globalid": globalID, "members": username}).Count()
 	ismember = (matches > 0)
 	return
+}
+
+//OrganizationIsMember checks if organization2 is a member of organization1
+func (m *Manager) OrganizationIsMember(globalID, organization string) (ismember bool, err error) {
+	matches, err := m.collection.Find(bson.M{"globalid": globalID, "orgmembers": organization}).Count()
+	ismember = (matches > 0)
+	return
+}
+
+//OrganizationIsPartOf checks if organization2 is a member or an owner of organization1
+func (m *Manager) OrganizationIsPartOf(globalID, organization string) (ispart bool, err error) {
+	condition := []interface{}{
+		bson.M{"orgmembers": organization},
+		bson.M{"orgowners": organization},
+	}
+	qry := []interface{}{
+		bson.M{"globalid": globalID},
+		bson.M{"$or": condition},
+}
+	occurrences, err := m.collection.Find(bson.M{"$and": qry}).Count()
+	return occurrences == 1, err
 }
 
 // AllByUser get organizations for certain user.
@@ -157,6 +185,23 @@ func (m *Manager) AllByUser(username string) ([]Organization, error) {
 	condition := []interface{}{
 		bson.M{"members": username},
 		bson.M{"owners": username},
+	}
+
+	err := m.collection.Find(bson.M{"$or": condition}).All(&organizations)
+
+	return organizations, err
+}
+
+// AllByOrg get organizations where certain organization is a member/owner.
+func (m *Manager) AllByOrg(globalID string) ([]Organization, error) {
+	var organizations []Organization
+	//TODO: handle this a bit smarter, select only the ones where the user is owner first, and take select only the org name
+	//do the same for the orgs where the username is member but not owners
+	//No need to pull in 1000's of records for this
+
+	condition := []interface{}{
+		bson.M{"orgmembers": globalID},
+		bson.M{"orgowners": globalID},
 	}
 
 	err := m.collection.Find(bson.M{"$or": condition}).All(&organizations)
@@ -273,6 +318,34 @@ func (m *Manager) RemoveOwner(organization *Organization, owner string) error {
 		bson.M{"$pull": bson.M{"owners": owner}})
 }
 
+// SaveOrgMember save or update organization member
+func (m *Manager) SaveOrgMember(organization *Organization, organizationID string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$addToSet": bson.M{"orgmembers": organizationID}})
+}
+
+// RemoveOrgMember remove organization member
+func (m *Manager) RemoveOrgMember(organization *Organization, organizationID string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$pull": bson.M{"orgmembers": organizationID}})
+}
+
+// SaveOrgOwner save or update owners
+func (m *Manager) SaveOrgOwner(organization *Organization, organizationID string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$addToSet": bson.M{"orgowners": organizationID}})
+}
+
+// RemoveOrgOwner remove owner
+func (m *Manager) RemoveOrgOwner(organization *Organization, organizationID string) error {
+	return m.collection.Update(
+		bson.M{"globalid": organization.Globalid},
+		bson.M{"$pull": bson.M{"orgowners": organizationID}})
+}
+
 func (m *Manager) AddDNS(organization *Organization, dnsName string) error {
 	return m.collection.Update(
 		bson.M{"globalid": organization.Globalid},
@@ -336,9 +409,31 @@ func (m *Manager) UpdateMembership(globalid string, username string, oldrole str
 	return m.collection.Update(qry, push)
 }
 
+// UpdateOrgMembership Updates an organizstion role in another organization
+func (m *Manager) UpdateOrgMembership(globalid string, organization string, oldrole string, newrole string) error {
+	qry := bson.M{"globalid": globalid}
+	pull := bson.M{
+		"$pull": bson.M{oldrole: organization},
+	}
+	push := bson.M{
+		"$addToSet": bson.M{newrole: organization},
+	}
+	err := m.collection.Update(qry, pull)
+	if err != nil {
+		return err
+	}
+	return m.collection.Update(qry, push)
+}
+
 // CountByUser counts the amount of organizations by user
 func (m *Manager) CountByUser(username string) (int, error) {
 	qry := bson.M{"owners": username}
+	return m.collection.Find(qry).Count()
+}
+
+// CountByOrganization counts the amount of organizations where the organization is an owner
+func (m *Manager) CountByOrganization(organization string) (int, error) {
+	qry := bson.M{"orgowners": organization}
 	return m.collection.Find(qry).Count()
 }
 
@@ -346,6 +441,13 @@ func (m *Manager) CountByUser(username string) (int, error) {
 func (m *Manager) RemoveUser(globalId string, username string) error {
 	qry := bson.M{"globalid": globalId}
 	update := bson.M{"$pull": bson.M{"owners": username, "members": username}}
+	return m.collection.Update(qry, update)
+}
+
+// RemoveOrganization Removes an organization as member or owner from another organization
+func (m *Manager) RemoveOrganization(globalId string, organization string) error {
+	qry := bson.M{"globalid": globalId}
+	update := bson.M{"$pull": bson.M{"orgowners": organization, "orgmembers": organization}}
 	return m.collection.Update(qry, update)
 }
 
