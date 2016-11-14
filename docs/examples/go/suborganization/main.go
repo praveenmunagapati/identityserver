@@ -55,7 +55,7 @@ func main() {
 	suborg := itsyouonline.Organization{Globalid: suborgGlobalID}
 
 	fmt.Printf("Creating suborganization %s in parent %s\n", suborgGlobalID, parentorgGlobalID)
-	_, _, err = authenticatedClient.CreateNewSubOrganization(parentorgGlobalID, suborg, nil, nil)
+	_, _, err = authenticatedClient.Organizations.CreateNewSubOrganization(parentorgGlobalID, suborg, nil, nil)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -63,7 +63,7 @@ func main() {
 
 	//Step 2: Delete the entry from step 1
 	fmt.Printf("Deleting organization %s\n", suborgGlobalID)
-	_, err = authenticatedClient.DeleteOrganization(suborgGlobalID, nil, nil)
+	_, err = authenticatedClient.Organizations.DeleteOrganization(suborgGlobalID, nil, nil)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

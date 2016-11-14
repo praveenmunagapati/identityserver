@@ -40,21 +40,21 @@ func main() {
 
 	if username != "" {
 		fmt.Printf("Creating/updating a registry entry for user: %s\n", username)
-		authenticatedClient.AddUserRegistryEntry(username, entry, nil, nil)
+		authenticatedClient.Users.AddUserRegistryEntry(username, entry, nil, nil)
 	}
 	if globalid != "" {
 		fmt.Printf("Creating/updating a registry entry for organization: %s\n", globalid)
-		authenticatedClient.AddOrganizationRegistryEntry(globalid, entry, nil, nil)
+		authenticatedClient.Organizations.AddOrganizationRegistryEntry(globalid, entry, nil, nil)
 	}
 
 	//Step 2: List the registry entries
 
 	var entries []itsyouonline.RegistryEntry
 	if username != "" {
-		entries, _, _ = authenticatedClient.ListUserRegistry(username, nil, nil)
+		entries, _, _ = authenticatedClient.Users.ListUserRegistry(username, nil, nil)
 	}
 	if globalid != "" {
-		entries, _, _ = authenticatedClient.ListOrganizationRegistry(globalid, nil, nil)
+		entries, _, _ = authenticatedClient.Organizations.ListOrganizationRegistry(globalid, nil, nil)
 	}
 
 	for _, e := range entries {
@@ -68,10 +68,10 @@ func main() {
 	var requestedEntry itsyouonline.RegistryEntry
 	fmt.Println("Getting the registry entry using an unauthenticated client")
 	if username != "" {
-		requestedEntry, _, err = anonymousClient.GetUserRegistryEntry("testscriptkey", username, nil, nil)
+		requestedEntry, _, err = anonymousClient.Users.GetUserRegistryEntry("testscriptkey", username, nil, nil)
 	}
 	if globalid != "" {
-		requestedEntry, _, err = anonymousClient.GetOrganizationRegistryEntry("testscriptkey", username, nil, nil)
+		requestedEntry, _, err = anonymousClient.Organizations.GetOrganizationRegistryEntry("testscriptkey", username, nil, nil)
 	}
 
 	if err != nil {
@@ -84,10 +84,10 @@ func main() {
 	//Step 4: Delete the entry from step 1
 	if username != "" {
 		fmt.Printf("Deleting a registry entry for user: %s\n", username)
-		authenticatedClient.DeleteUserRegistryEntry("testscriptkey", username, nil, nil)
+		authenticatedClient.Users.DeleteUserRegistryEntry("testscriptkey", username, nil, nil)
 	}
 	if globalid != "" {
 		fmt.Printf("Deleting a registry entry for organization: %s\n", globalid)
-		authenticatedClient.DeleteOrganizationRegistryEntry("testscriptkey", globalid, nil, nil)
+		authenticatedClient.Organizations.DeleteOrganizationRegistryEntry("testscriptkey", globalid, nil, nil)
 	}
 }
