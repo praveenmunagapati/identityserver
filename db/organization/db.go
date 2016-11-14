@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	mongoCollectionName = "organizations"
-	logoCollectionName = "organizationLogos"
+	mongoCollectionName   = "organizations"
+	logoCollectionName    = "organizationLogos"
 	last2FACollectionName = "last2falogin"
 )
 
@@ -29,15 +29,15 @@ func InitModels() {
 	db.EnsureIndex(mongoCollectionName, index)
 
 	// Index the logo collection
-	index = mgo.Index {
-		Key:		[]string{"globalid"},
-		Unique:	true,
+	index = mgo.Index{
+		Key:    []string{"globalid"},
+		Unique: true,
 	}
 
 	db.EnsureIndex(logoCollectionName, index)
 
-	index = mgo.Index {
-		Key:		[]string{"globalid", "username"},
+	index = mgo.Index{
+		Key:    []string{"globalid", "username"},
 		Unique: true,
 	}
 
@@ -60,13 +60,13 @@ type Manager struct {
 
 //LogoManager is used to save the logo for an organization
 type LogoManager struct {
-	session		 *mgo.Session
+	session    *mgo.Session
 	collection *mgo.Collection
 }
 
 //Last2FAManager is used to save the date for the last 2FA login for an organization through the authorization code grant flow
 type Last2FAManager struct {
-	session 	 *mgo.Session
+	session    *mgo.Session
 	collection *mgo.Collection
 }
 
@@ -97,8 +97,8 @@ func NewManager(r *http.Request) *Manager {
 func NewLogoManager(r *http.Request) *LogoManager {
 	session := db.GetDBSession(r)
 	return &LogoManager{
-		session:		session,
-		collection:	getLogoCollection(session),
+		session:    session,
+		collection: getLogoCollection(session),
 	}
 }
 
@@ -106,8 +106,8 @@ func NewLogoManager(r *http.Request) *LogoManager {
 func NewLast2FAManager(r *http.Request) *Last2FAManager {
 	session := db.GetDBSession(r)
 	return &Last2FAManager{
-		session:		session,
-		collection:	getLast2FACollection(session),
+		session:    session,
+		collection: getLast2FACollection(session),
 	}
 }
 
@@ -133,10 +133,64 @@ func (m *Manager) GetSubOrganizations(globalID string) ([]Organization, error) {
 	return organizations, nil
 }
 
-//IsOwner checks if a specific user is in the owners list of an organization
-func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
+//isDirectOwner checks if a specific user is in the owners list of an organization
+func (m *Manager) isDirectOwner(globalID, username string) (isowner bool, err error) {
 	matches, err := m.collection.Find(bson.M{"globalid": globalID, "owners": username}).Count()
 	isowner = (matches > 0)
+	return
+}
+
+func (m *Manager) isOwnerOrMember(globalID, username string, excludelist map[string]bool) (result bool, err error) {
+	result, err = m.isDirectOwner(globalID, username)
+	if result || err != nil {
+		return
+	}
+	result, err = m.isDirectMember(globalID, username)
+	if result || err != nil {
+		return
+	}
+	// If not a direct owner or member, iterate through the list of owner/member organizations
+	var org Organization
+	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgowners": 1, "orgmembers": 1}).One(&org)
+	if err != nil {
+		return
+	}
+	excludelist[globalID] = true
+	for _, owningOrganization := range append(org.OrgOwners, org.OrgMembers...) {
+		if _, excluded := excludelist[owningOrganization]; excluded {
+			continue
+		}
+		result, err = m.isOwnerOrMember(owningOrganization, username, excludelist)
+		if result || err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+//IsOwner checks if a specific user is in the owners list of an organization
+// or belongs to an organization that is in the owner list
+func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
+	isowner, err = m.isDirectOwner(globalID, username)
+	if isowner || err != nil {
+		return
+	}
+	// If not a direct owner, iterate through the list of owning organizations
+	var org Organization
+	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgowners": 1}).One(&org)
+	if err != nil {
+		return
+	}
+	excludelist := make(map[string]bool)
+	excludelist[globalID] = true
+	for _, owningOrganization := range org.OrgOwners {
+		isowner, err = m.isOwnerOrMember(owningOrganization, username, excludelist)
+		if isowner || err != nil {
+			return
+		}
+	}
+
 	return
 }
 
@@ -147,10 +201,35 @@ func (m *Manager) OrganizationIsOwner(globalID, organization string) (isowner bo
 	return
 }
 
-//IsMember checks if a specific user is in the members list of an organization
-func (m *Manager) IsMember(globalID, username string) (ismember bool, err error) {
+//isDirectMember checks if a specific user is in the members list of an organization
+func (m *Manager) isDirectMember(globalID, username string) (ismember bool, err error) {
 	matches, err := m.collection.Find(bson.M{"globalid": globalID, "members": username}).Count()
 	ismember = (matches > 0)
+	return
+}
+
+//IsMember checks if a specific user is in the members list of an organization
+// or belongs to an organization that is in the member list
+func (m *Manager) IsMember(globalID, username string) (result bool, err error) {
+	result, err = m.isDirectMember(globalID, username)
+	if result || err != nil {
+		return
+	}
+	// If not a direct owner, iterate through the list of member organizations
+	var org Organization
+	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgmember": 1}).One(&org)
+	if err != nil {
+		return
+	}
+	excludelist := make(map[string]bool)
+	excludelist[globalID] = true
+	for _, owningOrganization := range org.OrgMembers {
+		result, err = m.isOwnerOrMember(owningOrganization, username, excludelist)
+		if result || err != nil {
+			return
+		}
+	}
+
 	return
 }
 
@@ -170,7 +249,7 @@ func (m *Manager) OrganizationIsPartOf(globalID, organization string) (ispart bo
 	qry := []interface{}{
 		bson.M{"globalid": globalID},
 		bson.M{"$or": condition},
-}
+	}
 	occurrences, err := m.collection.Find(bson.M{"$and": qry}).Count()
 	return occurrences == 1, err
 }
@@ -453,25 +532,25 @@ func (m *Manager) RemoveOrganization(globalId string, organization string) error
 
 // GetValidity gets the 2FA validity duration in seconds
 func (m *Manager) GetValidity(globalId string) (int, error) {
-		var org *Organization
-		err := m.collection.Find(bson.M{"globalid": globalId}).One(&org)
-		seconds := org.SecondsValidity
-		if seconds == -1 { //special value to avoid confusion with mongo null
-			return 0, err
-		} else if seconds == 0 { //mongo null for int field, use default duration
-			return 3600 * 24 * 7, err //7 days default duration
-		} else {
-			return seconds, err
-		}
+	var org *Organization
+	err := m.collection.Find(bson.M{"globalid": globalId}).One(&org)
+	seconds := org.SecondsValidity
+	if seconds == -1 { //special value to avoid confusion with mongo null
+		return 0, err
+	} else if seconds == 0 { //mongo null for int field, use default duration
+		return 3600 * 24 * 7, err //7 days default duration
+	} else {
+		return seconds, err
+	}
 }
 
 func (m *Manager) SetValidity(globalId string, secondsDuration int) error {
-		if secondsDuration == 0 {
-			secondsDuration = -1 //assign -1 if duration should be zero to avoid confusion with mongo null
-		}
-		return m.collection.Update(
-			bson.M{"globalid": globalId},
-			bson.M{"$set": bson.M{"secondsvalidity": secondsDuration}})
+	if secondsDuration == 0 {
+		secondsDuration = -1 //assign -1 if duration should be zero to avoid confusion with mongo null
+	}
+	return m.collection.Update(
+		bson.M{"globalid": globalId},
+		bson.M{"$set": bson.M{"secondsvalidity": secondsDuration}})
 }
 
 // SaveLogo save or update logo
@@ -482,7 +561,7 @@ func (m *LogoManager) SaveLogo(globalId string, logo string) (*mgo.ChangeInfo, e
 }
 
 // GetLogo Gets the logo from an organization
-func(m *LogoManager) GetLogo(globalId string) (string, error) {
+func (m *LogoManager) GetLogo(globalId string) (string, error) {
 	var org *OrganizationLogo
 	err := m.collection.Find(bson.M{"globalid": globalId}).One(&org)
 	if err != nil {
