@@ -517,23 +517,23 @@ func (m *Manager) CountByOrganization(organization string) (int, error) {
 }
 
 // RemoveUser Removes a user from an organization
-func (m *Manager) RemoveUser(globalId string, username string) error {
-	qry := bson.M{"globalid": globalId}
+func (m *Manager) RemoveUser(globalID string, username string) error {
+	qry := bson.M{"globalid": globalID}
 	update := bson.M{"$pull": bson.M{"owners": username, "members": username}}
 	return m.collection.Update(qry, update)
 }
 
 // RemoveOrganization Removes an organization as member or owner from another organization
-func (m *Manager) RemoveOrganization(globalId string, organization string) error {
-	qry := bson.M{"globalid": globalId}
+func (m *Manager) RemoveOrganization(globalID string, organization string) error {
+	qry := bson.M{"globalid": globalID}
 	update := bson.M{"$pull": bson.M{"orgowners": organization, "orgmembers": organization}}
 	return m.collection.Update(qry, update)
 }
 
 // GetValidity gets the 2FA validity duration in seconds
-func (m *Manager) GetValidity(globalId string) (int, error) {
+func (m *Manager) GetValidity(globalID string) (int, error) {
 	var org *Organization
-	err := m.collection.Find(bson.M{"globalid": globalId}).One(&org)
+	err := m.collection.Find(bson.M{"globalid": globalID}).One(&org)
 	seconds := org.SecondsValidity
 	if seconds == -1 { //special value to avoid confusion with mongo null
 		return 0, err
@@ -544,26 +544,26 @@ func (m *Manager) GetValidity(globalId string) (int, error) {
 	}
 }
 
-func (m *Manager) SetValidity(globalId string, secondsDuration int) error {
+func (m *Manager) SetValidity(globalID string, secondsDuration int) error {
 	if secondsDuration == 0 {
 		secondsDuration = -1 //assign -1 if duration should be zero to avoid confusion with mongo null
 	}
 	return m.collection.Update(
-		bson.M{"globalid": globalId},
+		bson.M{"globalid": globalID},
 		bson.M{"$set": bson.M{"secondsvalidity": secondsDuration}})
 }
 
 // SaveLogo save or update logo
-func (m *LogoManager) SaveLogo(globalId string, logo string) (*mgo.ChangeInfo, error) {
+func (m *LogoManager) SaveLogo(globalID string, logo string) (*mgo.ChangeInfo, error) {
 	return m.collection.Upsert(
-		bson.M{"globalid": globalId},
+		bson.M{"globalid": globalID},
 		bson.M{"$set": bson.M{"logo": logo}})
 }
 
 // GetLogo Gets the logo from an organization
-func (m *LogoManager) GetLogo(globalId string) (string, error) {
+func (m *LogoManager) GetLogo(globalID string) (string, error) {
 	var org *OrganizationLogo
-	err := m.collection.Find(bson.M{"globalid": globalId}).One(&org)
+	err := m.collection.Find(bson.M{"globalid": globalID}).One(&org)
 	if err != nil {
 		return "", err
 	}
@@ -571,17 +571,17 @@ func (m *LogoManager) GetLogo(globalId string) (string, error) {
 }
 
 // RemoveLogo Removes the logo from an organization
-func (m *LogoManager) RemoveLogo(globalId string) error {
-	qry := bson.M{"globalid": globalId}
+func (m *LogoManager) RemoveLogo(globalID string) error {
+	qry := bson.M{"globalid": globalID}
 	update := bson.M{"$unset": bson.M{"logo": 1}}
 	return m.collection.Update(qry, update)
 }
 
 // SetLast2FA Set the last successful 2FA time
-func (m *Last2FAManager) SetLast2FA(globalId string, username string) error {
+func (m *Last2FAManager) SetLast2FA(globalID string, username string) error {
 	now := time.Now()
 	condition := []interface{}{
-		bson.M{"globalid": globalId},
+		bson.M{"globalid": globalID},
 		bson.M{"username": username},
 	}
 	_, err := m.collection.Upsert(
@@ -591,10 +591,10 @@ func (m *Last2FAManager) SetLast2FA(globalId string, username string) error {
 }
 
 // GetLast2FA Gets the date of the last successful 2FA login, if no failed login attempts have occurred since then
-func (m *Last2FAManager) GetLast2FA(globalId string, username string) (db.DateTime, error) {
+func (m *Last2FAManager) GetLast2FA(globalID string, username string) (db.DateTime, error) {
 	var l2fa *UserLast2FALogin
 	condition := []interface{}{
-		bson.M{"globalid": globalId},
+		bson.M{"globalid": globalID},
 		bson.M{"username": username},
 	}
 	err := m.collection.Find(bson.M{"$and": condition}).One(&l2fa)
@@ -602,9 +602,9 @@ func (m *Last2FAManager) GetLast2FA(globalId string, username string) (db.DateTi
 }
 
 // RemoveLast2FA Removes the entry of the last successful 2FA login for this organization - user combination
-func (m *Last2FAManager) RemoveLast2FA(globalId string, username string) error {
+func (m *Last2FAManager) RemoveLast2FA(globalID string, username string) error {
 	condition := []interface{}{
-		bson.M{"globalid": globalId},
+		bson.M{"globalid": globalID},
 		bson.M{"username": username},
 	}
 	return m.collection.Remove(bson.M{"$and": condition})

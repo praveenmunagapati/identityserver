@@ -392,8 +392,8 @@ func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, 
 func (api OrganizationsAPI) UpdateOrganizationOrgMemberShip(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
-  body := struct {
-		Org string
+	body := struct {
+		Org  string
 		Role string
 	}{}
 
@@ -1154,7 +1154,7 @@ func (api OrganizationsAPI) Get2faValidityTime(w http.ResponseWriter, r *http.Re
 
 	response := struct {
 		SecondsValidity int `json:"secondsvalidity"`
-	} {
+	}{
 		SecondsValidity: validity,
 	}
 
