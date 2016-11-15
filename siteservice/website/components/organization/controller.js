@@ -60,6 +60,8 @@
                 .then(function (data) {
                     vm.organizationRoot.children = [];
                     vm.organizationRoot.children.push(data);
+                    var pixelWidth = 200 + getBranchWidth(vm.organizationRoot.children[0]);
+                    document.getElementById('treegraph').style.width = pixelWidth + 'px';
                 });
 
             OrganizationService.getLogo(globalid).then(
@@ -82,6 +84,25 @@
                 var ctx = c.getContext("2d");
                 ctx.clearRect(0, 0, c.width, c.height);
                 ctx.drawImage(img, 0, 0);
+            }
+        }
+
+        function getBranchWidth(branch, rootDepth) {
+            var splitted = branch.globalid.split(".")
+            var length = splitted[splitted.length - 1].length * 6;
+            var spacing = 0;
+            if (branch.children.length > 1) {
+                spacing = (branch.children.length - 1) * 80;
+            }
+            if (branch.children.length === 0) {
+                return length;
+            }
+            else {
+                var childWidth = spacing;
+                for (var i = 0; i < branch.children.length; i++) {
+                    childWidth += getBranchWidth(branch.children[i]);
+                }
+                return childWidth > length ? childWidth : length;
             }
         }
 
