@@ -30,7 +30,7 @@ This JWT is passed in the `Authorization` header of all requests to /api/servers
 The service checks if the passed JWT is still valid, is signed by ItsYou.online, if the membership of example.operations is stated and if example_ServerRestartingService is the audience for this authorization.
 It now also knows that Bob executed the request and can log this.
 
-All information is contained within the JWT itself. There is no need validate this information with ItsYou.online since the signature proves the correctness.
+All information is contained within the JWT itself. There is no need to validate this information with ItsYou.online since the signature proves the correctness.
 
 ![Secure an API using ItsYouOnline](SecureAnAPIUsingIYO.png)
 
