@@ -485,6 +485,11 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     color: #000000;
 }
 
+.treeview {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
 .breadcrumb-container {
     padding: 0 8px;
 }

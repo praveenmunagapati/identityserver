@@ -106,15 +106,17 @@
                                 <i class="fa fa-plus"></i> Create suborganization
                             </md-button>
                         </div>
-                        <div class="tree">
-                            <ul ng-repeat="tree in vm.organizationRoot.children">
-                                <li ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
-                                    <a ng-href="#/organization/{{ ::tree.globalid }}"
-                                       ng-bind="::vm.getOrganizationDisplayname(tree.globalid)"></a>
-                                    <ng-include
-                                            src="'/components/organization/views/treeItem.html'"></ng-include>
-                                </li>
-                            </ul>
+                        <div class="treeview">
+                            <div class="tree" id="treegraph">
+                                <ul ng-repeat="tree in vm.organizationRoot.children">
+                                    <li ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
+                                        <a ng-href="#/organization/{{ ::tree.globalid }}"
+                                           ng-bind="::vm.getOrganizationDisplayname(tree.globalid)"></a>
+                                        <ng-include
+                                                src="'/components/organization/views/treeItem.html'"></ng-include>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </md-tab-body>
                 </md-tab>
