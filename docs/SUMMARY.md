@@ -8,5 +8,7 @@
    * [Available Scopes](oauth2/availableScopes.md)
    * [JWT Support](oauth2/jwt.md)
    * [Suborganization globalid composition](oauth2/suborganizations.md)
+* Organizations
+    * [Organization ownership](organizations/organizationownership.md)
 * [Securing an external api](externalapisecurity/externalapisecurity.md)
 * [Staging environment](staging.md)
