@@ -1079,6 +1079,76 @@ securedBy: [ oauth_2_0 ]
             204:
               description: Succesfully rejected invitation.
 
+  /{username}/publickeys:
+    get:
+      displayName: ListPublicKeys
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+      description: Lists all public keys
+      responses:
+        200:
+          body:
+            application/json:
+              type: PublicKey[]
+        404:
+          description: Not found
+
+    post:
+      displayName: AddPublicKey
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+      description: Add a public key
+      body:
+        application/json:
+          type: PublicKey
+      responses:
+        201:
+          body:
+            application/json:
+              type: PublicKey
+        404:
+          description: Not found
+        409:
+          description: Duplicate label
+
+    /{label}:
+      get:
+        displayName: GetPublicKey
+        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+        description: Get a public key
+        responses:
+          200:
+            body:
+              application/json:
+                type: PublicKey
+          404:
+            description: Not found
+
+      put:
+        displayName: UpdatePublicKey
+        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+        description: Upates the label and/or key of an existing public key
+        body:
+          application/json:
+            type: PublicKey
+        responses:
+          201:
+            body:
+              application/json:
+                type: PublicKey
+          404:
+            description: Not found
+          409:
+            description: Duplicate label
+
+      delete:
+        displayName: DeletePublicKey
+        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+        description: Delete a public key
+        responses:
+          204:
+            description: Public key deleted
+          404:
+            description: Not found
+
 /organizations:
   post:
     displayName: CreateNewOrganization

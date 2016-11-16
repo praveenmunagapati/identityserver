@@ -1,0 +1,58 @@
+<md-dialog>
+    <form name="PublicKeyForm">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2><span ng-if="!ctrl.originalKey">New </span>Public Key</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="ctrl.cancel()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column" style="min-width:350px;">
+                <div layout>
+                    <md-input-container>
+                        <label>Label</label>
+                        <input ng-model="ctrl.label" minlength="2" required type="text" md-autofocus="true"
+                               name="label" ng-change="PublicKeyForm.label.$setValidity('duplicate', true);"
+                               md-maxlength="50">
+                        <div ng-messages="PublicKeyForm.label.$error">
+                            <div ng-message="minlength">At least 2 characters are required</div>
+                            <div ng-message="md-maxlength">The label cannot be longer than 50 characters</div>
+                            <div ng-message="duplicate">This label is already used</div>
+                        </div>
+                    </md-input-container>
+                </div>
+                <md-input-container flex>
+                    <label>Publick Key</label>
+                    <textarea ng-model="ctrl.Key.publickey" type="text" required name="publickey"
+                           placeholder="paste your public ssh key here" ng-pattern="/^ssh-rsa AAAAB3NzaC1yc2E(.*)/"></textarea>
+                    <div ng-messages="PublicKeyForm.publickey.$error">
+                        <div ng-message="pattern">Invalid public key, ssh keys start with "ssh-rsa AAAAB3NzaC1yc2E"</div>
+                    </div>
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="space-between center">
+            <md-button class="md-warn" ng-click="ctrl.delete()" ng-if="ctrl.originalLabel">
+                Delete
+            </md-button>
+            <span flex></span>
+            <md-button ng-click="ctrl.cancel()" ng-if="!ctrl.originalLabel">
+                Cancel
+            </md-button>
+            <md-button class="md-primary" type="submit" ng-click="ctrl.create()" ng-if="!ctrl.originalLabel"
+                       ng-disabled="!PublicKeyForm.$valid">
+                Create
+            </md-button>
+            <md-button class="md-primary" type="submit" ng-click="ctrl.update()"
+                       ng-if="ctrl.originalKey && ctrl.originalLabel" ng-disabled="!PublicKeyForm.$valid || (ctrl.originalKey == ctrl.Key.publickey && ctrl.originalLabel == ctrl.label)">
+                Save
+            </md-button>
+            <md-button class="md-primary" ng-click="ctrl.cancel()" ng-if="ctrl.originalLabel">
+                OK
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

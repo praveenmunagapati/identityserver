@@ -201,4 +201,24 @@
         </div>
         <md-checkbox class="md-secondary" ng-model="authorizations.facebook"></md-checkbox>
     </md-list-item>
+    <md-list-item ng-repeat="auth in authorizations.publicKeys" layout="column" layout-gt-sm="row"
+                  layout-align="center start" layout-align-gt-sm="start center">
+        <p><i class="fa fa-key">
+            <md-tooltip>Public key</md-tooltip>
+        </i> Public key <span ng-if="::auth.requestedlabel !== 'main'">for <span
+                ng-bind="::auth.requestedlabel"></span></span>
+        </p>
+        <md-input-container>
+            <label>Public Key</label>
+            <md-select ng-model="auth.reallabel">
+                <md-option value="">None</md-option>
+                <md-option ng-repeat="pubkey in vm.user.publicKeys" value="{{::pubkey.label}}"
+                           ng-bind="::pubkey.label">
+                </md-option>
+                <md-option ng-click="vm.showPublicKeyDialog($event, auth)" ng-if="::isNew">
+                    <i class="fa fa-plus"></i> Create new
+                </md-option>
+            </md-select>
+        </md-input-container>
+    </md-list-item>
 </md-list>

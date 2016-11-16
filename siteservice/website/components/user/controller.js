@@ -21,7 +21,7 @@
             contractRequests: []
         };
         vm.notificationMessage = '';
-        var authorizationArrayProperties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
+        var authorizationArrayProperties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet', 'publicKeys'];
         var authorizationBoolProperties = ['facebook', 'github', 'name'];
 
         var TAB_YOU = 'you';
@@ -69,6 +69,7 @@
         vm.verifyPhone = UserDialogService.verifyPhone;
         vm.verifyEmailAddress = verifyEmailAddress;
         vm.showAPIKeyDialog = showAPIKeyDialog;
+        vm.showPublicKeyDetail = UserDialogService.publicKey;
         vm.createOrganization = UserDialogService.createOrganization;
         vm.showSetupAuthenticatorApplication = showSetupAuthenticatorApplication;
         vm.removeAuthenticatorApplication = removeAuthenticatorApplication;
@@ -86,16 +87,6 @@
                         });
                 });
         }
-
-        /*function tabSelected(fx) {
-            if(fx) {
-                fx();
-            }
-            var path = '/home/' + TABS[vm.selectedTabIndex];
-            if(path !== $window.location.hash.replace('#', '')){
-                $location.path(path, false);
-            }
-        }*/
 
         //redirect notification to right page
         function pageSelected(tabNum) {

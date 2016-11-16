@@ -202,6 +202,22 @@
                       </div>
                   </md-list-item>
               </md-list>
+              <md-toolbar>
+                  <div class="md-toolbar-tools" layout-align="space-between center">
+                      <span><i class="fa fa-key"></i> Public Keys</span>
+                      <md-button ng-click="vm.showPublicKeyDetail($event)">
+                          <i class="fa fa-plus"></i> Add
+                      </md-button>
+                  </div>
+              </md-toolbar>
+              <md-list-item class="md-3-line"
+                            ng-repeat="key in vm.user.publicKeys track by key.label"
+                            ng-click="vm.showPublicKeyDetail($event, key)"
+                            aria-label="Public key {{ key.label }}">
+                  <div class="md-list-item-text">
+                      <h4 ng-bind="key.label"></h3>
+                  </div>
+              </md-list-item>
           </div>
         </md-card-content>
     </md-card>

@@ -100,6 +100,9 @@
             createAPIKey: createAPIKey,
             updateAPIKey: updateAPIKey,
             deleteAPIKey: deleteAPIKey,
+            createPublicKey: createPublicKey,
+            updatePublicKey: updatePublicKey,
+            deletePublicKey: deletePublicKey,
             getTwoFAMethods: getTwoFAMethods,
             getAuthenticatorSecret: getAuthenticatorSecret,
             setAuthenticator: setAuthenticator,
@@ -298,6 +301,29 @@
         function deleteAPIKey(username, label) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/apikeys/' + encodeURIComponent(label);
             return genericHttpCall($http.delete, url);
+        }
+
+        function createPublicKey(username, label, publicKey) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/publickeys';
+            var data = {
+                label: label,
+                publicKey: publicKey
+            }
+            return genericHttpCall(POST, url, data);
+        }
+
+        function updatePublicKey(username, oldLabel, newLabel, publicKey) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/publickeys/' + encodeURIComponent(oldLabel);
+            var data = {
+                label: newLabel,
+                publicKey: publicKey
+            }
+            return genericHttpCall(PUT, url, data);
+        }
+
+        function deletePublicKey(username, label) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/publickeys/' + encodeURIComponent(label);
+            return genericHttpCall(DELETE, url);
         }
 
         function getTwoFAMethods(username) {

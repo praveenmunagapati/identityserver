@@ -28,9 +28,10 @@
         vm.showPhonenumberDialog = addPhone;
         vm.showAddressDialog = addAddress;
         vm.showBankAccountDialog = bank;
+        vm.showPublicKeyDialog = addPublicKey;
         vm.submit = submit;
         vm.showDigitalWalletAddressDialog = digitalWalletAddress;
-        var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet'];
+        var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet', 'publicKeys'];
         $scope.requested = {
             organizations: {}
         };
@@ -86,6 +87,9 @@
                 }, {
                     scope: 'bankaccount',
                     prop: 'bankaccounts'
+                }, {
+                    scope: 'publickey',
+                    prop: 'publicKeys'
                 }];
                 var scopes = vm.requestedScopes.split(',');
                 // Filter duplicated scopes
@@ -163,6 +167,10 @@
 
         function bank(event, auth) {
             selectDefault(UserDialogService.bankAccount, event, auth, 'bankaccounts');
+        }
+
+        function addPublicKey(event, auth) {
+            selectDefault(UserDialogService.publicKey, event, auth, 'publicKeys');
         }
 
         function submit() {

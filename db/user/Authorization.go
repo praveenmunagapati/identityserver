@@ -65,6 +65,9 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 		if strings.HasPrefix(scope, "user:phone") && labelledPropertyIsAuthorized(scope, "user:phone", authorization.Phonenumbers) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
+		if strings.HasPrefix(scope, "user:publickey") && labelledPropertyIsAuthorized(scope, "user:publickey", authorization.PublicKeys) {
+			authorizedScopes = append(authorizedScopes, scope)
+		}
 	}
 
 	return
