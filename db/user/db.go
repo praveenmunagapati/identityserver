@@ -141,6 +141,23 @@ func (m *Manager) RemoveEmail(username string, label string) error {
 		bson.M{"$pull": bson.M{"emailaddresses": bson.M{"label": label}}})
 }
 
+// SavePublicKey save or update public key along with its label
+func (m *Manager) SavePublicKey(username string, key PublicKey) error {
+	if err := m.RemovePublicKey(username, key.Label); err != nil {
+		return err
+	}
+	return m.getUserCollection().Update(
+		bson.M{"username": username},
+		bson.M{"$push": bson.M{"publickeys": key}})
+}
+
+// RemovePublicKey remove public key associated with label
+func (m *Manager) RemovePublicKey(username string, label string) error {
+	return m.getUserCollection().Update(
+		bson.M{"username": username},
+		bson.M{"$pull": bson.M{"publickeys": bson.M{"label": label}}})
+}
+
 // SavePhone save or update phone along with its label
 func (m *Manager) SavePhone(username string, phonenumber Phonenumber) error {
 	if err := m.RemovePhone(username, phonenumber.Label); err != nil {

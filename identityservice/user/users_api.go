@@ -1436,6 +1436,183 @@ func (api UsersAPI) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(apikeys)
 }
 
+// AddPublicKey Add a public key
+func (api UsersAPI) AddPublicKey(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	body := user.PublicKey{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !strings.HasPrefix(body.PublicKey, "ssh-rsa AAAAB3NzaC1yc2E") {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	mgr := user.NewManager(r)
+
+	user, err := mgr.GetByName(username)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		log.Error("Error while getting user: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = user.GetPublicKeyByLabel(body.Label)
+	if err == nil {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	err = mgr.SavePublicKey(username, body)
+	if err != nil {
+		log.Error("error while saving public key: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(body)
+}
+
+// GetPublicKey Get the public key associated with a label
+func (api UsersAPI) GetPublicKey(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+	userMgr := user.NewManager(r)
+
+	userobj, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	publickey, err := userobj.GetPublicKeyByLabel(label)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(publickey)
+}
+
+// UpdatePublicKey Update the label and/or value of an existing public key.
+func (api UsersAPI) UpdatePublicKey(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	oldlabel := mux.Vars(r)["label"]
+
+	body := user.PublicKey{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !isValidLabel(body.Label) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !strings.HasPrefix(body.PublicKey, "ssh-rsa AAAAB3NzaC1yc2E") {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	userMgr := user.NewManager(r)
+
+	u, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	_, err = u.GetPublicKeyByLabel(oldlabel)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if oldlabel != body.Label {
+		// Check if there already is another public key with the new label
+		_, err := u.GetPublicKeyByLabel(body.Label)
+		if err == nil {
+			writeErrorResponse(w, http.StatusConflict, "duplicate_label")
+			return
+		}
+	}
+
+	if err = userMgr.SavePublicKey(username, body); err != nil {
+		log.Error("ERROR while saving public key - ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if oldlabel != body.Label {
+		if err := userMgr.RemovePublicKey(username, oldlabel); err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(body)
+
+}
+
+// DeletePublicKey Deletes a public key
+func (api UsersAPI) DeletePublicKey(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+	userMgr := user.NewManager(r)
+
+	user, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	_, err = user.GetPublicKeyByLabel(label)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if err := userMgr.RemovePublicKey(username, label); err != nil {
+		log.Error("ERROR while removing public key:\n", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+//ListPublicKeys lists all public keys
+func (api UsersAPI) ListPublicKeys(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	userMgr := user.NewManager(r)
+	userobj, err := userMgr.GetByName(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	var publicKeys []user.PublicKey
+
+	publicKeys = userobj.PublicKeys
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(publicKeys)
+}
+
 // UpdateName is the handler for PUT /users/{username}/name
 func (api UsersAPI) UpdateName(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]

@@ -84,6 +84,17 @@ func (u *User) GetDigitalAssetAddressByLabel(label string) (walletAddress Digita
 	return
 }
 
+// GetPublicKeyByLabel Gets the public key associated with this label
+func (u *User) GetPublicKeyByLabel(label string) (publicKey PublicKey, err error) {
+	for _, publicKey = range u.PublicKeys {
+		if publicKey.Label == label {
+			return
+		}
+	}
+	err = errors.New("Could not find PublicKey with label " + label)
+	return
+}
+
 func ValidateUsername(username string) (valid bool) {
 	regex, _ := regexp.Compile(`^[a-z0-9\s-_]+$`)
 	matches := regex.FindAllString(username, 2)

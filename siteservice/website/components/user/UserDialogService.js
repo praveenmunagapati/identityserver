@@ -25,7 +25,8 @@
             addGithub: addGithub,
             showSimpleDialog: showSimpleDialog,
             createOrganization: createOrganization,
-            digitalWalletAddressDetail: digitalWalletAddressDetail
+            digitalWalletAddressDetail: digitalWalletAddressDetail,
+            publicKey: publicKey
         };
 
         function init(scope) {
@@ -461,6 +462,109 @@
                         reject(response);
                     });
             });
+        }
+
+        function publicKey(event, key) {
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'UserService', 'username', 'key', PublicKeyDialogController],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/user/views/publicKeyDialog.html',
+                targetEvent: event,
+                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
+                clickOutsideToClose: true,
+                locals: {
+                    UserService: UserService,
+                    username: vm.username,
+                    key: key
+                }
+            })
+                .then(
+                    function (data) {
+                        if (data.originalLabel != data.newLabel) {
+                            if (data.originalLabel) {
+                                var originalKey = getPublicKey(data.originalLabel);
+                                if (data.newLabel) {
+                                    // update
+                                    originalKey.label = data.newLabel;
+                                }
+                                else {
+                                    // remove
+                                    vm.user.publicKeys.splice(vm.user.publicKeys.indexOf(originalKey), 1);
+                                }
+                            }
+                            else {
+                                // add
+                                vm.user.publicKeys.push(data.key);
+                            }
+                        }
+                    });
+
+            function getPublicKey(label) {
+                return vm.user.publicKeys.filter(function (k) {
+                    return k.label === label;
+                })[0];
+            }
+
+            function PublicKeyDialogController($scope, $mdDialog, UserService, username, key) {
+                var ctrl = this;
+                ctrl.Key = key || {publickey: ""};
+                ctrl.originalKey = key ? key.publickey : "";
+                ctrl.originalLabel = key ? key.label : null;
+                ctrl.savedLabel = key ? key.label : null;
+                ctrl.label = key ? key.label : null;
+
+                ctrl.cancel = cancel;
+                ctrl.create = createPublicKey;
+                ctrl.update = updatePublicKey;
+                ctrl.delete = deletePublicKey;
+
+                ctrl.modified = false;
+
+                function cancel() {
+                    if (ctrl.originalLabel) {
+                        ctrl.Key.publickey = ctrl.originalKey;
+                        ctrl.Key.label = ctrl.originalLabel;
+                    }
+                    $mdDialog.cancel();
+                }
+
+                function createPublicKey() {
+                    ctrl.validationerrors = {};
+                    UserService.createPublicKey(username, ctrl.label, ctrl.Key.publickey).then(
+                        function (data) {
+                            ctrl.modified = true;
+                            ctrl.Key = data;
+                            $mdDialog.hide({newLabel: ctrl.label, key: data});
+                        },
+                        function (reason) {
+                            if (reason.status === 409) {
+                                $scope.PublicKeyForm.label.$setValidity('duplicate', false);
+                            }
+                        }
+                    );
+                }
+
+                function updatePublicKey() {
+                    UserService.updatePublicKey(username, ctrl.savedLabel, ctrl.label, ctrl.Key.publickey).then(
+                        function (data) {
+                            $mdDialog.hide({originalLabel: ctrl.savedLabel, newLabel: ctrl.label});
+                        },
+                        function (reason) {
+                            if (reason.status === 409) {
+                                $scope.PublicKeyForm.label.$setValidity('duplicate', false);
+                            }
+                        }
+                    );
+                }
+
+                function deletePublicKey() {
+                    UserService.deletePublicKey(username, key.label).then(
+                        function () {
+                            $mdDialog.hide({originalLabel: key.label, newLabel: ""});
+                        }
+                    );
+                }
+            }
         }
 
         function GenericDetailDialogController($scope, $mdDialog, user, data, createFunction, updateFunction, deleteFunction) {
