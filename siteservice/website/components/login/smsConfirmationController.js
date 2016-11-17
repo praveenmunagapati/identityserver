@@ -2,9 +2,9 @@
     'use strict';
     angular
         .module('loginApp')
-        .controller('smsConfirmationController', ['$http', '$timeout', '$window', '$scope', smsConfirmationController]);
+        .controller('smsConfirmationController', ['$cookies', '$http', '$timeout', '$window', '$scope', smsConfirmationController]);
 
-    function smsConfirmationController($http, $timeout, $window, $scope) {
+    function smsConfirmationController($cookies, $http, $timeout, $window, $scope) {
         var vm = this;
         vm.submit = submit;
         vm.smsconfirmation = {confirmed: false};

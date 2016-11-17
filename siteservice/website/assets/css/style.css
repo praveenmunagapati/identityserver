@@ -532,6 +532,11 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     display: block;
 }
 
+#register-logo {
+    margin: auto;
+    display: block;
+}
+
 .forgot-password {
     color: #838589;
     text-decoration: none;
