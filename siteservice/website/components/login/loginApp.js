@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    angular.module('loginApp', ['ngMaterial', 'ngMessages', 'ngRoute', 'ngSanitize', 'monospaced.qrcode', 'itsyouonline.shared',
+    angular.module('loginApp', ['ngMaterial', 'ngCookies', 'ngMessages', 'ngRoute', 'ngSanitize', 'monospaced.qrcode', 'itsyouonline.shared',
         'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.user', 'itsyouonline.validation'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$httpProvider', httpConfig])
