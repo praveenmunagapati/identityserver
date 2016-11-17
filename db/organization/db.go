@@ -3,6 +3,7 @@ package organization
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"time"
 
@@ -171,12 +172,21 @@ func (m *Manager) isOwnerOrMember(globalID, username string, excludelist map[str
 
 //IsOwner checks if a specific user is in the owners list of an organization
 // or belongs to an organization that is in the owner list
+// It also checks this for the parentorganizations
 func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
 	isowner, err = m.isDirectOwner(globalID, username)
 	if isowner || err != nil {
 		return
 	}
-	// If not a direct owner, iterate through the list of owning organizations
+	// If not a direct owner, check the ownership in the parent organization
+	lastSubOrgSeparator := strings.LastIndex(globalID, ".")
+	if lastSubOrgSeparator > 0 {
+		isowner, err = m.IsOwner(globalID[:lastSubOrgSeparator], username)
+		if isowner || err != nil {
+			return
+		}
+	}
+	// If not a direct or inherited owner, iterate through the list of owning organizations
 	var org Organization
 	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgowners": 1}).One(&org)
 	if err != nil {
