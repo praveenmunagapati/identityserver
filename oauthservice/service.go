@@ -76,8 +76,8 @@ func (service *Service) AddRoutes(router *mux.Router) {
 			// Allow cors
 			w.Header().Add("Access-Control-Allow-Origin", "*")
 			w.Header().Add("Access-Control-Allow-Methods", "POST")
-			// Allow all headers, we do not use them anyway
-			w.Header().Add("Access-Control-Allow-Headers", "*")
+			// Allow all requested headers, we do not use them anyway
+			w.Header().Add("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
 		}).Methods("OPTIONS")
 
 	router.HandleFunc("/v1/oauth/jwt", service.JWTHandler).Methods("POST", "GET")
