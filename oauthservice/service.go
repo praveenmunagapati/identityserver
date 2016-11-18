@@ -73,6 +73,7 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.HandleFunc("/v1/oauth/access_token",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Allow", "POST")
+			w.Header().Add("Access-Control-Allow-Origin", "*")
 		}).Methods("OPTIONS")
 
 	router.HandleFunc("/v1/oauth/jwt", service.JWTHandler).Methods("POST", "GET")
