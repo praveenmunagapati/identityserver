@@ -12,6 +12,8 @@ import (
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
 
+const itsyouonlineClientID = "itsyouonline"
+
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
 type Oauth2oauth_2_0Middleware struct {
 	security.OAuth2Middleware
@@ -85,7 +87,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				if parsedusername, ok := webuser.(string); ok && parsedusername != "" {
 					username = parsedusername
 					atscopestring = "admin"
-					clientID = "itsyouonline"
+					clientID = itsyouonlineClientID
 				}
 			}
 		}
@@ -95,7 +97,8 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		}
 
 		context.Set(r, "authenticateduser", username)
-		if globalID == protectedOrganization {
+		//If the authorized organization is the protected organization itself or is a parent of it
+		if len(globalID) > 0 && (globalID == protectedOrganization || strings.HasPrefix(protectedOrganization, globalID+".")) {
 			scopes = []string{atscopestring}
 		} else {
 			orgMgr := organization.NewManager(r)
@@ -106,7 +109,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				return
 			}
 
-			if isOwner && ((clientID == "itsyouonline" && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
+			if isOwner && ((clientID == itsyouonlineClientID && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
 				scopes = []string{"organization:owner"}
 			} else {
 				isMember, err := orgMgr.IsMember(protectedOrganization, username)
@@ -115,7 +118,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 					return
 				}
-				if isMember && ((clientID == "itsyouonline" && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
+				if isMember && ((clientID == itsyouonlineClientID && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
 					scopes = []string{"organization:member"}
 				}
 			}

@@ -61,7 +61,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	//Step 2: Delete the entry from step 1
+	//Step2: Access the suborganization
+	fmt.Printf("Getting the suborganization information\n")
+	suborg, _, err = authenticatedClient.Organizations.GetOrganization(suborgGlobalID, nil, nil)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	fmt.Println(suborg)
+
+	//Step 3: Delete the entry from step 1
 	fmt.Printf("Deleting organization %s\n", suborgGlobalID)
 	_, err = authenticatedClient.Organizations.DeleteOrganization(suborgGlobalID, nil, nil)
 	if err != nil {
