@@ -66,10 +66,23 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	var clientID, clientSecret string
 	code := r.FormValue("code")
 	grantType := r.FormValue("grant_type")
-	clientSecret := r.FormValue("client_secret")
-	clientID := r.FormValue("client_id")
+	clientSecret = r.FormValue("client_secret")
+	clientID = r.FormValue("client_id")
+
+	//If clientSecret if missing from form data check if its available as basicauth
+	//See https://tools.ietf.org/html/rfc6749#section-2.3.1
+	if clientSecret == "" {
+		var ok bool
+		clientID, clientSecret, ok = r.BasicAuth()
+		if !ok {
+			log.Debug("clientSecret not found in form data nor basicauth")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+	}
 
 	//Also accept some alternatives
 	if grantType == "authorization_code" {
