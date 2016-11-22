@@ -74,6 +74,8 @@ The application requests an access token from the API, by passing the authorizat
 POST https://itsyou.online/v1/oauth/access_token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&code=AUTHORIZATION_CODE&redirect_uri=CALLBACK_URL&state=STATE
 ```
 
+Note: Alternativly one can pass the `client_id` and `client_secret` via basic authentication header and ommit them from the post data.
+
 The redirect_uri must match the redirect_uri passed in the access_code request and the callback URI registered in the api key. The redirect URL's host and port must exactly match the callback URL and the redirect URL's path must reference a subdirectory of the callback URL. The state must match the state received with the authorization code
 
 * response_type=code
