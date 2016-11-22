@@ -53,6 +53,20 @@
                         </md-list-item>
                     </md-list>
                 </div>
+                <div ng-if="vm.notifications.missingscopes.length > 0">
+                    <md-list>
+                        <md-list-item class="md-1-line"
+                                      ng-repeat="missingScope in vm.notifications.missingscopes track by missingScope.organization"
+                                      ng-if="::vm.orgsWithInvitation.indexOf(missingScope.organization) === -1">
+                            <p>Some required information isn't shared with organization {{ ::missingScope.organization
+                                }}</p>
+                            <md-button class="md-secondary md-raised"
+                                       ng-click="vm.resolveMissingScopeClicked($event, missingScope)">
+                                Resolve
+                            </md-button>
+                        </md-list-item>
+                    </md-list>
+                </div>
             </div>
         </md-card-content>
     </md-card>

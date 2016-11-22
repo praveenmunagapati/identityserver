@@ -27,6 +27,7 @@
             getAPIKeyLabels: getAPIKeyLabels,
             getAPIKey: getAPIKey,
             getOrganizationTree: getOrganizationTree,
+            getUsers: getUsers,
             createDNS: createDNS,
             updateDNS: updateDNS,
             deleteDNS: deleteDNS,
@@ -39,7 +40,10 @@
             setLogo: setLogo,
             deleteLogo: deleteLogo,
             getValidityDuration: getValidityDuration,
-            SetValidityDuration: SetValidityDuration
+            SetValidityDuration: SetValidityDuration,
+            createRequiredScope: createRequiredScope,
+            updateRequiredScope: updateRequiredScope,
+            deleteRequiredScope: deleteRequiredScope
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -101,13 +105,13 @@
         }
 
         function addOrganization(globalid, searchString, role) {
-            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + 'org' + encodeURIComponent(role) + 's';
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + 'org' + encodeURIComponent(role);
 
             var data;
-            if (role === "member") {
-                data = {orgmember: searchString}
+            if (role === "members") {
+                data = {orgmember: searchString};
             } else {
-                data = {orgowner: searchString}
+                data = {orgowner: searchString};
             }
             return $http
                 .post(url, data)
@@ -118,7 +122,7 @@
                     function(reason) {
                         return $q.reject(reason);
                     }
-                )
+                );
         }
 
         function getUserOrganizations(username) {
@@ -241,6 +245,11 @@
                 );
         }
 
+        function getUsers(globalId) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/users';
+            return genericHttpCall(GET, url);
+        }
+
         function createDNS(globalid, dnsName) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns/' + encodeURIComponent(dnsName);
 
@@ -319,7 +328,7 @@
             var data = {
                 globalid: globalid,
                 logo: logo
-            }
+            };
             return genericHttpCall(PUT, url, data);
         }
 
@@ -339,6 +348,21 @@
                 secondsvalidity: secondsduration
             };
             return genericHttpCall(PUT, url, data);
+        }
+
+        function createRequiredScope(globalId, requiredScope) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/requiredscopes';
+            return genericHttpCall(POST, url, requiredScope);
+        }
+
+        function updateRequiredScope(globalId, oldRequiredScope, newRequiredScope) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/requiredscopes/' + encodeURIComponent(oldRequiredScope);
+            return genericHttpCall(PUT, url, newRequiredScope);
+        }
+
+        function deleteRequiredScope(globalId, requiredScope) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/requiredscopes/' + encodeURIComponent(requiredScope);
+            return genericHttpCall(DELETE, url);
         }
     }
 })();

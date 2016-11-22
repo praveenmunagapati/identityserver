@@ -257,7 +257,7 @@ func (m *Manager) OrganizationIsMember(globalID, organization string) (ismember 
 }
 
 //OrganizationIsPartOf checks if organization2 is a member or an owner of organization1
-func (m *Manager) OrganizationIsPartOf(globalID, organization string) (ispart bool, err error) {
+func (m *Manager) OrganizationIsPartOf(globalID, organization string) (bool, error) {
 	condition := []interface{}{
 		bson.M{"orgmembers": organization},
 		bson.M{"orgowners": organization},
@@ -504,7 +504,7 @@ func (m *Manager) UpdateMembership(globalid string, username string, oldrole str
 	return m.collection.Update(qry, push)
 }
 
-// UpdateOrgMembership Updates an organizstion role in another organization
+// UpdateOrgMembership Updates an organization role in another organization
 func (m *Manager) UpdateOrgMembership(globalid string, organization string, oldrole string, newrole string) error {
 	qry := bson.M{"globalid": globalid}
 	pull := bson.M{
@@ -624,4 +624,46 @@ func (m *Last2FAManager) RemoveLast2FA(globalID string, username string) error {
 		bson.M{"username": username},
 	}
 	return m.collection.Remove(bson.M{"$and": condition})
+}
+
+// AddRequiredScope adds a required scope
+func (m *Manager) AddRequiredScope(globalId string, requiredScope RequiredScope) error {
+	qry := bson.M{"globalid": globalId}
+	update := bson.M{"$push": bson.M{"requiredscopes": requiredScope}}
+	return m.collection.Update(qry, update)
+}
+
+// UpdateRequiredScope updates a required scope
+func (m *Manager) UpdateRequiredScope(globalId string, oldRequiredScope string, newRequiredScope RequiredScope) error {
+	qry := bson.M{
+		"globalid":             globalId,
+		"requiredscopes.scope": oldRequiredScope,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"requiredscopes.$": newRequiredScope,
+		},
+	}
+	return m.collection.Update(qry, update)
+}
+
+// DeleteRequiredScope deletes a required scope
+func (m *Manager) DeleteRequiredScope(globalId string, requiredScope string) error {
+	return m.collection.Update(bson.M{"globalid": globalId},
+		bson.M{"$pull": bson.M{"requiredscopes": bson.M{"scope": requiredScope}}})
+}
+
+func (m *Manager) ListByUserOrGlobalID(username string, globalIds []string) (error, []Organization) {
+	var organizations []Organization
+	qry := bson.M{
+		"$or": []bson.M{
+			{"owners": username},
+			{"members": username},
+			{"globalid": bson.M{
+				"$in": globalIds},
+			},
+		},
+	}
+	err := m.collection.Find(qry).All(&organizations)
+	return err, organizations
 }

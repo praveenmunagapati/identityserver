@@ -18,21 +18,26 @@
                         <div flex="100" flex-gt-xs="60" flex-gt-sm="40">
                             <md-list class="md-dense">
                                 <md-subheader class="md-no-sticky">Owners</md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="owner in vm.organization.owners"
+                                <md-list-item class="md-1-line" ng-repeat="owner in vm.owners track by owner.username"
                                               aria-label="Owner">
                                     <div class="md-list-item-text">
-                                        <p ng-bind="::owner"></p>
+                                        <p ng-bind="::owner.username"></p>
                                     </div>
+                                    <md-icon md-font-icon="fa-exclamation" class="fa md-warn md-secondary"
+                                             aria-label="Missing scopes"
+                                             ng-if="::vm.hasEditPermission && owner.missingscopes.length"
+                                             ng-click="vm.showMissingScopesDialog($event, owner)"></md-icon>
                                     <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
-                                             aria-label="Edit owner" ng-if="::vm.canEditRole(owner)"
+                                             aria-label="Edit owner" ng-if="::vm.canEditRole(owner.username)"
                                              ng-click="vm.editMember($event, owner)">
                                     </md-icon>
                                 </md-list-item>
                             </md-list>
                             <md-list class="md-dense" ng-if="vm.organization.orgowners.length > 0">
                                 <md-subheader class="md-no-sticky"> Organization owners</md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="orgowner in vm.organization.orgowners"
-                                             aria-label="Organization owner">
+                                <md-list-item class="md-1-line"
+                                              ng-repeat="orgowner in vm.organization.orgowners track by $index"
+                                              aria-label="Organization owner">
                                     <div class="md-list-item-text">
                                         <p ng-bind="::orgowner"></p>
                                     </div>
@@ -44,21 +49,28 @@
                             </md-list>
                             <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
                                 <md-subheader class="md-no-sticky">Members</md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="member in vm.organization.members"
+                                <md-list-item class="md-1-line"
+                                              ng-repeat="member in vm.members track by member.username"
                                               aria-label="Member">
                                     <div class="md-list-item-text">
-                                        <p ng-bind="::member"></p>
+                                        <p ng-bind="::member.username"></p>
                                     </div>
+                                    <md-icon md-font-icon="fa-exclamation" class="fa md-warn md-secondary"
+                                             aria-label="Missing scopes"
+                                             ng-if="::vm.hasEditPermission && member.missingscopes.length"
+                                             ng-click="vm.showMissingScopesDialog($event, member)"></md-icon>
                                     <md-icon md-font-icon="fa-pencil" aria-label="Edit member"
-                                             class="fa md-secondary md-primary" ng-if="::vm.canEditRole(member)"
+                                             class="fa md-secondary md-primary"
+                                             ng-if="::vm.canEditRole(member.username)"
                                              ng-click="vm.editMember($event, member)">
                                     </md-icon>
                                 </md-list-item>
                             </md-list>
                             <md-list class="md-dense" ng-if="vm.organization.orgmembers.length > 0">
                                 <md-subheader class="md-no-sticky"> Organization members</md-subheader>
-                                <md-list-item class="md-1-line" ng-repeat="orgmember in vm.organization.orgmembers"
-                                             aria-label="Organization member">
+                                <md-list-item class="md-1-line"
+                                              ng-repeat="orgmember in vm.organization.orgmembers track by $index"
+                                              aria-label="Organization member">
                                     <div class="md-list-item-text">
                                         <p ng-bind="::orgmember"></p>
                                     </div>
@@ -107,7 +119,7 @@
                             </md-button>
                         </div>
                         <div class="treeview">
-                            <div class="tree" id="treegraph">
+                            <div class="tree" id="treegraph" ng-style="vm.treeGraphStyle">
                                 <ul ng-repeat="tree in vm.organizationRoot.children">
                                     <li ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
                                         <a ng-href="#/organization/{{ ::tree.globalid }}"
@@ -206,6 +218,25 @@
                                 </div>
                                 <md-button class="md-warn" ng-click="vm.showDeleteOrganizationDialog($event)">
                                     Delete organization
+                                </md-button>
+                            </section>
+                            <md-divider></md-divider>
+                            <section>
+                                <md-subheader>Required shared information</md-subheader>
+                                <md-list>
+                                    <md-list-item class="md-2-line"
+                                                  ng-repeat="scope in vm.organization.requiredscopes track by scope.scope"
+                                                  ng-click="vm.showRequiredScopeDialog($event, scope)">
+                                        <div class="md-list-item-text">
+                                            <h3>Scope: <span ng-bind="scope.scope"></span></h3>
+                                            <p>Shared with: <span
+                                                    ng-bind="vm.getSharedScopeString(scope.accessscopes)"></span>
+                                            </p>
+                                        </div>
+                                    </md-list-item>
+                                </md-list>
+                                <md-button class="md-primary" ng-click="vm.showRequiredScopeDialog($event)">
+                                    <i class="fa fa-plus"></i> Add required shared information
                                 </md-button>
                             </section>
                         </div>

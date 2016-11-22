@@ -189,5 +189,10 @@
                 return haystack.lastIndexOf(needle, 0) === 0;
             };
         }
+        if (window.location.hostname === 'dev.itsyou.online') {
+            setTimeout(function () {
+                window.location.reload();
+            }, 9 * 60 * 1000);
+        }
     }
 })();

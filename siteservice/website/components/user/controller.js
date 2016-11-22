@@ -18,7 +18,8 @@
         vm.notifications = {
             invitations: [],
             approvals: [],
-            contractRequests: []
+            contractRequests: [],
+            missingscopes: []
         };
         vm.notificationMessage = '';
         var authorizationArrayProperties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet', 'publicKeys'];
@@ -73,19 +74,16 @@
         vm.createOrganization = UserDialogService.createOrganization;
         vm.showSetupAuthenticatorApplication = showSetupAuthenticatorApplication;
         vm.removeAuthenticatorApplication = removeAuthenticatorApplication;
+        vm.resolveMissingScopeClicked = resolveMissingScopeClicked;
         init();
 
         function init() {
             var index = TABS.indexOf($routeParams.tab);
-            vm.selectedTabIndex = index !== -1 ? index: 0;
-            loadUser()
-                .then(function () {
-                    loadVerifiedPhones();
-                    loadVerifiedEmails()
-                        .then(function () {
-                            loadNotifications();
-                        });
-                });
+            vm.selectedTabIndex = index === -1 ? 0 : index;
+            loadUser().then(function () {
+                loadVerifiedPhones();
+                loadVerifiedEmails().then(loadNotifications);
+            });
         }
 
         //redirect notification to right page
@@ -243,6 +241,10 @@
                 count += vm.notifications.contractRequests.filter(pendingFilter).length;
                 count += vm.notifications.invitations.filter(pendingFilter).length;
                 count += vm.notifications.security.length;
+                vm.orgsWithInvitation = vm.notifications.invitations.filter(pendingFilter).map(function (invitation) {
+                    return invitation.organization;
+                });
+                count += vm.notifications.missingscopes.filter(missingScopeFilter).length;
                 return count;
             } else {
                 return obj ? obj.filter(pendingFilter).length : 0;
@@ -250,24 +252,17 @@
             function pendingFilter(prop) {
                 return prop.status === 'pending';
             }
+
+            function missingScopeFilter(missingScope) {
+                return vm.orgsWithInvitation.indexOf(missingScope.organization) === -1;
+            }
         }
 
         function accept(event, invitation) {
-            // show authorize screen
-            var authorization = {
-                grantedTo: invitation.organization,
-                username: vm.username,
-                phonenumbers: [{
-                    requestedlabel: 'main',
-                    reallabel: ''
-                }],
-                emailaddresses: [{
-                    requestedlabel: 'main',
-                    reallabel: ''
-                }]
-            };
-            showAuthorizationDetailDialog(authorization, event, true)
-                .then(function () {
+            var missingScope = vm.notifications.missingscopes.filter(function (missingScope) {
+                return missingScope.organization === invitation.organization;
+            })[0];
+            resolveMissingScope(event, missingScope).then(function () {
                     NotificationService
                         .accept(invitation)
                         .then(function () {
@@ -357,7 +352,9 @@
                 function remove() {
                     UserService.deleteAuthorization(authorization)
                         .then(function () {
-                            vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
+                            if (vm.authorizations) {
+                                vm.authorizations.splice(vm.authorizations.indexOf(authorization), 1);
+                            }
                             $mdDialog.hide();
                         });
                 }
@@ -672,6 +669,98 @@
                         vm.twoFAMethods.totp = false;
                     });
             });
+        }
+
+        function resolveMissingScopeClicked(event, missingScope) {
+            resolveMissingScope(event, missingScope).then(updated);
+            function updated() {
+                vm.loaded.notifications = false;
+                loadNotifications();
+            }
+        }
+
+        function resolveMissingScope(event, missingScope) {
+            return $q(promise);
+
+            function promise(resolve, reject) {
+                UserService.getAuthorization(vm.username, missingScope.organization).then(requestSuccess, requestFailed);
+                function requestFailed(response) {
+                    if (response.status === 404) {
+                        var authorization = {
+                            username: vm.username,
+                            grantedTo: missingScope.organization
+                        };
+                        showDialog(authorization, true).then(resolve, reject);
+                    } else {
+                        reject(response);
+                        $window.location.href = 'error' + response.status;
+                    }
+                }
+
+                function requestSuccess(authorization) {
+                    showDialog(authorization, false).then(resolve, reject);
+                }
+
+                function showDialog(authorization, isNew) {
+                    // mostly copied from authorizeController -> parseScopes
+                    var listAuthorizations = [{
+                        scope: 'address',
+                        prop: 'addresses'
+                    }, {
+                        scope: 'email',
+                        prop: 'emailaddresses'
+                    }, {
+                        scope: 'phone',
+                        prop: 'phonenumbers'
+                    }, {
+                        scope: 'bankaccount',
+                        prop: 'bankaccounts'
+                    }, {
+                        scope: 'publickey',
+                        prop: 'publicKeys'
+                    }];
+                    angular.forEach(missingScope.scopes, function (scope) {
+                        var splitPermission = scope.split(':');
+                        if (!splitPermission.length > 1) {
+                            return;
+                        }
+                        // Empty label -> 'main'
+                        var permissionLabel = splitPermission.length > 2 && splitPermission[2] ? splitPermission[2] : 'main';
+                        var auth = {
+                            requestedlabel: permissionLabel,
+                            reallabel: ''
+                        };
+                        var listScope = listAuthorizations.filter(function (l) {
+                            return l.scope === splitPermission[1];
+                        })[0];
+                        if (listScope) {
+                            auth.reallabel = vm.user[listScope.prop].length ? vm.user[listScope.prop][0].label : '';
+                            if (!authorization[listScope.prop]) {
+                                authorization[listScope.prop] = [];
+                            }
+                            authorization[listScope.prop].push(auth);
+                        }
+                        else if (scope === 'user:name') {
+                            authorization.name = true;
+                        }
+                        else if (scope.startsWith('user:memberof:')) {
+                            authorization.organizations.push(permissionLabel);
+                        }
+                        else if (scope.startsWith('user:digitalwalletaddress:')) {
+                            auth.reallabel = vm.user.digitalwallet.length ? vm.user.digitalwallet[0].label : '';
+                            auth.currency = splitPermission.length === 4 ? splitPermission[3] : '';
+                            authorization.digitalwallet.push(auth);
+                        }
+                        else if (scope === 'user:github') {
+                            authorization.github = true;
+                        }
+                        else if (scope === 'user:facebook') {
+                            authorization.facebook = true;
+                        }
+                    });
+                    return showAuthorizationDetailDialog(authorization, event, isNew);
+                }
+            }
         }
     }
 

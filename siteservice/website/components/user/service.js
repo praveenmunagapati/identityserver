@@ -81,6 +81,7 @@
             registerNewAddress: registerNewAddress,
             updateAddress: updateAddress,
             deleteAddress: deleteAddress,
+            getAuthorization: getAuthorization,
             getAuthorizations: getAuthorizations,
             saveAuthorization: saveAuthorization,
             deleteAuthorization: deleteAuthorization,
@@ -210,6 +211,11 @@
             return genericHttpCall($http.get, url);
         }
 
+        function getAuthorization(username, organization) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/authorizations/' + encodeURIComponent(organization);
+            return genericHttpCall($http.get, url);
+        }
+
         function saveAuthorization(authorization) {
             var url = apiURL + '/' + encodeURIComponent(authorization.username) + '/authorizations/' + encodeURIComponent(authorization.grantedTo);
             return genericHttpCall($http.put, url, authorization);
@@ -308,7 +314,7 @@
             var data = {
                 label: label,
                 publicKey: publicKey
-            }
+            };
             return genericHttpCall(POST, url, data);
         }
 
@@ -317,7 +323,7 @@
             var data = {
                 label: newLabel,
                 publicKey: publicKey
-            }
+            };
             return genericHttpCall(PUT, url, data);
         }
 

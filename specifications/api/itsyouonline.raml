@@ -287,7 +287,10 @@ types:
         type: string[]
         maxItems: 100
         description: globalId of sub organizations
-
+      requiredscopes:
+        type: RequiredScope[]
+        maxItems: 20
+        description: List of scopes that are required to join this organization
     example:
       globalid: greenitglobe
       publicKeys:
@@ -307,6 +310,26 @@ types:
         - organization3
       includes:
         - admin.greenitglobe.com
+      requiredscopes:
+        - scope: user:name
+          accessscopes:
+            - organization:owner
+            - organization:member
+        - scope: user:email:personal email
+          accessscopes:
+            - organization:owner
+
+  OrganizationUser:
+    properties:
+      username:
+        type: string
+        description: username of the user
+      role:
+        type: string
+        description: role of the user in this organization, either organization:member or organization:owner
+      missingscopes:
+        type: []string
+        description: list of required roles that the user didn't share yet.
 
   OrganizationTreeItem:
     properties:
@@ -435,6 +458,16 @@ types:
       Value:
         type: string
         maxLength: 1024
+  RequiredScope:
+    properties:
+      scope:
+        type: string
+        maxLength: 1024
+        description: Scope which should be shared with an organization
+      accessscopes:
+        type: string[]
+        description: Which users can see the shared information.
+
 
 securedBy: [ oauth_2_0 ]
 /users:
@@ -1018,6 +1051,8 @@ securedBy: [ oauth_2_0 ]
                 body:
                     application/json:
                         type: Authorization
+            404:
+                description: No authorization for this organization was not found.
       delete:
         displayName: DeleteAuthorization
         description: Remove the authorization for an organization, the granted organization will no longer have access the user's information.
@@ -1368,7 +1403,16 @@ securedBy: [ oauth_2_0 ]
               description: No permission for this action
             404:
               description: The user or the organization does not exist.
-
+    /users:
+      get:
+        displayName: GetOrganizationUsers
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner", "organization:member" ] } ]
+        description: Get all users from this organization, not including suborganizations.
+        responses:
+          200:
+            body:
+              application/json:
+                type: GetOrganizationUsersResponseBody
     /orgowners:
       post:
         displayName: SetOrgOwner
@@ -1713,6 +1757,39 @@ securedBy: [ oauth_2_0 ]
             body:
               application/json:
                 type: OrganizationTreeItem[]
+
+    /requiredscopes:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+      post:
+        displayName: AddRequiredScope
+        description: Adds a required scope
+        body:
+          application/json:
+            type: RequiredScope
+        responses:
+            201:
+              description: Added the required scope to the organization.
+            409:
+              description: The required scope conflicts with an existing one
+      /{requiredscope}:
+          put:
+            displayName: UpdateRequiredScope
+            description: Updates a required scope
+            responses:
+                204:
+                  description: Updated the required scope
+                404:
+                  description: The required scope was not found.
+                409:
+                  description: The new required scope conflicts with an existing one
+          delete:
+            displayName: DeleteRequiredScope
+            description: Deletes a required scope
+            responses:
+                204:
+                  description: Deleted the required scope
+                404:
+                  description: The required scope was not found.
 
 /companies:
     post:

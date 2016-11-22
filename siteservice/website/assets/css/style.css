@@ -334,10 +334,6 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
   margin: 20px 6px 0 0;
 }
 
-.header-sign-wrap i:active {
-  color: rgba(48, 145, 187);
-}
-
 .homepage .sign-wrap {
     float: right;
     margin-top: 31px;
@@ -601,10 +597,6 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     cursor: pointer;
 }
 
-#profilemenu:hover, #profilemenu:active, #profilemenu:a {
-    color: rgba(255, 0, 0, 0.5);
-}
-
 .list-item-secondary-button-padding p {
     padding-right: 120px;
 }
@@ -628,4 +620,8 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 
 p.verified {
     margin-right: 20px;
+}
+
+.validation-error {
+    color: rgb(221, 44, 0);
 }
