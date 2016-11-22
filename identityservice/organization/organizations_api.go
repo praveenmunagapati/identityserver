@@ -168,9 +168,7 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	orgMgr := organization.NewManager(r)
 	logoMgr := organization.NewLogoManager(r)
 	count, err := orgMgr.CountByUser(username)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "counting organizations by user", err) {
 		return
 	}
 	if count >= MAX_ORGANIZATIONS_PER_USER {
@@ -180,22 +178,18 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	}
 	err = orgMgr.Create(&org)
 
-	if err != nil && err != db.ErrDuplicate {
-		log.Error(err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
 	if err == db.ErrDuplicate {
 		log.Debug("Duplicate organization")
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
+	if handleServerError(w, "creating organization", err) {
+		return
+	}
 	err = logoMgr.Create(&org)
 
 	if err != nil && err != db.ErrDuplicate {
-		log.Error(err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		handleServerError(w, "creating organization logo", err)
 		return
 	}
 

@@ -70,7 +70,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			oauthMgr := oauthservice.NewManager(r)
 			at, err := oauthMgr.GetAccessToken(accessToken)
 			if err != nil {
-				log.Error(err)
+				log.Error("Error while getting access token: ", err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
@@ -104,7 +104,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			orgMgr := organization.NewManager(r)
 			isOwner, err := orgMgr.IsOwner(protectedOrganization, username)
 			if err != nil {
-				log.Error(err)
+				log.Error("Error while checking if user is owner of organization: ", err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
