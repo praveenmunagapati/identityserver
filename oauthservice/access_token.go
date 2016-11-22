@@ -59,6 +59,8 @@ func newAccessToken(username, globalID, clientID, scope string) *AccessToken {
 
 //AccessTokenHandler is the handler of the /v1/oauth/access_token endpoint
 func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
 	err := r.ParseForm()
 	if err != nil {
 		log.Debug("ERROR parsing form: ", err)
