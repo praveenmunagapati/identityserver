@@ -190,6 +190,9 @@ func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
 	var org Organization
 	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgowners": 1}).One(&org)
 	if err != nil {
+		if mgo.ErrNotFound == err {
+			err = nil
+		}
 		return
 	}
 	excludelist := make(map[string]bool)
@@ -229,6 +232,9 @@ func (m *Manager) IsMember(globalID, username string) (result bool, err error) {
 	var org Organization
 	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgmember": 1}).One(&org)
 	if err != nil {
+		if mgo.ErrNotFound == err {
+			err = nil
+		}
 		return
 	}
 	excludelist := make(map[string]bool)
