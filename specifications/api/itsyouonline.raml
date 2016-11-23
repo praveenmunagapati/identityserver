@@ -634,6 +634,7 @@ securedBy: [ oauth_2_0 ]
                 application/json:
                     type: RegistryEntry[]
     /registry/{key}:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
         delete:
           securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
           displayName: DeleteUserRegistryEntry
@@ -656,6 +657,7 @@ securedBy: [ oauth_2_0 ]
 
 
     /github:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       delete:
         displayName: DeleteGithubAccount
         description: Unlink Github Account
@@ -664,8 +666,8 @@ securedBy: [ oauth_2_0 ]
               description: Account unlinked
 
     /facebook:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       delete:
-        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
         displayName: DeleteFacebookAccount
         description: Delete the associated facebook account
         responses:
@@ -673,6 +675,7 @@ securedBy: [ oauth_2_0 ]
                 description: Deleted facebook account
 
     /twofamethods:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       get:
         displayName: GetTwoFAMethods
         description: Get the possible two factor authentication methods
@@ -684,6 +687,7 @@ securedBy: [ oauth_2_0 ]
                   totp: boolean
                   sms: Phonenumber[]
     /totp:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       get:
         displayName: GetTOTPSecret
         responses:
@@ -1080,9 +1084,9 @@ securedBy: [ oauth_2_0 ]
               description: Succesfully rejected invitation.
 
   /{username}/publickeys:
+    securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
       displayName: ListPublicKeys
-      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       description: Lists all public keys
       responses:
         200:
@@ -1094,7 +1098,6 @@ securedBy: [ oauth_2_0 ]
 
     post:
       displayName: AddPublicKey
-      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       description: Add a public key
       body:
         application/json:
@@ -1110,9 +1113,9 @@ securedBy: [ oauth_2_0 ]
           description: Duplicate label
 
     /{label}:
+      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       get:
         displayName: GetPublicKey
-        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
         description: Get a public key
         responses:
           200:
@@ -1124,7 +1127,6 @@ securedBy: [ oauth_2_0 ]
 
       put:
         displayName: UpdatePublicKey
-        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
         description: Upates the label and/or key of an existing public key
         body:
           application/json:
@@ -1141,7 +1143,6 @@ securedBy: [ oauth_2_0 ]
 
       delete:
         displayName: DeletePublicKey
-        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
         description: Delete a public key
         responses:
           204:
@@ -1706,6 +1707,7 @@ securedBy: [ oauth_2_0 ]
                 description: DNS Name not found
 
     /tree:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner", "organization:member" ] } ]
       get:
         displayName: GetOrganizationTree
         responses:

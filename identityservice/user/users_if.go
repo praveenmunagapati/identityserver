@@ -156,10 +156,10 @@ type UsersInterface interface { // Post is the handler for POST /users
 
 // UsersInterfaceRoutes is routing for /users root endpoint
 func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
-	r.Handle("/users", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.Post))).Methods("POST")
+	r.Handle("/users", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.Post))).Methods("POST")
 	r.Handle("/users/{username}/validate", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.ValidateUsername))).Methods("GET")
-	r.Handle("/users/{username}/name", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.UpdateName))).Methods("PUT")
-	r.Handle("/users/{username}/password", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.UpdatePassword))).Methods("PUT")
+	r.Handle("/users/{username}/name", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateName))).Methods("PUT")
+	r.Handle("/users/{username}/password", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdatePassword))).Methods("PUT")
 	r.Handle("/users/{username}/phonenumbers", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetUserPhoneNumbers))).Methods("GET")
 	r.Handle("/users/{username}/phonenumbers", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RegisterNewPhonenumber))).Methods("POST")
 	r.Handle("/users/{username}/phonenumbers/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetUserPhonenumberByLabel))).Methods("GET")
@@ -187,7 +187,7 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/emailaddresses/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateEmailAddress))).Methods("PUT")
 	r.Handle("/users/{username}/emailaddresses/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteEmailAddress))).Methods("DELETE")
 	r.Handle("/users/{username}/emailaddresses/{label}/validate", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.ValidateEmailAddress))).Methods("POST")
-	r.Handle("/users/{username}/github", alice.New(newOauth2oauth_2_0Middleware([]string{}).Handler).Then(http.HandlerFunc(i.DeleteGithubAccount))).Methods("DELETE")
+	r.Handle("/users/{username}/github", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteGithubAccount))).Methods("DELETE")
 	r.Handle("/users/{username}/info", alice.New(newOauth2oauth_2_0Middleware([]string{"user:info", "user:admin"}).Handler).Then(http.HandlerFunc(i.GetUserInformation))).Methods("GET")
 	r.Handle("/users/{username}/addresses", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetUserAddresses))).Methods("GET")
 	r.Handle("/users/{username}/addresses", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.RegisterNewAddress))).Methods("POST")
