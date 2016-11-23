@@ -108,3 +108,11 @@ https://itsyou.online/v1/oauth/access_token?grant_type=client_credentials&client
 In this case, the scope parameter needs to be given to prevent consumers to accidentally handing out `user:admin` or `organization:owner` scoped tokens to third party services
 
 As shown in the example. it is also possible to specify additional audiences in the `/v1/oauth/access_token` call.
+
+If the request has `application/json` in the accept header, the response is a json structure containing the jwt:
+```
+{
+    "access_token":"ABCDEFGH........ABCDEFGH"
+}
+```
+If no `application/json` is present in the accept header, the mime-type is `application/jwt` and the response is the jwt itself.
