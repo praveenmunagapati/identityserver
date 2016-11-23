@@ -328,8 +328,13 @@ types:
         type: string
         description: role of the user in this organization, either organization:member or organization:owner
       missingscopes:
-        type: []string
+        type: string[]
         description: list of required roles that the user didn't share yet.
+
+  GetOrganizationUsersResponseBody:
+    properties:
+      haseditpermissions: boolean
+      users: OrganizationUser[]
 
   OrganizationTreeItem:
     properties:
