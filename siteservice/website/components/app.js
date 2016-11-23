@@ -51,6 +51,10 @@
         });
         $mdThemingProvider.theme('default')
             .primaryPalette('centrilogic');
+        $mdThemingProvider.enableBrowserColor({
+            palette: 'primary', // Default is 'primary', any basic material palette and extended palettes are available
+            hue: '800' // Default is '800'
+        });
     }
 
     function httpConfig($httpProvider) {
