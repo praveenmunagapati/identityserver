@@ -119,7 +119,7 @@
                             </md-button>
                         </div>
                         <div class="treeview">
-                            <div class="tree" id="treegraph" ng-style="vm.treeGraphStyle">
+                            <div class="tree" ng-style="vm.treeGraphStyle">
                                 <ul ng-repeat="tree in vm.organizationRoot.children">
                                     <li ng-class="{'active-organization': vm.organization.globalid === tree.globalid}">
                                         <a ng-href="#/organization/{{ ::tree.globalid }}"
