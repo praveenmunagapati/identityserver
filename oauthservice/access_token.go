@@ -136,8 +136,16 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-type", "application/jwt")
-		w.Write([]byte(tokenString))
+
+		// if client could accept JSON we give the token as JSON string
+		// otherwise in plain text
+		if strings.Index(r.Header.Get("Accept"), "application/json") >= 0 {
+			w.Header().Set("Content-type", "application/json")
+			json.NewEncoder(w).Encode(map[string]string{"access_token": tokenString})
+		} else {
+			w.Header().Set("Content-type", "application/jwt")
+			w.Write([]byte(tokenString))
+		}
 		return
 	}
 	mgr.saveAccessToken(at)
