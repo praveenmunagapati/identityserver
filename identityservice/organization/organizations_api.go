@@ -12,6 +12,8 @@ import (
 
 	"time"
 
+	"crypto/rand"
+	"encoding/base64"
 	"github.com/gorilla/context"
 	"github.com/itsyouonline/identityserver/db"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
@@ -22,6 +24,7 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/oauthservice"
+	"github.com/itsyouonline/identityserver/validation"
 	"gopkg.in/mgo.v2"
 )
 
@@ -33,6 +36,8 @@ const (
 
 // OrganizationsAPI is the implementation for /organizations root endpoint
 type OrganizationsAPI struct {
+	PhonenumberValidationService  *validation.IYOPhonenumberValidationService
+	EmailAddressValidationService *validation.IYOEmailAddressValidationService
 }
 
 // byGlobalID implements sort.Interface for []Organization based on
@@ -260,10 +265,8 @@ func (api OrganizationsAPI) UpdateOrganization(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(oldOrg)
 }
 
-// AddOrganizationMember Assign a member to organization
-// It is handler for POST /organizations/{globalid}/members
-func (api OrganizationsAPI) AddOrganizationMember(w http.ResponseWriter, r *http.Request) {
-	globalid := mux.Vars(r)["globalid"]
+func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, role string) {
+	globalId := mux.Vars(r)["globalid"]
 
 	var s searchMember
 
@@ -271,75 +274,110 @@ func (api OrganizationsAPI) AddOrganizationMember(w http.ResponseWriter, r *http
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	searchString := s.SearchString
 
 	orgMgr := organization.NewManager(r)
-
-	org, err := orgMgr.GetByName(globalid)
+	isEmailAddress := user.ValidateEmailAddress(searchString)
+	isPhoneNumber := user.ValidatePhoneNumber(searchString)
+	org, err := orgMgr.GetByName(globalId)
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
 		} else {
 			handleServerError(w, "getting organization", err)
 		}
 		return
 	}
 
-	// Check if user exists
-	u, err := SearchUser(r, s.SearchString)
-	if err != nil {
-		if err != mgo.ErrNotFound {
-			log.Error(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	u, err := SearchUser(r, searchString)
+	if err == mgo.ErrNotFound {
+		if !isEmailAddress && !isPhoneNumber {
+			writeErrorResponse(w, http.StatusNotFound, "user_not_found")
 			return
 		}
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	} else {
+		handleServerError(w, "searching for user", err)
 		return
 	}
-	for _, membername := range org.Members {
-		if membername == u.Username {
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-			return
+	username := ""
+	emailAddress := ""
+	code := ""
+	phoneNumber := ""
+	var method invitations.InviteMethod = invitations.MethodWebsite
+	if u == nil {
+		randombytes := make([]byte, 9) //Multiple of 3 to make sure no padding is added
+		rand.Read(randombytes)
+		code = base64.URLEncoding.EncodeToString(randombytes)
+		if isEmailAddress {
+			emailAddress = searchString
+			method = invitations.MethodEmail
+		} else if isPhoneNumber {
+			phoneNumber = searchString
+			method = invitations.MethodPhone
+		}
+	} else {
+		username = u.Username
+		if role == invitations.RoleMember {
+			for _, membername := range org.Members {
+				if membername == u.Username {
+					http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+					return
+				}
+			}
+		}
+		for _, memberName := range org.Owners {
+			if memberName == username {
+				http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+				return
+			}
 		}
 	}
-
-	for _, membername := range org.Owners {
-		if membername == u.Username {
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-			return
-		}
-	}
-
 	// Create JoinRequest
 	invitationMgr := invitations.NewInvitationManager(r)
-	count, err := invitationMgr.CountByOrganization(globalid)
+	count, err := invitationMgr.CountByOrganization(globalId)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if count >= MAX_AMOUNT_INVITATIONS_PER_ORGANIZATION {
-		log.Error("Reached invitation limit for organization ", globalid)
+		log.Error("Reached invitation limit for organization ", globalId)
 		writeErrorResponse(w, 422, "max_amount_of_invitations_reached")
 		return
 	}
+
 	orgReq := &invitations.JoinOrganizationInvitation{
-		Role:         invitations.RoleMember,
-		Organization: globalid,
-		User:         u.Username,
+		Role:         invitations.RoleOwner,
+		Organization: globalId,
+		User:         username,
 		Status:       invitations.RequestPending,
 		Created:      db.DateTime(time.Now()),
+		Method:       method,
+		EmailAddress: emailAddress,
+		PhoneNumber:  phoneNumber,
+		Code:         code,
 	}
 
 	if err := invitationMgr.Save(orgReq); err != nil {
-		log.Error("Error inviting member: ", err.Error())
+		log.Error("Error inviting owner: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = api.sendInvite(r, orgReq)
+	if handleServerError(w, "sending organization invite", err) {
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-
 	json.NewEncoder(w).Encode(orgReq)
+}
+
+// AddOrganizationMember Assign a member to organization
+// It is handler for POST /organizations/{globalid}/members
+func (api OrganizationsAPI) AddOrganizationMember(w http.ResponseWriter, r *http.Request) {
+	api.inviteUser(w, r, invitations.RoleMember)
 }
 
 func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, r *http.Request) {
@@ -483,60 +521,19 @@ func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *h
 
 // AddOrganizationOwner It is handler for POST /organizations/{globalid}/owners
 func (api OrganizationsAPI) AddOrganizationOwner(w http.ResponseWriter, r *http.Request) {
-	globalid := mux.Vars(r)["globalid"]
+	api.inviteUser(w, r, invitations.RoleOwner)
+}
 
-	var s searchMember
-
-	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
+func (api OrganizationsAPI) sendInvite(r *http.Request, organizationRequest *invitations.JoinOrganizationInvitation) error {
+	switch organizationRequest.Method {
+	case invitations.MethodWebsite:
+		return nil
+	case invitations.MethodEmail:
+		return api.EmailAddressValidationService.SendOrganizationInviteEmail(r, organizationRequest)
+	case invitations.MethodPhone:
+		return api.PhonenumberValidationService.SendOrganizationInviteSms(r, organizationRequest)
 	}
-
-	orgMgr := organization.NewManager(r)
-
-	org, err := orgMgr.GetByName(globalid)
-	if err != nil {
-		if err == mgo.ErrNotFound {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		} else {
-			handleServerError(w, "getting organization", err)
-		}
-		return
-	}
-
-	u, err := SearchUser(r, s.SearchString)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-	for _, membername := range org.Owners {
-		if membername == u.Username {
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-			return
-		}
-	}
-	// Create JoinRequest
-	invitationMgr := invitations.NewInvitationManager(r)
-
-	orgReq := &invitations.JoinOrganizationInvitation{
-		Role:         invitations.RoleOwner,
-		Organization: globalid,
-		User:         u.Username,
-		Status:       invitations.RequestPending,
-		Created:      db.DateTime(time.Now()),
-	}
-
-	if err := invitationMgr.Save(orgReq); err != nil {
-		log.Error("Error inviting owner: ", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	json.NewEncoder(w).Encode(orgReq)
+	return nil
 }
 
 // RemoveOrganizationOwner Remove a member from organization

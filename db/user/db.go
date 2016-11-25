@@ -88,6 +88,12 @@ func (m *Manager) GetByName(username string) (*User, error) {
 	if user.EmailAddresses == nil {
 		user.EmailAddresses = []EmailAddress{}
 	}
+	if user.DigitalWallet == nil {
+		user.DigitalWallet = []DigitalAssetAddress{}
+	}
+	if user.PublicKeys == nil {
+		user.PublicKeys = []PublicKey{}
+	}
 
 	return &user, err
 }

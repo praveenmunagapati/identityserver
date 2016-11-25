@@ -78,7 +78,7 @@
 
         function getLogo(globalid) {
             var url = '/api/organizations/' + encodeURIComponent(globalid) + '/logo';
-            return genericHttpCall($http.get, url)
+            return genericHttpCall($http.get, url);
         }
     }
 })();

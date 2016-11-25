@@ -57,7 +57,7 @@
                     var ctx = c.getContext("2d");
                     ctx.clearRect(0, 0, c.width, c.height);
                     ctx.drawImage(img, 0, 0, c.width, c.height);
-                }
+                };
                 img.src = vm.logo;
             }
         }

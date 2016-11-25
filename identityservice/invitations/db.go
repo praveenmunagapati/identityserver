@@ -96,3 +96,25 @@ func (o *InvitationManager) CountByOrganization(globalid string) (int, error) {
 	count, err := o.collection.Find(bson.M{"organization": globalid}).Count()
 	return count, err
 }
+
+// GetByCode Gets an invite by code
+func (o *InvitationManager) GetByCode(code string) (invite *JoinOrganizationInvitation, err error) {
+	qry := bson.M{
+		"code": code,
+	}
+	err = o.collection.Find(qry).One(&invite)
+	return
+}
+
+// SetAcceptedByCode Sets an invite as "accepted"
+func (o *InvitationManager) SetAcceptedByCode(code string) error {
+	qry := bson.M{
+		"code": code,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"status": RequestAccepted,
+		},
+	}
+	return o.collection.Update(qry, update)
+}

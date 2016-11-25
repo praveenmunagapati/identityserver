@@ -22,7 +22,7 @@
         }
 
         function register(twoFAMethod, login, email, password, totpcode, sms, redirectparams) {
-            var url = '/register';
+            var url = '/register?' + redirectparams;
             var data = {
                 twofamethod: twoFAMethod,
                 login: login.trim(),

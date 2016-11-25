@@ -95,8 +95,18 @@ func (u *User) GetPublicKeyByLabel(label string) (publicKey PublicKey, err error
 	return
 }
 
-func ValidateUsername(username string) (valid bool) {
+func ValidateUsername(username string) bool {
 	regex, _ := regexp.Compile(`^[a-z0-9\s-_]+$`)
 	matches := regex.FindAllString(username, 2)
 	return len(matches) == 1
+}
+
+func ValidatePhoneNumber(phoneNumber string) bool {
+	regex := regexp.MustCompile(`^\+[0-9 ]*$`)
+	return regex.MatchString(phoneNumber)
+}
+
+func ValidateEmailAddress(emailAddress string) bool {
+	regex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+	return regex.MatchString(emailAddress)
 }

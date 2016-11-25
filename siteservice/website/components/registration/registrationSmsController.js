@@ -11,13 +11,13 @@
 
         $timeout(checkconfirmation, 1000);
         function checkconfirmation() {
-            $http.get('register/smsconfirmed').then(
+            $http.get('register/smsconfirmed' + $window.location.search).then(
                 function success(response) {
                     vm.smsconfirmation = response.data;
-                    if (!response.data.confirmed) {
-                        $timeout(checkconfirmation, 1000);
-                    } else {
+                    if (response.data.confirmed) {
                         submit();
+                    } else {
+                        $timeout(checkconfirmation, 1000);
                     }
                 },
                 function failed() {
@@ -31,7 +31,7 @@
                 smscode: vm.smscode
             };
             $http
-                .post('register/smsconfirmation', data)
+                .post('register/smsconfirmation' + $window.location.search, data)
                 .then(function (response) {
                     $cookies.remove('registrationdetails');
                     $window.location.href = response.data.redirecturl;

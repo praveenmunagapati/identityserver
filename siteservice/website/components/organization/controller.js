@@ -497,7 +497,7 @@
 
     function InvitationDialogController($scope, $mdDialog, organization, OrganizationService, UserDialogService) {
 
-        $scope.role = "member";
+        $scope.role = "members";
 
         $scope.cancel = cancel;
         $scope.invite = invite;

@@ -90,7 +90,7 @@
         }
 
         function invite(globalid, searchString, role) {
-            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + encodeURIComponent(role) + 's';
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + encodeURIComponent(role);
 
             return $http
                 .post(url, {searchstring: searchString})

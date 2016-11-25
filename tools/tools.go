@@ -20,16 +20,17 @@ func GenerateRandomString() (randomString string, err error) {
 }
 
 func RenderTemplate(templateName string, data interface{}) (message string, err error) {
-	log.Debug(templateName, data)
+	log.Debug("Email template: ", templateName)
+	log.Debug("Email Data: ", data)
 	htmlData, err := templates.Asset(templateName)
 	if err != nil {
-		log.Error(err)
+		log.Error("Could not get email asset: ", err)
 		return
 	}
 	templateEngine := template.New("template")
 	templateEngine, err = templateEngine.Parse(string(htmlData))
 	if err != nil {
-		log.Error(err)
+		log.Error("Could parse template: ", err)
 		return
 	}
 	buf := new(bytes.Buffer)

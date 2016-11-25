@@ -5,6 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/db/validation"
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/tools"
 	"net/http"
 	"net/url"
@@ -16,7 +17,7 @@ const (
 
 //EmailService is the interface for an email communication channel, should be used by the IYOEmailAddressValidationService
 type EmailService interface {
-	Send(receipients []string, subject string, message string) (err error)
+	Send(recipients []string, subject string, message string) (err error)
 }
 
 //IYOEmailAddressValidationService is the itsyou.online implementation of a EmailAddressValidationService
@@ -24,7 +25,7 @@ type IYOEmailAddressValidationService struct {
 	EmailService EmailService
 }
 
-//RequestValidation validates the email address by sending an EMail
+//RequestValidation validates the email address by sending an email
 func (service *IYOEmailAddressValidationService) RequestValidation(request *http.Request, username string, email string, confirmationurl string) (key string, err error) {
 	valMngr := validation.NewManager(request)
 	info, err := valMngr.NewEmailAddressValidationInformation(username, email)
@@ -96,6 +97,34 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 	}
 	go service.EmailService.Send(emails, "ItsYou.Online password reset", message)
 	key = token.Token
+	return
+}
+
+//SendOrganizationInviteEmail Sends an organization invite email
+func (service *IYOEmailAddressValidationService) SendOrganizationInviteEmail(request *http.Request, invite *invitations.JoinOrganizationInvitation) (err error) {
+	inviteUrl := fmt.Sprintf(invitations.InviteUrl, request.Host, url.QueryEscape(invite.Code))
+	templateParameters := struct {
+		Url        string
+		Username   string
+		Title      string
+		Text       string
+		ButtonText string
+		Reason     string
+	}{
+		Url:        inviteUrl,
+		Username:   invite.EmailAddress,
+		Title:      "It's You Online organization invitation",
+		Text:       fmt.Sprintf("You have been invited to the %s organization on It's You Online. Click the button below to accept the invitation.", invite.Organization),
+		ButtonText: "Accept invitation",
+		Reason:     "You’re receiving this email because someone invited you to an organization at ItsYou.Online. If you think this was a mistake please ignore this email.",
+	}
+	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
+	if err != nil {
+		return
+	}
+	subject := fmt.Sprintf("You have been invited to the %s organization", invite.Organization)
+	recipients := []string{invite.EmailAddress}
+	go service.EmailService.Send(recipients, subject, message)
 	return
 }
 
