@@ -290,20 +290,37 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 }
 #slide3 .content { background: rgba(72, 72, 72, 0.2); }
 #slide5 .content { background: rgba(175, 175, 175, 0.2); }
-#slide7 {background: url(../img/bg.png) repeat;height: 120px;padding: 49px 0 0 0;}
+
+#slide7 {
+    height: 120px;
+    padding: 49px 0 0 0;
+}
 #slide7.footer {
     background: none;
 }
-.doc a {background: url(../img/button1.png) no-repeat center center;width: 315px;float: left;margin: 0;color: #FFF;text-decoration: none; font-family: arial, sans-serif;padding: 24px 0;text-align: center;}
 
-.text-center {
-    text-align: center;
-    margin: 0 auto;
+.homepage h2 {
+    text-shadow: 2px 2px #3C3C3C;
 }
-.doc2 a {background-image: url(../img/button2.png);padding: 24px 0 24px 5px;}
-.doc3 a {background-image: url(../img/button3.png);padding: 24px 0 24px 5px;}
-.doc a:hover { opacity: 0.9;}
-.github-link {padding-left: 35px;}
+
+.homepage #slide7 {
+    background-color: #ededed;
+}
+
+.homepage .footer-button {
+    background-color: rgb(77, 115, 138);
+    color: rgba(255, 255, 255, 0.87);
+}
+
+.footer-button {
+    width: 250px;
+    height: 60px;
+}
+
+.footer-button-icon {
+    font-size: 28px;
+    margin-right: 15px;
+}
 
 .sign-wrap {
     margin-top: 15px;
@@ -364,10 +381,6 @@ md-select.md-default-theme:not([disabled]):focus ._md-select-value, md-select:no
   margin: 20px 6px 0 0;
 }
 
-.header-sign-wrap i:active {
-  color: rgba(48, 145, 187);
-}
-
 .homepage .sign-wrap {
     float: right;
     margin-top: 31px;
@@ -394,7 +407,6 @@ md-select.md-default-theme:not([disabled]):focus ._md-select-value, md-select:no
 .tree ul {
     padding-top: 20px;
     position: relative;
-
     transition: all 0.5s;
     -webkit-transition: all 0.5s;
     -moz-transition: all 0.5s;
@@ -406,7 +418,6 @@ md-select.md-default-theme:not([disabled]):focus ._md-select-value, md-select:no
     list-style-type: none;
     position: relative;
     padding: 20px 5px 0 5px;
-
     transition: all 0.5s;
     -webkit-transition: all 0.5s;
     -moz-transition: all 0.5s;
@@ -496,11 +507,13 @@ md-select.md-default-theme:not([disabled]):focus ._md-select-value, md-select:no
 }
 
 /*Connector styles on hover*/
+/*noinspection CssOptimizeSimilarProperties*/
 .tree li a:hover + ng-include ul li::after,
 .tree li a:hover + ng-include ul li::before,
 .tree li a:hover + ng-include ul::before,
 .tree li a:hover + ng-include ul ul::before {
-    border: 2px #94a0b4;
+    border-color: #94a0b4;
+    border-width: 2px;
 }
 
 .tree .active-organization > a {
@@ -631,10 +644,6 @@ md-select.md-default-theme:not([disabled]):focus ._md-select-value, md-select:no
     cursor: pointer;
 }
 
-#profilemenu:hover, #profilemenu:active, #profilemenu:a {
-    color: rgba(255, 0, 0, 0.5);
-}
-
 .list-item-secondary-button-padding p {
     padding-right: 120px;
 }
@@ -658,4 +667,8 @@ md-select.md-default-theme:not([disabled]):focus ._md-select-value, md-select:no
 
 p.verified {
     margin-right: 20px;
+}
+
+.validation-error {
+    color: rgb(221, 44, 0);
 }

@@ -25,9 +25,8 @@ type AuthorizationMap struct {
 }
 
 type DigitalWalletAuthorization struct {
-	RequestedLabel string `json:"requestedlabel"`
-	RealLabel      string `json:"reallabel"`
-	Currency       string `json:"currency"`
+	AuthorizationMap
+	Currency string `json:"currency"`
 }
 
 //FilterAuthorizedScopes filters the requested scopes to the ones this Authorization covers
@@ -40,7 +39,7 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 		}
 		if strings.HasPrefix(scope, "user:memberof:") {
 			requestedorgid := strings.TrimPrefix(scope, "user:memberof:")
-			if authorization.containsOrganization(requestedorgid) {
+			if authorization.ContainsOrganization(requestedorgid) {
 				authorizedScopes = append(authorizedScopes, scope)
 			}
 		}
@@ -50,22 +49,22 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 		if scope == "user:facebook" && authorization.Facebook {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:address") && labelledPropertyIsAuthorized(scope, "user:address", authorization.Addresses) {
+		if strings.HasPrefix(scope, "user:address") && LabelledPropertyIsAuthorized(scope, "user:address", authorization.Addresses) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:bankaccount") && labelledPropertyIsAuthorized(scope, "user:bankaccount", authorization.BankAccounts) {
+		if strings.HasPrefix(scope, "user:bankaccount") && LabelledPropertyIsAuthorized(scope, "user:bankaccount", authorization.BankAccounts) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:digitalwalletaddress") && digitalWalletIsAuthorized(scope, "user:digitalwalletaddress", authorization.DigitalWallet) {
+		if strings.HasPrefix(scope, "user:digitalwalletaddress") && DigitalWalletIsAuthorized(scope, "user:digitalwalletaddress", authorization.DigitalWallet) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:email") && labelledPropertyIsAuthorized(scope, "user:email", authorization.EmailAddresses) {
+		if strings.HasPrefix(scope, "user:email") && LabelledPropertyIsAuthorized(scope, "user:email", authorization.EmailAddresses) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:phone") && labelledPropertyIsAuthorized(scope, "user:phone", authorization.Phonenumbers) {
+		if strings.HasPrefix(scope, "user:phone") && LabelledPropertyIsAuthorized(scope, "user:phone", authorization.Phonenumbers) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-		if strings.HasPrefix(scope, "user:publickey") && labelledPropertyIsAuthorized(scope, "user:publickey", authorization.PublicKeys) {
+		if strings.HasPrefix(scope, "user:publickey") && LabelledPropertyIsAuthorized(scope, "user:publickey", authorization.PublicKeys) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
 	}
@@ -73,7 +72,7 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 	return
 }
 
-func (authorization Authorization) containsOrganization(globalid string) bool {
+func (authorization Authorization) ContainsOrganization(globalid string) bool {
 	for _, orgid := range authorization.Organizations {
 		if orgid == globalid {
 			return true
@@ -82,8 +81,8 @@ func (authorization Authorization) containsOrganization(globalid string) bool {
 	return false
 }
 
-//labelledPropertyIsAuthorized checks if a labelled property is authorized
-func labelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLabels []AuthorizationMap) (authorized bool) {
+// LabelledPropertyIsAuthorized checks if a labelled property is authorized
+func LabelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLabels []AuthorizationMap) (authorized bool) {
 	if authorizedLabels == nil {
 		return
 	}
@@ -103,8 +102,8 @@ func labelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLa
 	return
 }
 
-//digitalWalletIsAuthorized checks if a digital wallet is authorized
-func digitalWalletIsAuthorized(scope string, scopePrefix string, authorizedLabels []DigitalWalletAuthorization) (authorized bool) {
+// DigitalWalletIsAuthorized checks if a digital wallet is authorized
+func DigitalWalletIsAuthorized(scope string, scopePrefix string, authorizedLabels []DigitalWalletAuthorization) (authorized bool) {
 	if authorizedLabels == nil {
 		return
 	}

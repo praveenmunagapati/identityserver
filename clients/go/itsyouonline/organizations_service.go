@@ -65,6 +65,19 @@ func (s *OrganizationsService) DeleteOrganization(globalid string, headers, quer
 	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid, headers, queryParams)
 }
 
+// Get the 2FA validity time for the organization, in seconds
+func (s *OrganizationsService) Get2faValidityTime(globalid string, headers, queryParams map[string]interface{}) (int, *http.Response, error) {
+	var u int
+
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/2fa/validity", headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
 // Update the 2FA validity time for the organization
 func (s *OrganizationsService) Set2faValidityTime(globalid string, int int, headers, queryParams map[string]interface{}) (*http.Response, error) {
 
@@ -77,11 +90,11 @@ func (s *OrganizationsService) Set2faValidityTime(globalid string, int int, head
 	return resp, nil
 }
 
-// Get the 2FA validity time for the organization, in seconds
-func (s *OrganizationsService) Get2faValidityTime(globalid string, headers, queryParams map[string]interface{}) (int, *http.Response, error) {
-	var u int
+// Get the list of active api keys.
+func (s *OrganizationsService) GetOrganizationAPIKeyLabels(globalid string, headers, queryParams map[string]interface{}) ([]string, *http.Response, error) {
+	var u []string
 
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/2fa/validity", headers, queryParams)
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/apikeys", headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -103,11 +116,10 @@ func (s *OrganizationsService) CreateNewOrganizationAPIKey(globalid string, orga
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Get the list of active api keys.
-func (s *OrganizationsService) GetOrganizationAPIKeyLabels(globalid string, headers, queryParams map[string]interface{}) ([]string, *http.Response, error) {
-	var u []string
+func (s *OrganizationsService) GetOrganizationAPIKey(label, globalid string, headers, queryParams map[string]interface{}) (OrganizationAPIKey, *http.Response, error) {
+	var u OrganizationAPIKey
 
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/apikeys", headers, queryParams)
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/apikeys/"+label, headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -126,18 +138,6 @@ func (s *OrganizationsService) UpdateOrganizationAPIKey(label, globalid string, 
 	defer resp.Body.Close()
 
 	return resp, nil
-}
-
-func (s *OrganizationsService) GetOrganizationAPIKey(label, globalid string, headers, queryParams map[string]interface{}) (OrganizationAPIKey, *http.Response, error) {
-	var u OrganizationAPIKey
-
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/apikeys/"+label, headers, queryParams)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
 // Removes an API key
@@ -184,6 +184,12 @@ func (s *OrganizationsService) CreateOrganizationDNS(dnsname, globalid string, o
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Removes a DNS name
+func (s *OrganizationsService) DeleteOrganizaitonDNS(dnsname, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/dns/"+dnsname, headers, queryParams)
+}
+
 // Updates an existing DNS name associated with an organization
 func (s *OrganizationsService) UpdateOrganizationDNS(dnsname, globalid string, organizationsglobaliddnsdnsnameputreqbody OrganizationsGlobalidDnsDnsnamePutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 
@@ -194,12 +200,6 @@ func (s *OrganizationsService) UpdateOrganizationDNS(dnsname, globalid string, o
 	defer resp.Body.Close()
 
 	return resp, nil
-}
-
-// Removes a DNS name
-func (s *OrganizationsService) DeleteOrganizaitonDNS(dnsname, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/dns/"+dnsname, headers, queryParams)
 }
 
 // Get the list of pending invitations for users to join this organization.
@@ -221,12 +221,6 @@ func (s *OrganizationsService) RemovePendingOrganizationInvitation(username, glo
 	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/invitations/"+username, headers, queryParams)
 }
 
-// Removes the Logo from an organization
-func (s *OrganizationsService) DeleteOrganizationLogo(globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/logo", headers, queryParams)
-}
-
 // Set the organization Logo for the organization
 func (s *OrganizationsService) SetOrganizationLogo(globalid string, organizationsglobalidlogoputreqbody OrganizationsGlobalidLogoPutReqBody, headers, queryParams map[string]interface{}) (string, *http.Response, error) {
 	var u string
@@ -238,6 +232,12 @@ func (s *OrganizationsService) SetOrganizationLogo(globalid string, organization
 	defer resp.Body.Close()
 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Removes the Logo from an organization
+func (s *OrganizationsService) DeleteOrganizationLogo(globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/logo", headers, queryParams)
 }
 
 // Get the Logo from an organization
@@ -285,6 +285,55 @@ func (s *OrganizationsService) RemoveOrganizationMember(username, globalid strin
 	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/members/"+username, headers, queryParams)
 }
 
+// Update the membership status of an organization
+func (s *OrganizationsService) UpdateOrganizationOrgMemberShip(globalid string, organizationsglobalidorgmembersputreqbody OrganizationsGlobalidOrgmembersPutReqBody, headers, queryParams map[string]interface{}) (OrganizationsGlobalidOrgmembersPutRespBody, *http.Response, error) {
+	var u OrganizationsGlobalidOrgmembersPutRespBody
+
+	resp, err := s.client.doReqWithBody("PUT", s.client.BaseURI+"/organizations/"+globalid+"/orgmembers", &organizationsglobalidorgmembersputreqbody, headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Add another organization as a member of this one
+func (s *OrganizationsService) SetOrgMember(globalid string, organizationsglobalidorgmemberspostreqbody OrganizationsGlobalidOrgmembersPostReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
+
+	resp, err := s.client.doReqWithBody("POST", s.client.BaseURI+"/organizations/"+globalid+"/orgmembers", &organizationsglobalidorgmemberspostreqbody, headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
+}
+
+// Remove an organization as a member
+func (s *OrganizationsService) DeleteOrgMember(globalid2, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/orgmembers/"+globalid2, headers, queryParams)
+}
+
+// Add another organization as an owner of this one
+func (s *OrganizationsService) SetOrgOwner(globalid string, organizationsglobalidorgownerspostreqbody OrganizationsGlobalidOrgownersPostReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
+
+	resp, err := s.client.doReqWithBody("POST", s.client.BaseURI+"/organizations/"+globalid+"/orgowners", &organizationsglobalidorgownerspostreqbody, headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
+}
+
+// Remove an organization as an owner
+func (s *OrganizationsService) DeleteOrgOwner(globalid2, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/orgowners/"+globalid2, headers, queryParams)
+}
+
 // Invite a user to become owner of an organization.
 func (s *OrganizationsService) AddOrganizationOwner(globalid string, member Member, headers, queryParams map[string]interface{}) (Member, *http.Response, error) {
 	var u Member
@@ -330,12 +379,6 @@ func (s *OrganizationsService) AddOrganizationRegistryEntry(globalid string, reg
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Removes a RegistryEntry from the organization's registry
-func (s *OrganizationsService) DeleteOrganizationRegistryEntry(key, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/registry/"+key, headers, queryParams)
-}
-
 // Get a RegistryEntry from the organization's registry.
 func (s *OrganizationsService) GetOrganizationRegistryEntry(key, globalid string, headers, queryParams map[string]interface{}) (RegistryEntry, *http.Response, error) {
 	var u RegistryEntry
@@ -349,10 +392,59 @@ func (s *OrganizationsService) GetOrganizationRegistryEntry(key, globalid string
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Removes a RegistryEntry from the organization's registry
+func (s *OrganizationsService) DeleteOrganizationRegistryEntry(key, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/registry/"+key, headers, queryParams)
+}
+
+// Adds a required scope
+func (s *OrganizationsService) AddRequiredScope(globalid string, requiredscope RequiredScope, headers, queryParams map[string]interface{}) (*http.Response, error) {
+
+	resp, err := s.client.doReqWithBody("POST", s.client.BaseURI+"/organizations/"+globalid+"/requiredscopes", &requiredscope, headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
+}
+
+// Deletes a required scope
+func (s *OrganizationsService) DeleteRequiredScope(requiredscope, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/organizations/"+globalid+"/requiredscopes/"+requiredscope, headers, queryParams)
+}
+
+// Updates a required scope
+func (s *OrganizationsService) UpdateRequiredScope(requiredscope, globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+
+	resp, err := s.client.doReqWithBody("PUT", s.client.BaseURI+"/organizations/"+globalid+"/requiredscopes/"+requiredscope, nil, headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
+}
+
 func (s *OrganizationsService) GetOrganizationTree(globalid string, headers, queryParams map[string]interface{}) ([]OrganizationTreeItem, *http.Response, error) {
 	var u []OrganizationTreeItem
 
 	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/tree", headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Get all users from this organization, not including suborganizations.
+func (s *OrganizationsService) GetOrganizationUsers(globalid string, headers, queryParams map[string]interface{}) (GetOrganizationUsersResponseBody, *http.Response, error) {
+	var u GetOrganizationUsersResponseBody
+
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/users", headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}

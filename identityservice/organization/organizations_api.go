@@ -168,9 +168,7 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	orgMgr := organization.NewManager(r)
 	logoMgr := organization.NewLogoManager(r)
 	count, err := orgMgr.CountByUser(username)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "counting organizations by user", err) {
 		return
 	}
 	if count >= MAX_ORGANIZATIONS_PER_USER {
@@ -180,22 +178,18 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	}
 	err = orgMgr.Create(&org)
 
-	if err != nil && err != db.ErrDuplicate {
-		log.Error(err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
 	if err == db.ErrDuplicate {
 		log.Debug("Duplicate organization")
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
+	if handleServerError(w, "creating organization", err) {
+		return
+	}
 	err = logoMgr.Create(&org)
 
 	if err != nil && err != db.ErrDuplicate {
-		log.Error(err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		handleServerError(w, "creating organization logo", err)
 		return
 	}
 
@@ -1436,6 +1430,160 @@ func (api OrganizationsAPI) DeleteOrgOwner(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// AddRequiredScope is the handler for POST /organizations/{globalid}/requiredscope
+// Adds a required scope
+func (api OrganizationsAPI) AddRequiredScope(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	var requiredScope organization.RequiredScope
+	if err := json.NewDecoder(r.Body).Decode(&requiredScope); err != nil {
+		log.Debug("Error while adding a required scope: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if !requiredScope.IsValid() {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	mgr := organization.NewManager(r)
+	organisation, err := mgr.GetByName(globalId)
+	if err == mgo.ErrNotFound {
+		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
+		return
+	}
+	for _, scope := range organisation.RequiredScopes {
+		if scope.Scope == requiredScope.Scope {
+			writeErrorResponse(w, http.StatusConflict, "required_scope_already_exists")
+			return
+		}
+	}
+	err = mgr.AddRequiredScope(globalId, requiredScope)
+	if err != nil {
+		handleServerError(w, "adding a required scope", err)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
+}
+
+// UpdateRequiredScope is the handler for PUT /organizations/{globalid}/requiredscope/{requiredscope}
+// Updates a required scope
+func (api OrganizationsAPI) UpdateRequiredScope(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	oldRequiredScope := mux.Vars(r)["requiredscope"]
+	var requiredScope organization.RequiredScope
+	if err := json.NewDecoder(r.Body).Decode(&requiredScope); err != nil {
+		log.Debug("Error while updating a required scope: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if !requiredScope.IsValid() {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	mgr := organization.NewManager(r)
+	exists := mgr.Exists(globalId)
+	if !exists {
+		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
+		return
+	}
+	err := mgr.UpdateRequiredScope(globalId, oldRequiredScope, requiredScope)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			writeErrorResponse(w, http.StatusNotFound, "required_scope_not_found")
+		} else {
+			handleServerError(w, "updating a required scope", err)
+		}
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// DeleteRequiredScope is the handler for DELETE /organizations/{globalid}/requiredscope/{requiredscope}
+// Updates a required scope
+func (api OrganizationsAPI) DeleteRequiredScope(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	requiredScope := mux.Vars(r)["requiredscope"]
+	mgr := organization.NewManager(r)
+	if !mgr.Exists(globalId) {
+		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
+		return
+	}
+	err := mgr.DeleteRequiredScope(globalId, requiredScope)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			writeErrorResponse(w, http.StatusNotFound, "required_scope_not_found")
+		} else {
+			handleServerError(w, "removing a required scope", err)
+		}
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// GetOrganizationUsers is the handler for GET /organizations/{globalid}/users
+// Get the list of all users in this organization
+func (api OrganizationsAPI) GetOrganizationUsers(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	orgMgr := organization.NewManager(r)
+	if !orgMgr.Exists(globalId) {
+		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
+		return
+	}
+	authenticatedUser := context.Get(r, "authenticateduser").(string)
+	response := organization.GetOrganizationUsersResponseBody{}
+	isOwner, err := orgMgr.IsOwner(globalId, authenticatedUser)
+	if handleServerError(w, "checking if user is owner of an organization", err) {
+		return
+	}
+	org, err := orgMgr.GetByName(globalId)
+	if handleServerError(w, "getting organization by name", err) {
+		return
+	}
+	roleMap := make(map[string]string)
+	for _, member := range org.Members {
+		roleMap[member] = "members"
+	}
+	for _, member := range org.Owners {
+		roleMap[member] = "owners"
+	}
+	authorizationsMap := make(map[string]user.Authorization)
+	// Only owners can see if there are missing permissions
+	if isOwner {
+		userMgr := user.NewManager(r)
+		authorizations, err := userMgr.GetOrganizationAuthorizations(globalId)
+		if handleServerError(w, "getting organizaton authorizations", err) {
+			return
+		}
+		for _, authorization := range authorizations {
+			authorizationsMap[authorization.Username] = authorization
+		}
+	}
+	users := []organization.OrganizationUser{}
+	for username, role := range roleMap {
+		orgUser := organization.OrganizationUser{
+			Username:      username,
+			Role:          role,
+			MissingScopes: []string{},
+		}
+		if isOwner {
+			for _, requiredScope := range org.RequiredScopes {
+				hasScope := false
+				if authorization, hasKey := authorizationsMap[username]; hasKey {
+					hasScope = requiredScope.IsAuthorized(authorization)
+				} else {
+					hasScope = false
+				}
+				if !hasScope {
+					orgUser.MissingScopes = append(orgUser.MissingScopes, requiredScope.Scope)
+				}
+			}
+		}
+		users = append(users, orgUser)
+	}
+	response.HasEditPermissions = isOwner
+	response.Users = users
+	json.NewEncoder(w).Encode(response)
 }
 
 func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, message string) {

@@ -16,5 +16,5 @@ var (
 func (phonenumber Phonenumber) IsValid() (valid bool) {
 	valid = true
 	valid = valid && len(phonenumber.Phonenumber) < 51
-	return phoneRegex.Match([]byte(phonenumber.Phonenumber))
+	return valid && phoneRegex.Match([]byte(phonenumber.Phonenumber))
 }

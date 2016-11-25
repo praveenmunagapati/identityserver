@@ -103,14 +103,14 @@ func (api UsersAPI) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	usr, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(usr)
 }
 
 func isValidLabel(label string) (valid bool) {
@@ -124,7 +124,7 @@ func isValidLabel(label string) (valid bool) {
 	return valid
 }
 
-func isValidBankAccount(bank user.BankAccount) (valid bool) {
+func isValidBankAccount(bank user.BankAccount) bool {
 	if !isValidLabel(bank.Label) {
 		return false
 	}
@@ -858,19 +858,19 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 	valMgr := validationdb.NewManager(r)
 	force := r.URL.Query().Get("force") == "true"
 
-	user, err := userMgr.GetByName(username)
+	usr, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	number, err := user.GetPhonenumberByLabel(label)
+	number, err := usr.GetPhonenumberByLabel(label)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	last, err := isLastVerifiedPhoneNumber(user, number.Phonenumber, label, r)
+	last, err := isLastVerifiedPhoneNumber(usr, number.Phonenumber, label, r)
 	if err != nil {
 		log.Error("ERROR while checking if number can be deleted:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -893,7 +893,7 @@ func (api UsersAPI) DeletePhonenumber(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if the phonenumber is unique or if there are duplicates
-	uniqueNumber := isUniquePhonenumber(user, number.Phonenumber, label)
+	uniqueNumber := isUniquePhonenumber(usr, number.Phonenumber, label)
 
 	if err := userMgr.RemovePhone(username, label); err != nil {
 		log.Error("ERROR while saving user:\n", err)
@@ -932,20 +932,20 @@ func (api UsersAPI) CreateUserBankAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user, err := userMgr.GetByName(username)
+	usr, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
 	//Check if this label is already used
-	_, err = user.GetBankAccountByLabel(bank.Label)
+	_, err = usr.GetBankAccountByLabel(bank.Label)
 	if err == nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 
-	if err := userMgr.SaveBank(user, bank); err != nil {
+	if err := userMgr.SaveBank(usr, bank); err != nil {
 		log.Error("ERROR while saving address:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -1059,19 +1059,19 @@ func (api UsersAPI) DeleteUserBankAccount(w http.ResponseWriter, r *http.Request
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	usr, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	_, err = user.GetBankAccountByLabel(label)
+	_, err = usr.GetBankAccountByLabel(label)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	if err := userMgr.RemoveBank(user, label); err != nil {
+	if err := userMgr.RemoveBank(usr, label); err != nil {
 		log.Error("ERROR while saving user:\n", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -1130,14 +1130,14 @@ func (api UsersAPI) GetUserAddresses(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	usr, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user.Addresses)
+	json.NewEncoder(w).Encode(usr.Addresses)
 }
 
 // GetUserAddressByLabel is handler for GET /users/{username}/addresses/{label}
@@ -1273,26 +1273,72 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		Approvals        []invitations.JoinOrganizationInvitation `json:"approvals"`
 		ContractRequests []contractdb.ContractSigningRequest      `json:"contractRequests"`
 		Invitations      []invitations.JoinOrganizationInvitation `json:"invitations"`
+		MissingScopes    []organizationDb.MissingScope            `json:"missingscopes"`
 	}
 	var notifications NotificationList
 
 	invititationMgr := invitations.NewInvitationManager(r)
 
 	userOrgRequests, err := invititationMgr.GetByUser(username)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "getting invitations by user", err) {
 		return
 	}
 
 	notifications.Invitations = userOrgRequests
-
 	// TODO: Get Approvals and Contract requests
 	notifications.Approvals = []invitations.JoinOrganizationInvitation{}
 	notifications.ContractRequests = []contractdb.ContractSigningRequest{}
-
+	extraOrganizations := []string{}
+	for _, invitation := range notifications.Invitations {
+		extraOrganizations = append(extraOrganizations, invitation.Organization)
+	}
+	err, notifications.MissingScopes = getMissingScopesForOrganizations(r, username, extraOrganizations)
+	if handleServerError(w, "getting missing scopes", err) {
+		return
+	}
 	w.Header().Set("Content-type", "application/json")
 	json.NewEncoder(w).Encode(&notifications)
+}
 
+func getMissingScopesForOrganizations(r *http.Request, username string, extraOrganizations []string) (error, []organizationDb.MissingScope) {
+	orgMgr := organizationDb.NewManager(r)
+	userMgr := user.NewManager(r)
+	err, organizations := orgMgr.ListByUserOrGlobalID(username, extraOrganizations)
+
+	if err != nil {
+		return err, nil
+	}
+	authorizations, err := userMgr.GetAuthorizationsByUser(username)
+	if err != nil {
+		return err, nil
+	}
+	missingScopes := []organizationDb.MissingScope{}
+	authorizationsMap := make(map[string]user.Authorization)
+	for _, authorization := range authorizations {
+		authorizationsMap[authorization.Username] = authorization
+	}
+	for _, organization := range organizations {
+		scopes := []string{}
+		for _, requiredScope := range organization.RequiredScopes {
+			hasScope := false
+			if authorization, hasKey := authorizationsMap[username]; hasKey {
+				hasScope = requiredScope.IsAuthorized(authorization)
+			} else {
+				hasScope = false
+			}
+			if !hasScope {
+				scopes = append(scopes, requiredScope.Scope)
+			}
+		}
+		if len(scopes) > 0 {
+			missingScope := organizationDb.MissingScope{
+				Scopes:       scopes,
+				Organization: organization.Globalid,
+			}
+			missingScopes = append(missingScopes, missingScope)
+		}
+	}
+	return nil, missingScopes
 }
 
 // usernameorganizationsGet is the handler for GET /users/{username}/organizations
@@ -1328,8 +1374,7 @@ func (api UsersAPI) GetAuthorization(w http.ResponseWriter, r *http.Request) {
 	userMgr := user.NewManager(r)
 
 	authorization, err := userMgr.GetAuthorization(username, grantedTo)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "Getting authorization by user", err) {
 		return
 	}
 	if authorization == nil {
@@ -1338,6 +1383,26 @@ func (api UsersAPI) GetAuthorization(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-type", "application/json")
 	json.NewEncoder(w).Encode(authorization)
+}
+
+func FilterAuthorizationMaps(s []user.AuthorizationMap) []user.AuthorizationMap {
+	var p []user.AuthorizationMap
+	for _, v := range s {
+		if v.RealLabel != "" {
+			p = append(p, v)
+		}
+	}
+	return p
+}
+
+func FilterDigitalWallet(s []user.DigitalWalletAuthorization) []user.DigitalWalletAuthorization {
+	var p []user.DigitalWalletAuthorization
+	for _, v := range s {
+		if v.RealLabel != "" {
+			p = append(p, v)
+		}
+	}
+	return p
 }
 
 // UpdateAuthorization is the handler for PUT /users/{username}/authorizations/{grantedTo}
@@ -1355,6 +1420,12 @@ func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) 
 
 	authorization.Username = username
 	authorization.GrantedTo = grantedTo
+	authorization.Addresses = FilterAuthorizationMaps(authorization.Addresses)
+	authorization.EmailAddresses = FilterAuthorizationMaps(authorization.EmailAddresses)
+	authorization.Phonenumbers = FilterAuthorizationMaps(authorization.Phonenumbers)
+	authorization.BankAccounts = FilterAuthorizationMaps(authorization.BankAccounts)
+	authorization.PublicKeys = FilterAuthorizationMaps(authorization.PublicKeys)
+	authorization.DigitalWallet = FilterDigitalWallet(authorization.DigitalWallet)
 
 	userMgr := user.NewManager(r)
 
@@ -1396,18 +1467,18 @@ func (api UsersAPI) AddAPIKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	apikeyMgr := apikey.NewManager(r)
-	apikey := apikey.NewAPIKey(username, body.Label)
-	apikeyMgr.Save(apikey)
+	apiKey := apikey.NewAPIKey(username, body.Label)
+	apikeyMgr.Save(apiKey)
 	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(apikey)
+	json.NewEncoder(w).Encode(apiKey)
 }
 
 func (api UsersAPI) GetAPIKey(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	apikeyMgr := apikey.NewManager(r)
-	apikey, err := apikeyMgr.GetByUsernameAndLabel(username, label)
+	apiKey, err := apikeyMgr.GetByUsernameAndLabel(username, label)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -1415,7 +1486,7 @@ func (api UsersAPI) GetAPIKey(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(apikey)
+	json.NewEncoder(w).Encode(apiKey)
 }
 
 func (api UsersAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
@@ -1430,13 +1501,13 @@ func (api UsersAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	apikey, err := apikeyMgr.GetByUsernameAndLabel(username, label)
+	apiKey, err := apikeyMgr.GetByUsernameAndLabel(username, label)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	apikey.Label = body.Label
-	apikeyMgr.Save(apikey)
+	apiKey.Label = body.Label
+	apikeyMgr.Save(apiKey)
 	w.WriteHeader(http.StatusNoContent)
 
 }
@@ -1482,7 +1553,7 @@ func (api UsersAPI) AddPublicKey(w http.ResponseWriter, r *http.Request) {
 
 	mgr := user.NewManager(r)
 
-	user, err := mgr.GetByName(username)
+	usr, err := mgr.GetByName(username)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -1493,7 +1564,7 @@ func (api UsersAPI) AddPublicKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = user.GetPublicKeyByLabel(body.Label)
+	_, err = usr.GetPublicKeyByLabel(body.Label)
 	if err == nil {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
@@ -1604,13 +1675,13 @@ func (api UsersAPI) DeletePublicKey(w http.ResponseWriter, r *http.Request) {
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
 
-	user, err := userMgr.GetByName(username)
+	usr, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	_, err = user.GetPublicKeyByLabel(label)
+	_, err = usr.GetPublicKeyByLabel(label)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -1911,4 +1982,13 @@ func writeErrorResponse(responseWrite http.ResponseWriter, httpStatusCode int, m
 	}
 	responseWrite.WriteHeader(httpStatusCode)
 	json.NewEncoder(responseWrite).Encode(&errorResponse)
+}
+
+func handleServerError(responseWriter http.ResponseWriter, actionText string, err error) bool {
+	if err != nil {
+		log.Error("Users api: Error while "+actionText, " - ", err)
+		http.Error(responseWriter, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return true
+	}
+	return false
 }

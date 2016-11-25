@@ -37,6 +37,9 @@
         vm.canEditRole = canEditRole;
         vm.showLeaveOrganization = showLeaveOrganization;
         vm.showLogoDialog = showLogoDialog;
+        vm.getSharedScopeString = getSharedScopeString;
+        vm.showRequiredScopeDialog = showRequiredScopeDialog;
+        vm.showMissingScopesDialog = showMissingScopesDialog;
 
         activate();
 
@@ -51,8 +54,7 @@
                     function(data) {
                         vm.organization = data;
                         vm.childOrganizationNames = getChildOrganizations(vm.organization.globalid);
-                        vm.hasEditPermission = vm.organization.owners.indexOf($rootScope.user) !== -1;
-                        fetchInvitations();
+                        getUsers();
                     }
                 );
 
@@ -61,7 +63,9 @@
                     vm.organizationRoot.children = [];
                     vm.organizationRoot.children.push(data);
                     var pixelWidth = 200 + getBranchWidth(vm.organizationRoot.children[0]);
-                    document.getElementById('treegraph').style.width = pixelWidth + 'px';
+                    vm.treeGraphStyle = {
+                        'width': pixelWidth + 'px'
+                    };
                 });
 
             OrganizationService.getLogo(globalid).then(
@@ -78,7 +82,6 @@
 
                 var c = document.getElementById("logoview");
                 if (!c) {
-                    console.log("aborting logo render - canvas not loaded");
                     return;
                 }
                 var ctx = c.getContext("2d");
@@ -87,8 +90,8 @@
             }
         }
 
-        function getBranchWidth(branch, rootDepth) {
-            var splitted = branch.globalid.split(".")
+        function getBranchWidth(branch) {
+            var splitted = branch.globalid.split(".");
             var length = splitted[splitted.length - 1].length * 6;
             var spacing = 0;
             if (branch.children.length > 1) {
@@ -173,14 +176,14 @@
             })
             .then(
                 function(data) {
-                  if (data.role === "member") {
-                      if (vm.organization.orgmembers == null) {
+                    if (data.role === 'members') {
+                        if (!vm.organization.orgmembers) {
                           vm.organization.orgmembers = [];
                       }
                       vm.organization.orgmembers.push(data.organization);
                   } else {
-                      if (vm.organization.orgowners == null) {
-                          vm.organization.orgowners = []
+                        if (!vm.organization.orgowners) {
+                            vm.organization.orgowners = [];
                       }
                       vm.organization.orgowners.push(data.organization);
                   }
@@ -329,12 +332,7 @@
         }
 
         function editMember(event, user) {
-            var role = 'members';
-            angular.forEach(['members', 'owners'], function (r) {
-                if (vm.organization[r].indexOf(user) !== -1) {
-                    role = r;
-                }
-            });
+            var username = user.username;
             var changeRoleDialog = {
                 controller: ['$mdDialog', '$translate', 'OrganizationService', 'UserDialogService', 'organization', 'user', 'initialRole', EditOrganizationMemberController],
                 controllerAs: 'ctrl',
@@ -343,8 +341,8 @@
                 fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                 locals: {
                     organization: vm.organization,
-                    user: user,
-                    initialRole: role
+                    user: username,
+                    initialRole: user.role
                 }
             };
 
@@ -353,10 +351,18 @@
                 .then(function (data) {
                     if (data.action === 'edit') {
                         vm.organization = data.data;
+                        var u = vm.users.filter(function (user) {
+                            return user.username === username;
+                        })[0];
+                        u.role = data.newRole;
                     } else if (data.action === 'remove') {
                         var people = vm.organization[data.data.role];
                         people.splice(people.indexOf(data.data.username), 1);
+                        vm.users = vm.users.filter(function (user) {
+                            return user.username !== username;
+                        });
                     }
+                    setUsers();
                 });
         }
 
@@ -423,6 +429,69 @@
                         });
                 })
         }
+
+        function getUsers() {
+            OrganizationService.getUsers(globalid).then(function (response) {
+                vm.users = response.users;
+                vm.hasEditPermission = response.haseditpermissions;
+                setUsers();
+                if (vm.hasEditPermission) {
+                    fetchInvitations();
+                }
+            });
+        }
+
+        function setUsers() {
+            vm.members = vm.users.filter(function (user) {
+                return user.role === 'members';
+            });
+            vm.owners = vm.users.filter(function (user) {
+                return user.role === 'owners';
+            });
+        }
+
+        function getSharedScopeString(scopes) {
+            return scopes.map(function (scope) {
+                return scope.replace('organization:', '');
+            }).join(', ');
+        }
+
+        function showRequiredScopeDialog(event, requiredScope) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            var dialog = {
+                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'requiredScope', RequiredScopesDialogController],
+                controllerAs: 'vm',
+                templateUrl: 'components/organization/views/requiredScopesDialog.html',
+                targetEvent: event,
+                fullscreen: useFullScreen,
+                locals: {
+                    OrganizationService: OrganizationService,
+                    organization: vm.organization.globalid,
+                    $window: $window,
+                    requiredScope: requiredScope
+                }
+            };
+            $mdDialog.show(dialog).then(function (data) {
+                if (data.action === 'create') {
+                    vm.organization.requiredscopes.push(data.requiredScope);
+                }
+                if (data.action === 'update') {
+                    var scope = vm.organization.requiredscopes[vm.organization.requiredscopes.indexOf(requiredScope)];
+                    angular.copy(data.requiredScope, scope);
+                }
+                if (data.action === 'delete') {
+                    vm.organization.requiredscopes.splice(vm.organization.requiredscopes.indexOf(requiredScope), 1);
+                }
+            });
+        }
+
+        function showMissingScopesDialog(event, user) {
+            var title = 'Missing information';
+            var msg = 'This user hasn\'t shared some required information:<br />';
+            msg += user.missingscopes.join('<br />');
+            var closeText = 'Close';
+            UserDialogService.showSimpleDialog(msg, title, closeText, event);
+        }
     }
 
     function getOrganizationDisplayname(globalid) {
@@ -468,9 +537,9 @@
         }
     }
 
-    function AddOrganizationDialogController($scope, $mdDialog, organization, OrganizationService, UserDialogService) {
+    function AddOrganizationDialogController($scope, $mdDialog, organization, OrganizationService) {
 
-        $scope.role = "member";
+        $scope.role = "members";
 
         $scope.organization = organization;
 
@@ -486,7 +555,7 @@
         function addOrganization(searchString, role){
             $scope.validationerrors = {};
             OrganizationService.addOrganization(organization, searchString, role).then(
-                function(data){
+                function(){
                     $mdDialog.hide({organization: searchString,role: role});
                 },
                 function(reason){
@@ -675,7 +744,7 @@
             OrganizationService
                 .updateMembership(organization.globalid, ctrl.user, ctrl.role)
                 .then(function (data) {
-                    $mdDialog.hide({action: 'edit', data: data});
+                    $mdDialog.hide({action: 'edit', data: data, newRole: ctrl.role});
                 }, function () {
                     $translate(['organization.controller.cantchangerole']).then(function(translations){
                         UserDialogService.showSimpleDialog(translations['organization.controller.cantchangerole'], 'Error', 'ok', event);
@@ -742,16 +811,17 @@
             function(data) {
                 $scope.logo = data.logo;
                 makeFileDrop();
-                if ($scope.logo !== "") {
-                    var img = new Image()
+                var c;
+                if ($scope.logo) {
+                    var img = new Image();
                     img.src = $scope.logo;
 
-                    var c = document.getElementById("logo-upload-preview");
+                    c = document.getElementById("logo-upload-preview");
                     var ctx = c.getContext("2d");
                     ctx.clearRect(0, 0, c.width, c.height);
                     ctx.drawImage(img, 0, 0);
                 } else {
-                    var c = document.getElementById("logo-upload-preview");
+                    c = document.getElementById("logo-upload-preview");
                     c.className += " dirty-background";
                 }
             }
@@ -817,9 +887,9 @@
                 }
 
                 $scope.dataurl = c.toDataURL();
-                // forces the update button after a file drop, migh fix safari issues?
+                // forces the update button after a file drop, might fix safari issues?
                 $scope.$digest();
-            }
+            };
 
         }
 
@@ -833,7 +903,7 @@
             }
             $scope.validationerrors = {};
             OrganizationService.setLogo(organization, logo).then(
-                function (data) {
+                function () {
                     $mdDialog.hide({logo: logo});
                 },
                 function (reason) {
@@ -862,6 +932,96 @@
                 element.bind('change', onChangeHandler);
             }
         };
+    }
+
+    function RequiredScopesDialogController($scope, $mdDialog, organization, OrganizationService, requiredScope) {
+        var vm = this;
+        vm.scopeDocumentationUrl = 'https://gig.gitbooks.io/itsyouonline/content/oauth2/availableScopes.html';
+        var allAccessScopes = ['organization:owner', 'organization:member'];
+        vm.organization = organization;
+        vm.requiredScope = requiredScope ? JSON.parse(JSON.stringify(requiredScope)) : {
+            scope: '',
+            accessscopes: []
+        };
+        vm.originalScope = requiredScope ? requiredScope.scope : null;
+
+        vm.accessScopes = allAccessScopes.map(function (scope) {
+            return {
+                checked: vm.requiredScope.accessscopes.indexOf(scope) !== -1,
+                scope: scope
+            };
+        });
+
+        vm.cancel = cancel;
+        vm.validationerrors = {};
+        vm.create = create;
+        vm.update = update;
+        vm.remove = remove;
+        vm.allowedScopesChanged = allowedScopesChanged;
+
+
+        function allowedScopesChanged() {
+            vm.requiredScope.accessscopes = vm.accessScopes.filter(function (scope) {
+                return scope.checked;
+            }).map(function (scope) {
+                return scope.scope;
+            });
+        }
+
+        function cancel() {
+            $mdDialog.cancel();
+        }
+
+        function create() {
+            if (!vm.form.$valid) {
+                return;
+            }
+            vm.showPleaseSelectAccessScope = vm.requiredScope.accessscopes.length === 0;
+            if (vm.showPleaseSelectAccessScope) {
+                return;
+            }
+            vm.validationerrors = {};
+            OrganizationService.createRequiredScope(organization, vm.requiredScope).then(
+                function () {
+                    $mdDialog.hide({action: 'create', requiredScope: vm.requiredScope});
+                },
+                function (reason) {
+                    if (reason.status === 409) {
+                        vm.validationerrors.duplicate = true;
+                    }
+                }
+            );
+        }
+
+        function update() {
+            if (!vm.form.$valid) {
+                return;
+            }
+            vm.showPleaseSelectAccessScope = vm.requiredScope.accessscopes.length === 0;
+            if (vm.showPleaseSelectAccessScope) {
+                return;
+            }
+            vm.validationerrors = {};
+            OrganizationService.updateRequiredScope(organization, vm.originalScope, vm.requiredScope).then(
+                function () {
+                    $mdDialog.hide({action: 'update', requiredScope: vm.requiredScope});
+                },
+                function (reason) {
+                    if (reason.status === 409) {
+                        vm.validationerrors.duplicate = true;
+                    }
+                }
+            );
+        }
+
+
+        function remove() {
+            $scope.validationerrors = {};
+            OrganizationService.deleteRequiredScope(organization, vm.originalScope)
+                .then(function () {
+                    $mdDialog.hide({action: 'delete'});
+                });
+        }
     }
 
 })();

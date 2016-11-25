@@ -255,10 +255,19 @@ func (m *Manager) GetAuthorizationsByUser(username string) (authorizations []Aut
 	return
 }
 
-//GetAuthorization returns the authorization for a specific organization, nil if no such auhorization exists
+// GetOrganizationAuthorizations returns all authorizations for a specific organization
+func (m *Manager) GetOrganizationAuthorizations(globalId string) (authorizations []Authorization, err error) {
+	qry := bson.M{"grantedto": globalId}
+	err = m.getAuthorizationCollection().Find(qry).All(&authorizations)
+	if authorizations == nil {
+		authorizations = []Authorization{}
+	}
+	return
+}
+
+//GetAuthorization returns the authorization for a specific organization, nil if no such authorization exists
 func (m *Manager) GetAuthorization(username, organization string) (authorization *Authorization, err error) {
-	authorization = &Authorization{}
-	err = m.getAuthorizationCollection().Find(bson.M{"username": username, "grantedto": organization}).One(authorization)
+	err = m.getAuthorizationCollection().Find(bson.M{"username": username, "grantedto": organization}).One(&authorization)
 	if err == mgo.ErrNotFound {
 		err = nil
 	} else if err != nil {

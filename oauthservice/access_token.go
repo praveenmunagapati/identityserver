@@ -59,6 +59,8 @@ func newAccessToken(username, globalID, clientID, scope string) *AccessToken {
 
 //AccessTokenHandler is the handler of the /v1/oauth/access_token endpoint
 func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
 	err := r.ParseForm()
 	if err != nil {
 		log.Debug("ERROR parsing form: ", err)
@@ -66,10 +68,23 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	var clientID, clientSecret string
 	code := r.FormValue("code")
 	grantType := r.FormValue("grant_type")
-	clientSecret := r.FormValue("client_secret")
-	clientID := r.FormValue("client_id")
+	clientSecret = r.FormValue("client_secret")
+	clientID = r.FormValue("client_id")
+
+	//If clientSecret if missing from form data check if its available as basicauth
+	//See https://tools.ietf.org/html/rfc6749#section-2.3.1
+	if clientSecret == "" {
+		var ok bool
+		clientID, clientSecret, ok = r.BasicAuth()
+		if !ok {
+			log.Debug("clientSecret not found in form data nor basicauth")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+	}
 
 	//Also accept some alternatives
 	if grantType == "authorization_code" {
@@ -121,8 +136,16 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-type", "application/jwt")
-		w.Write([]byte(tokenString))
+
+		// if client could accept JSON we give the token as JSON string
+		// otherwise in plain text
+		if strings.Index(r.Header.Get("Accept"), "application/json") >= 0 {
+			w.Header().Set("Content-type", "application/json")
+			json.NewEncoder(w).Encode(map[string]string{"access_token": tokenString})
+		} else {
+			w.Header().Set("Content-type", "application/jwt")
+			w.Write([]byte(tokenString))
+		}
 		return
 	}
 	mgr.saveAccessToken(at)

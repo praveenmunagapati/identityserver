@@ -34,6 +34,10 @@
         });
         $mdThemingProvider.theme('default')
             .primaryPalette('blueish');
+        $mdThemingProvider.enableBrowserColor({
+            palette: 'primary', // Default is 'primary', any basic material palette and extended palettes are available
+            hue: '800' // Default is '800'
+        });
     }
 
     function httpConfig($httpProvider) {
@@ -180,6 +184,11 @@
             String.prototype.startsWith = function (hashstack, needle) {
                 return haystack.lastIndexOf(needle, 0) === 0;
             };
+        }
+        if (window.location.hostname === 'dev.itsyou.online') {
+            setTimeout(function () {
+                window.location.reload();
+            }, 9 * 60 * 1000);
         }
     }
 })();

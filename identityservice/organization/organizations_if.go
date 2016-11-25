@@ -120,6 +120,18 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// UpdateOrganizationOrgMemberShip is the handler for Put /organizations/globalid/orgmembers
 	// Updates an organizations membership as part of another organization
 	UpdateOrganizationOrgMemberShip(w http.ResponseWriter, r *http.Request)
+	// AddRequiredScope is the handler for POST /organizations/globalid/requiredscopes
+	// Adds a required scope
+	AddRequiredScope(w http.ResponseWriter, r *http.Request)
+	// UpdateRequiredScope is the handler for PUT /organizations/globalid/requiredscopes/{requiredscope}
+	// Updates a required scope
+	UpdateRequiredScope(w http.ResponseWriter, r *http.Request)
+	// DeleteRequiredScope is the handler for DELETE /organizations/globalid/requiredscopes/{requiredscope}
+	// Deletes a required scope
+	DeleteRequiredScope(w http.ResponseWriter, r *http.Request)
+	// GetOrganizationUsers is the handler for GET /organizations/{globalid}/members
+	// Get the list of all users in this organization
+	GetOrganizationUsers(w http.ResponseWriter, r *http.Request)
 }
 
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
@@ -162,4 +174,8 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/orgmembers/{globalid2}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteOrgMember))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/orgowners/{globalid2}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteOrgOwner))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/orgmembers", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateOrganizationOrgMemberShip))).Methods("PUT")
+	r.Handle("/organizations/{globalid}/requiredscopes", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddRequiredScope))).Methods("POST")
+	r.Handle("/organizations/{globalid}/requiredscopes/{requiredscope}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateRequiredScope))).Methods("PUT")
+	r.Handle("/organizations/{globalid}/requiredscopes/{requiredscope}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteRequiredScope))).Methods("DELETE")
+	r.Handle("/organizations/{globalid}/users", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner", "organization:member"}).Handler).Then(http.HandlerFunc(i.GetOrganizationUsers))).Methods("GET")
 }
