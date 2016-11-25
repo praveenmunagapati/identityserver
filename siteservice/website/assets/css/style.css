@@ -353,18 +353,12 @@ md-select:not([disabled]):focus .md-select-value {
     color: #fff;
     text-decoration: none;
     align-content: center;
-    margin: 12px 20px 0 0;
+    margin: 16px 20px 0 0;
     border-bottom-style: none;
     padding: 0;
 }
 
-._md-select-value {
-    border-bottom-style: none;
-    padding: 0px;
-}
-
-._md-select-value ._md-select-icon {
-    margin: 0px;
+.md-select-value .md-select-icon {
     width: auto;
 }
 

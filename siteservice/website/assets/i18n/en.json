@@ -213,9 +213,7 @@
                 "signout": "Signout",
                 "register": "Register",
                 "signin": "Sign in",
-                "language": "language",
-                "english": "English",
-                "dutch": "Dutch"
+                "language": "language"
             }
         }
     },

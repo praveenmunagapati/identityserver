@@ -19,7 +19,7 @@
                     <span flex></span>
                 </div>
                 <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
-                    <md-subheader class="md-no-sticky" translate='user.views.notifications.pendinginvites'>Pending organization invites</md-subheader>
+                    <md-subheader class="md-no-sticky"><span translate='user.views.notifications.pendinginvites'>Pending organization invites</span></md-subheader>
                     <md-list>
                         <md-list-item class="md-1-line"
                                       ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}">
@@ -41,12 +41,12 @@
                 </div>
                 <div ng-if="vm.getPendingCount(vm.notifications.security) > 0">
                     <md-list>
-                        <md-subheader class="md-no-sticky" translate='user.views.notifications.security'>Security notifications</md-subheader>
+                        <md-subheader class="md-no-sticky"><span translate='user.views.notifications.security'>Security notifications</span></md-subheader>
                         <md-list-item
                                 class="secondary-button-padding list-item-secondary-button-padding"
                                 ng-repeat="notification in vm.notifications.security track by notification.subject"
                                 aria-label translate-attr="{ 'aria-label': 'user.views.notifications.securitynotice'}">
-                            <p ng-bind="::notification.msg"></p>
+                            <p ng-bind="notification.msg"></p>
                             <md-button class="md-secondary md-raised" ng-click="vm.pageSelected(notification.tabIndex)" translate='user.views.notifications.resolve'>
                                 Resolve
                             </md-button>

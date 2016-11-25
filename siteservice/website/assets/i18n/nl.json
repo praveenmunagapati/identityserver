@@ -213,9 +213,7 @@
                 "signout": "Afmelden",
                 "register": "Registreer",
                 "signin": "Aanmelden",
-                "language": "taal",
-                "english": "Engels",
-                "dutch": "Nederlands"
+                "language": "taal"
             }
         }
     },
