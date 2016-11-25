@@ -14,5 +14,13 @@
         "reason": "U hebt deze mail ontvangen omdat u recent gevraagd hebt uw ItsYou.Online wachtwoord te resetten. Gelieve deze mail te negeren indien u dit niet was",
         "subject": "ItsYou.Online wachtwoord reset",
         "urlcaption": "Knop werkt niet? Kopieer de volgende link en plak deze in uw browser:"
+    },
+    "organizationinvite": {
+        "title": "It's You Online organizatie uitnodiging",
+        "text": "Je bent uitgenodigt om lid te worden van de organizatie %s op It's You Online. Klik op de onderstaande knop om de uitnodiging te aanvaarden.",
+        "buttontext": "Aanvaard uitnodiging",
+        "reason": "Je hebt deze mail ontvangen omdat iemand je heeft uitgenodigt om lid te worden van een organizatie op ItsYou.online. Als je denkt dat dit een vergissing was, gelieve deze mail dan te negeren.",
+        "subject": "Je bent uitgenodigt voor de organizatie %s",
+        "urlcaption": "Knop werkt niet? Kopieer de volgende link en plak deze in uw browser:" 
     }
 }
