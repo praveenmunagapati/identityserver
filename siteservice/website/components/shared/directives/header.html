@@ -1,9 +1,9 @@
 <header id="header" ng-class="{'cookie-warning': showCookieWarning}">
     <!--cookie warning-->
     <div ng-cloak class="cookie-warning-container" ng-if="showCookieWarning">
-        <span>This site uses cookies. By continuing to browse the site you are agreeing to our use of cookies.</span>
+        <span translate='shared.directives.header.cookiewarning'>This site uses cookies. By continuing to browse the site you are agreeing to our use of cookies.</span>
         <md-button class="md-raised" ng-click="hideCookieWarning()">
-            <i class="fa fa-times"></i> Dismiss
+            <i class="fa fa-times"></i> <span translate='shared.directives.header.dismiss'>Dismiss</span>
         </md-button>
     </div>
     <!--end cookie warning-->
@@ -19,57 +19,68 @@
                     <div id="logo-online"><a href="#/"></a></div>
                 </div>
             </div>
-            <div class="header-sign-wrap" ng-if="::$root.user">
-                <!--notification icon-->
-                <a href="#/notifications" ng-show="$root.notificationCount !== undefined"
-                   style="margin-right:10px;">
-                    <div class="notification-bell">
-                        <i class="fa fa-flag fa-lg"></i>
-                        <span class="notification-bell-unread" ng-show="$root.notificationCount > 0">
-                            <span id="notificationsCount" ng-bind="$root.notificationCount"
-                              ng-show="$root.notificationCount < 10"></span>
-                            <span id="notificationsCountMany" ng-bind="$root.notificationCount"
-                              ng-show="$root.notificationCount > 9"></span>
-                        </span>
-                    </div>
-                    <md-tooltip ng-cloak> You have {{ $root.notificationCount? $root.notificationCount : 'no'}} unread
-                        <ng-pluralize count="$root.notificationCount"
-                                      when="{'1': 'notification', 'other': 'notifications'}"></ng-pluralize>
-                    </md-tooltip>
-                </a>
-                <!--end notification icon-->
-                <!--drop down main menu-->
-                <md-menu md-offset="-5 30" ng-cloak>
-                    <a id="profilemenu" ng-click="$mdOpenMenu($event)" style="margin-right:10px">
-                        <i class="fa fa-user fa-lg"></i>
+            <div layout="row" layout-align="center center">
+                <md-select ng-model="langKey" ng-change="updateLanguage()" md-offset="-5 30" class="md-no-underline header-select"
+                    placeholder='language' translate-attr="{'placeholder': 'shared.directives.header.language', 'aria-label': 'shared.directives.header.language'}"
+                    aria-label="language" ng-cloak>
+                    <md-option value="en" class="md-no-underline"><span translate='shared.directives.header.english'>English</span></md-option>
+                    <md-option value="nl" class="md-no-underline"><span translate='shared.directives.header.dutch'>Dutch</span></md-option>
+                </md-select>
+                <div class="header-sign-wrap" ng-if="::$root.user">
+                    <!--notification icon-->
+                    <a href="#/notifications" ng-show="$root.notificationCount !== undefined"
+                       style="margin-right:10px;">
+                        <div class="notification-bell">
+                            <i class="fa fa-flag fa-lg"></i>
+                            <span class="notification-bell-unread" ng-if="$root.notificationCount > 0">
+                                <span id="notificationsCount" ng-bind="$root.notificationCount"
+                                  ng-if="$root.notificationCount < 10"></span>
+                                <span id="notificationsCountMany" ng-bind="$root.notificationCount"
+                                  ng-if="$root.notificationCount > 9"></span>
+                            </span>
+                        </div>
+                        <md-tooltip ng-cloak>
+                            <span ng-if='$root.notificationCount === 0' translate='shared.directives.header.nonotifcations'>You have no unread notifications</span>
+                            <span ng-if='$root.notificationCount === 1' translate='shared.directives.header.onenotification'>You have 1 unread notification</span>
+                            <span ng-if='$root.notificationCount > 1' translate='shared.directives.header.unreadnotifications' translate-values="{count: $root.notificationCount}">
+                                You have {{$root.notificationCount}} unread notifications
+                            </span>
+                        </md-tooltip>
                     </a>
-                    <md-menu-content>
-                        <md-menu-item class="header-menu-item">
-                            <md-button href="#/profile" ng-click="$mdClose.hide()">Profile</md-button>
-                        </md-menu-item>
-                        <md-menu-item class="header-menu-item">
-                            <md-button href="#/organizations" ng-click="$mdClose.hide()">Organizations</md-button>
-                        </md-menu-item>
-                        <md-menu-item class="header-menu-item">
-                            <md-button href="#/authorizations" ng-click="$mdClose.hide()">Shared information</md-button>
-                        </md-menu-item>
-                        <md-menu-item class="header-menu-item">
-                            <md-button href="logout" ng-click="$mdClose.hide()">Signout</md-button>
-                        </md-menu-item>
-                    </md-menu-content>
-                </md-menu>
-                <!--end drop down main menu-->
-                <!--add settings to header-->
-                <a href="#/settings" style="">
-                    <i class="fa fa-cog fa-lg"></i>
-                </a>
-                <!--end header settings-->
-            </div>
-            <div class="sign-wrap" ng-if="::!$root.user && ! header_login">
-                <a ng-href="{{ $root.registrationUrl || 'register' }}"><i class="fa fa-user-plus"></i>Register</a>
-            </div>
-            <div class="sign-wrap" ng-if="::!$root.user && header_login">
-                <a href="login"><i class="fa fa-sign-in"></i>Sign in</a>
+                    <!--end notification icon-->
+                    <!--drop down main menu-->
+                    <md-menu md-offset="-5 30" ng-cloak>
+                        <a id="profilemenu" ng-click="$mdOpenMenu($event)" style="margin-right:10px">
+                            <i class="fa fa-user fa-lg"></i>
+                        </a>
+                        <md-menu-content>
+                            <md-menu-item class="header-menu-item">
+                                <md-button href="#/profile" ng-click="$mdClose.hide()"><span translate='shared.directives.header.profile'>Profile</span></md-button>
+                            </md-menu-item>
+                            <md-menu-item class="header-menu-item">
+                                <md-button href="#/organizations" ng-click="$mdClose.hide()"><span translate='shared.directives.header.organizations'>Organizations</span></md-button>
+                            </md-menu-item>
+                            <md-menu-item class="header-menu-item">
+                                <md-button href="#/authorizations" ng-click="$mdClose.hide()"><span translate='shared.directives.header.sharedinfo'>Shared information</span></md-button>
+                            </md-menu-item>
+                            <md-menu-item class="header-menu-item">
+                                <md-button href="logout" ng-click="$mdClose.hide()"><span translate='shared.directives.header.signout'>Signout</span></md-button>
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
+                    <!--end drop down main menu-->
+                    <!--add settings to header-->
+                    <a href="#/settings" style="">
+                        <i class="fa fa-cog fa-lg"></i>
+                    </a>
+                    <!--end header settings-->
+                </div>
+                <div class="sign-wrap" ng-if="::!$root.user && ! header_login">
+                    <a ng-href="{{ $root.registrationUrl || 'register' }}"><i class="fa fa-user-plus"></i><span translate='shared.directives.header.register'>Register</span></a>
+                </div>
+                <div class="sign-wrap" ng-if="::!$root.user && header_login">
+                    <a href="login"><i class="fa fa-sign-in"></i><span translate='shared.directives.header.signin'>Sign in</span></a>
+                </div>
             </div>
         </div>
         <div flex></div>

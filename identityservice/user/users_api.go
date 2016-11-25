@@ -145,10 +145,19 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 	username := mux.Vars(r)["username"]
 	body := user.EmailAddress{}
 
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	fullbody := struct {
+		EmailAddress string `json:"emailaddress"`
+		Label        string `json:"label"`
+		LangKey      string `json:"langkey"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&fullbody); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+
+	body.EmailAddress = fullbody.EmailAddress
+	body.Label = fullbody.Label
 
 	if !isValidLabel(body.Label) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -182,7 +191,7 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	if !validated {
-		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), fullbody.LangKey)
 	}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -196,11 +205,20 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
 
+	fullbody := struct {
+		EmailAddress string `json:"emailaddress"`
+		Label        string `json:"label"`
+		LangKey      string `json:"langkey"`
+	}{}
+
 	body := user.EmailAddress{}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&fullbody); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+
+	body.EmailAddress = fullbody.EmailAddress
+	body.Label = fullbody.Label
 
 	if !isValidLabel(body.Label) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -243,7 +261,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !validated {
-		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), fullbody.LangKey)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -252,11 +270,22 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(body)
 }
 
-// Validate email address is the handler for GET /users/{username}/emailaddress/{label}/validate
+// Validate email address is the handler for GET /users/{username}/emailaddress/{label}/validate/{langkey}
 func (api UsersAPI) ValidateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
+
+	body := struct {
+		LangKey string `json:"langkey"`
+	}{}
+
+	log.Info(r.Body)
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Info(err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	userobj, err := userMgr.GetByName(username)
 	if err != nil {
@@ -270,7 +299,7 @@ func (api UsersAPI) ValidateEmailAddress(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host))
+	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), body.LangKey)
 	w.WriteHeader(http.StatusNoContent)
 }
 

@@ -1,0 +1,18 @@
+{
+    "emailvalidation": {
+        "title": "It'sYou.Online email bevestiging",
+        "text": "Klik op de onderstaande knop om uw email adres %s te bevestigen",
+        "buttontext": "Bevestig email",
+        "reason": "U hebt deze mail ontvangen omdat u recent een nieuw ItsYou.Online account gemaakt hebt of een nieuw email adres hebt toegevoegd. Gelieve deze mail te negeren indien u dit niet was",
+        "subject": "It'sYou.Online email bevestiging",
+        "urlcaption": "Knop werkt niet? Kopieer de volgende link en plak deze in uw browser:"
+    },
+    "passwordreset": {
+        "title": "It's You Online wachtoord reset",
+        "text": "Klik op de onderstaande knop om uw ItsYou.Online wachtwoord te resetten.",
+        "buttontext": "Reset wachtwoord",
+        "reason": "U hebt deze mail ontvangen omdat u recent gevraagd hebt uw ItsYou.Online wachtwoord te resetten. Gelieve deze mail te negeren indien u dit niet was",
+        "subject": "ItsYou.Online wachtwoord reset",
+        "urlcaption": "Knop werkt niet? Kopieer de volgende link en plak deze in uw browser:"
+    }
+}

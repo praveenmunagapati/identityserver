@@ -510,6 +510,7 @@ securedBy: [ oauth_2_0 ]
               properties:
                 label: Label
                 emailaddress: string
+                langkey: string
           responses:
               201:
                 description: Registered a new email address
@@ -529,6 +530,7 @@ securedBy: [ oauth_2_0 ]
                 properties:
                   label: Label
                   emailaddress: string
+                  langkey: string
             responses:
               201:
                   description: Updated
@@ -547,6 +549,10 @@ securedBy: [ oauth_2_0 ]
           post:
             displayName: ValidateEmailAddress
             description: Sends validation email to email address
+            body:
+              application/json:
+                properties:
+                  langkey: string
             responses:
               204:
                description: Validation email has been send

@@ -145,11 +145,13 @@
 
         function registerNewEmailAddress(username, emailaddress) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses';
+            emailaddress.langkey = localStorage.getItem('langKey');
             return genericHttpCall($http.post, url, emailaddress);
         }
 
         function updateEmailAddress(username, oldlabel, emailaddress) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(oldlabel) ;
+            emailaddress.langkey = localStorage.getItem('langKey');
             return genericHttpCall($http.put, url, emailaddress);
         }
 
@@ -274,7 +276,10 @@
 
         function sendEmailAddressVerification(username, label){
             var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(label) + '/validate';
-            return genericHttpCall($http.post, url);
+            var data = {
+                langkey: localStorage.getItem('langKey')
+            };
+            return genericHttpCall($http.post, url, data);
         }
 
         function getAPIKeys(username) {

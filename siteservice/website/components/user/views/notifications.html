@@ -1,7 +1,7 @@
 <div flex-gt-sm="80" flex="100" layout="column">
     <div class="breadcrumb-container">
         <p ng-bind="::vm.username"></p>
-        <h1>Notifications</h1>
+        <h1 translate='user.views.notifications.notifications'>Notifications</h1>
     </div>
     <md-card>
         <md-card-content>
@@ -19,7 +19,7 @@
                     <span flex></span>
                 </div>
                 <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
-                    <md-subheader class="md-no-sticky">Pending organization invites</md-subheader>
+                    <md-subheader class="md-no-sticky" translate='user.views.notifications.pendinginvites'>Pending organization invites</md-subheader>
                     <md-list>
                         <md-list-item class="md-1-line"
                                       ng-repeat="invitation in vm.notifications.invitations | filter: {status: 'pending'}">
@@ -31,23 +31,23 @@
                             </div>
                             <md-icon md-font-icon="fa-times" class="fa md-secondary md-warn"
                                      ng-click="vm.reject(invitation)"
-                                     aria-label="Reject invitation"></md-icon>
+                                     aria-label='Reject invitation' translate-attr="{ 'aria-label': 'user.views.notifications.rejectinvite' }"></md-icon>
                             <md-icon md-font-icon="fa-check" class="fa md-secondary md-primary"
                                      ng-click="vm.accept($event, invitation)"
-                                     aria-label="Accept invitation">
+                                     aria-label='Accept invitation' translate-attr="{ 'aria-label': 'user.views.notifications.acceptinvite' }">
                             </md-icon>
                         </md-list-item>
                     </md-list>
                 </div>
                 <div ng-if="vm.getPendingCount(vm.notifications.security) > 0">
                     <md-list>
-                        <md-subheader class="md-no-sticky">Security notifications</md-subheader>
+                        <md-subheader class="md-no-sticky" translate='user.views.notifications.security'>Security notifications</md-subheader>
                         <md-list-item
                                 class="secondary-button-padding list-item-secondary-button-padding"
                                 ng-repeat="notification in vm.notifications.security track by notification.subject"
-                                aria-label="Security notice">
+                                aria-label translate-attr="{ 'aria-label': 'user.views.notifications.securitynotice'}">
                             <p ng-bind="::notification.msg"></p>
-                            <md-button class="md-secondary md-raised" ng-click="vm.pageSelected(notification.tabIndex)">
+                            <md-button class="md-secondary md-raised" ng-click="vm.pageSelected(notification.tabIndex)" translate='user.views.notifications.resolve'>
                                 Resolve
                             </md-button>
                         </md-list-item>
