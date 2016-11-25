@@ -1,6 +1,8 @@
 package validation
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password"
@@ -25,8 +27,17 @@ type IYOEmailAddressValidationService struct {
 	EmailService EmailService
 }
 
+type translations struct {
+	Title      string
+	Text       string
+	Buttontext string
+	Reason     string
+	Subject    string
+	Urlcaption string
+}
+
 //RequestValidation validates the email address by sending an email
-func (service *IYOEmailAddressValidationService) RequestValidation(request *http.Request, username string, email string, confirmationurl string) (key string, err error) {
+func (service *IYOEmailAddressValidationService) RequestValidation(request *http.Request, username string, email string, confirmationurl string, langKey string) (key string, err error) {
 	valMngr := validation.NewManager(request)
 	info, err := valMngr.NewEmailAddressValidationInformation(username, email)
 	if err != nil {
@@ -38,8 +49,26 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 		log.Error(err)
 		return
 	}
+
+	translationFile, err := tools.LoadTranslations(langKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Emailvalidation translations
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
+
 	validationurl := fmt.Sprintf("%s?c=%s&k=%s", confirmationurl, url.QueryEscape(info.Secret), url.QueryEscape(info.Key))
 	templateParameters := struct {
+		UrlCaption string
 		Url        string
 		Username   string
 		Title      string
@@ -47,25 +76,26 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 		ButtonText string
 		Reason     string
 	}{
+		UrlCaption: translations.Emailvalidation.Urlcaption,
 		Url:        validationurl,
 		Username:   username,
-		Title:      "It'sYou.Online email verification",
-		Text:       fmt.Sprintf("To verify your email address %s on ItsYou.Online, click the button below.", email),
-		ButtonText: "Verify email",
-		Reason:     " You’re receiving this email because you recently created a new ItsYou.Online account or added a new email address. If this wasn’t you, please ignore this email.",
+		Title:      translations.Emailvalidation.Title,
+		Text:       fmt.Sprintf(translations.Emailvalidation.Text, email),
+		ButtonText: translations.Emailvalidation.Buttontext,
+		Reason:     translations.Emailvalidation.Reason,
 	}
 	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
 	if err != nil {
 		return
 	}
 
-	go service.EmailService.Send([]string{email}, "ItsYou.Online email verification", message)
+	go service.EmailService.Send([]string{email}, translations.Emailvalidation.Subject, message)
 	key = info.Key
 	return
 }
 
 //RequestPasswordReset Request a password reset
-func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *http.Request, username string, emails []string) (key string, err error) {
+func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *http.Request, username string, emails []string, langKey string) (key string, err error) {
 	pwdMngr := password.NewManager(request)
 	token, err := pwdMngr.NewResetToken(username)
 	if err != nil {
@@ -75,8 +105,25 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 		return
 	}
 
+	translationFile, err := tools.LoadTranslations(langKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Passwordreset translations
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
+
 	passwordreseturl := fmt.Sprintf("https://%s/login#/resetpassword/%s", request.Host, url.QueryEscape(token.Token))
 	templateParameters := struct {
+		UrlCaption string
 		Url        string
 		Username   string
 		Title      string
@@ -84,18 +131,19 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 		ButtonText string
 		Reason     string
 	}{
+		UrlCaption: translations.Passwordreset.Urlcaption,
 		Url:        passwordreseturl,
 		Username:   username,
-		Title:      "It's You Online password reset",
-		Text:       "To reset your ItsYou.Online password, click the button below.",
-		ButtonText: "Reset password",
-		Reason:     "You’re receiving this email because you recently requested to reset your password at ItsYou.Online. If this wasn’t you, please ignore this email.",
+		Title:      translations.Passwordreset.Title,
+		Text:       translations.Passwordreset.Text,
+		ButtonText: translations.Passwordreset.Buttontext,
+		Reason:     translations.Passwordreset.Reason,
 	}
 	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
 	if err != nil {
 		return
 	}
-	go service.EmailService.Send(emails, "ItsYou.Online password reset", message)
+	go service.EmailService.Send(emails, translations.Passwordreset.Subject, message)
 	key = token.Token
 	return
 }

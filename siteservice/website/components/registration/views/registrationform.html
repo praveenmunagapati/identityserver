@@ -6,7 +6,7 @@
         </md-card-avatar>
         <md-card-title>
             <md-card-title-text ng-if="!vm.externalSite">
-                <span class="md-headline">Register</span>
+                <span class="md-headline" translate='registration.views.registrationform.register'>Register</span>
             </md-card-title-text>
             <md-card-title-text ng-if="vm.externalSite">
                 <div layout="column">
@@ -23,45 +23,45 @@
                 <md-tab label="Basic info">
                     <div layout="column">
                         <md-input-container>
-                            <label for="login">Username</label>
+                            <label for="login" translate='registration.views.registrationform.username'>Username</label>
                             <input ng-model="vm.login" md-maxlength="30" minlength="2" required name="login" type="text"
                                    ng-pattern="/^[a-z0-9 \-_]+$/" ng-minlength="3" autofocus
                                    ng-change="vm.validateUsername()" id="login">
                             <div ng-messages="signupform.login.$error" md-auto-hide="false">
-                                <div ng-message="duplicate_username">This username has already been taken</div>
-                                <div ng-message="invalid_username_format">Invalid username. Only characters a-z, 0-9,
+                                <div ng-message="duplicate_username" translate='registration.views.registrationform.usernametaken'>This username has already been taken</div>
+                                <div ng-message="invalid_username_format" translate='registration.views.registrationform.invalidusername'>Invalid username. Only characters a-z, 0-9,
                                     dashes, underscores and space are allowed
                                 </div>
-                                <div ng-message="pattern">Invalid username. Only characters a-z, 0-9, dashes,
+                                <div ng-message="pattern" translate='registration.views.registrationform.invalidusername'>Invalid username. Only characters a-z, 0-9, dashes,
                                     underscores and space are allowed
                                 </div>
                             </div>
                         </md-input-container>
                         <md-input-container>
-                            <label for="email">Email</label>
+                            <label for="email" translate='registration.views.registrationform.email'>Email</label>
                             <input ng-model="vm.email" required name="email" type="email" id="email"
                                    ng-pattern="/^([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/i">
                             <div ng-messages="signupform.email.$error" md-auto-hide="false">
-                                <div ng-message="email">Invalid email address</div>
-                                <div ng-message="pattern">Invalid email address</div>
+                                <div ng-message="email" translate='registration.views.registrationform.invalidemail'>Invalid email address</div>
+                                <div ng-message="pattern" translate='registration.views.registrationform.invalidemail'>Invalid email address</div>
                             </div>
                         </md-input-container>
                         <md-input-container>
-                            <label for="password">Password</label>
+                            <label for="password" translate='registration.views.registrationform.password'>Password</label>
                             <input ng-model="vm.password" required name="password" type="password" minlength="6"
                                    ng-minlength="6" id="password">
                             <div ng-messages="signupform.password.$error">
-                                <div ng-message="minlength">Password should contain at least 6 characters</div>
-                                <div ng-message="invalid_password">Password should contain at least 6 characters</div>
+                                <div ng-message="minlength" translate='registration.views.registrationform.invalidpassword'>Password should contain at least 6 characters</div>
+                                <div ng-message="invalid_password" translate='registration.views.registrationform.invalidpassword'>Password should contain at least 6 characters</div>
                             </div>
                         </md-input-container>
                         <md-input-container>
-                            <label for="passwordvalidation">Password confirmation</label>
+                            <label for="passwordvalidation" translate='registration.views.registrationform.confirmpassword'>Password confirmation</label>
                             <input ng-model="vm.passwordvalidation" required name="passwordvalidation"
                                    password-validation="vm.password" id="passwordvalidation" type="password"
                                    ng-change="vm.goToNextTabIfValid()">
                             <div ng-messages="signupform.passwordvalidation.$error">
-                                <div ng-message="passwordIdentical">The passwords do not match</div>
+                                <div ng-message="passwordIdentical" translate='registration.views.registrationform.passwordmatch'>The passwords do not match</div>
                             </div>
                         </md-input-container>
                     </div>
@@ -69,43 +69,44 @@
                 <md-tab label="2-factor auth" ng-disabled="!vm.basicInfoValid()">
                     <div layout="column">
                         <md-input-container>
-                            <label>2-Factor authentication method</label>
+                            <label translate='registration.views.registrationform.2famethod'>2-Factor authentication method</label>
                             <md-select name="twoFAMethod" ng-model="vm.twoFAMethod" ng-required style="min-width:180px;"
                                        ng-change="vm.resetValidation('twoFAMethod')">
-                                <md-option ng-value="'sms'">SMS</md-option>
-                                <md-option ng-value="'totp'">Authenticator application</md-option>
+                                <md-option ng-value="'sms'" translate='registration.views.registrationform.sms'>SMS</md-option>
+                                <md-option ng-value="'totp'" translate='registration.views.registrationform.app'>Authenticator application</md-option>
                             </md-select>
                         </md-input-container>
                         <md-input-container ng-if="vm.twoFAMethod === 'sms'">
-                            <label for="sms">Phone number</label>
+                            <label for="sms" translate='phonenumber'>Phone number</label>
                             <input ng-model="vm.sms" minlength="4" ng-required="vm.twoFAMethod === 'sms'"
                                    name="phonenumber" ng-pattern="/^\+[0-9 ]*$/" ng-change="vm.resetValidation('phone')"
                                    id="sms">
                             <div ng-messages="signupform.phonenumber.$error">
-                                <div ng-message="pattern">Invalid phone number. Phone number must start with the country
+                                <div ng-message="pattern" translate='phonenumberpattern'>
+                                    Invalid phone number. Phone number must start with the country
                                     code. Example: +32471202020
                                 </div>
-                                <div ng-message="invalid_phonenumber">Invalid phone number</div>
+                                <div ng-message="invalid_phonenumber" translate='invalidphonenumber'>Invalid phone number</div>
                             </div>
                         </md-input-container>
                         <md-input-container ng-if="vm.twoFAMethod === 'totp'">
-                            <label for="totpcode">2-Factor authentication code</label>
+                            <label for="totpcode" translate='registration.views.registrationform.2facode'>2-Factor authentication code</label>
                             <input ng-model="vm.totpcode" md-maxlength="6" minlength="6"
                                    ng-required="vm.twoFAMethod === 'totp'" id="totpcode"
                                    name="totpcode" autocomplete="off" ng-change="vm.resetValidation('totpcode')">
                             <div ng-messages="signupform.totpcode.$error" md-auto-hide="false">
-                                <div ng-message="invalid_totpcode">An invalid code was given</div>
+                                <div ng-message="invalid_totpcode" translate='registration.views.registrationform.invalid2facode'>An invalid code was given</div>
                             </div>
                         </md-input-container>
                         <md-input-container ng-if="vm.twoFAMethod === 'totp'">
                             <qrcode version="6" error-correction-level="M" size="200"
                                     data="otpauth://totp/ItsYou.online?secret={{::vm.totpsecret}}&issuer=ItsYou.Online">
                             </qrcode>
-                            <md-tooltip>Scan this image with a 2-factor authentication app on your phone</md-tooltip>
+                            <md-tooltip><span translate='registration.views.registrationform.2fahelp'>Scan this image with a 2-factor authentication app on your phone</span></md-tooltip>
                         </md-input-container>
                         <div layout="row">
                             <div flex></div>
-                            <md-button type="submit" class="md-raised md-primary" ng-disabled="!signupform.$valid">
+                            <md-button type="submit" class="md-raised md-primary" ng-disabled="!signupform.$valid" translate='registration.views.registrationform.signup'>
                                 Sign up
                             </md-button>
                             <div flex></div>

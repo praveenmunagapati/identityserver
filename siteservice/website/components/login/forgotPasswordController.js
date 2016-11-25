@@ -10,7 +10,8 @@
         vm.emailSend = false;
         function submit() {
             var data = {
-                login: vm.login
+                login: vm.login,
+                langkey: localStorage.getItem('langKey')
             };
             $http.post('/login/forgotpassword', data).then(
                 function () {

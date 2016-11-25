@@ -1,7 +1,7 @@
 <div flex-gt-sm="80" flex="100" layout="column">
     <div class="breadcrumb-container">
         <p ng-bind="::vm.username">You</p>
-        <h1>Profile</h1>
+        <h1 translate='user.views.profile.profile'>Profile</h1>
     </div>
     <md-card>
         <md-card-content>
@@ -12,10 +12,10 @@
                class="tab-you">
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-user"></i> Full name</span>
+                      <span><i class="fa fa-user"></i> <span translate='user.views.profile.fullname'>Full name</span></span>
                       <md-button ng-if="!vm.user.firstname || !vm.user.lastname"
                                  ng-click="vm.showEditNameDialog($event)">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -26,15 +26,15 @@
                               <span ng-bind="vm.user.firstname"></span>
                               <span ng-bind="vm.user.lastname"></span>
                           </h4>
-                          <p>Full name</p>
+                          <p translate='user.views.profile.fullname'>Full name</p>
                       </div>
                   </md-list-item>
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-at"></i> Email addresses</span>
+                      <span><i class="fa fa-at"></i> <span translate='user.views.profile.emailaddresses'>Email addresses</span></span>
                       <md-button ng-click="vm.showEmailDetailDialog($event)">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -50,20 +50,20 @@
                           </div>
                       </md-list-item>
                       <p ng-if="email.verified" class="md-body-1 verified">
-                          <i class="fa fa-check green"></i> Verified
+                          <i class="fa fa-check green"></i> <span translate='user.views.profile.verified'>Verified</span>
                       </p>
                       <md-button ng-click="vm.verifyEmailAddress($event, email)"
                                  class="md-primary md-secondary"
                                  ng-if="vm.loaded.verifiedEmails && !email.verified">
-                          Verify
+                          <span translate='user.views.profile.verify'>Verify</span>
                       </md-button>
                   </div>
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-phone"></i> Phone numbers</span>
+                      <span><i class="fa fa-phone"></i> <span translate='user.views.profile.phonenumbers'>Phone numbers</span></span>
                       <md-button ng-click="vm.showPhonenumberDetailDialog($event)">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -79,20 +79,20 @@
                           </div>
                       </md-list-item>
                       <p ng-if="phone.verified" class="md-body-1 verified">
-                          <i class="fa fa-check green"></i> Verified
+                          <i class="fa fa-check green"></i> <span translate='user.views.profile.verified'>Verified</span>
                       </p>
                       <md-button ng-click="vm.verifyPhone($event, phone)"
                                  class="md-primary md-secondary"
                                  ng-if="vm.loaded.verifiedPhones && !phone.verified">
-                          Verify
+                          <span translate='user.views.profile.verify'>Verify</span>
                       </md-button>
                   </div>
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-facebook-official"></i> Facebook account</span>
+                      <span><i class="fa fa-facebook-official"></i> <span translate='user.views.profile.facebookaccount'>Facebook account</span></span>
                       <md-button ng-if="! vm.user.facebook.id" ng-click="vm.addFacebookAccount()">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -105,13 +105,13 @@
                           <h3 ng-bind="vm.user.facebook.name"></h3>
                       </div>
                   </md-list-item>
-                  <p ng-if="!vm.user.facebook.id">You haven't added your Facebook account yet.</p>
+                  <p ng-if="!vm.user.facebook.id" translate='user.views.profile.nofacebook'>You haven't added your Facebook account yet.</p>
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-github"></i> GitHub account</span>
+                      <span><i class="fa fa-github"></i> <span translate='user.views.profile.githubaccount'>GitHub account</span></span>
                       <md-button ng-if="! vm.user.github.id" ng-click="vm.addGithubAccount()">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -126,13 +126,13 @@
                           <p ng-bind="vm.user.github.login"></p>
                       </div>
                   </md-list-item>
-                  <p ng-if="!vm.user.github.login">You haven't added your GitHub account yet.</p>
+                  <p ng-if="!vm.user.github.login" translate='user.views.profile.nogithub'>You haven't added your GitHub account yet.</p>
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-envelope-o"></i> Addresses</span>
+                      <span><i class="fa fa-envelope-o"></i> <span translate='user.views.profile.addresses'>Addresses</span></span>
                       <md-button ng-click="vm.showAddressDetailDialog($event)">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -156,9 +156,9 @@
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-bank"></i> Bank accounts</span>
+                      <span><i class="fa fa-bank"></i> <span translate='user.views.profile.bankaccounts'>Bank accounts</span></span>
                       <md-button ng-click="vm.showBankAccountDialog($event)">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -167,10 +167,10 @@
                                 ng-repeat="bank in vm.user.bankaccounts track by bank.label"
                                 ng-click="vm.showBankAccountDialog($event, bank)">
                       <div class="md-list-item-text">
-                          <h4 ng-hide="bank.iban === ''">IBAN:
+                          <h4 ng-hide="bank.iban === ''"><span translate='user.views.bankaccountdialog.iban'>IBAN:</span>
                               <span ng-bind="bank.iban"></span>
                           </h4>
-                          <h4 ng-hide="bank.bic === ''">BIC:
+                          <h4 ng-hide="bank.bic === ''"><span translate='user.views.bankaccountdialog.bic'>BIC:</span>
                               <span ng-bind="bank.bic"></span>
                           </h4>
                           <h4 ng-bind="bank.country"></h4>
@@ -180,9 +180,9 @@
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-money"></i> Digital wallet</span>
+                      <span><i class="fa fa-money"></i> <span translate='user.views.profile.digitalwallet'>Digital wallet</span></span>
                       <md-button ng-click="vm.showDigitalWalletAddressDetail($event)">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -193,10 +193,17 @@
                                 aria-label="Digital wallet address {{ address.label }}">
                       <div class="md-list-item-text">
                           <h3 ng-bind="address.address"></h3>
-                          <h4>Expires <span ng-bind="address.expire | date:'dd/MM/yyyy'" ng-if="!address.noexpiration"></span>
-                                      <span ng-if="address.noexpiration">never</span><span>,
-                                                                      symbol <span
-                                      ng-bind="address.currencysymbol"></span></span>
+                          <h4>
+                              <span ng-if='!address.noexpiration' translate='user.views.profile.expiringwallet'
+                                  translate-value-expirydate="{{address.expire | date:'dd/MM/yyyy'}}"
+                                  translate-value-symbol="{{address.currencysymbol}}">
+                                  Expires <span ng-bind="address.expire | date:'dd/MM/yyyy'" ng-if="!address.noexpiration"></span>
+                                  , symbol <span ng-bind="address.currencysymbol"></span>
+                              </span>
+                              <span ng-if='address.noexpiration' translate='user.views.profile.noneexpiringwallet'
+                                  translate-values='{symbol: address.currencysymbol}'>
+                                  Expires never, symbol <span ng-bind="address.currencysymbol">
+                              </span>
                           </h4>
                           <p ng-bind="address.label"></p>
                       </div>
@@ -204,9 +211,9 @@
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-key"></i> Public Keys</span>
+                      <span><i class="fa fa-key"></i> <span translate='user.views.profile.pubkeys'>Public keys</span></span>
                       <md-button ng-click="vm.showPublicKeyDetail($event)">
-                          <i class="fa fa-plus"></i> Add
+                          <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
                   </div>
               </md-toolbar>
@@ -215,7 +222,7 @@
                             ng-click="vm.showPublicKeyDetail($event, key)"
                             aria-label="Public key {{ key.label }}">
                   <div class="md-list-item-text">
-                      <h4 ng-bind="key.label"></h3>
+                      <h4>{{ ::key.label }}</h3>
                   </div>
               </md-list-item>
           </div>

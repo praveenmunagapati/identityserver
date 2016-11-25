@@ -21,7 +21,7 @@
     <div style="margin: 30px auto 0; width: 600px;">
         <div style="width:540px; padding: 20px 30px 0;">
             <p style="color: #222222; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: normal; line-height: 24px; margin: 0 0 10px; padding: 0; text-align: left;">
-                Hello {{.Username}}!
+                {{.Username}},
             </p>
             <p style="color: #222222; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: normal; line-height: 24px; margin: 0 0 10px; padding: 0; text-align: left;">
                 {{.Text}}
@@ -33,7 +33,7 @@
             </div>
             <hr style="background: #d9d9d9;border:none;color:#d9d9d9;min-height:1px;margin:10px 0 20px;"/>
             <p style="color: #777777;font-family:'Arial',sans-serif;font-size:12px;font-weight:normal;line-height:19px;margin:0 0 10px;padding:0;text-align:left;">
-                Button not working? Paste the following link into your browser:
+                {{.UrlCaption}}
             <p style="font-family:'Arial',sans-serif;font-size:12px;font-weight:normal;line-height:19px;margin:0 0 10px;padding:0;text-align:left;word-break:break-all;">
                 <a href="{{.Url}}" style="color: #4183c4;text-decoration: underline;">{{.Url}}</a>
             </p>

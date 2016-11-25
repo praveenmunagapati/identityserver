@@ -1,10 +1,11 @@
 (function () {
     'use strict';
     angular.module('loginApp', ['ngMaterial', 'ngCookies', 'ngMessages', 'ngRoute', 'ngSanitize', 'monospaced.qrcode', 'itsyouonline.shared',
-        'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.user', 'itsyouonline.validation'])
+        'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.user', 'itsyouonline.validation', 'pascalprecht.translate'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$httpProvider', httpConfig])
         .config(['$routeProvider', routeConfig])
+        .config(['$translateProvider', translateConfig])
         .factory('authenticationInterceptor', ['$q', '$window', authenticationInterceptor]);
 
     function themingConfig($mdThemingProvider) {
@@ -92,5 +93,14 @@
                 controllerAs: 'vm'
             })
             .otherwise('/');
+    }
+
+    function translateConfig($translateProvider) {
+        $translateProvider.useStaticFilesLoader({
+            prefix: 'assets/i18n/',
+            suffix: '.json'
+        });
+        $translateProvider.useSanitizeValueStrategy('sanitize');
+        $translateProvider.fallbackLanguage('en');
     }
 })();

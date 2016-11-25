@@ -1,0 +1,18 @@
+{
+    "emailvalidation": {
+        "title": "It'sYou.Online email verification",
+        "text": "To verify your email address %s on ItsYou.Online, click the button below.",
+        "buttontext": "Verify email",
+        "reason": " You’re receiving this email because you recently created a new ItsYou.Online account or added a new email address. If this wasn’t you, please ignore this email.",
+        "subject": "ItsYou.Online email verification",
+        "urlcaption": "Button not working? Paste the following link into your browser:"
+    },
+    "passwordreset": {
+        "title": "It's You Online password reset",
+        "text": "To reset your ItsYou.Online password, click the button below.",
+        "buttontext": "Reset password",
+        "reason": "You’re receiving this email because you recently requested to reset your password at ItsYou.Online. If this wasn’t you, please ignore this email.",
+        "subject": "ItsYou.Online password reset",
+        "urlcaption": "Button not working? Paste the following link into your browser:"
+    }
+}

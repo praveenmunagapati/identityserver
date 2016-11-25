@@ -6,8 +6,8 @@
         </md-card-avatar>
         <md-card-title>
             <md-card-title-text ng-if="!vm.externalSite">
-                <span class="md-headline">Login</span>
-                <span class="md-subhead">
+                <span class="md-headline" translate='login.views.loginform.login'>Login</span>
+                <span class="md-subhead" translate='login.views.loginform.loginhelp'>
                     You can login using your username, verified email address or verified phone number.
                 </span>
                 </span>
@@ -25,22 +25,22 @@
         <md-card-content>
             <div layout="column">
                 <md-input-container>
-                    <label for="username">Login</label>
+                    <label for="username" translate='login.views.loginform.login'>Login</label>
                     <input ng-model="vm.login" ng-minlength="2" required name="username" type="text" id="username" autofocus>
                 </md-input-container>
                 <md-input-container>
-                    <label for="password">Password</label>
+                    <label for="password" translate='login.views.loginform.password'>Password</label>
                     <input ng-model="vm.password" required name="password" type="password"
                            ng-change="vm.clearValidation()" id="password">
                     <div ng-messages="loginform.password.$error">
-                        <div ng-message="invalidcredentials">Invalid credentials</div>
+                        <div ng-message="invalidcredentials" translate='login.views.loginform.invalidcredentials'>Invalid credentials</div>
                     </div>
                 </md-input-container>
             </div>
         </md-card-content>
         <md-card-actions layout="row" layout-align="space-between center">
-            <md-button href="#/forgotpassword">Forgot your password?</md-button>
-            <md-button type="submit" class="md-raised md-primary">Log in</md-button>
+            <md-button href="#/forgotpassword" translate='login.views.loginform.forgotpassword'>Forgot your password?</md-button>
+            <md-button type="submit" class="md-raised md-primary" translate='login.views.loginform.loginbtn'>Log in</md-button>
         </md-card-actions>
     </md-card>
     <div flex></div>

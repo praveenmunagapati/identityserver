@@ -633,7 +633,8 @@ func verifyInfoAfterLogin(request *http.Request, username string, inviteCode str
 func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Request) {
 	// login can be username or email
 	values := struct {
-		Login string `json:"login"`
+		Login   string `json:"login"`
+		LangKey string `json:"langkey"`
 	}{}
 
 	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
@@ -674,7 +675,7 @@ func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Requ
 		}
 
 	}
-	_, err = service.emailaddressValidationService.RequestPasswordReset(request, username, emails)
+	_, err = service.emailaddressValidationService.RequestPasswordReset(request, username, emails, values.LangKey)
 	if err != nil {
 		log.Error("Failed to request password reset - ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

@@ -4,34 +4,17 @@
         .module('itsyouonlineApp', ['ngCookies', 'ngMaterial', 'ngRoute', 'ngMessages', 'ngSanitize',
             'monospaced.qrcode',
             'itsyouonline.shared', 'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.user',
-            'itsyouonline.validation'])
+            'itsyouonline.validation', 'pascalprecht.translate'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$httpProvider', httpConfig])
         .config(['$routeProvider', routeConfig])
+        .config(['$translateProvider', translateConfig])
         .factory('authenticationInterceptor', ['$q', '$window', authenticationInterceptor])
         .directive('pagetitle', ['$rootScope', '$timeout', pagetitle])
         .run(['$route', '$cookies', '$rootScope', '$location', runFunction]);
 
     function themingConfig($mdThemingProvider) {
         $mdThemingProvider.definePalette('blueish', {
-            '50': '#f7fbfd',
-            '100': '#badeed',
-            '200': '#8ec8e2',
-            '300': '#55add3',
-            '400': '#3ca1cd',
-            '500': '#3091bb',
-            '600': '#2a7ea3',
-            '700': '#236b8a',
-            '800': '#1d5872',
-            '900': '#17455a',
-            'A100': '#f7fbfd',
-            'A200': '#badeed',
-            'A400': '#3ca1cd',
-            'A700': '#236b8a',
-            'contrastDefaultColor': 'light',
-            'contrastDarkColors': '50 100 200 300 400 A100 A200 A400'
-        });
-        $mdThemingProvider.definePalette('centrilogic', {
             '50': '#f7fbfd',
             '100': '#badeed',
             '200': '#8ec8e2',
@@ -50,7 +33,7 @@
             'contrastDarkColors': '50 100 200 300 400 A100 A200 A400'
         });
         $mdThemingProvider.theme('default')
-            .primaryPalette('centrilogic');
+            .primaryPalette('blueish');
         $mdThemingProvider.enableBrowserColor({
             palette: 'primary', // Default is 'primary', any basic material palette and extended palettes are available
             hue: '800' // Default is '800'
@@ -154,6 +137,15 @@
                 }
             })
             .otherwise('/profile');
+    }
+
+    function translateConfig($translateProvider) {
+        $translateProvider.useStaticFilesLoader({
+            prefix: 'assets/i18n/',
+            suffix: '.json'
+        });
+        $translateProvider.useSanitizeValueStrategy('sanitize');
+        $translateProvider.fallbackLanguage('en');
     }
 
     function pagetitle($rootScope, $timeout) {

@@ -2,11 +2,12 @@
     'use strict';
     angular
         .module('itsyouonline.registration', [
-            'ngMaterial', 'ngMessages', 'ngRoute', 'ngCookies', 'monospaced.qrcode',
-            'itsyouonline.shared', 'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.validation'])
+            'ngMaterial', 'ngMessages', 'ngRoute', 'ngCookies', 'ngSanitize', 'monospaced.qrcode',
+            'itsyouonline.shared', 'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.validation', 'pascalprecht.translate'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$httpProvider', httpConfig])
         .config(['$routeProvider', routeConfig])
+        .config(['$translateProvider', translateConfig])
         .factory('authenticationInterceptor', ['$q', '$window', authenticationInterceptor]);
 
     function themingConfig($mdThemingProvider) {
@@ -75,5 +76,14 @@
                 controllerAs: 'vm'
             })
             .otherwise('/');
+    }
+
+    function translateConfig($translateProvider) {
+        $translateProvider.useStaticFilesLoader({
+            prefix: 'assets/i18n/',
+            suffix: '.json'
+        });
+        $translateProvider.useSanitizeValueStrategy('sanitize');
+        $translateProvider.fallbackLanguage('en');
     }
 })();

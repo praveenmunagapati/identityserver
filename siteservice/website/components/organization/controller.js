@@ -6,11 +6,11 @@
         .controller("InvitationDialogController", InvitationDialogController)
         .directive('customOnChange', customOnChange);
 
-    InvitationDialogController.$inject = ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'UserDialogService'];
-    OrganizationDetailController.$inject = ['$routeParams', '$window', 'OrganizationService', '$mdDialog', '$mdMedia',
+    InvitationDialogController.$inject = ['$scope', '$mdDialog', '$translate', 'organization', 'OrganizationService', 'UserDialogService'];
+    OrganizationDetailController.$inject = ['$routeParams', '$window', '$translate', 'OrganizationService', '$mdDialog', '$mdMedia',
         '$rootScope', 'UserDialogService', 'UserService'];
 
-    function OrganizationDetailController($routeParams, $window, OrganizationService, $mdDialog, $mdMedia, $rootScope,
+    function OrganizationDetailController($routeParams, $window, $translate, OrganizationService, $mdDialog, $mdMedia, $rootScope,
                                           UserDialogService, UserService) {
         var vm = this,
             globalid = $routeParams.globalid;
@@ -193,7 +193,7 @@
         function showAPIKeyCreationDialog(ev) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'label', APIKeyDialogController],
+                controller: ['$scope', '$mdDialog', '$translate', 'organization', 'OrganizationService', 'label', APIKeyDialogController],
                 templateUrl: 'components/organization/views/apikeydialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -216,7 +216,7 @@
         function showAPIKeyDialog(ev, label) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'label', APIKeyDialogController],
+                controller: ['$scope', '$mdDialog', '$translate', 'organization', 'OrganizationService', 'label', APIKeyDialogController],
                 templateUrl: 'components/organization/views/apikeydialog.html',
                 targetEvent: ev,
                 fullscreen: useFullScreen,
@@ -302,26 +302,29 @@
         }
 
         function showDeleteOrganizationDialog(event) {
-            var text = 'Are you sure you want to delete the organization "' + globalid + '"?';
-            var confirm = $mdDialog.confirm()
-                .title('Delete organization')
-                .textContent(text)
-                .ariaLabel('Delete organization ' + globalid)
-                .targetEvent(event)
-                .ok('Yes')
-                .cancel('No');
-            $mdDialog.show(confirm).then(function () {
-                OrganizationService
-                    .deleteOrganization(globalid)
-                    .then(function () {
-                        $window.location.hash = '#/';
-                    }, function (response) {
-                        if (response.status === 422) {
-                            var msg = 'This organization cannot be deleted because it still has child organizations.';
-                            UserDialogService.showSimpleDialog(msg, 'Error', 'Ok', event);
-                        }
+            $translate(['organization.controller.confirmdelete', 'organization.controller.deleteorg', 'organization.controller.deleteorganization',
+                'organization.controller.haschildren', 'organization.controller.yes', 'organization.controller.no'], {organization: globalid}).then(function(translations){
+                    var text = translations['organization.controller.confirmdelete'];
+                    var confirm = $mdDialog.confirm()
+                        .title(translations['organization.controller.deleteorg'])
+                        .textContent(text)
+                        .ariaLabel(translations['organization.controller.deleteorganization'])
+                        .targetEvent(event)
+                        .ok(translations['organization.controller.yes'])
+                        .cancel(translations['organization.controller.no']);
+                    $mdDialog.show(confirm).then(function () {
+                        OrganizationService
+                            .deleteOrganization(globalid)
+                            .then(function () {
+                                $window.location.hash = '#/';
+                            }, function (response) {
+                                if (response.status === 422) {
+                                    var msg = translations['organization.controller.haschildren'];
+                                    UserDialogService.showSimpleDialog(msg, 'Error', 'Ok', event);
+                                }
+                            });
                     });
-            });
+                })
         }
 
         function canEditRole(member) {
@@ -331,7 +334,7 @@
         function editMember(event, user) {
             var username = user.username;
             var changeRoleDialog = {
-                controller: ['$mdDialog', 'OrganizationService', 'UserDialogService', 'organization', 'user', 'initialRole', EditOrganizationMemberController],
+                controller: ['$mdDialog', '$translate', 'OrganizationService', 'UserDialogService', 'organization', 'user', 'initialRole', EditOrganizationMemberController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/organization/views/changeRoleDialog.html',
                 targetEvent: event,
@@ -371,7 +374,7 @@
                 }
             });
             var changeOrgRoleDialog = {
-                controller: ['$mdDialog', 'OrganizationService', 'UserDialogService', 'organization', 'org', 'initialRole', EditOrganizationMemberOrgController],
+                controller: ['$mdDialog', '$translate', 'OrganizationService', 'UserDialogService', 'organization', 'org', 'initialRole', EditOrganizationMemberOrgController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/organization/views/changeOrganizationRoleDialog.html',
                 targetEvent: event,
@@ -401,27 +404,30 @@
         }
 
         function showLeaveOrganization(event) {
-            var text = 'Are you sure you want to leave the organization "' + globalid + '"?';
-            var confirm = $mdDialog.confirm()
-                .title('Leave organization')
-                .textContent(text)
-                .ariaLabel('Leave organization ' + globalid)
-                .targetEvent(event)
-                .ok('Yes')
-                .cancel('No');
-            $mdDialog
-                .show(confirm)
-                .then(function () {
-                    UserService
-                        .leaveOrganization($rootScope.user, globalid)
+            $translate(['organization.controller.confirmleave', 'organization.controller.leaveorg', 'organization.controller.leaveorganization', 'organization.controller.yes',
+                'organization.controller.no', 'organization.controller.notfound'], {organization: globalid}).then(function(translations){
+                    var text = translations['organization.controller.confirmleave'];
+                    var confirm = $mdDialog.confirm()
+                        .title(translations['organization.controller.leaveorg'])
+                        .textContent(text)
+                        .ariaLabel(translations['organization.controller.leaveorganization'])
+                        .targetEvent(event)
+                        .ok(translations['organization.controller.yes'])
+                        .cancel(translations['organization.controller.no']);
+                    $mdDialog
+                        .show(confirm)
                         .then(function () {
-                            $window.location.hash = '#/';
-                        }, function (response) {
-                            if (response.status === 404) {
-                                UserDialogService.showSimpleDialog('User or organization not found', 'Error', null, event);
-                            }
+                            UserService
+                                .leaveOrganization($rootScope.user, globalid)
+                                .then(function () {
+                                    $window.location.hash = '#/';
+                                }, function (response) {
+                                    if (response.status === 404) {
+                                        UserDialogService.showSimpleDialog(translations['organization.controller.notfound'], 'Error', null, event);
+                                    }
+                                });
                         });
-                });
+                })
         }
 
         function getUsers() {
@@ -482,9 +488,16 @@
         function showMissingScopesDialog(event, user) {
             var title = 'Missing information';
             var msg = 'This user hasn\'t shared some required information:<br />';
-            msg += user.missingscopes.join('<br />');
-            var closeText = 'Close';
-            UserDialogService.showSimpleDialog(msg, title, closeText, event);
+            $translate(['organization.controller.missinginfo', 'organization.controller.missinguserinfo']).then(function(translations){
+                title = translations['organization.controller.missinginfo'];
+                msg = translations['organization.controller.missinguserinfo'];
+                msg += user.missingscopes.join('<br />');
+                var closeText = 'Close';
+                UserDialogService.showSimpleDialog(msg, title, closeText, event);
+            });
+            // msg += user.missingscopes.join('<br />');
+            // var closeText = 'Close';
+            // UserDialogService.showSimpleDialog(msg, title, closeText, event);
         }
     }
 
@@ -495,7 +508,7 @@
         }
     }
 
-    function InvitationDialogController($scope, $mdDialog, organization, OrganizationService, UserDialogService) {
+    function InvitationDialogController($scope, $mdDialog, $translate, organization, OrganizationService, UserDialogService) {
 
         $scope.role = "members";
 
@@ -565,18 +578,20 @@
         }
     }
 
-    function APIKeyDialogController($scope, $mdDialog, organization, OrganizationService, label) {
+    function APIKeyDialogController($scope, $mdDialog, $translate, organization, OrganizationService, label) {
         //If there is a key, it is already saved, if not, this means that a new secret is being created.
 
         $scope.apikey = {secret: ""};
 
         if (label) {
-            $scope.secret = "-- Loading --";
-            OrganizationService.getAPIKey(organization, label).then(
-                function(data){
-                    $scope.apikey = data;
-                }
-            );
+            $translate(['organization.controller.loadingkey']).then(function(translations){
+                $scope.secret = translations['organization.controller.loadingkey'];
+                OrganizationService.getAPIKey(organization, label).then(
+                    function(data){
+                        $scope.apikey = data;
+                    }
+                );
+            })
         }
 
         $scope.originalLabel = label;
@@ -719,7 +734,7 @@
 
     }
 
-    function EditOrganizationMemberController($mdDialog, OrganizationService, UserDialogService, organization, user, initialRole) {
+    function EditOrganizationMemberController($mdDialog, $translate, OrganizationService, UserDialogService, organization, user, initialRole) {
         var ctrl = this;
         ctrl.role = initialRole;
         ctrl.user = user;
@@ -738,7 +753,9 @@
                 .then(function (data) {
                     $mdDialog.hide({action: 'edit', data: data, newRole: ctrl.role});
                 }, function () {
-                    UserDialogService.showSimpleDialog('Could not change role, please try again later', 'Error', 'ok', event);
+                    $translate(['organization.controller.cantchangerole']).then(function(translations){
+                        UserDialogService.showSimpleDialog(translations['organization.controller.cantchangerole'], 'Error', 'ok', event);
+                    })
                 });
         }
 
@@ -753,7 +770,7 @@
         }
     }
 
-    function EditOrganizationMemberOrgController($mdDialog, OrganizationService, UserDialogService, organization, org, initialRole) {
+    function EditOrganizationMemberOrgController($mdDialog, $translate, OrganizationService, UserDialogService, organization, org, initialRole) {
         var ctrl = this;
         ctrl.role = initialRole;
         ctrl.org = org;
@@ -772,7 +789,9 @@
                 .then(function (data) {
                     $mdDialog.hide({action: 'edit', data: data});
                 }, function () {
-                    UserDialogService.showSimpleDialog('Could not change role, please try again later', 'Error', 'ok', event);
+                    $translate(['organization.controller.cantchangerole']).then(function(translations){
+                        UserDialogService.showSimpleDialog(translations['organization.controller.cantchangerole'], 'Error', 'ok', event);
+                    })
                 });
         }
 

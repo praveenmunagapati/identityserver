@@ -2,41 +2,43 @@
     <form name="form" ng-submit="ctrl.submit()">
         <md-toolbar>
             <div class="md-toolbar-tools">
-                <h2>New organization</h2>
+                <h2 translate='organization.views.createorganizationdialog.neworg'>New organization</h2>
                 <span flex></span>
                 <md-button class="md-icon-button" ng-click="ctrl.cancel()">
-                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog" translate-attr="{ 'aria-label': 'closedialog' }"></md-icon>
                 </md-button>
             </div>
         </md-toolbar>
         <md-dialog-content>
             <div class="md-dialog-content" layout="column" style="min-width:350px;">
-                <p ng-if="::ctrl.parentOrganization">Create a suborganization in
-                    <span ng-bind="::ctrl.parentOrganization.split('.').splice(-1,1)[0]"></span></p>
-                <p ng-if="::!ctrl.parentOrganization">Create a new organization</p>
+                <p ng-if="::ctrl.parentOrganization" translate='organization.views.createorganizationdialog.createchild' translate-values="{org: ctrl.parentOrganization.split('.').splice(-1,1)[0]}">
+                    Create a suborganization in <span ng-bind="::ctrl.parentOrganization.split('.').splice(-1,1)[0]"></span></p>
+                <p ng-if="::!ctrl.parentOrganization" translate='organization.views.createorganizationdialog.createnew'>Create a new organization</p>
                 <md-input-container>
-                    <label for="organizationName">Organization name</label>
+                    <label for="organizationName" translate='organization.views.createorganizationdialog.orgname'>Organization name</label>
                     <input ng-model="ctrl.name" required type="text" md-autofocus="true" name="name" minlength="3"
                            ng-minlength="3" ng-change="ctrl.resetValidation()" ng-pattern="/^[a-z0-9 \-_]+$/"
                            id=organizationName md-maxlength="150">
                     <div ng-messages="form.name.$error">
-                        <div ng-message="duplicate">This name is already taken</div>
-                        <div ng-message="pattern">Invalid organization name. <br/>
+                        <div ng-message="duplicate" translate='organization.views.createorganizationdialog.orgnameduplicate'>This name is already taken</div>
+                        <div ng-message="pattern" translate='organization.views.createorganizationdialog.orgnamepattern'>Invalid organization name. <br/>
                             Only characters a-z, 0-9, dashes, <br/>
                             underscores and space are allowed
                         </div>
-                        <div ng-message="minlength">Minimum 3 characters are required</div>
-                        <div ng-message="md-maxlength">The organization name cannot be longer than 150 characters</div>
+                        <div ng-message="minlength" translate='organization.views.createorganizationdialog.orgnameminlength'>Minimum 3 characters are required</div>
+                        <div ng-message="md-maxlength" translate='organization.views.createorganizationdialog.orgnamemaxlength'>
+                            The organization name cannot be longer than 150 characters
+                        </div>
                     </div>
                 </md-input-container>
             </div>
         </md-dialog-content>
         <md-dialog-actions layout="row">
             <span flex></span>
-            <md-button ng-click="ctrl.cancel()">
+            <md-button ng-click="ctrl.cancel()" translate='cancel'>
                 Cancel
             </md-button>
-            <md-button class="md-primary" type="submit" ng-disabled="!form.$valid">
+            <md-button class="md-primary" type="submit" ng-disabled="!form.$valid" translate='create'>
                 Create
             </md-button>
         </md-dialog-actions>

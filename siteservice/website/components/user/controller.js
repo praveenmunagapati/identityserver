@@ -8,10 +8,10 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$routeParams', '$location', '$window', '$mdMedia', '$mdDialog',
+        '$q', '$rootScope', '$routeParams', '$location', '$window', '$mdMedia', '$mdDialog', '$translate',
         'NotificationService', 'OrganizationService', 'UserService', 'UserDialogService'];
 
-    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $mdMedia, $mdDialog,
+    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $mdMedia, $mdDialog, $translate,
                                 NotificationService, OrganizationService, UserService, UserDialogService) {
         var vm = this;
         vm.username = $rootScope.user;
@@ -111,12 +111,14 @@
                                 return email.verified;
                             }).length > 0;
                         if (!hasVerifiedEmail) {
-                            vm.notifications.security.push({
-                                tabIndex: 0,
-                                subject: 'verified_emails',
-                                msg: 'You do not have any verified email addresses. You will not be able to recover your account if you do not verify at least one of them.',
-                                status: 'pending'
-                            });
+                            $translate(['user.controller.verifiedemails']).then(function(translations){
+                                vm.notifications.security.push({
+                                    tabIndex: 0,
+                                    subject: 'verified_emails',
+                                    msg: translations['user.controller.verifiedemails'],
+                                    status: 'pending'
+                                });
+                            })
                         }
                         updatePendingNotificationsCount();
                         vm.loaded.notifications = true;
@@ -125,9 +127,11 @@
         }
 
         function updatePendingNotificationsCount() {
-            vm.pendingCount = getPendingCount('all');
-            vm.notificationMessage = vm.pendingCount ? '' : 'No unhandled notifications';
-            $rootScope.notificationCount = vm.pendingCount;
+            $translate(['user.controller.nonotifcations']).then(function(translations){
+                vm.pendingCount = getPendingCount('all');
+                vm.notificationMessage = vm.pendingCount ? '' : translations['user.controller.notifications'];
+                $rootScope.notificationCount = vm.pendingCount;
+            })
         }
 
         function loadOrganizations() {
@@ -377,7 +381,7 @@
         function showChangePasswordDialog(event) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
 
-            function showPasswordDialogController($mdDialog, username, updatePassword) {
+            function showPasswordDialogController($scope, $mdDialog, username, updatePassword) {
                 var ctrl = this;
                 ctrl.resetValidation = resetValidation;
                 ctrl.updatePassword = updatepwd;
@@ -392,16 +396,18 @@
 
                 function updatepwd() {
                     updatePassword(username, ctrl.currentPassword, ctrl.newPassword).then(function () {
-                        $mdDialog.hide();
-                        $mdDialog.show(
+                        $translate(['user.controller.passwordupdated', 'user.controller.passwordchanged', 'user.controller.close']).then(function(translations) {
+                            $mdDialog.hide();
+                            $mdDialog.show(
                             $mdDialog.alert()
                                 .clickOutsideToClose(true)
-                                .title('Password updated')
-                                .textContent('Your password has been changed.')
-                                .ariaLabel('Password updated')
-                                .ok('Close')
+                                .title(translations['user.controller.passwordupdated'])
+                                .textContent(translations['user.controller.passwordchanged'])
+                                .ariaLabel(translations['user.controller.passwordupdated'])
+                                .ok(translations['user.controller.close'])
                                 .targetEvent(event)
-                        );
+                            );
+                        })
                     }, function (response) {
                         if (response.status === 422) {
                             $scope.changepasswordform.currentPassword.$setValidity(response.data.error, false);
@@ -411,7 +417,7 @@
             }
 
             $mdDialog.show({
-                controller: ['$mdDialog', 'username', 'updatePassword', showPasswordDialogController],
+                controller: ['$scope', '$mdDialog', 'username', 'updatePassword', showPasswordDialogController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/resetPasswordDialog.html',
                 targetEvent: event,
@@ -465,25 +471,29 @@
         function verifyEmailAddress(event, email) {
             UserService.sendEmailAddressVerification(vm.username, email.label)
                 .then(function () {
-                    $mdDialog.show(
-                        $mdDialog.alert()
-                            .clickOutsideToClose(true)
-                            .title('Verification email sent')
-                            .textContent('A verification email has been sent to ' + email.emailaddress + '.')
-                            .ariaLabel('Verification email sent')
-                            .ok('close')
-                            .targetEvent(event)
-                    );
+                    $translate(['user.controller.emailsent', 'user.controller.emailsentto', 'user.controller.close'], {email: email.emailaddress}).then(function(translations){
+                        $mdDialog.show(
+                            $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title(translations['user.controller.emailsent'])
+                                .textContent(translations['user.controller.emailsentto'])
+                                .ariaLabel(translations['user.controller.emailsent'])
+                                .ok(translations['user.controller.close'])
+                                .targetEvent(event)
+                        );
+                    })
                 }, function () {
-                    $mdDialog.show(
-                        $mdDialog.alert()
-                            .clickOutsideToClose(true)
-                            .title('Error')
-                            .textContent('Could not send verification email. Please try again later.')
-                            .ariaLabel('Error while sending verification email')
-                            .ok('close')
-                            .targetEvent(event)
-                    );
+                    $translate(['user.controller.error', 'user.controller.couldnotsend', 'user.controller.errorwhilesending', 'user.controller.close']).then(function(translations){
+                        $mdDialog.show(
+                            $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title(translations['user.controller.error'])
+                                .textContent(translations['user.controller.couldnotsend'])
+                                .ariaLabel(translations['user.controller.errorwhilesending'])
+                                .ok(translations['user.controller.close'])
+                                .targetEvent(event)
+                        );
+                    })
                 });
         }
 
@@ -643,32 +653,34 @@
                     return phone.verified;
                 }).length !== 0;
             if (!hasConfirmedPhones) {
-                var msg = 'You cannot remove your authenticator application because this is your last two-factor' +
-                    ' authentication method.<br />Add a phone number and verify it to be able to remove your authenticator application.';
-                $mdDialog.show(
-                    $mdDialog.alert()
-                        .clickOutsideToClose(true)
-                        .title('Cannot remove authenticator')
-                        .htmlContent(msg)
-                        .ariaLabel('Cannot remove authenticator')
-                        .ok('Ok')
-                        .targetEvent(event)
-                );
+                $translate(['user.controller.cantremoveauthapp', 'user.controller.cantremoveauthappmsg', 'ok']).then(function(translations){
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                            .clickOutsideToClose(true)
+                            .title(translations['user.controller.cantremoveauthapp'])
+                            .htmlContent(translations['user.controller.cantremoveauthappmsg'])
+                            .ariaLabel(translations['user.controller.cantremoveauthapp'])
+                            .ok(translations['ok'])
+                            .targetEvent(event)
+                    );
+                })
                 return;
             }
-            var confirm = $mdDialog.confirm()
-                .title('Unauthorize authenticator')
-                .textContent('Are you sure you want to unauthorize your authenticator application?')
-                .ariaLabel('Unauthorize authenticator')
-                .targetEvent(event)
-                .ok('Yes')
-                .cancel('No');
-            $mdDialog.show(confirm).then(function () {
-                UserService.removeAuthenticator(vm.username)
-                    .then(function () {
-                        vm.twoFAMethods.totp = false;
-                    });
-            });
+            $translate(['user.controller.removeauthenticator', 'user.controller.confirmremoveauthenticator', 'user.controller.yes', 'user.controller.no']).then(function(translations){
+                var confirm = $mdDialog.confirm()
+                    .title(translations['user.controller.removeauthenticator'])
+                    .textContent(translations['user.controller.confirmremoveauthenticator'])
+                    .ariaLabel(translations['user.controller.removeauthenticator'])
+                    .targetEvent(event)
+                    .ok(translations['user.controller.yes'])
+                    .cancel(translations['user.controller.no']);
+                $mdDialog.show(confirm).then(function () {
+                    UserService.removeAuthenticator(vm.username)
+                        .then(function () {
+                            vm.twoFAMethods.totp = false;
+                        });
+                });
+            })
         }
 
         function resolveMissingScopeClicked(event, missingScope) {

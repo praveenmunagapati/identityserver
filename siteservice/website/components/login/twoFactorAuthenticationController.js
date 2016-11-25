@@ -1,10 +1,10 @@
 (function () {
     'use strict';
     angular.module('loginApp')
-        .controller('twoFactorAuthenticationController', ['$scope', '$window', '$interval', 'LoginService',
+        .controller('twoFactorAuthenticationController', ['$scope', '$window', '$interval', '$translate', 'LoginService',
             twoFactorAuthenticationController]);
 
-    function twoFactorAuthenticationController($scope, $window, $interval, LoginService) {
+    function twoFactorAuthenticationController($scope, $window, $interval, $translate, LoginService) {
         var STEP_CHOICE = 'choice',
             STEP_CODE = 'code';
         var vm = this;
@@ -16,6 +16,8 @@
         vm.nextStep = nextStep;
         vm.selectedTwoFaMethod = null;
         vm.hasMoreThanOneTwoFaMethod = false;
+        vm.smshelp = '';
+        vm.totphelp = '';
         var steps = [STEP_CHOICE, STEP_CODE];
         vm.step = steps[0];
         var interval;
@@ -54,6 +56,11 @@
                         nextStep();
                     }
                 });
+            // translations have to be preloaded, because loading them in the getHelpText method currently causes a digest loop issue and angular will go haywire
+            $translate(['login.2facontroller.sms', 'login.2facontroller.totp']).then(function(translations){
+                vm.smshelp = translations['login.2facontroller.sms'];
+                vm.totphelp = translations['login.2facontroller.totp'];
+            })
         }
 
         function nextStep() {
@@ -67,10 +74,10 @@
             var text = '';
             if (vm.step === STEP_CODE) {
                 if (vm.selectedTwoFaMethod.indexOf('sms-') === 0) {
-                    text = 'Click the link in the sms sent to your phone or enter the code from the sms here to continue.';
+                    text = vm.smshelp;
                 }
                 if (vm.selectedTwoFaMethod === 'totp') {
-                    text = 'Fill in the 6 digit code from the authenticator application on your phone.';
+                    text = vm.totphelp
                 }
             }
             return text;
