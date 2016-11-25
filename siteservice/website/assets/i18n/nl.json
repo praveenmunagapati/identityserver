@@ -75,7 +75,8 @@
                 "acceptinvite": "Aanvaardt uitnodiging",
                 "security": "Veiligheidsmeldingen",
                 "securitynotice": "Veiligheidsmelding",
-                "resolve": "Los op"
+                "resolve": "Los op",
+                "notsharinginfo": "Een deel van de vereiste informatie wordt niet gedeelt met {{org}}"
             },
             "organizations": {
                 "organizations": "Organizaties",

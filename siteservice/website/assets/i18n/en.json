@@ -75,7 +75,8 @@
                 "acceptinvite": "Accept invitation",
                 "security": "Security notifications",
                 "securitynotice": "Security notice",
-                "resolve": "Resolve"
+                "resolve": "Resolve",
+                "notsharinginfo": "Some required information isn't shared with organization {{org}}"
             },
             "organizations": {
                 "organizations": "Organizations",

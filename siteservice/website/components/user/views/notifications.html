@@ -58,10 +58,10 @@
                         <md-list-item class="md-1-line"
                                       ng-repeat="missingScope in vm.notifications.missingscopes track by missingScope.organization"
                                       ng-if="::vm.orgsWithInvitation.indexOf(missingScope.organization) === -1">
-                            <p>Some required information isn't shared with organization {{ ::missingScope.organization
-                                }}</p>
+                            <p translate='user.views.notifications.notsharinginfo' translate-values='{ org: missingScope.organization }'>
+                                Some required information isn't shared with organization {{ ::missingScope.organization }}</p>
                             <md-button class="md-secondary md-raised"
-                                       ng-click="vm.resolveMissingScopeClicked($event, missingScope)">
+                                       ng-click="vm.resolveMissingScopeClicked($event, missingScope)" translate='user.views.notifications.resolve'>
                                 Resolve
                             </md-button>
                         </md-list-item>

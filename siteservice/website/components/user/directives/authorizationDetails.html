@@ -79,12 +79,10 @@
             <i class="fa fa-at">
                 <md-tooltip><span translate='user.directives.authorizationdetails.emailaddress'>Email address</span></md-tooltip>
             </i>
-            Email address <span ng-if="::auth.requestedlabel !== 'main'">for <span
-                ng-bind="::auth.requestedlabel"></span></span>
                 <span ng-if="::auth.requestedlabel !== 'main'" translate='user.directives.authorizationdetails.emailaddressfor' translate-values='{label: auth.requestedlabel}'>
                     Email address for <span ng-bind="::auth.requestedlabel"></span>
                 </span>
-                <span ng-if="::!auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.emailaddress'>
+                <span ng-if="::auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.emailaddress'>
                     Email address
                 </span>
         </p>
@@ -104,12 +102,11 @@
                   layout-align="center start" layout-align-gt-sm="start center">
         <p><i class="fa fa-phone">
             <md-tooltip><span translate='phonenumber'>Phone number</span></md-tooltip>
-        </i> Phone number <span ng-if="::auth.requestedlabel !== 'main'">for <span
-                ng-bind="::auth.requestedlabel"></span></span>
+        </i>
                 <span ng-if="::auth.requestedlabel !== 'main'" translate='user.directives.authorizationdetails.phonenumberfor' translate-values='{label: auth.requestedlabel}'>
                     Phone number for <span ng-bind="::auth.requestedlabel"></span>
                 </span>
-                <span ng-if="::!auth.requestedlabel  === 'main'" translate='phonenumber'>
+                <span ng-if="::auth.requestedlabel  === 'main'" translate='phonenumber'>
                     Phone number
                 </span>
         </p>
@@ -130,12 +127,11 @@
                   layout-align="center start" layout-align-gt-sm="start center">
         <p><i class="fa fa-envelope-o">
             <md-tooltip><span translate='user.directives.authorizationdetails.address'>Address</span></md-tooltip>
-        </i> Address <span ng-if="::auth.requestedlabel !== 'main'">for <span
-                ng-bind="::auth.requestedlabel"></span></span>
+        </i>
                 <span ng-if="::auth.requestedlabel !== 'main'" translate='user.directives.authorizationdetails.addressfor' translate-values='{label: auth.requestedlabel}'>
                     Address for <span ng-bind="::auth.requestedlabel"></span>
                 </span>
-                <span ng-if="::!auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.address'>
+                <span ng-if="::auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.address'>
                     Address
                 </span>
         </p>
@@ -157,12 +153,10 @@
         <p><i class="fa fa-bank">
             <md-tooltip><span translate='user.directives.authorizationdetails.bankaccount'>Bank account</span></md-tooltip>
         </i>
-            Bank account <span ng-if="::auth.requestedlabel !== 'main'">for <span
-                    ng-bind="::auth.requestedlabel"></span></span>
                     <span ng-if="::auth.requestedlabel !== 'main'" translate='user.directives.authorizationdetails.bankaccountfor' translate-values='{label: auth.requestedlabel}'>
                         Bank account for <span ng-bind="::auth.requestedlabel"></span>
                     </span>
-                    <span ng-if="::!auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.bankaccount'>
+                    <span ng-if="::auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.bankaccount'>
                         Bank account
                     </span>
         </p>
@@ -187,7 +181,7 @@
             <span ng-if="::auth.requestedlabel !== 'main'" translate='user.directives.authorizationdetails.digitalwalletfor' translate-values='{label: auth.requestedlabel}'>
                 Digital wallet address for <span ng-bind="::auth.requestedlabel"></span>
             </span>
-            <span ng-if="::!auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.digitalwallet'>
+            <span ng-if="::auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.digitalwallet'>
                 Digital wallet address
             </span>
             <span ng-if="::auth.currency" translate='user.directives.authorizationdetails.currency' translate-values='{currency: auth.currency}'>
@@ -239,7 +233,7 @@
                 <span ng-if="::auth.requestedlabel !== 'main'" translate='user.directives.authorizationdetails.pubkeyfor' translate-values='{label: auth.requestedlabel}'>
                     Public key for <span ng-bind="::auth.requestedlabel"></span>
                 </span>
-                <span ng-if="::!auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.pubkey'>
+                <span ng-if="::auth.requestedlabel  === 'main'" translate='user.directives.authorizationdetails.pubkey'>
                     Public key
                 </span>
         </p>
