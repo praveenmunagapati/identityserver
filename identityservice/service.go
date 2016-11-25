@@ -64,7 +64,10 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	contractdb.InitModels()
 
 	// Organization API
-	organization.OrganizationsInterfaceRoutes(router, organization.OrganizationsAPI{})
+	organization.OrganizationsInterfaceRoutes(router, organization.OrganizationsAPI{
+		EmailAddressValidationService: service.emailaddresValidationService,
+		PhonenumberValidationService:  service.phonenumberValidationService,
+	})
 	userorganization.UsersusernameorganizationsInterfaceRoutes(router, userorganization.UsersusernameorganizationsAPI{})
 	organizationdb.InitModels()
 

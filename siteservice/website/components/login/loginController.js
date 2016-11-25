@@ -1,10 +1,11 @@
 (function () {
     'use strict';
     angular.module('loginApp')
-        .controller('loginController', ['$http', '$window', '$scope', '$rootScope', '$mdUtil', '$interval', 'configService', 'LoginService', loginController]);
+        .controller('loginController', ['$http', '$window', '$scope', '$rootScope', '$interval', 'configService', 'LoginService', loginController]);
 
-    function loginController($http, $window, $scope, $rootScope, $mdUtil, $interval, configService, LoginService) {
+    function loginController($http, $window, $scope, $rootScope, $interval, configService, LoginService) {
         var vm = this;
+        var urlParams = URI($window.location.href).search(true);
         configService.getConfig(function (config) {
             vm.totpsecret = config.totpsecret;
         });
@@ -13,7 +14,7 @@
         vm.validateUsername = validateUsername;
         vm.resetValidation = resetValidation;
         vm.loginInfoValid = loginInfoValid;
-        vm.externalSite = URI($window.location.href).search(true).client_id;
+        vm.externalSite = urlParams.client_id;
         $rootScope.registrationUrl = '/register' + $window.location.search;
         vm.logo = "";
         vm.twoFAMethod = 'sms';
@@ -53,7 +54,7 @@
                     var ctx = c.getContext("2d");
                     ctx.clearRect(0, 0, c.width, c.height);
                     ctx.drawImage(img, 0, 0, c.width, c.height);
-                }
+                };
                 img.src = vm.logo;
 
             }

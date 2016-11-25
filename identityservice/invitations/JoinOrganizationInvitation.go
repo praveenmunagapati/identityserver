@@ -18,6 +18,17 @@ const (
 	RoleOwner  = "owner"
 )
 
+type InviteMethod string
+
+const (
+	MethodWebsite InviteMethod = "website"
+	MethodEmail   InviteMethod = "email"
+	MethodPhone   InviteMethod = "phone"
+)
+const (
+	InviteUrl = "https://%s/login#/organizationinvite/%s"
+)
+
 //JoinOrganizationInvitation defines an invitation to join an organization
 type JoinOrganizationInvitation struct {
 	ID           bson.ObjectId    `json:"-" bson:"_id,omitempty"`
@@ -26,4 +37,8 @@ type JoinOrganizationInvitation struct {
 	User         string           `json:"user"`
 	Status       InvitationStatus `json:"status"`
 	Created      db.DateTime      `json:"created"`
+	Method       InviteMethod     `json:"method"`
+	EmailAddress string           `json:"-"` // for privacy reasons
+	PhoneNumber  string           `json:"-"` // for privacy reasons
+	Code         string           `json:"-"`
 }

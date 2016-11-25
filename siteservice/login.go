@@ -23,6 +23,7 @@ import (
 	organizationdb "github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/db/user"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
+	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/tools"
 	"github.com/itsyouonline/identityserver/validation"
@@ -526,6 +527,7 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 
 	redirectURL := "/"
 	queryValues := request.URL.Query()
+	log.Warn(queryValues)
 	endpoint := queryValues.Get("endpoint")
 	if endpoint != "" {
 		queryValues.Del("endpoint")
@@ -550,13 +552,81 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 		}
 	}
 
+	inviteCode := queryValues.Get("invitecode")
+	if inviteCode != "" {
+		err := verifyInfoAfterLogin(request, username, inviteCode)
+		if err != nil {
+			log.Error("Error while running verifyInfoAfterLogin: ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+	}
+
 	sessions.Save(request, w)
 	response := struct {
-		Redirecturl string `json:"redirecturl"`
+		RedirectUrl string `json:"redirecturl"`
 	}{}
-	response.Redirecturl = redirectURL
+	response.RedirectUrl = redirectURL
 	log.Debug("Redirecting to:", redirectURL)
 	json.NewEncoder(w).Encode(response)
+}
+
+func verifyInfoAfterLogin(request *http.Request, username string, inviteCode string) error {
+	invitationMgr := invitations.NewInvitationManager(request)
+	orgMgr := organizationdb.NewManager(request)
+	valMgr := validationdb.NewManager(request)
+	userMgr := user.NewManager(request)
+	invite, err := invitationMgr.GetByCode(inviteCode)
+	if err == mgo.ErrNotFound || invite.Status != invitations.RequestPending {
+		// silently ignore
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	org, err := orgMgr.GetByName(invite.Organization)
+	if org == nil {
+		log.Warn("Cannot accept invitation of deleted organization: ", invite.Organization)
+		return nil
+	}
+	if invite.Role == invitations.RoleMember {
+		err = orgMgr.SaveMember(org, username)
+		if err != nil {
+			return err
+		}
+	} else if invite.Role == invitations.RoleOwner {
+		err = orgMgr.SaveOwner(org, username)
+		if err != nil {
+			return err
+		}
+	}
+	if invite.Method == invitations.MethodEmail {
+		// Set this email address as verified and create a new one if necessary
+		emailAddress := user.EmailAddress{Label: invite.EmailAddress, EmailAddress: invite.EmailAddress}
+		err = userMgr.SaveEmail(username, emailAddress)
+		if err != nil {
+			return err
+		}
+		validatedEmailAddress := valMgr.NewValidatedEmailAddress(username, invite.EmailAddress)
+		err = valMgr.SaveValidatedEmailAddress(validatedEmailAddress)
+		if err != nil {
+			return err
+		}
+	} else if invite.Method == invitations.MethodPhone {
+		// Set this phone number as verified and create a new one if necessary
+		phoneNumber := user.Phonenumber{Label: invite.PhoneNumber, Phonenumber: invite.PhoneNumber}
+		err = userMgr.SavePhone(username, phoneNumber)
+		if err != nil {
+			return err
+		}
+		validatedPhoneNumber := valMgr.NewValidatedPhonenumber(username, invite.PhoneNumber)
+		err = valMgr.SaveValidatedPhonenumber(validatedPhoneNumber)
+		if err != nil {
+			return err
+		}
+	}
+	return invitationMgr.SetAcceptedByCode(inviteCode)
 }
 
 //ForgotPassword handler for POST /login/forgotpassword
@@ -584,12 +654,12 @@ func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Requ
 		username = validatedemail.Username
 		emails = []string{validatedemail.EmailAddress}
 	} else {
-		user, err := userMgr.GetByName(values.Login)
+		usr, err := userMgr.GetByName(values.Login)
 		if err != nil && err != mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
-		username = user.Username
+		username = usr.Username
 		validatedemails, err := valMgr.GetByUsernameValidatedEmailAddress(username)
 		if validatedemails == nil || len(validatedemails) == 0 {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -706,4 +776,19 @@ func (service *Service) LoginResendPhonenumberConfirmation(w http.ResponseWriter
 	loginSession.Values["phonenumbervalidationkey"] = validationkey
 	sessions.Save(request, w)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (service *Service) GetOrganizationInvitation(w http.ResponseWriter, request *http.Request) {
+	code := mux.Vars(request)["code"]
+	if code == "" {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	invitationMgr := invitations.NewInvitationManager(request)
+	invite, err := invitationMgr.GetByCode(code)
+	if err == mgo.ErrNotFound {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+		json.NewEncoder(w).Encode(invite)
+	}
 }

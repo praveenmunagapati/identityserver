@@ -376,7 +376,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		registrationSession.Values["redirectparams"] = values.RedirectParams
 
 		sessions.Save(request, w)
-		response.Redirecturl = fmt.Sprintf("https://%s/register#/smsconfirmation", request.Host)
+		response.Redirecturl = fmt.Sprintf("https://%s/register?"+values.RedirectParams+"#/smsconfirmation", request.Host)
 		json.NewEncoder(w).Encode(&response)
 		return
 	}

@@ -87,6 +87,10 @@
                 templateUrl: 'components/registration/views/registrationsmsform.html',
                 controller: 'smsConfirmationController',
                 controllerAs: 'vm'
+            }).when('/organizationinvite/:code', {
+                templateUrl: 'components/login/views/organizationinvite.html',
+                controller: 'organizationInviteController',
+                controllerAs: 'vm'
             })
             .otherwise('/');
     }

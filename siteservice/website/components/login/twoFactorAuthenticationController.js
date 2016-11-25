@@ -44,16 +44,16 @@
                         return;
                     }
                     vm.hasMoreThanOneTwoFaMethod = methods.length > 1;
-                    if (!vm.hasMoreThanOneTwoFaMethod) {
-                        vm.selectedTwoFaMethod = methods[0];
-                        nextStep();
-                    } else {
+                    if (vm.hasMoreThanOneTwoFaMethod) {
                         // Preselect based on what was selected when previously logging in
                         var method = localStorage.getItem('itsyouonline.last2falabel');
                         if (!method || methods.indexOf(method) === -1) {
                             method = methods[0];
                         }
                         vm.selectedTwoFaMethod = method;
+                    } else {
+                        vm.selectedTwoFaMethod = methods[0];
+                        nextStep();
                     }
                 });
             // translations have to be preloaded, because loading them in the getHelpText method currently causes a digest loop issue and angular will go haywire

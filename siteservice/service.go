@@ -1,7 +1,6 @@
 package siteservice
 
 import (
-	"strconv"
 	"bytes"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -14,6 +13,7 @@ import (
 	"github.com/itsyouonline/identityserver/specifications"
 	"github.com/itsyouonline/identityserver/validation"
 	"net/http"
+	"strconv"
 
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
@@ -34,6 +34,7 @@ type Service struct {
 //NewService creates and initializes a Service
 func NewService(cookieSecret string, smsService communication.SMSService, emailService communication.EmailService) (service *Service) {
 	service = &Service{smsService: smsService}
+
 	p := &validation.IYOPhonenumberValidationService{SMSService: smsService}
 	service.phonenumberValidationService = p
 	e := &validation.IYOEmailAddressValidationService{EmailService: emailService}
@@ -72,6 +73,7 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("GET").Path("/login/smsconfirmed").HandlerFunc(service.Check2FASMSConfirmation)
 	router.Methods("POST").Path("/login/forgotpassword").HandlerFunc(service.ForgotPassword)
 	router.Methods("POST").Path("/login/resetpassword").HandlerFunc(service.ResetPassword)
+	router.Methods("GET").Path("/login/organizationinvitation/{code}").HandlerFunc(service.GetOrganizationInvitation)
 	//Authorize form
 	router.Methods("GET").Path("/authorize").HandlerFunc(service.ShowAuthorizeForm)
 	//Facebook callback
@@ -178,14 +180,14 @@ func (service *Service) ErrorPage(w http.ResponseWriter, request *http.Request) 
 	if err != nil {
 		log.Info("Error code could not be converted to int")
 		// The error page already loaded so we might as well use it
-		errorcode = 400;
+		errorcode = 400
 		errornumber = "400"
 	}
 
 	// check if the error code is within the accepted 4xx client or 5xx server error range
 	if errorcode > 599 || errorcode < 400 {
 		log.Info("Error code out of bounds: ", errorcode)
-		errorcode = 400;
+		errorcode = 400
 		errornumber = "400"
 	}
 
