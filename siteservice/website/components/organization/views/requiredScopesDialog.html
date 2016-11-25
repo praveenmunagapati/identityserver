@@ -2,53 +2,56 @@
     <form name="vm.form">
         <md-toolbar>
             <div class="md-toolbar-tools" layout-align="space-between center">
-                <h2><span ng-if="::!vm.originalScope">New</span><span ng-if="::vm.originalScope">Update</span> required
-                    information</h2>
+                <h2><span ng-if="::!vm.originalScope" translate='organization.views.requiredscopesdialog.newrequiredinfo'>New required information</span>
+                    <span ng-if="::vm.originalScope" translate='organization.views.requiredscopesdialog.updaterequiredinfo'>Update required information</span>
+                </h2>
                 <md-button class="md-icon-button" ng-click="vm.cancel()">
-                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog" translate-attr="{ 'aria-label': 'closedialog' }"></md-icon>
                 </md-button>
             </div>
         </md-toolbar>
         <md-dialog-content>
             <div class="md-dialog-content" layout="column">
                 <md-input-container>
-                    <label>Required information scope</label>
+                    <label translate='organization.views.requiredscopesdialog.requiredinformationscope'>Required information scope</label>
                     <input ng-model="vm.requiredScope.scope" required type="text" md-autofocus="true"
                            name="scope" ng-pattern="/^user:.*$/">
                     <div ng-messages="vm.form.scope.$error">
-                        <div ng-message="pattern">Invalid scope. Scope must start with "user:"</div>
+                        <div ng-message="pattern" translate='organization.views.requiredscopesdialog.requiredinformationscopepattern'>Invalid scope. Scope must start with "user:"</div>
                     </div>
                     <div ng-messages="vm.validationerrors" md-auto-hide="false">
-                        <div ng-message="duplicate">This required scope already exists</div>
-                        <div ng-message="invalid_scope">Invalid scope.</div>
+                        <div ng-message="duplicate" translate='organization.views.requiredscopesdialog.duplicatescope'>This required scope already exists</div>
+                        <div ng-message="invalid_scope" translate='organization.views.requiredscopesdialog.requiredinformationscopeinvalid'>Invalid scope.</div>
                     </div>
-                    <p>See <a ng-href="{{ ::vm.scopeDocumentationUrl }}">this page</a> for the possible scopes.</p>
+                    <p translate='organization.views.requiredscopesdialog.scopeinfo' translate-values='{ url: vm.scopeDocumentationUrl }'>
+                        See <a ng-href="{{ ::vm.scopeDocumentationUrl }}">this page</a> for the possible scopes.
+                    </p>
                 </md-input-container>
-                <p class="error">Access scope</p>
+                <p class="error" translate='organization.views.requiredscopesdialog.accessscope'>Access scope</p>
                 <md-checkbox ng-repeat="scope in vm.accessScopes track by $index"
                              ng-model="scope.checked" name="scope_{{ ::scope.scope }}"
                              ng-change="vm.allowedScopesChanged()">
                     {{ ::scope.scope }}
                 </md-checkbox>
-                <p ng-if="vm.showPleaseSelectAccessScope" class="validation-error">Please select one or more access
+                <p ng-if="vm.showPleaseSelectAccessScope" class="validation-error" translate='organization.views.requiredscopesdialog.noaccessscopeselected'>Please select one or more access
                     scopes</p>
-                <p>The access scope determines who can see the shared information.</p>
+                <p translate='organization.views.requiredscopesdialog.accessscopeinfo'>The access scope determines who can see the shared information.</p>
             </div>
         </md-dialog-content>
         <md-dialog-actions layout="row">
-            <md-button class="md-warn" ng-click="vm.remove()" ng-if="vm.originalScope">
+            <md-button class="md-warn" ng-click="vm.remove()" ng-if="vm.originalScope" translate='delete'>
                 Delete
             </md-button>
             <span flex></span>
-            <md-button ng-click="vm.cancel()">
+            <md-button ng-click="vm.cancel()" translate='cancel'>
                 Cancel
             </md-button>
             <md-button class="md-primary" type="submit" ng-click="vm.create()" ng-if="!vm.originalScope"
-                       ng-disabled="!vm.form.$valid">
+                       ng-disabled="!vm.form.$valid" translate='create'>
                 Create
             </md-button>
             <md-button class="md-primary" type="submit" ng-click="vm.update()" ng-if="vm.originalScope"
-                       ng-disabled="!vm.form.$valid">
+                       ng-disabled="!vm.form.$valid" translate='save'>
                 Save
             </md-button>
         </md-dialog-actions>

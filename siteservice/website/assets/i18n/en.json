@@ -401,6 +401,18 @@
                 "logo": "Logo",
                 "filetoolarge": "The file size of the (resized) file is too large.",
                 "filedrop": "Or drop a file in the area below"
+            },
+            "requiredscopesdialog": {
+                "newrequiredinfo": "New required information",
+                "updaterequiredinfo": "Update required information",
+                "requiredinformationscope": "Required information scope",
+                "requiredinformationscopepattern": "Invalid scope. Scope must start with \"user:\"",
+                "duplicatescope": "This required scope already exists",
+                "requiredinformationscopeinvalid": "Invalid scope",
+                "scopeinfo": "see <a href={{url}}> this page</a> for possible scopes.",
+                "accessscope": "Access scope",
+                "noaccessscopeselected": "Please select one or more access scopes",
+                "accessscopeinfo": "The access scope determines who can see the shared information"
             }
         },
         "controller": {

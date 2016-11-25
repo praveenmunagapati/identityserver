@@ -373,11 +373,9 @@
                 "deleteorganizationwarning": "Een organizatie verwijderen is onomkeerbaar en zal alle domeinnamen en API keys verwijderen die ermee geassocieerd zijn.",
                 "leaveorganization": "Verwijder organizatie",
                 "leaveorganizationwarning": "Als je een organizatie verlaat kan je niet opnieuw lid worden tenzij je opnieuw wordt uitgenodigt.",
-                "addrequiredsharedinfo": "Voeg gewenste gedeelde informatie",
+                "addrequiredsharedinfo": "Voeg gewenste gedeelde informatie toe",
                 "requiredsharedinfo": "Gewenste gedeelde informatie",
-                "sharedwith": "Gedeeld met: {{who}}",
-                "missinginfo": "Ontbrekende informatie",
-                "missinguserinfo": "Deze gebruiker heeft (een deel van) de gevraagde informatie niet gedeeld:<br />"
+                "sharedwith": "Gedeeld met: {{who}}"
             },
             "dnsdialog": {
                 "newdomain": "Nieuwe domeinnaam",
@@ -403,6 +401,18 @@
                 "logo": "Logo",
                 "filetoolarge": "De bestandsgrootte van het (verkleind) bestand is te groot.",
                 "filedrop": "Of sleep een bestand in het gebied hieronder."
+            },
+            "requiredscopesdialog": {
+                "newrequiredinfo": "Nieuwe vereiste informatie",
+                "updaterequiredinfo": "Bewerk vereiste informatie",
+                "requiredinformationscope": "Vereiste information scope",
+                "requiredinformationscopepattern": "Ongeldige scope. Scope moet starten met \"user:\"",
+                "duplicatescope": "De vereiste scope bestaat reeds",
+                "requiredinformationscopeinvalid": "Ongeldige scope",
+                "scopeinfo": "bekijk <a href={{url}}> deze pagina</a> voor de mogelijke scopes.",
+                "accessscope": "Access scope",
+                "noaccessscopeselected": "Gelieve een of meerdere access scopes te kiezen",
+                "accessscopeinfo": "De access scope bepaalt wie de gedeelde informatie kan zien"
             }
         },
         "controller": {
@@ -417,7 +427,9 @@
             "leaveorganization": "Verlaat organizatie {{organization}}",
             "notfound": "Gebruiker of organizatie niet gevonden",
             "loadingkey": "-- Laden --",
-            "cantchangerole": "Kon rol niet aanpassen, gelieve het later opnieuw te proberen"
+            "cantchangerole": "Kon rol niet aanpassen, gelieve het later opnieuw te proberen",
+            "missinginfo": "Ontbrekende informatie",
+            "missinguserinfo": "Deze gebruiker heeft (een deel van) de gevraagde informatie niet gedeeld:<br />"
         }
     },
     "closedialog": "Sluit dialoogventer",
