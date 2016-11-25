@@ -14,12 +14,7 @@
                     init();
 
                     function init() {
-                        if (!localStorage.getItem('langKey')) {
-                            localStorage.setItem('langKey', "en");
-                        }
-                        var language = localStorage.getItem('langKey');
-                        $translate.use(language);
-                        scope.langKey = language;
+                        scope.langKey = localStorage.getItem('langKey');
                     }
 
                     function hideCookieWarning(){
@@ -28,7 +23,7 @@
                     }
 
                     function updateLanguage(){
-                        localStorage.setItem("langKey", scope.langKey);
+                        localStorage.setItem('langKey', scope.langKey);
                         $translate.use(scope.langKey);
                     }
                 }

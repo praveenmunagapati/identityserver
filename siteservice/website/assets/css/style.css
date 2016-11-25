@@ -344,24 +344,18 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     text-decoration: none;
 }
 
+md-select.header-select.md-default-theme:not([disabled]):focus .header-select.md-select-value,
+md-select:not([disabled]):focus .md-select-value {
+    color: #fff !important;
+}
+
 .header-select {
-    text-decoration: none;
     color: #fff;
+    text-decoration: none;
     align-content: center;
     margin: 12px 20px 0 0;
-}
-
-.header-select a {
-    text-decoration: none;
-    color: #fff;
-    align-content: center;
-    margin: 12px 20px 0 0;
-}
-
-md-select.md-default-theme:not([disabled]):focus ._md-select-value, md-select:not([disabled]):focus ._md-select-value {
     border-bottom-style: none;
-    color: #FFF;
-    padding: 0px;
+    padding: 0;
 }
 
 ._md-select-value {
