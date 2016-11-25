@@ -157,28 +157,23 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 
 	userMgr := user.NewManager(r)
 	u, err := userMgr.GetByName(username)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "getting user by name", err) {
 		return
 	}
 
 	if _, err := u.GetEmailAddressByLabel(body.Label); err == nil {
-		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		writeErrorResponse(w, http.StatusConflict, "duplicate_label")
 		return
 	}
 
-	if err = userMgr.SaveEmail(username, body); err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	err = userMgr.SaveEmail(username, body)
+	if handleServerError(w, "saving email", err) {
 		return
 	}
 
 	valMgr := validationdb.NewManager(r)
 	validated, err := valMgr.IsEmailAddressValidated(username, body.EmailAddress)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "checking if email address is validated", err) {
 		return
 	}
 	if !validated {
