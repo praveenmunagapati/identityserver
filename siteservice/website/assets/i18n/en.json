@@ -372,7 +372,10 @@
                 "deleteorganization": "Delete organization",
                 "deleteorganizationwarning": "Deleting an organization is irreversible and will delete all domain names and API keys associated with it.",
                 "leaveorganization": "Leave organization",
-                "leaveorganizationwarning": "If you leave an organization you cannot re-join it unless you are invited again."
+                "leaveorganizationwarning": "If you leave an organization you cannot re-join it unless you are invited again.",
+                "addrequiredsharedinfo": "Add required shared information",
+                "requiredsharedinfo": "Required shared information",
+                "sharedwith": "Shared with: {{who}}"
             },
             "dnsdialog": {
                 "newdomain": "New domain name",
@@ -411,7 +414,9 @@
             "leaveorganization": "Leave organization {{organization}}",
             "notfound": "User or organization not found",
             "loadingkey": "-- Loading --",
-            "cantchangerole": "Could not change role, please try again later"
+            "cantchangerole": "Could not change role, please try again later",
+            "missinginfo": "Missing information",
+            "missinguserinfo": "This user hasn't shared some required information:<br />"
         }
     },
     "closedialog": "Close dialog",

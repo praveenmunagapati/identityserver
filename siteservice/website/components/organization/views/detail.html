@@ -17,9 +17,9 @@
                     <md-tab-body layout="row">
                         <div flex="100" flex-gt-xs="60" flex-gt-sm="40">
                             <md-list class="md-dense">
-                                <md-subheader class="md-no-sticky">Owners</md-subheader>
+                                <md-subheader class="md-no-sticky"><span translate='organization.views.detail.owners'>Owners</span></md-subheader>
                                 <md-list-item class="md-1-line" ng-repeat="owner in vm.owners track by owner.username"
-                                              aria-label="Owner">
+                                              aria-label="Owner" translate-attr="{ 'aria-label': 'owner' }">
                                     <div class="md-list-item-text">
                                         <p ng-bind="::owner.username"></p>
                                     </div>
@@ -28,16 +28,16 @@
                                              ng-if="::vm.hasEditPermission && owner.missingscopes.length"
                                              ng-click="vm.showMissingScopesDialog($event, owner)"></md-icon>
                                     <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
-                                             aria-label="Edit owner" ng-if="::vm.canEditRole(owner.username)"
+                                             aria-label="Edit owner" translate-attr="{ 'aria-label': 'organization.views.detail.editowner' }" ng-if="::vm.canEditRole(owner.username)"
                                              ng-click="vm.editMember($event, owner)">
                                     </md-icon>
                                 </md-list-item>
                             </md-list>
                             <md-list class="md-dense" ng-if="vm.organization.orgowners.length > 0">
-                                <md-subheader class="md-no-sticky"> Organization owners</md-subheader>
+                                <md-subheader class="md-no-sticky"><span translate='organization.views.detail.organizationowners'>Organization owners</span></md-subheader>
                                 <md-list-item class="md-1-line"
                                               ng-repeat="orgowner in vm.organization.orgowners track by $index"
-                                              aria-label="Organization owner">
+                                              aria-label="Organization owner" translate-attr="{ 'aria-label': 'organization.views.detail.organizationowner' }">
                                     <div class="md-list-item-text">
                                         <p ng-bind="::orgowner"></p>
                                     </div>
@@ -48,10 +48,10 @@
                                 </md-list-item>
                             </md-list>
                             <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
-                                <md-subheader class="md-no-sticky">Members</md-subheader>
+                                <md-subheader class="md-no-sticky"><span translate='organization.views.detail.members'>Members</span></md-subheader>
                                 <md-list-item class="md-1-line"
                                               ng-repeat="member in vm.members track by member.username"
-                                              aria-label="Member">
+                                              aria-label="Member" translate-attr="{ 'aria-label': 'member' }">
                                     <div class="md-list-item-text">
                                         <p ng-bind="::member.username"></p>
                                     </div>
@@ -59,7 +59,7 @@
                                              aria-label="Missing scopes"
                                              ng-if="::vm.hasEditPermission && member.missingscopes.length"
                                              ng-click="vm.showMissingScopesDialog($event, member)"></md-icon>
-                                    <md-icon md-font-icon="fa-pencil" aria-label="Edit member"
+                                    <md-icon md-font-icon="fa-pencil" aria-label="Edit member" translate-attr="{ 'aria-label': 'organization.views.detail.editmember' }"
                                              class="fa md-secondary md-primary"
                                              ng-if="::vm.canEditRole(member.username)"
                                              ng-click="vm.editMember($event, member)">
@@ -67,10 +67,10 @@
                                 </md-list-item>
                             </md-list>
                             <md-list class="md-dense" ng-if="vm.organization.orgmembers.length > 0">
-                                <md-subheader class="md-no-sticky"> Organization members</md-subheader>
+                                <md-subheader class="md-no-sticky"><span translate='organization.views.detail.organizationmembers'>Organization members</span></md-subheader>
                                 <md-list-item class="md-1-line"
                                               ng-repeat="orgmember in vm.organization.orgmembers track by $index"
-                                              aria-label="Organization member">
+                                              aria-label="Organization member" translate-attr="{ 'aria-label': 'organization.views.detail.organizationmember' }">
                                     <div class="md-list-item-text">
                                         <p ng-bind="::orgmember"></p>
                                     </div>
@@ -214,6 +214,25 @@
                             </section>
                             <md-divider></md-divider>
                             <section>
+                                <md-subheader><span translate='organization.views.detail.requiredsharedinfo'>Required shared information</span></md-subheader>
+                                <md-list>
+                                    <md-list-item class="md-2-line"
+                                                  ng-repeat="scope in vm.organization.requiredscopes track by scope.scope"
+                                                  ng-click="vm.showRequiredScopeDialog($event, scope)">
+                                        <div class="md-list-item-text">
+                                            <h3>Scope: <span ng-bind="scope.scope"></span></h3>
+                                            <p translate='organization.views.detail.sharedwith' translate-values='{ who: vm.getSharedScopeString(scope.accessscopes)}'>Shared with: <span
+                                                    ng-bind="vm.getSharedScopeString(scope.accessscopes)"></span>
+                                            </p>
+                                        </div>
+                                    </md-list-item>
+                                </md-list>
+                                <md-button class="md-primary" ng-click="vm.showRequiredScopeDialog($event)">
+                                    <i class="fa fa-plus"></i> <span translate='organization.views.detail.addrequiredsharedinfo'>Add required shared information</span>
+                                </md-button>
+                            </section>
+                            <md-divider></md-divider>
+                            <section>
                                 <md-subheader><span translate='organization.views.detail.deleteorganization'>Delete organization</span></md-subheader>
                                 <div layout-padding>
                                     <p translate='organization.views.detail.deleteorganizationwarning'>Deleting an organization is irreversible and will delete all domain
@@ -222,25 +241,6 @@
                                 </div>
                                 <md-button class="md-warn" ng-click="vm.showDeleteOrganizationDialog($event)" translate='organization.views.detail.deleteorganization'>
                                     Delete organization
-                                </md-button>
-                            </section>
-                            <md-divider></md-divider>
-                            <section>
-                                <md-subheader>Required shared information</md-subheader>
-                                <md-list>
-                                    <md-list-item class="md-2-line"
-                                                  ng-repeat="scope in vm.organization.requiredscopes track by scope.scope"
-                                                  ng-click="vm.showRequiredScopeDialog($event, scope)">
-                                        <div class="md-list-item-text">
-                                            <h3>Scope: <span ng-bind="scope.scope"></span></h3>
-                                            <p>Shared with: <span
-                                                    ng-bind="vm.getSharedScopeString(scope.accessscopes)"></span>
-                                            </p>
-                                        </div>
-                                    </md-list-item>
-                                </md-list>
-                                <md-button class="md-primary" ng-click="vm.showRequiredScopeDialog($event)">
-                                    <i class="fa fa-plus"></i> Add required shared information
                                 </md-button>
                             </section>
                         </div>

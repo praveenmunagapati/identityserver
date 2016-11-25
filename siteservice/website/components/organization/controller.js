@@ -488,9 +488,16 @@
         function showMissingScopesDialog(event, user) {
             var title = 'Missing information';
             var msg = 'This user hasn\'t shared some required information:<br />';
-            msg += user.missingscopes.join('<br />');
-            var closeText = 'Close';
-            UserDialogService.showSimpleDialog(msg, title, closeText, event);
+            $translate(['organization.controller.missinginfo', 'organization.controller.missinguserinfo']).then(function(translations){
+                title = translations['organization.controller.missinginfo'];
+                msg = translations['organization.controller.missinguserinfo'];
+                msg += user.missingscopes.join('<br />');
+                var closeText = 'Close';
+                UserDialogService.showSimpleDialog(msg, title, closeText, event);
+            });
+            // msg += user.missingscopes.join('<br />');
+            // var closeText = 'Close';
+            // UserDialogService.showSimpleDialog(msg, title, closeText, event);
         }
     }
 

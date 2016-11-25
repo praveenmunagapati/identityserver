@@ -197,7 +197,7 @@
         "directives": {
             "footer": {
                 "documentation": "Documentatie",
-                "apidocumentation": "API Documentatien",
+                "apidocumentation": "API Documentatie",
                 "source": "Broncode op Github"
             },
             "header": {
@@ -372,7 +372,12 @@
                 "deleteorganization": "Verwijder organizatie",
                 "deleteorganizationwarning": "Een organizatie verwijderen is onomkeerbaar en zal alle domeinnamen en API keys verwijderen die ermee geassocieerd zijn.",
                 "leaveorganization": "Verwijder organizatie",
-                "leaveorganizationwarning": "Als je een organizatie verlaat kan je niet opnieuw lid worden tenzij je opnieuw wordt uitgenodigt."
+                "leaveorganizationwarning": "Als je een organizatie verlaat kan je niet opnieuw lid worden tenzij je opnieuw wordt uitgenodigt.",
+                "addrequiredsharedinfo": "Voeg gewenste gedeelde informatie",
+                "requiredsharedinfo": "Gewenste gedeelde informatie",
+                "sharedwith": "Gedeeld met: {{who}}",
+                "missinginfo": "Ontbrekende informatie",
+                "missinguserinfo": "Deze gebruiker heeft (een deel van) de gevraagde informatie niet gedeeld:<br />"
             },
             "dnsdialog": {
                 "newdomain": "Nieuwe domeinnaam",

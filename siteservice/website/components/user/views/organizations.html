@@ -18,7 +18,7 @@
             <div layout ng-show="vm.loaded.organizations">
                 <div flex flex-gt-xs="50">
                     <md-list>
-                        <md-subheader translate='owner'>Owner</md-subheader>
+                        <md-subheader><span translate='owner'>Owner</span></md-subheader>
                         <md-list-item
                                 ng-repeat="organization in vm.owner" class="noright"
                                 ng-href="#/organization/{{ ::organization }}"
@@ -29,7 +29,7 @@
                 </div>
                 <div flex flex-gt-xs="50">
                     <md-list>
-                        <md-subheader translate='member'>Member</md-subheader>
+                        <md-subheader><span translate='member'>Member</span></md-subheader>
                         <md-list-item
                                 ng-repeat="organization in vm.member" class="noright"
                                 ng-href="#/organization/{{ ::organization }}">
