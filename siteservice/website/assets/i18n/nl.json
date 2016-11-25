@@ -391,9 +391,10 @@
                 "invitesomeone": "Nodig iemand uit",
                 "usermailphone": "Gebruikersnaam, email of telefoonnummer",
                 "inviteduplicate": "Deze gebruiker is al lid geworden van de organizatie",
-                "invitenosuchuser": "Geen gebruiker gevonden met deze gebruikersnaam, email of telefoonnummer",
+                "invitenosuchuser": "Geen gebruiker gevonden met deze gebruikersnaam",
                 "invitesend": "Er zal een verzoek om lid te worden van de organizatie gestuurd worden.",
-                "invitesend2": "De gebruiker moet deze uitnodiging aanvaarden om<br/>een lid te worden van de organizatie.",
+                "invitesend2": "Als een uitnodiging gestuurd wordt op email of telefoonnummer en er geen gebruiker gevonden word, zal er een email of sms gestuurd worden in de plaats.",
+                "invitesend3": "De gebruiker moet deze uitnodiging aanvaarden om<br/>een lid te worden van de organizatie.",
                 "invite": "Nodig uit"
             },
             "logodialog": {

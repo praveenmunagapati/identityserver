@@ -14,8 +14,8 @@
                 <md-input-container>
                     <label translate='role'>Role</label>
                     <md-select ng-model="role">
-                        <md-option value="owner" translate='owner'>Owner</md-option>
-                        <md-option value="member" translate='member'>Member</md-option>
+                        <md-option value="owners" translate='owner'>Owner</md-option>
+                        <md-option value="members" translate='member'>Member</md-option>
                     </md-select>
                 </md-input-container>
                 <md-input-container flex>
@@ -24,15 +24,14 @@
                            name="searchterm">
                     <div ng-messages="validationerrors" md-auto-hide="false">
                         <div ng-message="duplicate" translate='organization.views.invitationdialog.inviteduplicate'>This user has already joined the organization</div>
-                        <div ng-message="nosuchuser" translate='organization.views.invitationdialog.invitenosuchuser'>No user found matching this username, email address or
-                            phonenumber
+                        <div ng-message="nosuchuser" translate='organization.views.invitationdialog.invitenosuchuser'>No user found matching this username
                         </div>
                     </div>
                 </md-input-container>
                 <div>
                     <p translate='organization.views.invitationdialog.invitesend'>A request to join this organization will be sent.</p>
-                    <p>When inviting by email or phone number and no user could be found, an email or sms will be sent instead.</p>
-                    <p translate='organization.views.invitationdialog.invitesend2'>The user needs to accept this invitation before <br/> actually becoming part of this
+                    <p tranlate='organization.views.invitationdialog.invitesend2'>When inviting by email or phone number and no user could be found, an email or sms will be sent instead.</p>
+                    <p translate='organization.views.invitationdialog.invitesend3'>The user needs to accept this invitation before <br/> actually becoming part of this
                         organization.</p>
                 </div>
             </div>
