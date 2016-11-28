@@ -101,7 +101,7 @@ md-dialog md-dialog-actions {
 #logo a {
     text-decoration: none;
     float: left;
-    background: url(../img/Logo_itsyou.png);
+    background: url(../img/its-you-online.gif);
     margin-top: 20px;
     height: 40px;
     width: 250px;
@@ -115,82 +115,6 @@ md-dialog md-dialog-actions {
 .logo-base a {
     text-decoration: none;
     float: left;
-}
-
-#logo-itsyou a {
-    background: url(../img/Logo_itsyou_2-itsyou.png);
-    margin-top: 20px;
-    height: 40px;
-    width: 92px;
-    background-size: 92px 40px;
-}
-
-.logo-moving-base a {
-    margin-top: -40px;
-    margin-left: 92px;
-    height: 40px;
-    width: 158px;
-    overflow-y: hidden;
-}
-
-#logo-incontrol a {
-    background: url(../img/Logo_itsyou_2-incontrol.png);
-    background-size: 158px 40px;
-
-    -webkit-animation: movein 1s;
-    animation: movein 1s;
-    animation-fill-mode: forwards;
-}
-
-#logo-identity a {
-    background: url(../img/Logo_itsyou_2-identity.png);
-    background-size: 158px 40px;
-
-    -webkit-animation: movein 1s 1s;
-    animation: movein 1s 1s;
-    animation-fill-mode:  both;
-}
-
-#logo-privacy a {
-    background: url(../img/Logo_itsyou_2-privacy.png);
-    background-size: 158px 40px;
-
-    -webkit-animation: movein 1s 2s;
-    animation: movein 1s 2s;
-    animation-fill-mode:  both;
-}
-
-#logo-online a {
-    background: url(../img/Logo_itsyou_2-online.png);
-    background-size: 158px 40px;
-
-    -webkit-animation: move-and-stay 0.5s 3s;
-    animation: move-and-stay 0.5s 3s;
-    animation-fill-mode:  both;
-}
-
-@-webkit-keyframes movein {
-    0%   {-webkit-transform: translateY(100px); opacity: 0; }
-    20%  {-webkit-transform: translateY(0px); opacity: 1; }
-    80%  {-webkit-transform: translateY(0px)}
-    100% {-webkit-transform: translateY(-100px)}
-}
-
-@keyframes movein {
-    0%   {transform: translateY(100px); opacity: 0; }
-    20%  {transform: translateY(0px); opacity: 1; }
-    80%  {transform: translateY(0px)}
-    100% {transform: translateY(-100px)}
-}
-
-@-webkit-keyframes move-and-stay {
-    0%   {-webkit-transform: translateY(100px); opacity: 0; }
-    100% {-webkit-transform: translateY(0px); opacity: 1; }
-}
-
-@keyframes move-and-stay {
-    0%   {transform: translateY(100px); opacity: 0; }
-    100% {transform: translateY(0px); opacity: 1; }
 }
 
 /*= QUOTES AND SOME ELEMENTS
