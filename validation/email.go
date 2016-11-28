@@ -17,6 +17,17 @@ const (
 	emailWithButtonTemplateName = "emailwithbutton.html"
 )
 
+type EmailWithButtonTemplateParams struct {
+	UrlCaption string
+	Url        string
+	Username   string
+	Title      string
+	Text       string
+	ButtonText string
+	Reason     string
+	LogoUrl    string
+}
+
 //EmailService is the interface for an email communication channel, should be used by the IYOEmailAddressValidationService
 type EmailService interface {
 	Send(recipients []string, subject string, message string) (err error)
@@ -67,15 +78,7 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 	}
 
 	validationurl := fmt.Sprintf("%s?c=%s&k=%s", confirmationurl, url.QueryEscape(info.Secret), url.QueryEscape(info.Key))
-	templateParameters := struct {
-		UrlCaption string
-		Url        string
-		Username   string
-		Title      string
-		Text       string
-		ButtonText string
-		Reason     string
-	}{
+	templateParameters := EmailWithButtonTemplateParams{
 		UrlCaption: translations.Emailvalidation.Urlcaption,
 		Url:        validationurl,
 		Username:   username,
@@ -83,6 +86,7 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 		Text:       fmt.Sprintf(translations.Emailvalidation.Text, email),
 		ButtonText: translations.Emailvalidation.Buttontext,
 		Reason:     translations.Emailvalidation.Reason,
+		LogoUrl:    fmt.Sprintf("https://%s/assets/img/its-you-online.png", request.Host),
 	}
 	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
 	if err != nil {
@@ -122,15 +126,7 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 	}
 
 	passwordreseturl := fmt.Sprintf("https://%s/login#/resetpassword/%s", request.Host, url.QueryEscape(token.Token))
-	templateParameters := struct {
-		UrlCaption string
-		Url        string
-		Username   string
-		Title      string
-		Text       string
-		ButtonText string
-		Reason     string
-	}{
+	templateParameters := EmailWithButtonTemplateParams{
 		UrlCaption: translations.Passwordreset.Urlcaption,
 		Url:        passwordreseturl,
 		Username:   username,
@@ -138,6 +134,7 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 		Text:       translations.Passwordreset.Text,
 		ButtonText: translations.Passwordreset.Buttontext,
 		Reason:     translations.Passwordreset.Reason,
+		LogoUrl:    fmt.Sprintf("https://%s/assets/img/its-you-online.png", request.Host),
 	}
 	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
 	if err != nil {
@@ -151,20 +148,14 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 //SendOrganizationInviteEmail Sends an organization invite email
 func (service *IYOEmailAddressValidationService) SendOrganizationInviteEmail(request *http.Request, invite *invitations.JoinOrganizationInvitation) (err error) {
 	inviteUrl := fmt.Sprintf(invitations.InviteUrl, request.Host, url.QueryEscape(invite.Code))
-	templateParameters := struct {
-		Url        string
-		Username   string
-		Title      string
-		Text       string
-		ButtonText string
-		Reason     string
-	}{
+	templateParameters := EmailWithButtonTemplateParams{
 		Url:        inviteUrl,
 		Username:   invite.EmailAddress,
 		Title:      "It's You Online organization invitation",
 		Text:       fmt.Sprintf("You have been invited to the %s organization on It's You Online. Click the button below to accept the invitation.", invite.Organization),
 		ButtonText: "Accept invitation",
 		Reason:     "You’re receiving this email because someone invited you to an organization at ItsYou.Online. If you think this was a mistake please ignore this email.",
+		LogoUrl:    fmt.Sprintf("https://%s/assets/img/its-you-online.png", request.Host),
 	}
 	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
 	if err != nil {
