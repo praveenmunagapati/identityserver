@@ -1861,22 +1861,18 @@ func (api UsersAPI) RemoveTOTP(w http.ResponseWriter, r *http.Request) {
 // Removes the user from an organization
 func (api UsersAPI) LeaveOrganization(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
-	organizationGlobalid := mux.Vars(r)["globalid"]
+	organizationGlobalId := mux.Vars(r)["globalid"]
 	orgMgr := organizationDb.NewManager(r)
-	err := orgMgr.RemoveUser(organizationGlobalid, username)
+	err := orgMgr.RemoveUser(organizationGlobalId, username)
 	if err == mgo.ErrNotFound {
 		writeErrorResponse(w, http.StatusNotFound, "user_not_found")
 		return
-	} else if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	} else if handleServerError(w, "removing user from organization", err) {
 		return
 	}
 	userMgr := user.NewManager(r)
-	err = userMgr.DeleteAuthorization(username, organizationGlobalid)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	err = userMgr.DeleteAuthorization(username, organizationGlobalId)
+	if handleServerError(w, "removing authorization", err) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

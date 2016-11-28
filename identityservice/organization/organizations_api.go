@@ -496,12 +496,13 @@ func (api OrganizationsAPI) UpdateOrganizationOrgMemberShip(w http.ResponseWrite
 // RemoveOrganizationMember Remove a member from organization
 // It is handler for DELETE /organizations/{globalid}/members/{username}
 func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *http.Request) {
-	globalid := mux.Vars(r)["globalid"]
+	globalId := mux.Vars(r)["globalid"]
 	username := mux.Vars(r)["username"]
 
 	orgMgr := organization.NewManager(r)
+	userMgr := user.NewManager(r)
 
-	org, err := orgMgr.GetByName(globalid)
+	org, err := orgMgr.GetByName(globalId)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -513,6 +514,11 @@ func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *h
 	if err := orgMgr.RemoveMember(org, username); err != nil {
 		log.Error("Error adding member: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = userMgr.DeleteAuthorization(username, globalId)
+	if handleServerError(w, "removing authorization", err) {
 		return
 	}
 
@@ -539,12 +545,13 @@ func (api OrganizationsAPI) sendInvite(r *http.Request, organizationRequest *inv
 // RemoveOrganizationOwner Remove a member from organization
 // It is handler for DELETE /organizations/{globalid}/owners/{username}
 func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *http.Request) {
-	globalid := mux.Vars(r)["globalid"]
+	globalId := mux.Vars(r)["globalid"]
 	username := mux.Vars(r)["username"]
 
 	orgMgr := organization.NewManager(r)
+	userMgr := user.NewManager(r)
 
-	org, err := orgMgr.GetByName(globalid)
+	org, err := orgMgr.GetByName(globalId)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -557,6 +564,11 @@ func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *ht
 	if err := orgMgr.RemoveOwner(org, username); err != nil {
 		log.Error("Error removing owner: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = userMgr.DeleteAuthorization(username, globalId)
+	if handleServerError(w, "removing authorization", err) {
 		return
 	}
 
