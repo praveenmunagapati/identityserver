@@ -351,7 +351,6 @@ types:
     example:
       username: bob
 
-
   OrganizationAPIKey:
       properties:
         label: Label
@@ -365,6 +364,13 @@ types:
           default: false
         secret?:
           type: string
+          maxLength: 250
+
+  DnsAddress:
+      properties:
+        name:
+          type: string
+          minLength: 4
           maxLength: 250
 
   Company:
@@ -677,27 +683,24 @@ securedBy: [ oauth_2_0 ]
               body:
                 application/json:
                     type: RegistryEntry[]
-    /registry/{key}:
-      securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-        delete:
-          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-          displayName: DeleteUserRegistryEntry
-          description: Removes a RegistryEntry from the user's registry
-          responses:
-              204:
-                description: RegistryEntry removed.
-
-        get:
-          displayName: GetUserRegistryEntry
-          description: Get a RegistryEntry from the user's registry.
-          responses:
-            200:
-                description: Registry Entry
-                body:
-                  application/json:
-                    type: RegistryEntry
-            404:
-                description: Not found
+      /{key}:
+          delete:
+            displayName: DeleteUserRegistryEntry
+            description: Removes a RegistryEntry from the user's registry
+            responses:
+                204:
+                  description: RegistryEntry removed.
+          get:
+            displayName: GetUserRegistryEntry
+            description: Get a RegistryEntry from the user's registry.
+            responses:
+              200:
+                  description: Registry Entry
+                  body:
+                    application/json:
+                      type: RegistryEntry
+              404:
+                  description: Not found
 
 
     /github:
@@ -1712,39 +1715,30 @@ securedBy: [ oauth_2_0 ]
     /dns:
       description: Manage domain names linked to an organization.
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+      post:
+        displayName: CreateOrganizationDns
+        description: Creates a new DNS name associated with an organization
+        body:
+          application/json:
+            type: DnsAddress
+        responses:
+          409:
+              description: DNS name is already used.
+          201:
+            body:
+              application/json:
+                type: DnsAddress
       /{dnsname}:
-        post:
-          displayName: CreateOrganizationDNS
-          description: Creates a new DNS name associated with an organization
-          body:
-            application/json:
-              properties:
-                name:
-                  type: string
-                  minLength: 4
-                  maxLength: 250
-          responses:
-            409:
-                description: DNS name is already used.
-            201:
-              body:
-                application/json:
-                    properties:
-                       name: string
         put:
-          displayName: UpdateOrganizationDNS
+          displayName: UpdateOrganizationDns
           description: Updates an existing DNS name associated with an organization
           body:
             application/json:
               properties:
                 oldname:
-                  type: string
-                  minLength: 4
-                  maxLength: 250
+                  type: DnsAddress
                 newname:
-                  type: string
-                  minLength: 4
-                  maxLength: 250
+                  type: DnsAddress
           responses:
               201:
                   description: Renamed
@@ -1753,8 +1747,8 @@ securedBy: [ oauth_2_0 ]
               404:
                 description: DNS Name not found
         delete:
-          displayName: DeleteOrganizaitonDNS
-          description: Removes a DNS name
+          displayName: DeleteOrganizationDns
+          description: Removes a DNS name associated with an organization
           responses:
               204:
                 description: DNS name removed

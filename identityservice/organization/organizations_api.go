@@ -780,17 +780,25 @@ func (api OrganizationsAPI) DeleteAPIKey(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (api OrganizationsAPI) CreateDns(w http.ResponseWriter, r *http.Request) {
-	globalid := mux.Vars(r)["globalid"]
-	dnsName := mux.Vars(r)["dnsname"]
+// CreateOrganizationDns is the handler for POST /organizations/{globalid}/dns
+// Adds a dns address to an organization
+func (api OrganizationsAPI) CreateOrganizationDns(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
 
-	if !isValidDNSName(dnsName) {
-		log.Debug("Invalid DNS name: ", dnsName)
+	dns := DnsAddress{}
+
+	if err := json.NewDecoder(r.Body).Decode(&dns); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if !isValidDNSName(dns.Name) {
+		log.Debug("Invalid DNS name: ", dns.Name)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 	orgMgr := organization.NewManager(r)
-	organization, err := orgMgr.GetByName(globalid)
+	organisation, err := orgMgr.GetByName(globalId)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -799,46 +807,38 @@ func (api OrganizationsAPI) CreateDns(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	err = orgMgr.AddDNS(organization, dnsName)
+	err = orgMgr.AddDNS(organisation, dns.Name)
 
-	if err != nil {
-		log.Error("Error creating DNS name", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "adding DNS name", err) {
 		return
-	}
-
-	response := struct {
-		Name string `json:"name"`
-	}{
-		Name: dnsName,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(dns)
 }
 
-func (api OrganizationsAPI) UpdateDns(w http.ResponseWriter, r *http.Request) {
-	globalid := mux.Vars(r)["globalid"]
+// UpdateOrganizationDns is the handler for PUT /organizations/{globalid}/dns/{dnsname}
+// Updates an existing DNS name associated with an organization
+func (api OrganizationsAPI) UpdateOrganizationDns(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
 	oldDns := mux.Vars(r)["dnsname"]
 
-	body := struct {
-		Name string
-	}{}
+	var dns DnsAddress
 
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&dns); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if !isValidDNSName(body.Name) {
-		log.Debug("Invalid DNS name: ", body.Name)
+	if !isValidDNSName(dns.Name) {
+		log.Debug("Invalid DNS name: ", dns.Name)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	orgMgr := organization.NewManager(r)
-	organization, err := orgMgr.GetByName(globalid)
+	organisation, err := orgMgr.GetByName(globalId)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -847,7 +847,7 @@ func (api OrganizationsAPI) UpdateDns(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	err = orgMgr.UpdateDNS(organization, oldDns, body.Name)
+	err = orgMgr.UpdateDNS(organisation, oldDns, dns.Name)
 
 	if err != nil {
 		log.Error("Error updating DNS name", err.Error())
@@ -855,24 +855,20 @@ func (api OrganizationsAPI) UpdateDns(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := struct {
-		Name string `json:"name"`
-	}{
-		Name: body.Name,
-	}
-
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(dns)
 }
 
-func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
+// DeleteOrganizationDns is the handler for DELETE /organizations/{globalid}/dns/{dnsname}
+// Removes a DNS name associated with an organization
+func (api OrganizationsAPI) DeleteOrganizationDns(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	dnsName := mux.Vars(r)["dnsname"]
 
 	orgMgr := organization.NewManager(r)
-	organization, err := orgMgr.GetByName(globalid)
+	organisation, err := orgMgr.GetByName(globalid)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -881,13 +877,13 @@ func (api OrganizationsAPI) DeleteDns(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	sort.Strings(organization.DNS)
-	if sort.SearchStrings(organization.DNS, dnsName) == len(organization.DNS) {
+	sort.Strings(organisation.DNS)
+	if sort.SearchStrings(organisation.DNS, dnsName) == len(organisation.DNS) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	err = orgMgr.RemoveDNS(organization, dnsName)
+	err = orgMgr.RemoveDNS(organisation, dnsName)
 
 	if err != nil {
 		log.Error("Error removing DNS name", err.Error())

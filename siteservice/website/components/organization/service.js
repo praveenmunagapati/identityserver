@@ -251,10 +251,10 @@
         }
 
         function createDNS(globalid, dnsName) {
-            var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns/' + encodeURIComponent(dnsName);
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns';
 
             return $http
-                .post(url)
+                .post(url, {name: dnsName})
                 .then(
                     function (response) {
                         return response.data;
