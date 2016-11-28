@@ -370,7 +370,7 @@
                 "setlogo": "Stel organizatie logo in",
                 "deleteorganization": "Verwijder organizatie",
                 "deleteorganizationwarning": "Een organizatie verwijderen is onomkeerbaar en zal alle domeinnamen en API keys verwijderen die ermee geassocieerd zijn.",
-                "leaveorganization": "Verwijder organizatie",
+                "leaveorganization": "Verlaat organizatie",
                 "leaveorganizationwarning": "Als je een organizatie verlaat kan je niet opnieuw lid worden tenzij je opnieuw wordt uitgenodigt.",
                 "addrequiredsharedinfo": "Voeg gewenste gedeelde informatie toe",
                 "requiredsharedinfo": "Gewenste gedeelde informatie",
