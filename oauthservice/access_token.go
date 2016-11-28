@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 )
@@ -110,7 +111,8 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		}
 	} else {
 		redirectURI := r.FormValue("redirect_uri")
-		at, httpStatusCode = convertCodeToAccessTokenHandler(code, clientID, clientSecret, redirectURI, mgr, r)
+		state := r.FormValue("state")
+		at, httpStatusCode = convertCodeToAccessTokenHandler(code, clientID, clientSecret, redirectURI, state, mgr)
 	}
 
 	if httpStatusCode != http.StatusOK {
@@ -118,8 +120,8 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	//It is also possible to immediately get a JWT by specifying 'id_token' as the response type
-	// In this case, the scope parameter needs to be given to prevent consumers to accidentially handing out too powerful tokens to third party services
+	// It is also possible to immediately get a JWT by specifying 'id_token' as the response type
+	// In this case, the scope parameter needs to be given to prevent consumers to accidentally handing out too powerful tokens to third party services
 	// It is also possible to specify additional audiences
 	responseType := r.FormValue("response_type")
 
@@ -205,7 +207,7 @@ func clientCredentialsTokenHandler(clientID string, secret string, mgr *Manager,
 	return
 }
 
-func convertCodeToAccessTokenHandler(code string, clientID string, secret string, redirectURI string, mgr *Manager, r *http.Request) (at *AccessToken, httpStatusCode int) {
+func convertCodeToAccessTokenHandler(code string, clientID string, secret string, redirectURI string, state string, mgr *Manager) (at *AccessToken, httpStatusCode int) {
 	httpStatusCode = http.StatusOK
 
 	ar, err := mgr.Get(code)
@@ -220,9 +222,10 @@ func convertCodeToAccessTokenHandler(code string, clientID string, secret string
 		return
 	}
 
-	state := r.FormValue("state")
-
 	if ar.ClientID != clientID || ar.State != state || ar.RedirectURL != redirectURI {
+		log.Debug(fmt.Sprintf(`Client id:%s - Expected client id:%s`, clientID, ar.ClientID))
+		log.Debug(fmt.Sprintf("State:%s - Expected state:%s", state, ar.State))
+		log.Debug(fmt.Sprintf("Redirect url:%s - Expected redirect url:%s", redirectURI, ar.RedirectURL))
 		log.Info("Bad client or hacking attempt, state, client_id or redirect_uri is different from the original authorization request")
 		httpStatusCode = http.StatusBadRequest
 		return
