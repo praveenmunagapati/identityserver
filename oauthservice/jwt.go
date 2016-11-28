@@ -59,7 +59,7 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(tokenString))
 }
 
-func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, extraAudiences string) (tokenString string, err error) {
+func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, audiences string) (tokenString string, err error) {
 
 	requestedScopes := splitScopeString(requestedScopeString)
 	acquiredScopes := splitScopeString(at.Scope)
@@ -85,12 +85,7 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 		token.Claims["scope"] = requestedScopes
 	}
 
-	audiences := []string{at.ClientID}
-	if extraAudiences != "" {
-		audiences = append(audiences, strings.Split(extraAudiences, ",")...)
-	}
-
-	token.Claims["aud"] = audiences
+	token.Claims["aud"] = strings.Split(audiences, ",")
 	token.Claims["exp"] = at.ExpirationTime().Unix()
 	token.Claims["iss"] = "itsyouonline"
 
