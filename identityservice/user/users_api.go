@@ -21,6 +21,7 @@ import (
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
+	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/validation"
 	"gopkg.in/mgo.v2"
 )
@@ -459,10 +460,14 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if requestingClient == organization.ItsyouonlineClientID {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(userobj)
+		return
+	}
+
 	authorization, err := userMgr.GetAuthorization(username, requestingClient)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "getting authorization", err) {
 		return
 	}
 

@@ -12,7 +12,7 @@ import (
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
 
-const itsyouonlineClientID = "itsyouonline"
+const ItsyouonlineClientID = "itsyouonline"
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
 type Oauth2oauth_2_0Middleware struct {
@@ -87,7 +87,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				if parsedusername, ok := webuser.(string); ok && parsedusername != "" {
 					username = parsedusername
 					atscopestring = "admin"
-					clientID = itsyouonlineClientID
+					clientID = ItsyouonlineClientID
 				}
 			}
 		}
@@ -109,7 +109,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				return
 			}
 
-			if isOwner && ((clientID == itsyouonlineClientID && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
+			if isOwner && ((clientID == ItsyouonlineClientID && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
 				scopes = []string{"organization:owner"}
 			} else {
 				isMember, err := orgMgr.IsMember(protectedOrganization, username)
@@ -118,7 +118,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 					return
 				}
-				if isMember && ((clientID == itsyouonlineClientID && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
+				if isMember && ((clientID == ItsyouonlineClientID && atscopestring == "admin") || scopeStringContainsScope(atscopestring, "user:admin")) {
 					scopes = []string{"organization:member"}
 				}
 			}
