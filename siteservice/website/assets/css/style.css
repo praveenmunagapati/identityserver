@@ -101,11 +101,11 @@ md-dialog md-dialog-actions {
 #logo a {
     text-decoration: none;
     float: left;
-    background: url(../img/its-you-online.gif);
+    background: url(../img/its-you-online.gif) no-repeat;
     margin-top: 20px;
-    height: 40px;
-    width: 250px;
-    background-size: 250px 40px;
+    height: 38px;
+    width: 360px;
+    background-size: cover;
 }
 
 
