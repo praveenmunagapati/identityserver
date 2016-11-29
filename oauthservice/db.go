@@ -260,14 +260,14 @@ func (m *Manager) getClientByCredentials(clientID, secret string) (client *Oauth
 	return
 }
 
-//RemoveTokensByGlobalId removes oauth tokens by global id
-func (m *Manager) RemoveTokensByGlobalId(globalid string) error {
+//RemoveTokensByGlobalID removes oauth tokens by global id
+func (m *Manager) RemoveTokensByGlobalID(globalid string) error {
 	_, err := m.getAccessTokenCollection().RemoveAll(bson.M{"globalid": globalid})
 	return err
 }
 
-//RemoveClientsById removes oauth clients by client id
-func (m *Manager) RemoveClientsById(clientid string) error {
+//RemoveClientsByID removes oauth clients by client id
+func (m *Manager) RemoveClientsByID(clientid string) error {
 	_, err := m.getAccessTokenCollection().RemoveAll(bson.M{"clientid": clientid})
 	return err
 }

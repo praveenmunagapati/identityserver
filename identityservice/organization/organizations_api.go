@@ -14,6 +14,7 @@ import (
 
 	"crypto/rand"
 	"encoding/base64"
+
 	"github.com/gorilla/context"
 	"github.com/itsyouonline/identityserver/db"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
@@ -942,7 +943,7 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	}
 
 	oauthMgr := oauthservice.NewManager(r)
-	err = oauthMgr.RemoveTokensByGlobalId(globalid)
+	err = oauthMgr.RemoveTokensByGlobalID(globalid)
 	if handleServerError(w, "removing organization oauth accesstokens", err) {
 		return
 	}
@@ -950,7 +951,7 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	if handleServerError(w, "removing client secrets", err) {
 		return
 	}
-	err = oauthMgr.RemoveClientsById(globalid)
+	err = oauthMgr.RemoveClientsByID(globalid)
 	if handleServerError(w, "removing organization oauth clients", err) {
 		return
 	}
@@ -959,7 +960,7 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	if handleServerError(w, "removing all authorizations", err) {
 		return
 	}
-	err = oauthMgr.RemoveClientsById(globalid)
+	err = oauthMgr.RemoveClientsByID(globalid)
 	if handleServerError(w, "removing organization oauth clients", err) {
 		return
 	}
