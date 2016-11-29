@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	requestsCollectionName = "oauth_authorizationrequests"
-	tokensCollectionName   = "oauth_accesstokens"
-	clientsCollectionName  = "oauth_clients"
+	requestsCollectionName     = "oauth_authorizationrequests"
+	tokensCollectionName       = "oauth_accesstokens"
+	clientsCollectionName      = "oauth_clients"
+	refreshTokenCollectionName = "oauth_refreshtokens"
 )
 
 //InitModels initialize models in mongo, if required.
@@ -56,6 +57,13 @@ func InitModels() {
 	}
 	db.EnsureIndex(clientsCollectionName, index)
 
+	index = mgo.Index{
+		Key:    []string{"refreshtoken"},
+		Unique: true,
+	} //Do not drop duplicates since it would hijack another refreshtoken, better to error out
+
+	db.EnsureIndex(refreshTokenCollectionName, index)
+
 }
 
 //Manager is used to store
@@ -85,6 +93,11 @@ func (m *Manager) getAuthorizationRequestCollection() *mgo.Collection {
 //getAccessTokenCollection returns the mongo collection for the accessTokens
 func (m *Manager) getAccessTokenCollection() *mgo.Collection {
 	return db.GetCollection(m.session, tokensCollectionName)
+}
+
+//getRefreshTokenCollection returns the mongo collection for the accessTokens
+func (m *Manager) getRefreshTokenCollection() *mgo.Collection {
+	return db.GetCollection(m.session, refreshTokenCollectionName)
 }
 
 // Get an authorizationRequest by it's authorizationcode.
@@ -133,6 +146,34 @@ func (m *Manager) GetAccessToken(token string) (at *AccessToken, err error) {
 		at = nil
 		err = nil
 	}
+
+	return
+}
+
+//getRefreshToken gets an refresh token by it's refresh token string
+// If the token is not found or is expired, nil is returned
+func (m *Manager) getRefreshToken(token string) (rt *refreshToken, err error) {
+	rt = &refreshToken{}
+
+	err = m.getRefreshTokenCollection().Find(bson.M{"refreshtoken": token}).One(rt)
+	if err == mgo.ErrNotFound {
+		rt = nil
+		err = nil
+	}
+	if err != nil {
+		rt = nil
+	}
+
+	return
+}
+
+// saveRefreshToken stores a refreshToken
+func (m *Manager) saveRefreshToken(t *refreshToken) (err error) {
+	if t == nil {
+		return
+	}
+
+	_, err = m.getRefreshTokenCollection().Upsert(bson.M{"refreshtoken": t.RefreshToken}, t)
 
 	return
 }

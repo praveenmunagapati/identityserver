@@ -59,9 +59,22 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(tokenString))
 }
 
+func stripOfflineAccess(scopes []string) (result []string, offlineAccessRequested bool) {
+	result = make([]string, 0, len(scopes))
+	for _, scope := range scopes {
+		if scope == "offline_access" {
+			offlineAccessRequested = true
+		} else {
+			result = append(result, scope)
+		}
+	}
+	return
+}
+
 func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, extraAudiences string) (tokenString string, err error) {
 
 	requestedScopes := splitScopeString(requestedScopeString)
+	requestedScopes, offlineAccessRequested := stripOfflineAccess(requestedScopes)
 	acquiredScopes := splitScopeString(at.Scope)
 
 	if !jwtScopesAreAllowed(acquiredScopes, requestedScopes) {
@@ -70,20 +83,19 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 	}
 
 	token := jwt.New(jwt.SigningMethodES384)
-
+	var grantedScopes []string
 	if at.Username != "" {
 		token.Claims["username"] = at.Username
-		possibleScopes, e := service.filterPossibleScopes(r, at.Username, requestedScopes, false)
-		if e != nil {
-			err = e
+		grantedScopes, err = service.filterPossibleScopes(r, at.Username, requestedScopes, false)
+		if err != nil {
 			return
 		}
-		token.Claims["scope"] = strings.Join(possibleScopes, ",")
 	}
 	if at.GlobalID != "" {
 		token.Claims["globalid"] = at.GlobalID
-		token.Claims["scope"] = requestedScopes
+		grantedScopes = requestedScopes
 	}
+	token.Claims["scope"] = strings.Join(grantedScopes, ",")
 
 	audiences := []string{at.ClientID}
 	if extraAudiences != "" {
@@ -94,6 +106,16 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 	token.Claims["exp"] = at.ExpirationTime().Unix()
 	token.Claims["iss"] = "itsyouonline"
 
+	if offlineAccessRequested {
+		rt := newRefreshToken()
+		rt.AuthorizedParty = at.ClientID
+		rt.Scopes = grantedScopes
+		token.Claims["refresh_token"] = rt.RefreshToken
+		mgr := NewManager(r)
+		if err = mgr.saveRefreshToken(&rt); err != nil {
+			return
+		}
+	}
 	tokenString, err = token.SignedString(service.jwtSigningKey)
 	return
 }

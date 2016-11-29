@@ -6,11 +6,13 @@ The token you acquired might give access to a lot more information that you want
 
 For these use cases, itsyou.online supports JWT [RFC7519](https://tools.ietf.org/html/rfc7519).
 
+## Acquiring a jwt
+
 Itsyou.online supports two way of obtaining JWTs:
 1. Use an OAuth2 token for JWT creation where the JWT's claim set is a subset of the OAuth token's scopes.
 2. Directly get a JWT instead of a normal OAuth token when following the OAut2 grant type flows.
 
-## Case 1: Use an OAuth2 token for JWT creation where the JWT's claim set is a subset of the OAuth token's scopes
+### Case 1: Use an OAuth2 token for JWT creation where the JWT's claim set is a subset of the OAuth token's scopes
 
 Suppose you have an OAuth token OAUTH-TOKEN with the following scopes:
 
@@ -96,7 +98,7 @@ In this case, this results in the following JWT data
 The audience field is a list of audiences, the first audience is always the `client_id` of the OAuth token used to acquire this JWT followed by the audiences passed in the request. The extra audiences are not required to be valid globalid's of organizations in itsyou.online.
 
 
-## Case 2: Directly get a JWT instead of a normal oauth2 token when following the oauth2 grant type flows
+### Case 2: Directly get a JWT instead of a normal oauth2 token when following the oauth2 grant type flows
 
 When using 1 of the authorization flows explained in the [Authorization grant types](oauth2.md) documentation, it is also possible to directly get a JWT returned instead of an OAuth2 token itself.
 Add the `return_type=id_token` and a `scope` parameter with the desired scopes to the `/v1/oauth/access_token` call to do this.
@@ -116,3 +118,16 @@ If the request has `application/json` in the accept header, the response is a js
 }
 ```
 If no `application/json` is present in the accept header, the mime-type is `application/jwt` and the response is the jwt itself.
+
+## Refreshing a jwt
+
+The standard oauth2 specification declares a refresh_token as a kind of special API key that is returned upon getting the oauth token or id token.
+While this allows getting an entirely new token with the original scopes, it does have some drawbacks:
+
+* The refresh token needs to be stored separately and if authorizations are passed to third party systems, the refresh token needs to be passed along as well if they are longer running services.
+* No way of limiting the scopeset when passing a refresh token to someone else.
+
+ItsYou.online puts the refresh token in the jwt itself, allowing to refresh the token without needing a separate refresh token. In order to include a refresh token in a jwt, one should ask for the `offline_access` scope. A `refresh_token` claim is be inserted in the returned jwt. To refresh it, just send the expired jwt as a whole to itsyou.online and you get a new one if the authorization still stands.
+If a jwt with for example a more limited scopeset is created and the `offline_access` scope is requested, ityou.online keeps a reference to the parent jwt's authorization and this in effect creates a tree of refreshable authorizations. If a specific authorization is removed from a parent, it is removed from all children as well.
+
+The problem with this approach is that implementers should be careful not to pass jwt's with a refresh_token to third party service since they can keep using this authorization for as long as it's own authorization is valid. When passing a jwt to an external service, it is best to ask for a new jwt first and pass that one.
