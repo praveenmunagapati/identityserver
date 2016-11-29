@@ -44,8 +44,8 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 
 	requestedScopeParameter := r.FormValue("scope")
 
-	extraAudiences := strings.TrimSpace(r.FormValue("aud"))
-	tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences)
+	audiences := strings.TrimSpace(r.FormValue("aud"))
+	tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, audiences)
 	if err == errUnauthorized {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
@@ -71,7 +71,7 @@ func stripOfflineAccess(scopes []string) (result []string, offlineAccessRequeste
 	return
 }
 
-func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, extraAudiences string) (tokenString string, err error) {
+func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, audiences string) (tokenString string, err error) {
 
 	requestedScopes := splitScopeString(requestedScopeString)
 	requestedScopes, offlineAccessRequested := stripOfflineAccess(requestedScopes)
@@ -97,12 +97,17 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 	}
 	token.Claims["scope"] = strings.Join(grantedScopes, ",")
 
-	audiences := []string{at.ClientID}
-	if extraAudiences != "" {
-		audiences = append(audiences, strings.Split(extraAudiences, ",")...)
-	}
+	audiencesArr := strings.Split(audiences, ",")
+	if len(audiencesArr) > 0 {
+		token.Claims["aud"] = audiencesArr
 
-	token.Claims["aud"] = audiences
+		// azp claim is only needed when the ID Token has a single
+		// audience value and that audience is different than the authorized
+		// party
+		if len(audiencesArr) == 1 && audiences != at.ClientID {
+			token.Claims["azp"] = at.ClientID
+		}
+	}
 	token.Claims["exp"] = at.ExpirationTime().Unix()
 	token.Claims["iss"] = "itsyouonline"
 
