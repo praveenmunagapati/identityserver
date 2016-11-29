@@ -214,6 +214,25 @@
                             </section>
                             <md-divider></md-divider>
                             <section>
+                                <md-subheader class="md-no-sticky">
+                                    <div layout="row">
+                                        <p>
+                                            <span translate='organization.views.detail.description'>Organization description</span>
+                                            <md-tooltip>
+                                                <span translate='organization.views.detail.descriptionhelp'>This description is displayed when a user logs in to an external site using OAuth2</span>
+                                            </md-tooltip>
+                                        </p>
+                                    </div>
+                                </md-subheader>
+                                <md-button class="md-primary" ng-click="vm.showDescriptionDialog($event)">
+                                    <span translate='organization.views.detail.changedescription'>Change organization description</span>
+                                    <md-tooltip>
+                                        <span translate='organization.views.detail.descriptionhelp'>This description is displayed when a user logs in to an external site using OAuth2</span>
+                                    </md-tooltip>
+                                </md-button>
+                            </section>
+                            <md-divider></md-divider>
+                            <section>
                                 <md-subheader><span translate='organization.views.detail.requiredsharedinfo'>Required shared information</span></md-subheader>
                                 <md-list>
                                     <md-list-item class="md-2-line"

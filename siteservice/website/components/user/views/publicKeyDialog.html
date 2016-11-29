@@ -28,7 +28,8 @@
                 <md-input-container flex>
                     <label translate='user.views.pubkeydialog.pubkey'>Public key</label>
                     <textarea ng-model="ctrl.Key.publickey" type="text" required name="publickey"
-                           placeholder="paste your public ssh key here" ng-pattern="/^ssh-rsa AAAAB3NzaC1yc2E(.*)/"></textarea>
+                           placeholder="paste your public ssh key here" translate-attr="{ 'placeholder': 'user.views.pubkeydialog.pastehere' }" 
+                           ng-pattern="/^ssh-rsa AAAAB3NzaC1yc2E(.*)/"></textarea>
                     <div ng-messages="PublicKeyForm.publickey.$error">
                         <div ng-message="pattern" translate='user.views.pubkeydialog.pubkeypattern'>Invalid public key, ssh keys start with 'ssh-rsa AAAAB3NzaC1yc2E'</div>
                     </div>

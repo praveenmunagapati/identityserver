@@ -1282,6 +1282,77 @@ securedBy: [ oauth_2_0 ]
         204:
           description: Organization deleted
 
+    /description:
+      post:
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        displayName: SetDescription
+        description: Set the description for this organization for a given language key
+        body:
+          application/json:
+            properties:
+              langkey: string
+              text: string
+        responses:
+           201:
+             description: description set successfully
+             body:
+               application/json:
+                 properties:
+                   langkey: string
+                   text: string
+
+      put:
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        displayName: UpdateDescription
+        description: Update the description for this organization for a given language key
+        body:
+          application/json:
+            properties:
+              langkey: string
+              text: string
+        responses:
+          200:
+            description: description updated successfully
+            body:
+              application/json:
+                properties:
+                  langkey: string
+                  text: string
+
+      /{langkey}:
+        get:
+          displayName: GetDescription
+          description: Get the description for an organization for this langkey
+          responses:
+            200:
+              description: Description retrieved successfully
+              body:
+                application/json:
+                  properties:
+                    langkey: string
+                    text: string
+
+        delete:
+          securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+          displayName: DeleteDescription
+          description: Delete the description for this organization for a given language key
+          responses:
+            204:
+              description: Description deleted successfully
+
+        /withfallback:
+          get:
+            displayName: GetDescriptionWithFallback
+            description: Get the description for an organization for this langkey, try to use the English is there is no description for this langkey
+            responses:
+              200:
+                description: Description retrieved successfully
+                body:
+                  application/json:
+                    properties:
+                      langkey: string
+                      text: string
+
     /logo:
       get:
         displayName: GetOrganizationLogo

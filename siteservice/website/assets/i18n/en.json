@@ -91,7 +91,8 @@
             "pubkeydialog": {
                 "newpubkey": "New public key",
                 "pubkey": "Public key",
-                "pubkeypattern": "Invalid public key, ssh keys start with 'ssh-rsa AAAAB3NzaC1yc2E'"
+                "pubkeypattern": "Invalid public key, ssh keys start with 'ssh-rsa AAAAB3NzaC1yc2E'",
+                "pastehere": "paste your public ssh key here"
             },
             "resetpassdialog": {
                 "changepass": "Change password",
@@ -374,7 +375,10 @@
                 "leaveorganizationwarning": "If you leave an organization you cannot re-join it unless you are invited again.",
                 "addrequiredsharedinfo": "Add required shared information",
                 "requiredsharedinfo": "Required shared information",
-                "sharedwith": "Shared with: {{who}}"
+                "sharedwith": "Shared with: {{who}}",
+                "description": "Organization description",
+                "descriptionhelp": "This description is displayed when a user logs in to an external site using OAuth2",
+                "changedescription": "Change organization description"
             },
             "dnsdialog": {
                 "newdomain": "New domain name",
@@ -412,6 +416,12 @@
                 "accessscope": "Access scope",
                 "noaccessscopeselected": "Please select one or more access scopes",
                 "accessscopeinfo": "The access scope determines who can see the shared information"
+            },
+            "descriptiondialog": {
+                "descriptions": "Descriptions",
+                "language": "language",
+                "description": "Description",
+                "enterdescription": "Enter the description for the chosen language here"
             }
         },
         "controller": {
@@ -442,6 +452,7 @@
     "save": "Save",
     "create": "Create",
     "ok": "OK",
+    "update": "Update",
     "register": "Register",
     "role": "Role",
     "owner": "Owner",

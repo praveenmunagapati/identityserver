@@ -17,7 +17,8 @@
             submitTotpCode: submitTotpCode,
             submitSmsCode: submitSmsCode,
             checkSmsConfirmation: checkSmsConfirmation,
-            getLogo: getLogo
+            getLogo: getLogo,
+            getDescription: getDescription
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -78,6 +79,11 @@
 
         function getLogo(globalid) {
             var url = '/api/organizations/' + encodeURIComponent(globalid) + '/logo';
+            return genericHttpCall($http.get, url);
+        }
+
+        function getDescription(globalId, langKey) {
+            var url = '/api/organizations/' + encodeURIComponent(globalId) + '/description/' + encodeURIComponent(langKey) + '/withfallback';
             return genericHttpCall($http.get, url);
         }
     }

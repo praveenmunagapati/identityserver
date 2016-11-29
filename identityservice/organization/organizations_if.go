@@ -131,6 +131,21 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// GetOrganizationUsers is the handler for GET /organizations/{globalid}/members
 	// Get the list of all users in this organization
 	GetOrganizationUsers(w http.ResponseWriter, r *http.Request)
+	// GetDescription is the handler for GET /organizations/{globalid}/description/{langkey}
+	// Get the description for this organization for this langKey
+	GetDescription(w http.ResponseWriter, r *http.Request)
+	// DeleteDescription is the handler for DELETE /organizations/{globalid}/description/{langkey}
+	// Delete the description for this organization for this langKey
+	DeleteDescription(w http.ResponseWriter, r *http.Request)
+	// SetDescription is the handler for POST /organizations/{globalid}/description
+	// Set the description for this organization for this langKey
+	SetDescription(w http.ResponseWriter, r *http.Request)
+	// UpdateDescription is the handler for PUT /organizations/{globalid}/description
+	// Updates the description for this organization for this langKey
+	UpdateDescription(w http.ResponseWriter, r *http.Request)
+	// GetDescriptionWithFallback is the handler for GET /organizations/{globalid}/description/{langkey}/withfallback
+	// Get the description for this organization for this langKey. If it doesn't exist, get the desription for the default langKey
+	GetDescriptionWithFallback(w http.ResponseWriter, r *http.Request)
 }
 
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
@@ -177,4 +192,9 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/requiredscopes/{requiredscope}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateRequiredScope))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/requiredscopes/{requiredscope}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteRequiredScope))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/users", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner", "organization:member"}).Handler).Then(http.HandlerFunc(i.GetOrganizationUsers))).Methods("GET")
+	r.Handle("/organizations/{globalid}/description/{langkey}", http.HandlerFunc(i.GetDescription)).Methods("GET")
+	r.Handle("/organizations/{globalid}/description/{langkey}/withfallback", http.HandlerFunc(i.GetDescriptionWithFallback)).Methods("GET")
+	r.Handle("/organizations/{globalid}/description/{langkey}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteDescription))).Methods("DELETE")
+	r.Handle("/organizations/{globalid}/description", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.SetDescription))).Methods("POST")
+	r.Handle("/organizations/{globalid}/description", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateDescription))).Methods("PUT")
 }

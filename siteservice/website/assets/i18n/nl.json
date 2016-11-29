@@ -91,7 +91,8 @@
             "pubkeydialog": {
                 "newpubkey": "Nieuwe public key",
                 "pubkey": "Public key",
-                "pubkeypattern": "Ongeldige public key, ssh sleutels starten met 'ssh-rsa AAAAB3NzaC1yc2E'"
+                "pubkeypattern": "Ongeldige public key, ssh sleutels starten met 'ssh-rsa AAAAB3NzaC1yc2E'",
+                "pastehere": "plak je publieke ssh key hier"
             },
             "resetpassdialog": {
                 "changepass": "Wachtwoord wijzigen",
@@ -374,7 +375,10 @@
                 "leaveorganizationwarning": "Als je een organizatie verlaat kan je niet opnieuw lid worden tenzij je opnieuw wordt uitgenodigt.",
                 "addrequiredsharedinfo": "Voeg gewenste gedeelde informatie toe",
                 "requiredsharedinfo": "Gewenste gedeelde informatie",
-                "sharedwith": "Gedeeld met: {{who}}"
+                "sharedwith": "Gedeeld met: {{who}}",
+                "description": "Organizatie beschrijving",
+                "descriptionhelp": "Deze beschrijving wordt getoond wanneer een gebruiker aanmeld bij een externe site via OAuth2",
+                "changedescription": "Wijzig organizatie beschrijving"
             },
             "dnsdialog": {
                 "newdomain": "Nieuwe domeinnaam",
@@ -412,6 +416,12 @@
                 "accessscope": "Access scope",
                 "noaccessscopeselected": "Gelieve een of meerdere access scopes te kiezen",
                 "accessscopeinfo": "De access scope bepaalt wie de gedeelde informatie kan zien"
+            },
+            "descriptiondialog": {
+                "descriptions": "Beschrijvingen",
+                "language": "taal",
+                "description": "Beschrijving",
+                "enterdescription": "Vul hier de beschrijving in voor de gekozen taal"
             }
         },
         "controller": {
@@ -442,6 +452,7 @@
     "save": "Sla op",
     "create": "Maak",
     "ok": "OK",
+    "update": "Pas aan",
     "register": "Registreer",
     "role": "Rol",
     "owner": "Eigenaar",

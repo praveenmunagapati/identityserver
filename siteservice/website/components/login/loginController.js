@@ -20,6 +20,7 @@
         vm.twoFAMethod = 'sms';
         vm.login = "";
         vm.password = "";
+        vm.description = ""
 
         var listener;
         activate();
@@ -32,14 +33,28 @@
                         renderLogo();
                     }
                 );
-                window.addEventListener('resize', resizeLogo, false);
-                window.addEventListener('orientationchange', resizeLogo, false);
+                $window.addEventListener('resize', resizeLogo, false);
+                $window.addEventListener('orientationchange', resizeLogo, false);
+                loadDescription();
             }
             autoFillListener();
             $scope.$on('$destroy', function() {
                   // Make sure that the interval is destroyed too
                   stopListening();
             });
+        }
+
+        // Load the correct description after the user changes language
+        $rootScope.$on('$translateChangeSuccess', function () {
+            loadDescription();
+        });
+
+        function loadDescription() {
+            LoginService.getDescription(vm.externalSite, localStorage.getItem('langKey')).then(
+                function(data) {
+                    vm.description = data.text;
+                }
+            );
         }
 
         function renderLogo() {

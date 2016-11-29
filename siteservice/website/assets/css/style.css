@@ -246,6 +246,10 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
     margin-right: 15px;
 }
 
+.descriptioninput {
+    min-width: 400px;
+}
+
 .sign-wrap {
     margin-top: 15px;
 }
@@ -269,7 +273,7 @@ ul.built { list-style: none; margin: 0 auto; width: 730px; }
 }
 
 md-select.header-select.md-default-theme:not([disabled]):focus .header-select.md-select-value,
-md-select:not([disabled]):focus .md-select-value {
+md-select.header-select:not([disabled]):focus .md-select-value {
     color: #fff !important;
 }
 

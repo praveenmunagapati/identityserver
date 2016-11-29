@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	mongoCollectionName   = "organizations"
-	logoCollectionName    = "organizationLogos"
-	last2FACollectionName = "last2falogin"
+	mongoCollectionName       = "organizations"
+	logoCollectionName        = "organizationLogos"
+	last2FACollectionName     = "last2falogin"
+	descriptionCollectionName = "organizationdescriptions"
 )
 
 //InitModels initialize models in mongo, if required.
@@ -51,6 +52,14 @@ func InitModels() {
 		Background:  true,
 	}
 	db.EnsureIndex(last2FACollectionName, automatic2FAExpiration)
+
+	// Index the info texts
+	index = mgo.Index{
+		Key:    []string{"globalid"},
+		Unique: true,
+	}
+
+	db.EnsureIndex(descriptionCollectionName, index)
 }
 
 //Manager is used to store organizations
@@ -71,6 +80,12 @@ type Last2FAManager struct {
 	collection *mgo.Collection
 }
 
+//DescriptionManager is used to store info texts for an organization
+type DescriptionManager struct {
+	session    *mgo.Session
+	collection *mgo.Collection
+}
+
 func getCollection(session *mgo.Session) *mgo.Collection {
 	return db.GetCollection(session, mongoCollectionName)
 }
@@ -83,6 +98,11 @@ func getLogoCollection(session *mgo.Session) *mgo.Collection {
 //get the last 2FA collection
 func getLast2FACollection(session *mgo.Session) *mgo.Collection {
 	return db.GetCollection(session, last2FACollectionName)
+}
+
+//get the info text collection
+func getDescriptionManager(session *mgo.Session) *mgo.Collection {
+	return db.GetCollection(session, descriptionCollectionName)
 }
 
 //NewManager creates and initializes a new Manager
@@ -109,6 +129,15 @@ func NewLast2FAManager(r *http.Request) *Last2FAManager {
 	return &Last2FAManager{
 		session:    session,
 		collection: getLast2FACollection(session),
+	}
+}
+
+// NewDescriptionManager creates and initializes a new DescriptionManager
+func NewDescriptionManager(r *http.Request) *DescriptionManager {
+	session := db.GetDBSession(r)
+	return &DescriptionManager{
+		session:    session,
+		collection: getDescriptionManager(session),
 	}
 }
 
@@ -488,6 +517,11 @@ func (m *Last2FAManager) RemoveByUser(username string) error {
 	return err
 }
 
+// Remove removes the organization descriptions
+func (m *DescriptionManager) Remove(globalid string) error {
+	return m.collection.Remove(bson.M{"globalid": globalid})
+}
+
 // UpdateMembership Updates a user his role in an organization
 func (m *Manager) UpdateMembership(globalid string, username string, oldrole string, newrole string) error {
 	qry := bson.M{"globalid": globalid}
@@ -666,4 +700,32 @@ func (m *Manager) ListByUserOrGlobalID(username string, globalIds []string) (err
 	}
 	err := m.collection.Find(qry).All(&organizations)
 	return err, organizations
+}
+
+// SaveDescription saves a description for an organization
+func (m *DescriptionManager) SaveDescription(globalId string, text LocalizedInfoText) error {
+	_, err := m.collection.Upsert(bson.M{"globalid": globalId}, bson.M{"$addToSet": bson.M{"infotexts": text}})
+	return err
+}
+
+// UpdateDescription updates a description for an organization
+func (m *DescriptionManager) UpdateDescription(globalId string, text LocalizedInfoText) error {
+	err := m.collection.Update(bson.M{"globalid": globalId}, bson.M{"$pull": bson.M{"infotexts": bson.M{"langkey": text.LangKey}}})
+	if err != nil {
+		return err
+	}
+	_, err = m.collection.Upsert(bson.M{"globalid": globalId}, bson.M{"$addToSet": bson.M{"infotexts": text}})
+	return err
+}
+
+// DeleteDescription deletes a (translated) description for an organization
+func (m *DescriptionManager) DeleteDescription(globalId, langKey string) error {
+	return m.collection.Update(bson.M{"globalid": globalId}, bson.M{"$pull": bson.M{"infotexts": bson.M{"langkey": langKey}}})
+}
+
+// GetDescription get all descriptions for an organization
+func (m *DescriptionManager) GetDescription(globalId string) (OrganizationInfoText, error) {
+	var info OrganizationInfoText
+	err := m.collection.Find(bson.M{"globalid": globalId}).One(&info)
+	return info, err
 }

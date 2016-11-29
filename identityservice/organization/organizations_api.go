@@ -33,6 +33,7 @@ const (
 	itsyouonlineGlobalID                      = "itsyouonline"
 	maximumNumberOfOrganizationsPerUser       = 1000
 	maximumNumberOfInvitationsPerOrganization = 10000
+	defaultLangKey                          = "en"
 )
 
 // OrganizationsAPI is the implementation for /organizations root endpoint
@@ -969,6 +970,14 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	if handleServerError(w, "removing organization 2FA history", err) {
 		return
 	}
+	descriptionMgr := organization.NewDescriptionManager(r)
+	err = descriptionMgr.Remove(globalid)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			handleServerError(w, "removing organization description", err)
+			return
+		}
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -1592,6 +1601,160 @@ func (api OrganizationsAPI) GetOrganizationUsers(w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(response)
 }
 
+// GetDescription is the handler for GET /organizations/{globalid}/description/{langkey}
+// Get the description for this organization for this langKey
+func (api OrganizationsAPI) GetDescription(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	rawLangKey := mux.Vars(r)["langkey"]
+	langKey := parseLangKey(rawLangKey)
+	if langKey == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "invalid_language_key")
+		return
+	}
+	mgr := organization.NewDescriptionManager(r)
+	var description organization.LocalizedInfoText
+	orgDescriptions, err := mgr.GetDescription(globalId)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Error("ERROR while loading localized description: ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		description.LangKey = langKey
+		description.Text = ""
+	}
+	for _, storedDescription := range orgDescriptions.InfoTexts {
+		if storedDescription.LangKey == langKey {
+			description = storedDescription
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(description)
+}
+
+// GetDescriptionWithFallback is the handler for GET /organizations/{globalid}/description/{langkey}/withfallback
+// Get the description for this organization for this langKey. If it doesn't exist, get the desription for the default langKey
+func (api OrganizationsAPI) GetDescriptionWithFallback(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	rawLangKey := mux.Vars(r)["langkey"]
+	langKey := parseLangKey(rawLangKey)
+	if langKey == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "invalid_language_key")
+		return
+	}
+	mgr := organization.NewDescriptionManager(r)
+	var description organization.LocalizedInfoText
+	orgDescriptions, err := mgr.GetDescription(globalId)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Error("ERROR while loading localized description: ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		description.LangKey = langKey
+		description.Text = ""
+	}
+	for _, storedDescription := range orgDescriptions.InfoTexts {
+		if storedDescription.LangKey == langKey {
+			description = storedDescription
+		}
+	}
+
+	// If no translation is found for the langKey, try the default langKey
+	if description.Text == "" && langKey != defaultLangKey {
+		langKey = defaultLangKey
+	}
+	for _, storedDescription := range orgDescriptions.InfoTexts {
+		if storedDescription.LangKey == langKey {
+			description = storedDescription
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(description)
+}
+
+// DeleteDescription is the handler for GET /organizations/{globalid}/description/{langkey}
+// Delete the description for this organization for this langKey
+func (api OrganizationsAPI) DeleteDescription(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	rawLangKey := mux.Vars(r)["langkey"]
+	langKey := parseLangKey(rawLangKey)
+	if langKey == "" {
+		writeErrorResponse(w, http.StatusBadRequest, "invalid_language_key")
+		return
+	}
+	mgr := organization.NewDescriptionManager(r)
+	err := mgr.DeleteDescription(globalId, langKey)
+	if err != nil {
+		log.Error("ERROR while deleting localized description: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// SetDescription is the handler for POST /organizations/{globalid}/description
+// Set the description for this organization for this langKey
+func (api OrganizationsAPI) SetDescription(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	var localInfo organization.LocalizedInfoText
+
+	if err := json.NewDecoder(r.Body).Decode(&localInfo); err != nil {
+		log.Debug("Error decoding the localized description:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	langKey := parseLangKey(localInfo.LangKey)
+	if langKey == "" {
+		log.Debug("Error decoding the localized description: invalid language key")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	localInfo.LangKey = langKey
+	descriptionMgr := organization.NewDescriptionManager(r)
+	err := descriptionMgr.SaveDescription(globalId, localInfo)
+	if err != nil {
+		log.Error("ERROR while saving localized description: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(localInfo)
+}
+
+// UpdateDescription is the handler for PUT /organizations/{globalid}/description
+// Updates the description for this organization for this langKey
+func (api OrganizationsAPI) UpdateDescription(w http.ResponseWriter, r *http.Request) {
+	globalId := mux.Vars(r)["globalid"]
+	var localInfo organization.LocalizedInfoText
+
+	if err := json.NewDecoder(r.Body).Decode(&localInfo); err != nil {
+		log.Debug("Error decoding the localized description:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	langKey := parseLangKey(localInfo.LangKey)
+	if langKey == "" {
+		log.Debug("Error decoding the localized description: invalid language key")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	localInfo.LangKey = langKey
+	descriptionMgr := organization.NewDescriptionManager(r)
+	err := descriptionMgr.UpdateDescription(globalId, localInfo)
+	if err != nil {
+		log.Error("ERROR while updating localized description: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(localInfo)
+}
+
 func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, message string) {
 	log.Debug(httpStatusCode, message)
 	errorResponse := struct {
@@ -1626,4 +1789,12 @@ func SearchUser(r *http.Request, searchString string) (usr *user.User, err1 erro
 		return userMgr.GetByName(validatedPhonenumber.Username)
 	}
 	return usr, err1
+}
+
+// parseLangKey return the first 2 characters of a string in lowercase. If the string is empty or has only 1 character, and empty string is returned
+func parseLangKey(rawKey string) string {
+	if len(rawKey) < 2 {
+		return ""
+	}
+	return strings.ToLower(string(rawKey[0:2]))
 }
