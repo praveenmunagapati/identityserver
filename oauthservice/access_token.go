@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 )
@@ -140,7 +139,7 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		}
 
 		// if client could accept JSON we give the token as JSON string
-		// otherwise in plain text
+		// if not, in plain text with the application/jwt mime-type
 		if strings.Index(r.Header.Get("Accept"), "application/json") >= 0 {
 			w.Header().Set("Content-type", "application/json")
 			json.NewEncoder(w).Encode(map[string]string{"access_token": tokenString})
@@ -223,9 +222,9 @@ func convertCodeToAccessTokenHandler(code string, clientID string, secret string
 	}
 
 	if ar.ClientID != clientID || ar.State != state || ar.RedirectURL != redirectURI {
-		log.Debug(fmt.Sprintf(`Client id:%s - Expected client id:%s`, clientID, ar.ClientID))
-		log.Debug(fmt.Sprintf("State:%s - Expected state:%s", state, ar.State))
-		log.Debug(fmt.Sprintf("Redirect url:%s - Expected redirect url:%s", redirectURI, ar.RedirectURL))
+		log.Debugf("Client id:%s - Expected client id:%s", clientID, ar.ClientID)
+		log.Debugf("State:%s - Expected state:%s", state, ar.State)
+		log.Debugf("Redirect url:%s - Expected redirect url:%s", redirectURI, ar.RedirectURL)
 		log.Info("Bad client or hacking attempt, state, client_id or redirect_uri is different from the original authorization request")
 		httpStatusCode = http.StatusBadRequest
 		return

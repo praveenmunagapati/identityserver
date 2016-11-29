@@ -26,3 +26,11 @@ func TestJWTScopesAreAllowed(t *testing.T) {
 		assert.Equal(t, test.valid, valid, "Allowed: \"%s\" - Requested: \"%s\"", test.allowed, test.requested)
 	}
 }
+
+func TestStripOfflineAccess(t *testing.T) {
+	testcase := []string{"test", "offline_access"}
+	resultingScopes, offlineAccessRequested := stripOfflineAccess(testcase)
+	assert.NotContains(t, resultingScopes, "offline_access", "the offline_access scope should be stripped")
+	assert.Contains(t, resultingScopes, "test", "the test scope should not be stripped")
+	assert.True(t, offlineAccessRequested, "offline_access was requested")
+}

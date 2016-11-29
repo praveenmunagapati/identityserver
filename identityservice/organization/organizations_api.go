@@ -14,6 +14,7 @@ import (
 
 	"crypto/rand"
 	"encoding/base64"
+
 	"github.com/gorilla/context"
 	"github.com/itsyouonline/identityserver/db"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
@@ -29,9 +30,9 @@ import (
 )
 
 const (
-	itsyouonlineGlobalID                    = "itsyouonline"
-	MAX_ORGANIZATIONS_PER_USER              = 1000
-	MAX_AMOUNT_INVITATIONS_PER_ORGANIZATION = 10000
+	itsyouonlineGlobalID                      = "itsyouonline"
+	maximumNumberOfOrganizationsPerUser       = 1000
+	maximumNumberOfInvitationsPerOrganization = 10000
 	defaultLangKey                          = "en"
 )
 
@@ -177,7 +178,7 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	if handleServerError(w, "counting organizations by user", err) {
 		return
 	}
-	if count >= MAX_ORGANIZATIONS_PER_USER {
+	if count >= maximumNumberOfOrganizationsPerUser {
 		log.Error("Reached organization limit for user ", username)
 		writeErrorResponse(w, 422, "maximum_amount_of_organizations_reached")
 		return
@@ -267,7 +268,7 @@ func (api OrganizationsAPI) UpdateOrganization(w http.ResponseWriter, r *http.Re
 }
 
 func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, role string) {
-	globalId := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 
 	var s searchMember
 
@@ -280,7 +281,7 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 	orgMgr := organization.NewManager(r)
 	isEmailAddress := user.ValidateEmailAddress(searchString)
 	isPhoneNumber := user.ValidatePhoneNumber(searchString)
-	org, err := orgMgr.GetByName(globalId)
+	org, err := orgMgr.GetByName(globalID)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
@@ -304,7 +305,7 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 	emailAddress := ""
 	code := ""
 	phoneNumber := ""
-	var method invitations.InviteMethod = invitations.MethodWebsite
+	method := invitations.MethodWebsite
 	if u == nil {
 		randombytes := make([]byte, 9) //Multiple of 3 to make sure no padding is added
 		rand.Read(randombytes)
@@ -335,21 +336,21 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 	}
 	// Create JoinRequest
 	invitationMgr := invitations.NewInvitationManager(r)
-	count, err := invitationMgr.CountByOrganization(globalId)
+	count, err := invitationMgr.CountByOrganization(globalID)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if count >= MAX_AMOUNT_INVITATIONS_PER_ORGANIZATION {
-		log.Error("Reached invitation limit for organization ", globalId)
+	if count >= maximumNumberOfInvitationsPerOrganization {
+		log.Error("Reached invitation limit for organization ", globalID)
 		writeErrorResponse(w, 422, "max_amount_of_invitations_reached")
 		return
 	}
 
 	orgReq := &invitations.JoinOrganizationInvitation{
 		Role:         invitations.RoleOwner,
-		Organization: globalId,
+		Organization: globalID,
 		User:         username,
 		Status:       invitations.RequestPending,
 		Created:      db.DateTime(time.Now()),
@@ -359,7 +360,7 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 		Code:         code,
 	}
 
-	if err := invitationMgr.Save(orgReq); err != nil {
+	if err = invitationMgr.Save(orgReq); err != nil {
 		log.Error("Error inviting owner: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -497,13 +498,13 @@ func (api OrganizationsAPI) UpdateOrganizationOrgMemberShip(w http.ResponseWrite
 // RemoveOrganizationMember Remove a member from organization
 // It is handler for DELETE /organizations/{globalid}/members/{username}
 func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *http.Request) {
-	globalId := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 	username := mux.Vars(r)["username"]
 
 	orgMgr := organization.NewManager(r)
 	userMgr := user.NewManager(r)
 
-	org, err := orgMgr.GetByName(globalId)
+	org, err := orgMgr.GetByName(globalID)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -512,13 +513,13 @@ func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *h
 		}
 		return
 	}
-	if err := orgMgr.RemoveMember(org, username); err != nil {
+	if err = orgMgr.RemoveMember(org, username); err != nil {
 		log.Error("Error adding member: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	err = userMgr.DeleteAuthorization(username, globalId)
+	err = userMgr.DeleteAuthorization(username, globalID)
 	if handleServerError(w, "removing authorization", err) {
 		return
 	}
@@ -546,13 +547,13 @@ func (api OrganizationsAPI) sendInvite(r *http.Request, organizationRequest *inv
 // RemoveOrganizationOwner Remove a member from organization
 // It is handler for DELETE /organizations/{globalid}/owners/{username}
 func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *http.Request) {
-	globalId := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 	username := mux.Vars(r)["username"]
 
 	orgMgr := organization.NewManager(r)
 	userMgr := user.NewManager(r)
 
-	org, err := orgMgr.GetByName(globalId)
+	org, err := orgMgr.GetByName(globalID)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -562,13 +563,13 @@ func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *ht
 		return
 	}
 
-	if err := orgMgr.RemoveOwner(org, username); err != nil {
+	if err = orgMgr.RemoveOwner(org, username); err != nil {
 		log.Error("Error removing owner: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	err = userMgr.DeleteAuthorization(username, globalId)
+	err = userMgr.DeleteAuthorization(username, globalID)
 	if handleServerError(w, "removing authorization", err) {
 		return
 	}
@@ -576,9 +577,9 @@ func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *ht
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GetPendingInvitations is the handler for GET /organizations/{globalid}/invitations
+// GetPendingOrganizationInvitations is the handler for GET /organizations/{globalid}/invitations
 // Get the list of pending invitations for users to join this organization.
-func (api OrganizationsAPI) GetPendingInvitations(w http.ResponseWriter, r *http.Request) {
+func (api OrganizationsAPI) GetPendingOrganizationInvitations(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
 	invitationMgr := invitations.NewInvitationManager(r)
@@ -784,7 +785,7 @@ func (api OrganizationsAPI) DeleteAPIKey(w http.ResponseWriter, r *http.Request)
 // CreateOrganizationDns is the handler for POST /organizations/{globalid}/dns
 // Adds a dns address to an organization
 func (api OrganizationsAPI) CreateOrganizationDns(w http.ResponseWriter, r *http.Request) {
-	globalId := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 
 	dns := DnsAddress{}
 
@@ -799,7 +800,7 @@ func (api OrganizationsAPI) CreateOrganizationDns(w http.ResponseWriter, r *http
 		return
 	}
 	orgMgr := organization.NewManager(r)
-	organisation, err := orgMgr.GetByName(globalId)
+	organisation, err := orgMgr.GetByName(globalID)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -823,8 +824,8 @@ func (api OrganizationsAPI) CreateOrganizationDns(w http.ResponseWriter, r *http
 // UpdateOrganizationDns is the handler for PUT /organizations/{globalid}/dns/{dnsname}
 // Updates an existing DNS name associated with an organization
 func (api OrganizationsAPI) UpdateOrganizationDns(w http.ResponseWriter, r *http.Request) {
-	globalId := mux.Vars(r)["globalid"]
-	oldDns := mux.Vars(r)["dnsname"]
+	globalID := mux.Vars(r)["globalid"]
+	oldDNS := mux.Vars(r)["dnsname"]
 
 	var dns DnsAddress
 
@@ -839,7 +840,7 @@ func (api OrganizationsAPI) UpdateOrganizationDns(w http.ResponseWriter, r *http
 	}
 
 	orgMgr := organization.NewManager(r)
-	organisation, err := orgMgr.GetByName(globalId)
+	organisation, err := orgMgr.GetByName(globalID)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -848,7 +849,7 @@ func (api OrganizationsAPI) UpdateOrganizationDns(w http.ResponseWriter, r *http
 		}
 		return
 	}
-	err = orgMgr.UpdateDNS(organisation, oldDns, dns.Name)
+	err = orgMgr.UpdateDNS(organisation, oldDNS, dns.Name)
 
 	if err != nil {
 		log.Error("Error updating DNS name", err.Error())
@@ -943,7 +944,7 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	}
 
 	oauthMgr := oauthservice.NewManager(r)
-	err = oauthMgr.RemoveTokensByGlobalId(globalid)
+	err = oauthMgr.RemoveTokensByGlobalID(globalid)
 	if handleServerError(w, "removing organization oauth accesstokens", err) {
 		return
 	}
@@ -951,7 +952,7 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	if handleServerError(w, "removing client secrets", err) {
 		return
 	}
-	err = oauthMgr.RemoveClientsById(globalid)
+	err = oauthMgr.RemoveClientsByID(globalid)
 	if handleServerError(w, "removing organization oauth clients", err) {
 		return
 	}
@@ -960,7 +961,7 @@ func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Re
 	if handleServerError(w, "removing all authorizations", err) {
 		return
 	}
-	err = oauthMgr.RemoveClientsById(globalid)
+	err = oauthMgr.RemoveClientsByID(globalid)
 	if handleServerError(w, "removing organization oauth clients", err) {
 		return
 	}
@@ -1449,7 +1450,7 @@ func (api OrganizationsAPI) DeleteOrgOwner(w http.ResponseWriter, r *http.Reques
 // AddRequiredScope is the handler for POST /organizations/{globalid}/requiredscope
 // Adds a required scope
 func (api OrganizationsAPI) AddRequiredScope(w http.ResponseWriter, r *http.Request) {
-	globalId := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 	var requiredScope organization.RequiredScope
 	if err := json.NewDecoder(r.Body).Decode(&requiredScope); err != nil {
 		log.Debug("Error while adding a required scope: ", err.Error())
@@ -1461,7 +1462,7 @@ func (api OrganizationsAPI) AddRequiredScope(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	mgr := organization.NewManager(r)
-	organisation, err := mgr.GetByName(globalId)
+	organisation, err := mgr.GetByName(globalID)
 	if err == mgo.ErrNotFound {
 		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
 		return
@@ -1472,7 +1473,7 @@ func (api OrganizationsAPI) AddRequiredScope(w http.ResponseWriter, r *http.Requ
 			return
 		}
 	}
-	err = mgr.AddRequiredScope(globalId, requiredScope)
+	err = mgr.AddRequiredScope(globalID, requiredScope)
 	if err != nil {
 		handleServerError(w, "adding a required scope", err)
 	} else {
@@ -1483,7 +1484,7 @@ func (api OrganizationsAPI) AddRequiredScope(w http.ResponseWriter, r *http.Requ
 // UpdateRequiredScope is the handler for PUT /organizations/{globalid}/requiredscope/{requiredscope}
 // Updates a required scope
 func (api OrganizationsAPI) UpdateRequiredScope(w http.ResponseWriter, r *http.Request) {
-	globalId := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 	oldRequiredScope := mux.Vars(r)["requiredscope"]
 	var requiredScope organization.RequiredScope
 	if err := json.NewDecoder(r.Body).Decode(&requiredScope); err != nil {
@@ -1496,12 +1497,12 @@ func (api OrganizationsAPI) UpdateRequiredScope(w http.ResponseWriter, r *http.R
 		return
 	}
 	mgr := organization.NewManager(r)
-	exists := mgr.Exists(globalId)
+	exists := mgr.Exists(globalID)
 	if !exists {
 		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
 		return
 	}
-	err := mgr.UpdateRequiredScope(globalId, oldRequiredScope, requiredScope)
+	err := mgr.UpdateRequiredScope(globalID, oldRequiredScope, requiredScope)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			writeErrorResponse(w, http.StatusNotFound, "required_scope_not_found")
@@ -1516,14 +1517,14 @@ func (api OrganizationsAPI) UpdateRequiredScope(w http.ResponseWriter, r *http.R
 // DeleteRequiredScope is the handler for DELETE /organizations/{globalid}/requiredscope/{requiredscope}
 // Updates a required scope
 func (api OrganizationsAPI) DeleteRequiredScope(w http.ResponseWriter, r *http.Request) {
-	globalId := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 	requiredScope := mux.Vars(r)["requiredscope"]
 	mgr := organization.NewManager(r)
-	if !mgr.Exists(globalId) {
+	if !mgr.Exists(globalID) {
 		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
 		return
 	}
-	err := mgr.DeleteRequiredScope(globalId, requiredScope)
+	err := mgr.DeleteRequiredScope(globalID, requiredScope)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			writeErrorResponse(w, http.StatusNotFound, "required_scope_not_found")
@@ -1538,19 +1539,19 @@ func (api OrganizationsAPI) DeleteRequiredScope(w http.ResponseWriter, r *http.R
 // GetOrganizationUsers is the handler for GET /organizations/{globalid}/users
 // Get the list of all users in this organization
 func (api OrganizationsAPI) GetOrganizationUsers(w http.ResponseWriter, r *http.Request) {
-	globalId := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 	orgMgr := organization.NewManager(r)
-	if !orgMgr.Exists(globalId) {
+	if !orgMgr.Exists(globalID) {
 		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
 		return
 	}
 	authenticatedUser := context.Get(r, "authenticateduser").(string)
 	response := organization.GetOrganizationUsersResponseBody{}
-	isOwner, err := orgMgr.IsOwner(globalId, authenticatedUser)
+	isOwner, err := orgMgr.IsOwner(globalID, authenticatedUser)
 	if handleServerError(w, "checking if user is owner of an organization", err) {
 		return
 	}
-	org, err := orgMgr.GetByName(globalId)
+	org, err := orgMgr.GetByName(globalID)
 	if handleServerError(w, "getting organization by name", err) {
 		return
 	}
@@ -1565,7 +1566,7 @@ func (api OrganizationsAPI) GetOrganizationUsers(w http.ResponseWriter, r *http.
 	// Only owners can see if there are missing permissions
 	if isOwner {
 		userMgr := user.NewManager(r)
-		authorizations, err := userMgr.GetOrganizationAuthorizations(globalId)
+		authorizations, err := userMgr.GetOrganizationAuthorizations(globalID)
 		if handleServerError(w, "getting organizaton authorizations", err) {
 			return
 		}
@@ -1782,15 +1783,12 @@ func SearchUser(r *http.Request, searchString string) (usr *user.User, err1 erro
 			validatedEmailAddress, err3 := valMgr.GetByEmailAddress(searchString)
 			if err3 != nil {
 				return nil, err3
-			} else {
-				return userMgr.GetByName(validatedEmailAddress.Username)
 			}
-		} else {
-			return userMgr.GetByName(validatedPhonenumber.Username)
+			return userMgr.GetByName(validatedEmailAddress.Username)
 		}
-	} else {
-		return usr, err1
+		return userMgr.GetByName(validatedPhonenumber.Username)
 	}
+	return usr, err1
 }
 
 // parseLangKey return the first 2 characters of a string in lowercase. If the string is empty or has only 1 character, and empty string is returned
