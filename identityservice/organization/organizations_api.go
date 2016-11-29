@@ -30,9 +30,9 @@ import (
 )
 
 const (
-	itsyouonlineGlobalID                    = "itsyouonline"
-	MAX_ORGANIZATIONS_PER_USER              = 1000
-	MAX_AMOUNT_INVITATIONS_PER_ORGANIZATION = 10000
+	itsyouonlineGlobalID                      = "itsyouonline"
+	maximumNumberOfOrganizationsPerUser       = 1000
+	maximumNumberOfInvitationsPerOrganization = 10000
 )
 
 // OrganizationsAPI is the implementation for /organizations root endpoint
@@ -177,7 +177,7 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	if handleServerError(w, "counting organizations by user", err) {
 		return
 	}
-	if count >= MAX_ORGANIZATIONS_PER_USER {
+	if count >= maximumNumberOfOrganizationsPerUser {
 		log.Error("Reached organization limit for user ", username)
 		writeErrorResponse(w, 422, "maximum_amount_of_organizations_reached")
 		return
@@ -341,7 +341,7 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if count >= MAX_AMOUNT_INVITATIONS_PER_ORGANIZATION {
+	if count >= maximumNumberOfInvitationsPerOrganization {
 		log.Error("Reached invitation limit for organization ", globalID)
 		writeErrorResponse(w, 422, "max_amount_of_invitations_reached")
 		return
