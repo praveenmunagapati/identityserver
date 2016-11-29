@@ -127,7 +127,14 @@ While this allows getting an entirely new token with the original scopes, it doe
 * The refresh token needs to be stored separately and if authorizations are passed to third party systems, the refresh token needs to be passed along as well if they are longer running services.
 * No way of limiting the scopeset when passing a refresh token to someone else.
 
-ItsYou.online puts the refresh token in the jwt itself, allowing to refresh the token without needing a separate refresh token. In order to include a refresh token in a jwt, one should ask for the `offline_access` scope. A `refresh_token` claim is be inserted in the returned jwt. To refresh it, just send the expired jwt as a whole to itsyou.online and you get a new one if the authorization still stands.
-If a jwt with for example a more limited scopeset is created and the `offline_access` scope is requested, ityou.online keeps a reference to the parent jwt's authorization and this in effect creates a tree of refreshable authorizations. If a specific authorization is removed from a parent, it is removed from all children as well.
+ItsYou.online puts the refresh token in the jwt itself, allowing to refresh the token without needing a separate refresh token. In order to include a refresh token in a jwt, one should ask for the `offline_access` scope. A `refresh_token` claim is inserted in the returned jwt.
+To refresh it, just call `/v1/oauth/jwt/refresh` with the expired jwt as a bearer token in the Authorization header and you get a new one if the authorization still stands.
 
-The problem with this approach is that implementers should be careful not to pass jwt's with a refresh_token to third party service since they can keep using this authorization for as long as it's own authorization is valid. When passing a jwt to an external service, it is best to ask for a new jwt first and pass that one.
+```
+curl -H "Authorization: bearer OLD-JWT-TOKEN" https://itsyou.online/v1/oauth/jwt/refresh
+```
+If some of the authorizations for this token were removed, they are no longer returned in the scopes of the newly generated jwt.
+
+If a jwt with for example less scopes is created and the `offline_access` scope is requested, ityou.online keeps a reference to the parent jwt's authorization and this in effect creates a tree of refreshable authorizations. If a specific authorization is removed from a parent, it is removed from all children as well.
+
+The problem with this approach is that consumers should be careful not to pass jwt's with a refresh_token to third party service since they can keep using this authorization for as long as consumer's authorization is valid. When passing a jwt to an external service, it is best to ask for a new jwt first and pass that one.

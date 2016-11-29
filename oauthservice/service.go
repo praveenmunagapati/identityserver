@@ -85,6 +85,11 @@ func (service *Service) AddRoutes(router *mux.Router) {
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Allow", "GET,POST")
 		}).Methods("OPTIONS")
+	router.HandleFunc("/v1/oauth/jwt/refresh", service.RefreshJWTHandler).Methods("POST", "GET")
+	router.HandleFunc("/v1/oauth/jwt/refresh",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Allow", "GET,POST")
+		}).Methods("OPTIONS")
 
 	InitModels()
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
@@ -50,6 +51,73 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-type", "application/jwt")
+	w.Write([]byte(tokenString))
+}
+
+//RefreshJWTHandler returns a new refreshed JWT with the same scopes as the original JWT
+// The original JWT needs to be passed in the authorization header as a bearer token
+// If the stored allowed scopes no longer contains a specific scope present in the jwt, this scope is also dropped in the newly created JWT.
+func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request) {
+
+	accessToken := r.Header.Get("Authorization")
+
+	orginalTokenString := strings.TrimSpace(strings.TrimPrefix(accessToken, "bearer"))
+	if orginalTokenString == "" {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+	originalToken, err := jwt.Parse(orginalTokenString, func(token *jwt.Token) (interface{}, error) {
+
+		m, ok := token.Method.(*jwt.SigningMethodECDSA)
+		if !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		if token.Header["alg"] != m.Alg() {
+			return nil, fmt.Errorf("Unexpected signing algorithm: %v", token.Header["alg"])
+		}
+		return service.jwtSigningKey.PublicKey, nil
+	})
+	if err != nil || !originalToken.Valid {
+		log.Warning("Invalid jwt supplied:", originalToken)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+
+	mgr := NewManager(r)
+	rawRefreshToken, refreshtokenPresent := originalToken.Claims["refresh_token"]
+	if !refreshtokenPresent {
+		log.Debug("No refresh_token in the jwt supplied:", originalToken)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+	refreshTokenString, ok := rawRefreshToken.(string)
+	if !ok {
+		log.Error("ERROR while reading the refresh token from the jwt")
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+	rt, err := mgr.getRefreshToken(refreshTokenString)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if rt == nil {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+	//Take the scope from the stored refreshtoken, it might be that certain authorizations are revoked
+	originalToken.Claims["scope"] = strings.Join(rt.Scopes, ",")
+	//Set a new expiration time
+	originalToken.Claims["exp"] = time.Now().Add(AccessTokenExpiration).Unix()
+	//Sign it and return
+	tokenString, err := originalToken.SignedString(service.jwtSigningKey)
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
