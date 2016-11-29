@@ -62,9 +62,9 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// Get the contracts where the organization is 1 of the parties. Order descending by
 	// date.
 	GetContracts(http.ResponseWriter, *http.Request)
-	// GetPendingInvitations is the handler for GET /organizations/{globalid}/invitations
+	// GetPendingOrganizationInvitations is the handler for GET /organizations/{globalid}/invitations
 	// Get the list of pending invitations for users to join this organization.
-	GetPendingInvitations(http.ResponseWriter, *http.Request)
+	GetPendingOrganizationInvitations(http.ResponseWriter, *http.Request)
 	// RemovePendingInvitation is the handler for DELETE /organizations/{globalid}/invitations/{username}
 	// Cancel a pending invitation.
 	RemovePendingInvitation(http.ResponseWriter, *http.Request)
@@ -152,7 +152,7 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/owners", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddOrganizationOwner))).Methods("POST")
 	r.Handle("/organizations/{globalid}/owners/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveOrganizationOwner))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner", "organization:contracts:read"}).Handler).Then(http.HandlerFunc(i.GetContracts))).Methods("GET")
-	r.Handle("/organizations/{globalid}/invitations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetPendingInvitations))).Methods("GET")
+	r.Handle("/organizations/{globalid}/invitations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetPendingOrganizationInvitations))).Methods("GET")
 	r.Handle("/organizations/{globalid}/invitations/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemovePendingInvitation))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/suborganizations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateNewSubOrganization))).Methods("POST")
 	r.Handle("/organizations/{globalid}/dns", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateOrganizationDns))).Methods("POST")

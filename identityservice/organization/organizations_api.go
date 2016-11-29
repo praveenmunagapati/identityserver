@@ -575,9 +575,9 @@ func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *ht
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GetPendingInvitations is the handler for GET /organizations/{globalid}/invitations
+// GetPendingOrganizationInvitations is the handler for GET /organizations/{globalid}/invitations
 // Get the list of pending invitations for users to join this organization.
-func (api OrganizationsAPI) GetPendingInvitations(w http.ResponseWriter, r *http.Request) {
+func (api OrganizationsAPI) GetPendingOrganizationInvitations(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 
 	invitationMgr := invitations.NewInvitationManager(r)
