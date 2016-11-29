@@ -9,7 +9,8 @@
         return {
             validateUsername: validateUsername,
             register: register,
-            getLogo: getLogo
+            getLogo: getLogo,
+            getDescription: getDescription
         };
 
         function validateUsername(username) {
@@ -37,7 +38,19 @@
 
         function getLogo(globalid) {
             var url = '/api/organizations/' + encodeURIComponent(globalid) + '/logo';
-            console.log(url);
+            return $http.get(url).then(
+                function (response) {
+                    return response.data;
+                },
+                function (reason) {
+                    return $q.reject(reason);
+                }
+            );
+        }
+
+
+        function getDescription(globalId, langKey) {
+            var url = '/api/organizations/' + encodeURIComponent(globalId) + '/description/' + encodeURIComponent(langKey) + '/withfallback';
             return $http.get(url).then(
                 function (response) {
                     return response.data;

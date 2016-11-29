@@ -43,7 +43,11 @@
             SetValidityDuration: SetValidityDuration,
             createRequiredScope: createRequiredScope,
             updateRequiredScope: updateRequiredScope,
-            deleteRequiredScope: deleteRequiredScope
+            deleteRequiredScope: deleteRequiredScope,
+            getDescription: getDescription,
+            deleteDescription: deleteDescription,
+            updateDescription: updateDescription,
+            saveDescription: saveDescription
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -363,6 +367,34 @@
         function deleteRequiredScope(globalId, requiredScope) {
             var url = apiURL + '/' + encodeURIComponent(globalId) + '/requiredscopes/' + encodeURIComponent(requiredScope);
             return genericHttpCall(DELETE, url);
+        }
+
+        function getDescription(globalId, langKey) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/description/' + encodeURIComponent(langKey);
+            return genericHttpCall(GET, url);
+        }
+
+        function deleteDescription(globalId, langKey) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/description/' + encodeURIComponent(langKey);
+            return genericHttpCall(DELETE, url);
+        }
+
+        function updateDescription(globalId, langKey, description) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/description'
+            var data = {
+                langkey: langKey,
+                text: description
+            };
+            return genericHttpCall(PUT, url, data);
+        }
+
+        function saveDescription(globalId, langKey, description) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/description'
+            var data = {
+                langkey: langKey,
+                text: description
+            };
+            return genericHttpCall(POST, url, data);
         }
     }
 })();

@@ -3,10 +3,10 @@
     angular
         .module('itsyouonline.registration')
         .controller('registrationController', [
-            '$scope', '$window', '$cookies', '$mdUtil', 'configService', 'registrationService',
+            '$scope', '$window', '$cookies', '$mdUtil', '$rootScope', 'configService', 'registrationService',
             registrationController]);
 
-    function registrationController($scope, $window, $cookies, $mdUtil, configService, registrationService) {
+    function registrationController($scope, $window, $cookies, $mdUtil, $rootScope, configService, registrationService) {
         var vm = this;
         configService.getConfig(function (config) {
             vm.totpsecret = config.totpsecret;
@@ -18,6 +18,7 @@
         vm.externalSite = URI($window.location.href).search(true).client_id;
         vm.logo = "";
         vm.twoFAMethod = 'sms';
+        vm.description = "";
         vm.selectedTab = 0;
         vm.validateUsername = $mdUtil.debounce(function () {
             $scope.signupform.login.$setValidity("duplicate_username", true);
@@ -43,7 +44,21 @@
                 );
                 window.addEventListener('resize', resizeLogo, false);
                 window.addEventListener('orientationchange', resizeLogo, false);
+                loadDescription();
             }
+        }
+
+        // Load the correct description after the user changes language
+        $rootScope.$on('$translateChangeSuccess', function () {
+            loadDescription();
+        });
+
+        function loadDescription() {
+            registrationService.getDescription(vm.externalSite, localStorage.getItem('langKey')).then(
+                function(data) {
+                    vm.description = data.text;
+                }
+            );
         }
 
         function renderLogo() {

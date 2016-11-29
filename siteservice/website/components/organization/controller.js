@@ -40,6 +40,7 @@
         vm.getSharedScopeString = getSharedScopeString;
         vm.showRequiredScopeDialog = showRequiredScopeDialog;
         vm.showMissingScopesDialog = showMissingScopesDialog;
+        vm.showDescriptionDialog = showDescriptionDialog;
 
         activate();
 
@@ -299,6 +300,35 @@
                     );
                 }
             );
+        }
+
+        function showDescriptionDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', descriptionDialogController],
+                templateUrl: 'components/organization/views/descriptionDialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals: {
+                    OrganizationService: OrganizationService,
+                    organization: vm.organization.globalid,
+                    $window: $window
+                }
+            })
+            // TODO: Load in the descriptions for the organization
+            // .then(
+            //     function() {
+            //         OrganizationService.getLogo(vm.organization.globalid).then(
+            //             function(data) {
+            //                 vm.logo = data.logo;
+            //             }
+            //         ).then(
+            //             function() {
+            //                 renderLogo();
+            //             }
+            //         );
+            //     }
+            // );
         }
 
         function showDeleteOrganizationDialog(event) {
@@ -929,6 +959,56 @@
                     $mdDialog.hide({logo: ""});
                 });
         }
+    }
+
+    function descriptionDialogController($scope, $mdDialog, organization, OrganizationService) {
+        $scope.organization = organization;
+        $scope.selectedLangKey = "en";
+        $scope.descriptionExists = false;
+        $scope.cancel = cancel;
+        $scope.remove = remove;
+        $scope.update = update;
+        $scope.save = save;
+        $scope.loadDescription = loadDescription;
+        loadDescription();
+
+        function cancel() {
+            $mdDialog.cancel();
+        }
+
+        function remove() {
+            OrganizationService.deleteDescription(organization, $scope.selectedLangKey)
+                .then(function() {
+                    $mdDialog.hide();
+                });
+        }
+
+        function update() {
+            OrganizationService.updateDescription(organization, $scope.selectedLangKey, $scope.description)
+                .then(function() {
+                    $mdDialog.hide();
+                });
+        }
+
+        function save() {
+            OrganizationService.saveDescription(organization, $scope.selectedLangKey, $scope.description)
+                .then(function() {
+                    $mdDialog.hide();
+                });
+        }
+
+        function loadDescription() {
+            OrganizationService.getDescription(organization, $scope.selectedLangKey)
+                .then(function(data) {
+                    $scope.description = data.text;
+                    if (data.text !== "") {
+                        $scope.descriptionExists = true;
+                    } else {
+                        $scope.descriptionExists = false;
+                    }
+                });
+        }
+
     }
 
     function customOnChange() {
