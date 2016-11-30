@@ -113,7 +113,7 @@ func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	//Take the scope from the stored refreshtoken, it might be that certain authorizations are revoked
-	originalToken.Claims["scope"] = strings.Join(rt.Scopes, ",")
+	originalToken.Claims["scope"] = rt.Scopes
 	//Set a new expiration time
 	originalToken.Claims["exp"] = time.Now().Add(AccessTokenExpiration).Unix()
 	//Sign it and return
@@ -163,7 +163,7 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 		token.Claims["globalid"] = at.GlobalID
 		grantedScopes = requestedScopes
 	}
-	token.Claims["scope"] = strings.Join(grantedScopes, ",")
+	token.Claims["scope"] = grantedScopes
 
 	audiencesArr := strings.Split(audiences, ",")
 	if len(audiencesArr) > 0 {
