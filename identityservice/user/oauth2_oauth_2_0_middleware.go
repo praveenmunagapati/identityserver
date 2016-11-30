@@ -4,16 +4,15 @@ import (
 	"net/http"
 	"strings"
 
-	"fmt"
+	"regexp"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/identityservice/security"
 	"github.com/itsyouonline/identityserver/oauthservice"
-	"regexp"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
@@ -52,22 +51,15 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		var clientID string
 		authorizedScopes := []string{}
 
-		jwtstring := om.GetJWT(r)
 		accessToken := om.GetAccessToken(r)
 
-		if jwtstring != "" {
-			token, err := jwt.Parse(jwtstring, func(token *jwt.Token) (interface{}, error) {
-				// Don't forget to validate the alg is what you expect:
-				if token.Method != jwt.SigningMethodES384 {
-					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-				}
-				return &security.JWTPublicKey, nil
-			})
-			if err != nil || !token.Valid {
-				log.Error(err)
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
+		token, err := oauth2.GetValidJWT(r, security.JWTPublicKey)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		if token != nil {
 			username = token.Claims["username"].(string)
 			clientID = token.Claims["aud"].(string)
 			atscopestring = token.Claims["scope"].(string)

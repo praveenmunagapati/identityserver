@@ -209,7 +209,7 @@ func clientCredentialsTokenHandler(clientID string, secret string, mgr *Manager,
 func convertCodeToAccessTokenHandler(code string, clientID string, secret string, redirectURI string, state string, mgr *Manager) (at *AccessToken, httpStatusCode int) {
 	httpStatusCode = http.StatusOK
 
-	ar, err := mgr.Get(code)
+	ar, err := mgr.getAuthorizationRequest(code)
 	if err != nil {
 		log.Error("ERROR getting the original authorization request:", err)
 		httpStatusCode = http.StatusInternalServerError

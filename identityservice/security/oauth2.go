@@ -30,13 +30,3 @@ func (om *OAuth2Middleware) GetAccessToken(r *http.Request) string {
 	accessToken := strings.TrimSpace(strings.TrimPrefix(authorizationHeader, "token"))
 	return accessToken
 }
-
-//GetJWT returns the raw jwt string from the authorization header that needs to start with "bearer "
-func (om *OAuth2Middleware) GetJWT(r *http.Request) string {
-	authorizationHeader := r.Header.Get("Authorization")
-	if !strings.HasPrefix(authorizationHeader, "bearer ") {
-		return ""
-	}
-	jwtstring := strings.TrimSpace(strings.TrimPrefix(authorizationHeader, "bearer"))
-	return jwtstring
-}

@@ -101,7 +101,7 @@ func (m *Manager) getRefreshTokenCollection() *mgo.Collection {
 }
 
 // Get an authorizationRequest by it's authorizationcode.
-func (m *Manager) Get(authorizationcode string) (*authorizationRequest, error) {
+func (m *Manager) getAuthorizationRequest(authorizationcode string) (*authorizationRequest, error) {
 	var ar authorizationRequest
 
 	err := m.getAuthorizationRequestCollection().Find(bson.M{"authorizationcode": authorizationcode}).One(&ar)

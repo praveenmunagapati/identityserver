@@ -9,6 +9,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/itsyouonline/identityserver/credentials/oauth2"
 )
 
 var errUnauthorized = errors.New("Unauthorized")
@@ -65,26 +66,13 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 // If the stored allowed scopes no longer contains a specific scope present in the jwt, this scope is also dropped in the newly created JWT.
 func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request) {
 
-	accessToken := r.Header.Get("Authorization")
-
-	orginalTokenString := strings.TrimSpace(strings.TrimPrefix(accessToken, "bearer"))
-	if orginalTokenString == "" {
+	originalToken, err := oauth2.GetValidJWT(r, service.jwtSigningKey.PublicKey)
+	if err != nil {
+		log.Warning(err)
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
-	originalToken, err := jwt.Parse(orginalTokenString, func(token *jwt.Token) (interface{}, error) {
-
-		m, ok := token.Method.(*jwt.SigningMethodECDSA)
-		if !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-		if token.Header["alg"] != m.Alg() {
-			return nil, fmt.Errorf("Unexpected signing algorithm: %v", token.Header["alg"])
-		}
-		return service.jwtSigningKey.PublicKey, nil
-	})
-	if err != nil || !originalToken.Valid {
-		log.Warning("Invalid jwt supplied:", originalToken)
+	if originalToken == nil {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
