@@ -733,6 +733,7 @@
                             requestedlabel: permissionLabel,
                             reallabel: ''
                         };
+                        var userScope = splitPermission[1];
                         var listScope = listAuthorizations[userScope];
                         if (listScope) {
                             auth.reallabel = vm.user[listScope].length ? vm.user[listScope][0].label : '';
