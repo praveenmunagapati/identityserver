@@ -460,5 +460,6 @@
     "phonenumber": "Telefoonnummer",
     "phonenumberpattern": "Ongeldig telefoonnummer. Telefoonnummer moet starten met de landcode. Voorbeeld: +32471202020",
     "invalidphonenumber": "Ongeldig telefoonnummer",
-    "full_access": "Volledige toegang:"
+    "full_access": "Volledige toegang:",
+    "change": "Wijzig"
 }
