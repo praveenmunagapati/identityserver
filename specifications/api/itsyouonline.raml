@@ -10,6 +10,7 @@ types:
     type: string
     maxLength: 50
     minLength: 2
+    pattern: ^[a-zA-Z0-9 -_]{2-50}$
 
   UserAPIKey:
     description: User specific API key
@@ -83,13 +84,12 @@ types:
         country:
           type: string
           maxLength: 40
-        label:
-           type: string
+        label: Label
 
   DigitalAssetAddress:
     properties:
       address: string
-      label: string
+      label: Label
       expire: datetime
       currencysymbol: string
       noexpiration?:
@@ -101,8 +101,7 @@ types:
        phonenumber:
          type: string
          pattern: ^\+?[0-9]+$
-       label:
-         type: string
+       label: Label
 
   Address:
     properties:
@@ -124,8 +123,7 @@ types:
         postalcode:
             type: string
             maxLength: 20
-        label:
-           type: string
+        label: Label
   FacebookAccount:
     properties:
       id:
@@ -152,8 +150,7 @@ types:
 
   EmailAddress:
     properties:
-      label:
-         type: string
+      label: Label
       emailaddress:
          type: string
 

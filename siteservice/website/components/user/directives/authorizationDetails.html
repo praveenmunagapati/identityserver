@@ -100,15 +100,15 @@
     </md-list-item>
     <md-list-item ng-repeat="auth in authorizations.phonenumbers" layout="column" layout-gt-sm="row"
                   layout-align="center start" layout-align-gt-sm="start center">
-        <p><i class="fa fa-phone">
-            <md-tooltip><span translate='phonenumber'>Phone number</span></md-tooltip>
-        </i>
-                <span ng-if="::auth.requestedlabel !== 'main'" translate='user.directives.authorizationdetails.phonenumberfor' translate-values='{label: auth.requestedlabel}'>
-                    Phone number for <span ng-bind="::auth.requestedlabel"></span>
-                </span>
-                <span ng-if="::auth.requestedlabel  === 'main'" translate='phonenumber'>
-                    Phone number
-                </span>
+        <p>
+            <i class="fa fa-phone">
+                <md-tooltip><span translate='phonenumber'>Phone number</span></md-tooltip>
+            </i>
+            <span ng-if="::auth.scope === 'write'" translate="full_access"></span>
+            <span ng-if="::auth.requestedlabel !== 'main'"
+                  translate='user.directives.authorizationdetails.phonenumberfor'
+                  translate-values='{label: auth.requestedlabel}'>Phone number for label</span>
+            <span ng-if="::auth.requestedlabel  === 'main'" translate='phonenumber'>Phone number</span>
         </p>
         <md-input-container>
             <label><span translate='phonenumber'>Phone number</span></label>

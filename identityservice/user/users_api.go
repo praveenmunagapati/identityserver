@@ -24,6 +24,7 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/validation"
 	"gopkg.in/mgo.v2"
+	"regexp"
 )
 
 type UsersAPI struct {
@@ -115,9 +116,11 @@ func (api UsersAPI) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func isValidLabel(label string) (valid bool) {
+	labelRegex := regexp.MustCompile(`^[a-zA-Z0-9 -_]+$`)
 	valid = true
 	labelLength := len(label)
 	valid = valid && labelLength > 1 && labelLength < 51
+	valid = valid && labelRegex.MatchString(label)
 
 	if !valid {
 		log.Debug("Invalid label: ", label)

@@ -22,6 +22,7 @@ type Authorization struct {
 type AuthorizationMap struct {
 	RequestedLabel string `json:"requestedlabel"`
 	RealLabel      string `json:"reallabel"`
+	Scope          string `json:"scope" bson:"scope,omitempty"` // "write" or nothing (for now)
 }
 
 type DigitalWalletAuthorization struct {
@@ -91,9 +92,16 @@ func LabelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLa
 		return
 	}
 	if strings.HasPrefix(scope, scopePrefix+":") {
-		requestedLabel := strings.Split(strings.TrimPrefix(scope, scopePrefix+":"), ":")[0]
+		split := strings.Split(strings.TrimPrefix(scope, scopePrefix+":"), ":")
+		requestedLabel := split[0]
+		requestedScope := split[len(split)-1]
+		if requestedLabel == requestedScope {
+			requestedScope = ""
+		}
 		for _, authorizationmap := range authorizedLabels {
-			if authorizationmap.RequestedLabel == requestedLabel || authorizationmap.RequestedLabel == "main" && requestedLabel == "" {
+			if (authorizationmap.RequestedLabel == requestedLabel ||
+				authorizationmap.RequestedLabel == "main" && requestedLabel == "") &&
+				(authorizationmap.Scope == requestedScope || requestedScope == "") {
 				authorized = true
 				return
 			}

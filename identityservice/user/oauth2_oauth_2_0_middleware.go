@@ -10,8 +10,10 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/identityservice/security"
 	"github.com/itsyouonline/identityserver/oauthservice"
+	"regexp"
 )
 
 // Oauth2oauth_2_0Middleware is oauth2 middleware for oauth_2_0
@@ -27,13 +29,13 @@ func newOauth2oauth_2_0Middleware(scopes []string) *Oauth2oauth_2_0Middleware {
 }
 
 // CheckScopes checks whether user has needed scopes
-func (om *Oauth2oauth_2_0Middleware) CheckScopes(scopes []string) bool {
-	if len(om.Scopes) == 0 {
+func checkScopes(possibleScopes []string, authorizedScopes []string) bool {
+	if len(possibleScopes) == 0 {
 		return true
 	}
 
-	for _, allowed := range om.Scopes {
-		for _, scope := range scopes {
+	for _, allowed := range possibleScopes {
+		for _, scope := range authorizedScopes {
 			if scope == allowed {
 				return true
 			}
@@ -48,7 +50,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		var atscopestring string
 		var username string
 		var clientID string
-		scopes := []string{}
+		authorizedScopes := []string{}
 
 		jwtstring := om.GetJWT(r)
 		accessToken := om.GetAccessToken(r)
@@ -103,23 +105,53 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		protectedUsername := mux.Vars(r)["username"]
 
 		if protectedUsername == username && clientID == "itsyouonline" && atscopestring == "admin" {
-			scopes = append(scopes, "user:admin")
+			authorizedScopes = append(authorizedScopes, "user:admin")
 		}
 		if strings.HasPrefix(atscopestring, "user:") {
-			scopes = append(scopes, "user:info")
+			authorizedScopes = append(authorizedScopes, "user:info")
 		}
 		for _, scope := range strings.Split(atscopestring, ",") {
 			scope = strings.Trim(scope, " ")
-			scopes = append(scopes, scope)
+			authorizedScopes = append(authorizedScopes, scope)
 		}
-
-		log.Debug("Available scopes: ", scopes)
 
 		context.Set(r, "client_id", clientID)
 		context.Set(r, "availablescopes", atscopestring)
 
+		possibleScopes := []string{}
+		// Replace {variables} in the scopes with the real vars present in the url.
+		for _, scope := range om.Scopes {
+			regex, _ := regexp.Compile(`\{(.*?)\}`)
+			vars := regex.FindStringSubmatch(scope)
+			if vars != nil {
+				// e.g. vars -> ["{label}", "label"]
+				re, _ := regexp.Compile(vars[0])
+				urlValue := mux.Vars(r)[vars[1]]
+				scope = re.ReplaceAllString(scope, urlValue)
+			}
+			possibleScopes = append(possibleScopes, scope)
+		}
+		if clientID != "itsyouonline" {
+			// todo: cache
+			userMgr := user.NewManager(r)
+			authorization, err := userMgr.GetAuthorization(protectedUsername, clientID)
+			if err != nil {
+				log.Error("Error while getting authorization: ", err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			if authorization == nil {
+				log.Debugf("Authorization for client id %s not found for user %s", clientID, protectedUsername)
+				http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+				return
+			}
+			authorizedScopes = authorization.FilterAuthorizedScopes(authorizedScopes)
+
+		}
 		// check scopes
-		if !om.CheckScopes(scopes) {
+		log.Debug("Authorized scopes: ", authorizedScopes)
+		log.Debug("Needed possible scopes: ", possibleScopes)
+		if !checkScopes(possibleScopes, authorizedScopes) {
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return
 		}

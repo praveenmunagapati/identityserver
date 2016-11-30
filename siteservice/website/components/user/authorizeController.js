@@ -75,22 +75,13 @@
 
         function parseScopes() {
             if (vm.requestedScopes) {
-                var listAuthorizations = [{
-                    scope: 'address',
-                    prop: 'addresses'
-                }, {
-                    scope: 'email',
-                    prop: 'emailaddresses'
-                }, {
-                    scope: 'phone',
-                    prop: 'phonenumbers'
-                }, {
-                    scope: 'bankaccount',
-                    prop: 'bankaccounts'
-                }, {
-                    scope: 'publickey',
-                    prop: 'publicKeys'
-                }];
+                var listAuthorizations = {
+                    'address': 'addresses',
+                    'email': 'emailaddresses',
+                    'phone': 'phonenumbers',
+                    'bankaccount': 'bankaccounts',
+                    'publickey': 'publicKeys' // why ???
+                };
                 var scopes = vm.requestedScopes.split(',');
                 // Filter duplicated scopes
                 scopes = scopes.filter(function (item, pos, self) {
@@ -102,17 +93,22 @@
                         return;
                     }
                     // Empty label -> 'main'
+                    var userScope = splitPermission[1];
                     var permissionLabel = splitPermission.length > 2 && splitPermission[2] ? splitPermission[2] : 'main';
+                    // last part is always the read or write permission
+                    var readWrite = splitPermission[splitPermission.length - 1];
+                    if (!['read', 'write'].includes(readWrite)) {
+                        readWrite = null;
+                    }
                     var auth = {
                         requestedlabel: permissionLabel,
-                        reallabel: ''
+                        reallabel: '',
+                        scope: readWrite
                     };
-                    var listScope = listAuthorizations.filter(function (l) {
-                        return l.scope === splitPermission[1];
-                    })[0];
+                    var listScope = listAuthorizations[userScope];
                     if (listScope) {
-                        auth.reallabel = vm.user[listScope.prop].length ? vm.user[listScope.prop][0].label : '';
-                        $scope.authorizations[listScope.prop].push(auth);
+                        auth.reallabel = vm.user[listScope].length ? vm.user[listScope][0].label : '';
+                        $scope.authorizations[listScope].push(auth);
                     }
                     else if (scope === 'user:name') {
                         $scope.authorizations.name = true;

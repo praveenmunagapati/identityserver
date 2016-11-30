@@ -715,22 +715,13 @@
 
                 function showDialog(authorization, isNew) {
                     // mostly copied from authorizeController -> parseScopes
-                    var listAuthorizations = [{
-                        scope: 'address',
-                        prop: 'addresses'
-                    }, {
-                        scope: 'email',
-                        prop: 'emailaddresses'
-                    }, {
-                        scope: 'phone',
-                        prop: 'phonenumbers'
-                    }, {
-                        scope: 'bankaccount',
-                        prop: 'bankaccounts'
-                    }, {
-                        scope: 'publickey',
-                        prop: 'publicKeys'
-                    }];
+                    var listAuthorizations = {
+                        'address': 'addresses',
+                        'email': 'emailaddresses',
+                        'phone': 'phonenumbers',
+                        'bankaccount': 'bankaccounts',
+                        'publickey': 'publicKeys'
+                    };
                     angular.forEach(missingScope.scopes, function (scope) {
                         var splitPermission = scope.split(':');
                         if (!splitPermission.length > 1) {
@@ -742,15 +733,13 @@
                             requestedlabel: permissionLabel,
                             reallabel: ''
                         };
-                        var listScope = listAuthorizations.filter(function (l) {
-                            return l.scope === splitPermission[1];
-                        })[0];
+                        var listScope = listAuthorizations[userScope];
                         if (listScope) {
-                            auth.reallabel = vm.user[listScope.prop].length ? vm.user[listScope.prop][0].label : '';
-                            if (!authorization[listScope.prop]) {
-                                authorization[listScope.prop] = [];
+                            auth.reallabel = vm.user[listScope].length ? vm.user[listScope][0].label : '';
+                            if (!authorization[listScope]) {
+                                authorization[listScope] = [];
                             }
-                            authorization[listScope.prop].push(auth);
+                            authorization[listScope].push(auth);
                         }
                         else if (scope === 'user:name') {
                             authorization.name = true;

@@ -51,8 +51,9 @@ If the user is no member of the <globalid> organization, the oauth flow continue
 ## `user:email[:<label>]`
 
 
-## `user:phone[:<label>]`
+## `user:phone[:<label>][:write]`
 
+The `:write` extension gives an application full access(read, update, delete) to a phone number
 
 ## `user:github`
 
