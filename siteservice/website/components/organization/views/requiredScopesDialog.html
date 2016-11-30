@@ -13,25 +13,56 @@
         <md-dialog-content>
             <div class="md-dialog-content" layout="column">
                 <md-input-container>
-                    <label translate='organization.views.requiredscopesdialog.requiredinformationscope'>Required information scope</label>
-                    <input ng-model="vm.requiredScope.scope" required type="text" md-autofocus="true"
-                           name="scope" ng-pattern="/^user:.*$/">
-                    <div ng-messages="vm.form.scope.$error">
-                        <div ng-message="pattern" translate='organization.views.requiredscopesdialog.requiredinformationscopepattern'>Invalid scope. Scope must start with "user:"</div>
-                    </div>
-                    <div ng-messages="vm.validationerrors" md-auto-hide="false">
-                        <div ng-message="duplicate" translate='organization.views.requiredscopesdialog.duplicatescope'>This required scope already exists</div>
-                        <div ng-message="invalid_scope" translate='organization.views.requiredscopesdialog.requiredinformationscopeinvalid'>Invalid scope.</div>
-                    </div>
-                    <p translate='organization.views.requiredscopesdialog.scopeinfo' translate-values='{ url: vm.scopeDocumentationUrl }'>
-                        See <a ng-href="{{ ::vm.scopeDocumentationUrl }}">this page</a> for the possible scopes.
-                    </p>
+                    <label translate="shared_information"></label>
+                    <md-select ng-model="vm.editingScope.scope.scope"
+                               ng-change="vm.scopeTypedChanged()">
+                        <md-option ng-repeat="possibleScope in vm.possibleScopes track by possibleScope.scope"
+                                   ng-value="possibleScope.scope" translate="{{ ::possibleScope.translation }}">
+                        </md-option>
+                    </md-select>
                 </md-input-container>
+                <md-input-container ng-if="vm.editingScope.scope.vars.label">
+                    <label translate="label"></label>
+                    <input type="text" ng-model="vm.editingScope.label" name="label" md-maxlength="50" ng-minlength="2"
+                           ng-pattern="/^[a-z0-9 \-_]+$/" ng-change="vm.scopeChanged()">
+                    <div ng-messages="vm.form.label.$error">
+                        <div ng-message="minlength" translate="min_x_characters_required"
+                             translate-values="{ length: 2 }"></div>
+                        <div ng-message="maxlength" translate="max_x_characters_allowed"
+                             translate-values="{ length: 50 }"></div>
+                        <div ng-message="pattern" translate="invalid_label"></div>
+                    </div>
+                </md-input-container>
+                <md-input-container ng-if="vm.editingScope.scope.vars.currency">
+                    <label translate="currency"></label>
+                    <input type="text" ng-model="vm.editingScope.currency" name="currency" md-maxlength="50"
+                           ng-change="vm.scopeChanged()">
+                    <div ng-messages="vm.form.currency.$error">
+                        <div ng-message="maxlength" translate="max_x_characters_allowed"
+                             translate-values="{ length: 50 }"></div>
+                    </div>
+                </md-input-container>
+                <md-input-container ng-if="vm.editingScope.scope.vars.organization">
+                    <label translate="organization"></label>
+                    <input required type="text" ng-model="vm.editingScope.organization" name="organization"
+                           md-maxlength="50" ng-minlength="2" ng-change="vm.scopeChanged()">
+                    <div ng-messages="vm.form.organization.$error">
+                        <div ng-message="required" translate="field_required"></div>
+                        <div ng-message="minlength" translate="min_x_characters_required"
+                             translate-values="{ length: 2 }"></div>
+                        <div ng-message="maxlength" translate="max_x_characters_allowed"
+                             translate-values="{ length: 50 }"></div>
+                    </div>
+                </md-input-container>
+                <md-checkbox name="full_access" ng-model="vm.editingScope.write" aria-label="-"
+                             ng-if="vm.editingScope.scope.vars.write" ng-change="vm.scopeChanged()">
+                    <span translate="full_access"></span>
+                </md-checkbox>
                 <p class="error" translate='organization.views.requiredscopesdialog.accessscope'>Access scope</p>
-                <md-checkbox ng-repeat="scope in vm.accessScopes track by $index"
+                <md-checkbox ng-repeat="scope in vm.accessScopes track by $index" aria-label="-"
                              ng-model="scope.checked" name="scope_{{ ::scope.scope }}"
                              ng-change="vm.allowedScopesChanged()">
-                    {{ ::scope.scope }}
+                    <span translate="{{ ::scope.translation }}"></span>
                 </md-checkbox>
                 <p ng-if="vm.showPleaseSelectAccessScope" class="validation-error" translate='organization.views.requiredscopesdialog.noaccessscopeselected'>Please select one or more access
                     scopes</p>

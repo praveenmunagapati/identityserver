@@ -10,7 +10,7 @@
         <md-card-content>
             <div layout="column">
                 <md-input-container>
-                    <label translate='phonenumber'>Phone number</label>
+                    <label translate="phone_number">Phone number</label>
                     <input ng-model="vm.phonenumber" minlength="4" ng-required name="phonenumber" autocomplete="off"
                            ng-pattern="/^\+[0-9 ]*$/" ng-change="vm.resetValidation()">
                     <div ng-messages="phoneconfirmationform.phonenumber.$error">

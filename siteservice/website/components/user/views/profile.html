@@ -12,7 +12,7 @@
                class="tab-you">
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-user"></i> <span translate='user.views.profile.fullname'>Full name</span></span>
+                      <span><i class="fa fa-user"></i> <span translate="full_name">Full name</span></span>
                       <md-button ng-if="!vm.user.firstname || !vm.user.lastname"
                                  ng-click="vm.showEditNameDialog($event)">
                           <i class="fa fa-plus"></i> <span translate='add'>Add</span>
@@ -26,7 +26,7 @@
                               <span ng-bind="vm.user.firstname"></span>
                               <span ng-bind="vm.user.lastname"></span>
                           </h4>
-                          <p translate='user.views.profile.fullname'>Full name</p>
+                          <p translate="full_name">Full name</p>
                       </div>
                   </md-list-item>
               </md-list>
@@ -90,7 +90,8 @@
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-facebook-official"></i> <span translate='user.views.profile.facebookaccount'>Facebook account</span></span>
+                      <span><i class="fa fa-facebook-official"></i> <span
+                              translate="facebook_account">Facebook account</span></span>
                       <md-button ng-if="! vm.user.facebook.id" ng-click="vm.addFacebookAccount()">
                           <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>
@@ -109,7 +110,7 @@
               </md-list>
               <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
-                      <span><i class="fa fa-github"></i> <span translate='user.views.profile.githubaccount'>GitHub account</span></span>
+                      <span><i class="fa fa-github"></i> <span translate="github_account">GitHub account</span></span>
                       <md-button ng-if="! vm.user.github.id" ng-click="vm.addGithubAccount()">
                           <i class="fa fa-plus"></i> <span translate='add'>Add</span>
                       </md-button>

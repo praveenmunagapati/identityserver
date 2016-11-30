@@ -8,10 +8,10 @@
 
     InvitationDialogController.$inject = ['$scope', '$mdDialog', '$translate', 'organization', 'OrganizationService', 'UserDialogService'];
     OrganizationDetailController.$inject = ['$routeParams', '$window', '$translate', 'OrganizationService', '$mdDialog', '$mdMedia',
-        '$rootScope', 'UserDialogService', 'UserService'];
+        '$rootScope', 'UserDialogService', 'UserService', 'ScopeService'];
 
     function OrganizationDetailController($routeParams, $window, $translate, OrganizationService, $mdDialog, $mdMedia, $rootScope,
-                                          UserDialogService, UserService) {
+                                          UserDialogService, UserService, ScopeService) {
         var vm = this,
             globalid = $routeParams.globalid;
         vm.invitations = [];
@@ -41,6 +41,7 @@
         vm.showRequiredScopeDialog = showRequiredScopeDialog;
         vm.showMissingScopesDialog = showMissingScopesDialog;
         vm.showDescriptionDialog = showDescriptionDialog;
+        vm.getScopeTranslation = getScopeTranslation;
 
         activate();
 
@@ -314,7 +315,7 @@
                     organization: vm.organization.globalid,
                     $window: $window
                 }
-            })
+            });
             // TODO: Load in the descriptions for the organization
             // .then(
             //     function() {
@@ -354,7 +355,7 @@
                                 }
                             });
                     });
-                })
+            });
         }
 
         function canEditRole(member) {
@@ -457,7 +458,7 @@
                                     }
                                 });
                         });
-                })
+            });
         }
 
         function getUsers() {
@@ -482,20 +483,21 @@
 
         function getSharedScopeString(scopes) {
             return scopes.map(function (scope) {
-                return scope.replace('organization:', '');
+                return scope.replace('organization:', '') + 's';
             }).join(', ');
         }
 
         function showRequiredScopeDialog(event, requiredScope) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             var dialog = {
-                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'requiredScope', RequiredScopesDialogController],
+                controller: ['$scope', '$mdDialog', 'organization', 'OrganizationService', 'requiredScope', 'ScopeService', RequiredScopesDialogController],
                 controllerAs: 'vm',
                 templateUrl: 'components/organization/views/requiredScopesDialog.html',
                 targetEvent: event,
                 fullscreen: useFullScreen,
                 locals: {
                     OrganizationService: OrganizationService,
+                    ScopeService: ScopeService,
                     organization: vm.organization.globalid,
                     $window: $window,
                     requiredScope: requiredScope
@@ -528,6 +530,10 @@
             // msg += user.missingscopes.join('<br />');
             // var closeText = 'Close';
             // UserDialogService.showSimpleDialog(msg, title, closeText, event);
+        }
+
+        function getScopeTranslation(scope) {
+            return ScopeService.parseScope(scope);
         }
     }
 
@@ -621,7 +627,7 @@
                         $scope.apikey = data;
                     }
                 );
-            })
+            });
         }
 
         $scope.originalLabel = label;
@@ -785,7 +791,7 @@
                 }, function () {
                     $translate(['organization.controller.cantchangerole']).then(function(translations){
                         UserDialogService.showSimpleDialog(translations['organization.controller.cantchangerole'], 'Error', 'ok', event);
-                    })
+                    });
                 });
         }
 
@@ -821,7 +827,7 @@
                 }, function () {
                     $translate(['organization.controller.cantchangerole']).then(function(translations){
                         UserDialogService.showSimpleDialog(translations['organization.controller.cantchangerole'], 'Error', 'ok', event);
-                    })
+                    });
                 });
         }
 
@@ -1001,11 +1007,7 @@
             OrganizationService.getDescription(organization, $scope.selectedLangKey)
                 .then(function(data) {
                     $scope.description = data.text;
-                    if (data.text !== "") {
-                        $scope.descriptionExists = true;
-                    } else {
-                        $scope.descriptionExists = false;
-                    }
+                    $scope.descriptionExists = !!data.text;
                 });
         }
 
@@ -1021,34 +1023,54 @@
         };
     }
 
-    function RequiredScopesDialogController($scope, $mdDialog, organization, OrganizationService, requiredScope) {
+    function RequiredScopesDialogController($scope, $mdDialog, organization, OrganizationService, requiredScope, ScopeService) {
         var vm = this;
-        vm.scopeDocumentationUrl = 'https://gig.gitbooks.io/itsyouonline/content/oauth2/availableScopes.html';
-        var allAccessScopes = ['organization:owner', 'organization:member'];
+        vm.possibleScopes = ScopeService.getScopes();
+        var allAccessScopes = [{
+            scope: 'organization:owner',
+            translation: 'owners',
+            checked: false
+        }, {
+            scope: 'organization:member',
+            translation: 'members',
+            checked: false
+        }];
         vm.organization = organization;
-        vm.requiredScope = requiredScope ? JSON.parse(JSON.stringify(requiredScope)) : {
+        var updatedRequiredScope = requiredScope ? JSON.parse(JSON.stringify(requiredScope)) : {
             scope: '',
             accessscopes: []
         };
         vm.originalScope = requiredScope ? requiredScope.scope : null;
-
         vm.accessScopes = allAccessScopes.map(function (scope) {
-            return {
-                checked: vm.requiredScope.accessscopes.indexOf(scope) !== -1,
-                scope: scope
-            };
+            scope.checked = updatedRequiredScope.accessscopes.indexOf(scope.scope) !== -1;
+            return scope;
         });
-
-        vm.cancel = cancel;
         vm.validationerrors = {};
+        vm.cancel = cancel;
         vm.create = create;
         vm.update = update;
         vm.remove = remove;
         vm.allowedScopesChanged = allowedScopesChanged;
+        vm.scopeTypedChanged = scopeTypedChanged;
+        vm.scopeChanged = scopeChanged;
 
+        init();
+
+        function init() {
+            vm.editingScope = ScopeService.parseScope(updatedRequiredScope.scope);
+        }
+
+        function scopeTypedChanged() {
+            vm.editingScope.scope.vars = ScopeService.parseScope(vm.editingScope.scope.scope).scope.vars;
+            scopeChanged();
+        }
+
+        function scopeChanged() {
+            updatedRequiredScope.scope = ScopeService.makeScope(vm.editingScope);
+        }
 
         function allowedScopesChanged() {
-            vm.requiredScope.accessscopes = vm.accessScopes.filter(function (scope) {
+            updatedRequiredScope.accessscopes = vm.accessScopes.filter(function (scope) {
                 return scope.checked;
             }).map(function (scope) {
                 return scope.scope;
@@ -1063,14 +1085,14 @@
             if (!vm.form.$valid) {
                 return;
             }
-            vm.showPleaseSelectAccessScope = vm.requiredScope.accessscopes.length === 0;
+            vm.showPleaseSelectAccessScope = updatedRequiredScope.accessscopes.length === 0;
             if (vm.showPleaseSelectAccessScope) {
                 return;
             }
             vm.validationerrors = {};
-            OrganizationService.createRequiredScope(organization, vm.requiredScope).then(
+            OrganizationService.createRequiredScope(organization, updatedRequiredScope).then(
                 function () {
-                    $mdDialog.hide({action: 'create', requiredScope: vm.requiredScope});
+                    $mdDialog.hide({action: 'create', requiredScope: updatedRequiredScope});
                 },
                 function (reason) {
                     if (reason.status === 409) {
@@ -1084,14 +1106,14 @@
             if (!vm.form.$valid) {
                 return;
             }
-            vm.showPleaseSelectAccessScope = vm.requiredScope.accessscopes.length === 0;
+            vm.showPleaseSelectAccessScope = updatedRequiredScope.accessscopes.length === 0;
             if (vm.showPleaseSelectAccessScope) {
                 return;
             }
             vm.validationerrors = {};
-            OrganizationService.updateRequiredScope(organization, vm.originalScope, vm.requiredScope).then(
+            OrganizationService.updateRequiredScope(organization, vm.originalScope, updatedRequiredScope).then(
                 function () {
-                    $mdDialog.hide({action: 'update', requiredScope: vm.requiredScope});
+                    $mdDialog.hide({action: 'update', requiredScope: updatedRequiredScope});
                 },
                 function (reason) {
                     if (reason.status === 409) {

@@ -3,7 +3,7 @@
         <md-toolbar>
             <div class="md-toolbar-tools">
                 <h2><span ng-if="::!originalLabel" translate='user.views.phonedialog.registerphonenumber'>Register a phone number</span>
-                    <span ng-if="::originalLabel" translate='phonenumber'>Phone number</span></h2>
+                    <span ng-if="::originalLabel" translate="phone_number">Phone number</span></h2>
                 <span flex></span>
                 <md-button class="md-icon-button" ng-click="cancel()">
                     <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label translate-attr="{ 'aria-label': 'closedialog' }"></md-icon>
@@ -25,7 +25,7 @@
                     </div>
                 </md-input-container>
                 <md-input-container>
-                    <label translate='phonenumber'>Phone number</label>
+                    <label translate="phone_number">Phone number</label>
                     <input ng-model="data.phonenumber" ng-pattern="/^\+[0-9 ]*$/" required minlength="4" type="text"
                            name="phonenumberinput">
                     <div ng-messages="dataform.phonenumberinput.$error">

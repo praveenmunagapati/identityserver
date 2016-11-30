@@ -1,259 +1,25 @@
 {
-    "user": {
-        "views": {
-            "addressdialog": {
-                "addaddress": "Add an address",
-                "address": "Address",
-                "street": "Street",
-                "number": "Nr",
-                "postalcode": "Postal code",
-                "city": "City",
-                "country": "Country",
-                "remarks": "Remarks"
-            },
-            "apikeydialog": {
-                "newapikey": "New API Key",
-                "apikey": "API Key",
-                "appid": "Application ID",
-                "appidplaceholder": "- shown when saved -",
-                "secret": "Secret",
-                "secretplaceholder": "- generated when saved -"
-            },
-            "authorizationdialog": {
-                "sharedinfo": "Information shared with {{grantedto}}",
-                "sharewith": "Information to share with {{grantedto}}",
-                "authorizationrequest": "{{grantedto}} requests authorization to see some of your information.",
-                "changeauthorization": "You can change what information {{grantedto}} has access to here.",
-                "grant": "Grant authorization"
-            },
-            "authorizations": {
-                "sharedinfo": "Shared information",
-                "notsharing": "You are currently not sharing any of your profile information",
-                "sharingorgs": "Organizations you are sharing information with:"
-            },
-            "authorize": {
-                "request": "Requests authorization to see some of your information",
-                "authorize": "Authorize"
-            },
-            "bankaccountdialog": {
-                "registerbankaccount": "Register a bank account",
-                "bankaccount": "Bank account",
-                "bic": "BIC",
-                "bicpattern": "This value should be either 8 or 11 characters long.",
-                "iban": "IBAN",
-                "ibanmaxlength": "This value should be at most 30 characters long.",
-                "country": "Country"
-            },
-            "digitalwallet": {
-                "registerwallet": "Register a digital wallet address",
-                "digitalwallet": "Digital wallet address details",
-                "symbol": "Symbol",
-                "address": "Address",
-                "hasexpiredate": "This wallet has an expiration date",
-                "expirydate": "Expiry date"
-            },
-            "emaildialog": {
-                "registeremail": "Register email address",
-                "email": "Email address",
-                "emailpattern": "Invalid email address"
-            },
-            "facebookdialog": {
-                "facebookaccount": "Facebook account"
-            },
-            "githubdialog": {
-                "githubaccount": "Github account"
-            },
-            "namedialog": {
-                "updatename": "Update name",
-                "firstname": "First name",
-                "lastname": "Last name"
-            },
-            "notifications": {
-                "notifications": "Notifications",
-                "pendinginvites": "Pending organization invites",
-                "rejectinvite": "Reject invitation",
-                "acceptinvite": "Accept invitation",
-                "security": "Security notifications",
-                "securitynotice": "Security notice",
-                "resolve": "Resolve",
-                "notsharinginfo": "Some required information isn't shared with organization {{org}}"
-            },
-            "organizations": {
-                "organizations": "Organizations",
-                "createnew": "Create new",
-                "organization": "Organization"
-            },
-            "phonedialog": {
-                "registerphonenumber": "Register a phone number",
-                "phonenumberminlength": "Not enough digits",
-                "updatelastverified": "You cannot update your last verified phone number. Please configure a new phone number instead."
-            },
-            "pubkeydialog": {
-                "newpubkey": "New public key",
-                "pubkey": "Public key",
-                "pubkeypattern": "Invalid public key, ssh keys start with 'ssh-rsa AAAAB3NzaC1yc2E'",
-                "pastehere": "paste your public ssh key here"
-            },
-            "resetpassdialog": {
-                "changepass": "Change password",
-                "currentpass": "Current password",
-                "currentpassinvalid": "Incorrect password",
-                "newpass": "New password",
-                "newpassminlength": "Password should contain at least 6 characters",
-                "confirmnewpass": "Confirm new password",
-                "passidentical": "The passwords do not match"
-            },
-            "settings": {
-                "settings": "Settings",
-                "apikeys": "API keys",
-                "apikey": "API key",
-                "security": "Security",
-                "password": "Password",
-                "change": "Change",
-                "authenticatorapp": "Authenticator application",
-                "setup": "Setup",
-                "remove": "Remove"
-            },
-            "totpdialog": {
-                "setupapp": "Setup authenticator application",
-                "qrcode": "Scan this QR code with a 2-factor authentication app on your phone and enter the code.",
-                "2facode": "2-Factor authentication code",
-                "invalidcode": "An invalid code was given",
-                "codemaxlength": "The code must be less than 6 characters"
-            },
-            "verifyphonedialog": {
-                "verifyphone": "Verify phone",
-                "help": "Click the link in the sms sent to your phone <br/>or enter the code from the sms here to confirm <br/>your phone number {{phone}} ({{label}})",
-                "code": "Code",
-                "codeminlength": "The code must be at least 6 characters long",
-                "codeinvalid": "Invalid code supplied",
-                "codemaxlength": "The code must be less than 6 characters"
-            },
-            "profile": {
-                "profile": "Profile",
-                "fullname": "Full name",
-                "emailaddresses": "Email addresses",
-                "verified": "Verified",
-                "verify": "Verify",
-                "phonenumbers": "Phone numbers",
-                "facebookaccount": "Facebook account",
-                "nofacebook": "You haven't added your Facebook account yet.",
-                "githubaccount": "Github account",
-                "nogithub": "You haven't added your Github account yet.",
-                "addresses": "Addresses",
-                "bankaccounts": "Bank accounts",
-                "digitalwallet": "Digital wallet",
-                "expiringwallet": "Expires {{expirydate}}, symbol {{symbol}}",
-                "noneexpiringwallet": "Expires never, symbol {{symbol}}",
-                "pubkeys": "Public keys"
-            }
-        },
-        "directives": {
-            "authorizationdetails": {
-                "yourusername": "Your username",
-                "yourfullname": "Your full name",
-                "orgmembership": "Organization membership",
-                "memberof": "Member of {{label}}",
-                "acceptinvite": "(this will accept the invitation for this organization)",
-                "emailaddress": "Email address",
-                "emailaddressfor": "Email address for {{label}}",
-                "email": "Email",
-                "none": "None",
-                "createnew": "Create new",
-                "phonenumberfor": "Phone number for {{label}}",
-                "address": "Address",
-                "addressfor": "Address for {{label}}",
-                "bankaccount": "Bank account",
-                "bankaccountfor": "Bank account for {{label}}",
-                "digitalwallet": "Digital wallet address",
-                "digitalwalletfor": "Digital wallet address for {{label}}",
-                "currency": "(currency {{currency}})",
-                "github": "Github account",
-                "yourgithub": "Your Github account",
-                "facebook": "Facebook account",
-                "yourfacebook": "Your Facebook account",
-                "pubkey": "Public key",
-                "pubkeyfor": "Public key for {{label}}"
-            }
-        },
-        "controller": {
-            "verifiedemails": "You do not have any verified email addresses. You will not be able to recover your account if you do not verify at least one of them.",
-            "nonotifcations": "No unhandled notifications",
-            "passwordupdated": "Password updated",
-            "passwordchanged": "Your password has been changed.",
-            "close": "Close",
-            "emailsent": "Verification email sent",
-            "emailsentto": "A verification email has been sent to {{email}}.",
-            "error": "Error",
-            "couldnotsend": "Could not send verification email. Please try again later.",
-            "errorwhilesending": "Error while sending verification email",
-            "cantremoveauthapp": "Cannot remove authenticator",
-            "cantremoveauthappmsg": "You cannot remove your authenticator application because this is your last two-factor authentication method.<br />Add a phone number and verify it to be able to remove your authenticator application.",
-            "removeauthenticator": "Unauthorize authenticator",
-            "confirmremoveauthenticator": "Are you sure you want to unauthorize your authenticator application?",
-            "yes": "Yes",
-            "no": "No"
-        }
-    },
-    "shared": {
-        "directives": {
-            "footer": {
-                "documentation": "Documentation",
-                "apidocumentation": "API Documentation",
-                "source": "Source code on Github"
-            },
-            "header": {
-                "cookiewarning": "This site uses cookies. By continuing to browse the site you are agreeing to our use of cookies.",
-                "dismiss": "Dismiss",
-                "nonotifcations": "You have no unread notifications",
-                "onenotification": "You have 1 unread notification",
-                "unreadnotifications": "You have {{count}} unread notifications",
-                "profile": "Profile",
-                "organizations": "Organizations",
-                "sharedinfo": "Shared information",
-                "signout": "Signout",
-                "register": "Register",
-                "signin": "Sign in",
-                "language": "language"
-            }
-        }
-    },
-    "registration": {
-        "views": {
-            "registrationform": {
-                "register": "Register",
-                "username": "Username",
-                "usernametaken": "This username has already been taken",
-                "invalidusername": "Invalid username. Only characters a-z, 0-9, dashes, underscores and spaces are allowed",
-                "email": "Email",
-                "invalidemail": "Invalid email address",
-                "password": "Password",
-                "invalidpassword": "Password should contain at least 6 characters.",
-                "confirmpassword": "Password confirmation",
-                "passwordmatch": "The passwords do not match",
-                "2famethod": "2-Factor authentication method",
-                "sms": "SMS",
-                "app": "Authenticator application",
-                "2facode": "2-Factor authentication code",
-                "invalid2facode": "An invalid code was given",
-                "2fahelp": "Scan this image with a 2-factor authentication app on your phone",
-                "signup": "Sign up"
-            },
-            "registrationresendsms": {
-                "resendsms": "Resend SMS",
-                "enterphone": "Please enter your phone number",
-                "sendsms": "Send confirmation SMS"
-            },
-            "registrationsmsform": {
-                "smsconfirmation": "SMS confirmation",
-                "smshelp": "Click the link in the sms sent to your phone or enter the code from the sms here if you are unable to",
-                "smscode": "Code sent by sms",
-                "invalidcode": "Invalid code",
-                "resend": "Resend...",
-                "submit": "Submit"
-            }
-        }
-    },
+    "add": "Add",
+    "address": "Address",
+    "bank_account": "Bank account",
+    "cancel": "Cancel",
+    "change": "Change",
+    "closedialog": "Close dialog",
+    "create": "Create",
+    "delete": "Delete",
+    "digital_wallet_address": "Digital wallet address",
+    "email_address": "Email address",
+    "facebook_account": "Facebook account",
+    "field_required": "This field is required.",
+    "full_access": "Full access",
+    "full_name": "Full name",
+    "github_account": "Github account",
+    "invalid_label": "Invalid label",
+    "invalidphonenumber": "Invalid phone number",
+    "label": "Label",
+    "labelduplicate": "This label is already used",
+    "labelmaxlength": "The label cannot be longer than 50 characters",
+    "labelminlength": "At least 2 characters required",
     "login": {
         "views": {
             "forgotpassword": {
@@ -296,6 +62,12 @@
             "totp": "Fill in the 6 digit code from the authenticator application on your phone."
         }
     },
+    "max_x_characters_allowed": "Only {{length}} characters are allowed.",
+    "member": "Member",
+    "member_of_organization": "Member of organization",
+    "members": "Members",
+    "min_x_characters_required": "At least {{length}} characters are required.",
+    "ok": "OK",
     "organization": {
         "views": {
             "addorganizationmemberdialog": {
@@ -375,7 +147,7 @@
                 "leaveorganizationwarning": "If you leave an organization you cannot re-join it unless you are invited again.",
                 "addrequiredsharedinfo": "Add required shared information",
                 "requiredsharedinfo": "Required shared information",
-                "sharedwith": "Shared with: {{who}}",
+                "sharedwith": "Shared with: ",
                 "description": "Organization description",
                 "descriptionhelp": "This description is displayed when a user logs in to an external site using OAuth2",
                 "changedescription": "Change organization description"
@@ -412,10 +184,9 @@
                 "requiredinformationscopepattern": "Invalid scope. Scope must start with \"user:\"",
                 "duplicatescope": "This required scope already exists",
                 "requiredinformationscopeinvalid": "Invalid scope",
-                "scopeinfo": "see <a href={{url}}> this page</a> for possible scopes.",
                 "accessscope": "Access scope",
                 "noaccessscopeselected": "Please select one or more access scopes",
-                "accessscopeinfo": "The access scope determines who can see the shared information"
+                "accessscopeinfo": "The access scope determines who can see the shared information."
             },
             "descriptiondialog": {
                 "descriptions": "Descriptions",
@@ -441,25 +212,250 @@
             "missinguserinfo": "This user hasn't shared some required information:<br />"
         }
     },
-    "closedialog": "Close dialog",
-    "label": "Label",
-    "labelminlength": "At least 2 characters required",
-    "labelmaxlength": "The label cannot be longer than 50 characters",
-    "labelduplicate": "This label is already used",
-    "delete": "Delete",
-    "cancel": "Cancel",
-    "add": "Add",
-    "save": "Save",
-    "create": "Create",
-    "ok": "OK",
-    "update": "Update",
-    "register": "Register",
-    "role": "Role",
     "owner": "Owner",
-    "member": "Member",
-    "phonenumber": "Phone number",
+    "owners": "Owners",
+    "phone_number": "Phone number",
     "phonenumberpattern": "Invalid phone number. Phone number must start with the country code. Example: +32471202020",
-    "invalidphonenumber": "Invalid phone number",
-    "full_access": "Full access:",
-    "change": "Change"
+    "public_key": "Public key",
+    "register": "Register",
+    "registration": {
+        "views": {
+            "registrationform": {
+                "register": "Register",
+                "username": "Username",
+                "usernametaken": "This username has already been taken",
+                "invalidusername": "Invalid username. Only characters a-z, 0-9, dashes, underscores and spaces are allowed",
+                "email": "Email",
+                "invalidemail": "Invalid email address",
+                "password": "Password",
+                "invalidpassword": "Password should contain at least 6 characters.",
+                "confirmpassword": "Password confirmation",
+                "passwordmatch": "The passwords do not match",
+                "2famethod": "2-Factor authentication method",
+                "sms": "SMS",
+                "app": "Authenticator application",
+                "2facode": "2-Factor authentication code",
+                "invalid2facode": "An invalid code was given",
+                "2fahelp": "Scan this image with a 2-factor authentication app on your phone",
+                "signup": "Sign up"
+            },
+            "registrationresendsms": {
+                "resendsms": "Resend SMS",
+                "enterphone": "Please enter your phone number",
+                "sendsms": "Send confirmation SMS"
+            },
+            "registrationsmsform": {
+                "smsconfirmation": "SMS confirmation",
+                "smshelp": "Click the link in the sms sent to your phone or enter the code from the sms here if you are unable to",
+                "smscode": "Code sent by sms",
+                "invalidcode": "Invalid code",
+                "resend": "Resend...",
+                "submit": "Submit"
+            }
+        }
+    },
+    "role": "Role",
+    "save": "Save",
+    "shared": {
+        "directives": {
+            "footer": {
+                "documentation": "Documentation",
+                "apidocumentation": "API Documentation",
+                "source": "Source code on Github"
+            },
+            "header": {
+                "cookiewarning": "This site uses cookies. By continuing to browse the site you are agreeing to our use of cookies.",
+                "dismiss": "Dismiss",
+                "nonotifcations": "You have no unread notifications",
+                "onenotification": "You have 1 unread notification",
+                "unreadnotifications": "You have {{count}} unread notifications",
+                "profile": "Profile",
+                "organizations": "Organizations",
+                "sharedinfo": "Shared information",
+                "signout": "Signout",
+                "register": "Register",
+                "signin": "Sign in",
+                "language": "language"
+            }
+        }
+    },
+    "shared_information": "Shared information",
+    "update": "Update",
+    "user": {
+        "views": {
+            "addressdialog": {
+                "addaddress": "Add an address",
+                "street": "Street",
+                "number": "Nr",
+                "postalcode": "Postal code",
+                "city": "City",
+                "country": "Country",
+                "remarks": "Remarks"
+            },
+            "apikeydialog": {
+                "newapikey": "New API Key",
+                "apikey": "API Key",
+                "appid": "Application ID",
+                "appidplaceholder": "- shown when saved -",
+                "secret": "Secret",
+                "secretplaceholder": "- generated when saved -"
+            },
+            "authorizationdialog": {
+                "sharedinfo": "Information shared with {{grantedto}}",
+                "sharewith": "Information to share with {{grantedto}}",
+                "authorizationrequest": "{{grantedto}} requests authorization to see some of your information.",
+                "changeauthorization": "You can change what information {{grantedto}} has access to here.",
+                "grant": "Grant authorization"
+            },
+            "authorizations": {
+                "sharedinfo": "Shared information",
+                "notsharing": "You are currently not sharing any of your profile information",
+                "sharingorgs": "Organizations you are sharing information with:"
+            },
+            "authorize": {
+                "request": "Requests authorization to see some of your information",
+                "authorize": "Authorize"
+            },
+            "bankaccountdialog": {
+                "registerbankaccount": "Register a bank account",
+                "bic": "BIC",
+                "bicpattern": "This value should be either 8 or 11 characters long.",
+                "iban": "IBAN",
+                "ibanmaxlength": "This value should be at most 30 characters long.",
+                "country": "Country"
+            },
+            "digitalwallet": {
+                "registerwallet": "Register a digital wallet address",
+                "digitalwallet": "Digital wallet address details",
+                "symbol": "Symbol",
+                "hasexpiredate": "This wallet has an expiration date",
+                "expirydate": "Expiry date"
+            },
+            "emaildialog": {
+                "registeremail": "Register email address",
+                "emailpattern": "Invalid email address"
+            },
+            "namedialog": {
+                "updatename": "Update name",
+                "firstname": "First name",
+                "lastname": "Last name"
+            },
+            "notifications": {
+                "notifications": "Notifications",
+                "pendinginvites": "Pending organization invites",
+                "rejectinvite": "Reject invitation",
+                "acceptinvite": "Accept invitation",
+                "security": "Security notifications",
+                "securitynotice": "Security notice",
+                "resolve": "Resolve",
+                "notsharinginfo": "Some required information isn't shared with organization {{org}}"
+            },
+            "organizations": {
+                "organizations": "Organizations",
+                "createnew": "Create new",
+                "organization": "Organization"
+            },
+            "phonedialog": {
+                "registerphonenumber": "Register a phone number",
+                "phonenumberminlength": "Not enough digits",
+                "updatelastverified": "You cannot update your last verified phone number. Please configure a new phone number instead."
+            },
+            "pubkeydialog": {
+                "newpubkey": "New public key",
+                "pubkeypattern": "Invalid public key, ssh keys start with 'ssh-rsa AAAAB3NzaC1yc2E'",
+                "pastehere": "paste your public ssh key here"
+            },
+            "resetpassdialog": {
+                "changepass": "Change password",
+                "currentpass": "Current password",
+                "currentpassinvalid": "Incorrect password",
+                "newpass": "New password",
+                "newpassminlength": "Password should contain at least 6 characters",
+                "confirmnewpass": "Confirm new password",
+                "passidentical": "The passwords do not match"
+            },
+            "settings": {
+                "settings": "Settings",
+                "apikeys": "API keys",
+                "apikey": "API key",
+                "security": "Security",
+                "password": "Password",
+                "change": "Change",
+                "authenticatorapp": "Authenticator application",
+                "setup": "Setup",
+                "remove": "Remove"
+            },
+            "totpdialog": {
+                "setupapp": "Setup authenticator application",
+                "qrcode": "Scan this QR code with a 2-factor authentication app on your phone and enter the code.",
+                "2facode": "2-Factor authentication code",
+                "invalidcode": "An invalid code was given",
+                "codemaxlength": "The code must be less than 6 characters"
+            },
+            "verifyphonedialog": {
+                "verifyphone": "Verify phone",
+                "help": "Click the link in the sms sent to your phone <br/>or enter the code from the sms here to confirm <br/>your phone number {{phone}} ({{label}})",
+                "code": "Code",
+                "codeminlength": "The code must be at least 6 characters long",
+                "codeinvalid": "Invalid code supplied",
+                "codemaxlength": "The code must be less than 6 characters"
+            },
+            "profile": {
+                "profile": "Profile",
+                "emailaddresses": "Email addresses",
+                "verified": "Verified",
+                "verify": "Verify",
+                "phonenumbers": "Phone numbers",
+                "nofacebook": "You haven't added your Facebook account yet.",
+                "nogithub": "You haven't added your Github account yet.",
+                "addresses": "Addresses",
+                "bankaccounts": "Bank accounts",
+                "digitalwallet": "Digital wallet",
+                "expiringwallet": "Expires {{expirydate}}, symbol {{symbol}}",
+                "noneexpiringwallet": "Expires never, symbol {{symbol}}",
+                "pubkeys": "Public keys"
+            }
+        },
+        "directives": {
+            "authorizationdetails": {
+                "yourusername": "Your username",
+                "yourfullname": "Your full name",
+                "orgmembership": "Organization membership",
+                "memberof": "Member of {{label}}",
+                "acceptinvite": "(this will accept the invitation for this organization)",
+                "emailaddress": "Email address",
+                "emailaddressfor": "Email address for {{label}}",
+                "email": "Email",
+                "none": "None",
+                "createnew": "Create new",
+                "phonenumberfor": "Phone number for {{label}}",
+                "addressfor": "Address for {{label}}",
+                "bankaccountfor": "Bank account for {{label}}",
+                "digitalwalletfor": "Digital wallet address for {{label}}",
+                "currency": "(currency {{currency}})",
+                "yourgithub": "Your Github account",
+                "yourfacebook": "Your Facebook account",
+                "pubkey": "Public key",
+                "pubkeyfor": "Public key for {{label}}"
+            }
+        },
+        "controller": {
+            "verifiedemails": "You do not have any verified email addresses. You will not be able to recover your account if you do not verify at least one of them.",
+            "nonotifcations": "No unhandled notifications",
+            "passwordupdated": "Password updated",
+            "passwordchanged": "Your password has been changed.",
+            "close": "Close",
+            "emailsent": "Verification email sent",
+            "emailsentto": "A verification email has been sent to {{email}}.",
+            "error": "Error",
+            "couldnotsend": "Could not send verification email. Please try again later.",
+            "errorwhilesending": "Error while sending verification email",
+            "cantremoveauthapp": "Cannot remove authenticator",
+            "cantremoveauthappmsg": "You cannot remove your authenticator application because this is your last two-factor authentication method.<br />Add a phone number and verify it to be able to remove your authenticator application.",
+            "removeauthenticator": "Unauthorize authenticator",
+            "confirmremoveauthenticator": "Are you sure you want to unauthorize your authenticator application?",
+            "yes": "Yes",
+            "no": "No"
+        }
+    }
 }
