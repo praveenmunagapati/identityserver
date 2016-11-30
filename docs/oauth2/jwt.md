@@ -6,11 +6,29 @@ The token you acquired might give access to a lot more information that you want
 
 For these use cases, itsyou.online supports JWT [RFC7519](https://tools.ietf.org/html/rfc7519).
 
+## Refreshing a jwt
+
+The standard oauth2 specification declares a refresh_token as a kind of special API key that is returned upon getting the oauth token or id token.
+While this allows getting an entirely new token with the original scopes, it does have some drawbacks:
+
+* The refresh token needs to be stored separately and if authorizations are passed to third party systems, the refresh token needs to be passed along as well if they are longer running services.
+* No way of limiting the scopeset when passing a refresh token to someone else.
+
+ItsYou.online puts the refresh token in the jwt itself, allowing to refresh the token without needing a separate refresh token. In order to include a refresh token in a jwt, one should ask for the `offline_access` scope. A `refresh_token` claim is inserted in the returned jwt.
+To refresh it, just call `/v1/oauth/jwt/refresh` with the expired jwt as a bearer token in the Authorization header and you get a new one if the authorization still stands.
+
+```
+curl -H "Authorization: bearer OLD-JWT-TOKEN" https://itsyou.online/v1/oauth/jwt/refresh
+```
+If some of the authorizations for this token were removed, they are no longer returned in the scopes of the newly generated jwt.
+
+
 ## Acquiring a jwt
 
-Itsyou.online supports two way of obtaining JWTs:
+Itsyou.online supports several ways of obtaining JWTs:
 1. Use an OAuth2 token for JWT creation where the JWT's claim set is a subset of the OAuth token's scopes.
 2. Directly get a JWT instead of a normal OAuth token when following the OAut2 grant type flows.
+3. Create a new jwt by using an existing jwt as authentication/authorization
 
 ### Case 1: Use an OAuth2 token for JWT creation where the JWT's claim set is a subset of the OAuth token's scopes
 
@@ -119,22 +137,16 @@ If the request has `application/json` in the accept header, the response is a js
 ```
 If no `application/json` is present in the accept header, the mime-type is `application/jwt` and the response is the jwt itself.
 
-## Refreshing a jwt
+### Case 3: Create a new jwt by using an existing jwt as authentication/authorization
 
-The standard oauth2 specification declares a refresh_token as a kind of special API key that is returned upon getting the oauth token or id token.
-While this allows getting an entirely new token with the original scopes, it does have some drawbacks:
-
-* The refresh token needs to be stored separately and if authorizations are passed to third party systems, the refresh token needs to be passed along as well if they are longer running services.
-* No way of limiting the scopeset when passing a refresh token to someone else.
-
-ItsYou.online puts the refresh token in the jwt itself, allowing to refresh the token without needing a separate refresh token. In order to include a refresh token in a jwt, one should ask for the `offline_access` scope. A `refresh_token` claim is inserted in the returned jwt.
-To refresh it, just call `/v1/oauth/jwt/refresh` with the expired jwt as a bearer token in the Authorization header and you get a new one if the authorization still stands.
-
+When you have a jwt and want to create a new one with less scopes, for a different audience or remove the refresh_token (or a combination of these), the same call can be performed as in case 1 but with the jwt in the Authorization header instead of the access token.
+Be sure to use `bearer` instead of `token` in the authorization header.
 ```
-curl -H "Authorization: bearer OLD-JWT-TOKEN" https://itsyou.online/v1/oauth/jwt/refresh
+curl -H "Authorization: bearer ABCDEFGH........ABCDEFGH" https://itsyou.online/v1/oauth/jwt?scope=user:memberof:org1
 ```
-If some of the authorizations for this token were removed, they are no longer returned in the scopes of the newly generated jwt.
+If the supplied jwt has a refresh_token, the newly generated jwt has a fresh expiration time, regardless of the expiration time of the supplied jwt. If not, the expiration time is of the newly generated jwt is set to the expiration time of the supplied jwt. 
 
 If a jwt with for example less scopes is created and the `offline_access` scope is requested, ityou.online keeps a reference to the parent jwt's authorization and this in effect creates a tree of refreshable authorizations. If a specific authorization is removed from a parent, it is removed from all children as well.
+Note that it is not possible to create a jwt with a refresh_token using an jwt that does not have a refresh_token.
 
-The problem with this approach is that consumers should be careful not to pass jwt's with a refresh_token to third party service since they can keep using this authorization for as long as consumer's authorization is valid. When passing a jwt to an external service, it is best to ask for a new jwt first and pass that one.
+Consumers should be careful not to pass jwt's with a refresh_token to third party service since they can keep using this authorization for as long as consumer's authorization is valid. When passing a jwt to an external service, it is best to ask for a new jwt first and pass that one.

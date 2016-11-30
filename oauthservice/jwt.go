@@ -14,6 +14,8 @@ import (
 
 var errUnauthorized = errors.New("Unauthorized")
 
+const issuer = "itsyouonline"
+
 //JWTHandler returns a JWT with claims that are a subset of the scopes available to the authorizing token
 func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -23,31 +25,46 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	accessToken := r.Header.Get("Authorization")
-
-	//Get the actual token out of the header (accept 'token ABCD' as well as just 'ABCD' and ignore some possible whitespace)
-	accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
-	if accessToken == "" {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
-
-	oauthMgr := NewManager(r)
-	at, err := oauthMgr.GetAccessToken(accessToken)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	if at == nil || at.IsExpired() {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
 
 	requestedScopeParameter := r.FormValue("scope")
-
 	audiences := strings.TrimSpace(r.FormValue("aud"))
-	tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, audiences)
+
+	//First check if the user uses an existing jwt to authenticate and authorize itself
+	idToken, err := oauth2.GetValidJWT(r, service.jwtSigningKey.PublicKey)
+	if err != nil {
+		log.Warning(err)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+	var tokenString string
+	if idToken != nil {
+		tokenString, err = service.createNewJWTFromParent(r, idToken, requestedScopeParameter, audiences)
+	} else {
+		//If no jwt was supplied, check if an old school access_token was used
+		accessToken := r.Header.Get("Authorization")
+
+		//Get the actual token out of the header (accept 'token ABCD' as well as just 'ABCD' and ignore some possible whitespace)
+		accessToken = strings.TrimSpace(strings.TrimPrefix(accessToken, "token"))
+		if accessToken == "" {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+
+		oauthMgr := NewManager(r)
+		var at *AccessToken
+		at, err = oauthMgr.GetAccessToken(accessToken)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if at == nil || at.IsExpired() {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+
+		tokenString, err = service.convertAccessTokenToJWT(r, at, requestedScopeParameter, audiences)
+	}
 	if err == errUnauthorized {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
@@ -157,15 +174,13 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 	if len(audiencesArr) > 0 {
 		token.Claims["aud"] = audiencesArr
 
-		// azp claim is only needed when the ID Token has a single
-		// audience value and that audience is different than the authorized
-		// party
-		if len(audiencesArr) == 1 && audiences != at.ClientID {
-			token.Claims["azp"] = at.ClientID
-		}
 	}
+
+	// It does not hurt to always set the azp claim while it is only needed when the ID Token has a single
+	// audience value and that audience is different than the authorized party
+	token.Claims["azp"] = at.ClientID
 	token.Claims["exp"] = at.ExpirationTime().Unix()
-	token.Claims["iss"] = "itsyouonline"
+	token.Claims["iss"] = issuer
 
 	if offlineAccessRequested {
 		rt := newRefreshToken()
@@ -173,6 +188,82 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 		rt.Scopes = grantedScopes
 		token.Claims["refresh_token"] = rt.RefreshToken
 		mgr := NewManager(r)
+		if err = mgr.saveRefreshToken(&rt); err != nil {
+			return
+		}
+	}
+	tokenString, err = token.SignedString(service.jwtSigningKey)
+	return
+}
+
+func (service *Service) createNewJWTFromParent(r *http.Request, parentToken *jwt.Token, requestedScopeString, audiences string) (tokenString string, err error) {
+
+	requestedScopes := splitScopeString(requestedScopeString)
+	requestedScopes, offlineAccessRequested := stripOfflineAccess(requestedScopes)
+
+	acquiredScopes := parentToken.Claims["scope"].([]string)
+	var parentRefreshToken *refreshToken
+	mgr := NewManager(r)
+	if rawParentRefreshToken, parentRefreshTokenSupplied := parentToken.Claims["refresh_token"]; parentRefreshTokenSupplied {
+		parentRefreshTokenString := rawParentRefreshToken.(string)
+		parentRefreshToken, err = mgr.getRefreshToken(parentRefreshTokenString)
+		if err != nil {
+			return
+		}
+		if parentRefreshToken == nil {
+			err = errUnauthorized
+			return
+		}
+		acquiredScopes = parentRefreshToken.Scopes
+	} else {
+		// Do not allow a refreshtoken using a parent that does not have one
+		if offlineAccessRequested {
+			err = errUnauthorized
+			return
+		}
+		//TODO: check if the parent token expired
+	}
+
+	if !jwtScopesAreAllowed(acquiredScopes, requestedScopes) {
+		err = errUnauthorized
+		return
+	}
+
+	token := jwt.New(jwt.SigningMethodES384)
+	var grantedScopes []string
+	username := parentToken.Claims["username"].(string)
+	if username != "" {
+		token.Claims["username"] = username
+		grantedScopes, err = service.filterPossibleScopes(r, username, requestedScopes, false)
+		if err != nil {
+			return
+		}
+	}
+	globalID := parentToken.Claims["globalid"]
+	if globalID != "" {
+		token.Claims["globalid"] = globalID
+		grantedScopes = requestedScopes
+	}
+	token.Claims["scope"] = grantedScopes
+
+	audiencesArr := strings.Split(audiences, ",")
+	if len(audiencesArr) > 0 {
+		token.Claims["aud"] = audiencesArr
+	}
+	token.Claims["azp"] = parentToken.Claims["azp"]
+	if parentRefreshToken != nil {
+		token.Claims["exp"] = time.Now().Add(AccessTokenExpiration).Unix()
+	} else {
+		token.Claims["exp"] = parentToken.Claims["exp"]
+	}
+	token.Claims["iss"] = issuer
+
+	if offlineAccessRequested {
+		rt := newRefreshToken()
+		rt.Parent = parentRefreshToken.RefreshToken
+		rt.AuthorizedParty = token.Claims["azp"].(string)
+		rt.Scopes = grantedScopes
+		token.Claims["refresh_token"] = rt.RefreshToken
 		if err = mgr.saveRefreshToken(&rt); err != nil {
 			return
 		}
