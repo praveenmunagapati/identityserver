@@ -472,6 +472,11 @@ md-select.header-select:not([disabled]):focus .md-select-value {
     border-color: #939598;
 }
 
+.logoviewer {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
 .file-drop-info {
     color: #939598;
     text-align: left;

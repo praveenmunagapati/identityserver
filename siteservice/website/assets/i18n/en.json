@@ -460,5 +460,6 @@
     "phonenumber": "Phone number",
     "phonenumberpattern": "Invalid phone number. Phone number must start with the country code. Example: +32471202020",
     "invalidphonenumber": "Invalid phone number",
-    "full_access": "Full access:"
+    "full_access": "Full access:",
+    "change": "Change"
 }
