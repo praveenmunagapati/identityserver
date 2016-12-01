@@ -140,11 +140,6 @@
     }
 
     function translateConfig($translateProvider) {
-        var language = localStorage.getItem('langKey');
-        if (!language) {
-            language = 'en';
-            localStorage.setItem('langKey', language);
-        }
         $translateProvider.useStaticFilesLoader({
             prefix: 'assets/i18n/',
             suffix: '.json'
@@ -152,7 +147,6 @@
         $translateProvider.useSanitizeValueStrategy('sanitize');
         $translateProvider.useMissingTranslationHandlerLog();
         $translateProvider.fallbackLanguage('en');
-        $translateProvider.use(language);
     }
 
     function pagetitle($rootScope, $timeout) {
