@@ -147,6 +147,7 @@
         $translateProvider.useSanitizeValueStrategy('sanitize');
         $translateProvider.useMissingTranslationHandlerLog();
         $translateProvider.fallbackLanguage('en');
+        $translateProvider.use('en');
     }
 
     function pagetitle($rootScope, $timeout) {
