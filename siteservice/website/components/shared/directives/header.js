@@ -43,7 +43,7 @@
 
                     function updateLanguage(){
                         localStorage.setItem('langKey', scope.langKey);
-                        localStorage.SetItem('selectedLangKey', scope.langKey)
+                        localStorage.setItem('selectedLangKey', scope.langKey)
                         $translate.use(scope.langKey);
                     }
                 }
