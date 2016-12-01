@@ -316,20 +316,6 @@
                     $window: $window
                 }
             });
-            // TODO: Load in the descriptions for the organization
-            // .then(
-            //     function() {
-            //         OrganizationService.getLogo(vm.organization.globalid).then(
-            //             function(data) {
-            //                 vm.logo = data.logo;
-            //             }
-            //         ).then(
-            //             function() {
-            //                 renderLogo();
-            //             }
-            //         );
-            //     }
-            // );
         }
 
         function showDeleteOrganizationDialog(event) {
