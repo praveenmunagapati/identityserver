@@ -96,19 +96,10 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 
 		protectedUsername := mux.Vars(r)["username"]
 
-		if protectedUsername == username && clientID == "itsyouonline" && atscopestring == "admin" {
-			authorizedScopes = append(authorizedScopes, "user:admin")
-		}
-		if strings.HasPrefix(atscopestring, "user:") {
-			authorizedScopes = append(authorizedScopes, "user:info")
-		}
 		for _, scope := range strings.Split(atscopestring, ",") {
 			scope = strings.Trim(scope, " ")
 			authorizedScopes = append(authorizedScopes, scope)
 		}
-
-		context.Set(r, "client_id", clientID)
-		context.Set(r, "availablescopes", atscopestring)
 
 		possibleScopes := []string{}
 		// Replace {variables} in the scopes with the real vars present in the url.
@@ -140,6 +131,17 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			authorizedScopes = authorization.FilterAuthorizedScopes(authorizedScopes)
 
 		}
+
+		if protectedUsername == username && clientID == "itsyouonline" && atscopestring == "admin" {
+			authorizedScopes = append(authorizedScopes, "user:admin")
+		}
+		if strings.HasPrefix(atscopestring, "user:") {
+			authorizedScopes = append(authorizedScopes, "user:info")
+		}
+
+		context.Set(r, "client_id", clientID)
+		context.Set(r, "availablescopes", strings.Join(authorizedScopes, ","))
+
 		// check scopes
 		log.Debug("Authorized scopes: ", authorizedScopes)
 		log.Debug("Needed possible scopes: ", possibleScopes)
