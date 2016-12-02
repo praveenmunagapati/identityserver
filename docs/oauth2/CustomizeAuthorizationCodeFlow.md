@@ -8,7 +8,7 @@ Go to the settings page of an organization:
 
 ![Organization Settings](OrganizationSettingsTab.png)
 
-where you can add an organization logo and change the text shown on the login page by modififying the organization description text.
+where you can add an organization logo and change the text shown on the login page by modifying the organization description text.
 
 When a user is asked to login, this logo and text are added to the login/register page:
 
@@ -17,7 +17,7 @@ When a user is asked to login, this logo and text are added to the login/registe
 
 ### Choose a different default language
 
-When an external site uses ItsYou.online using the aurhorization code flow, it can add the `lang` query parameter to change the default language if a user has not explicitly changed it. Possible values are `en` and `nl`, if no `lang` query parameter is supplied, English is taken.
+When an external site uses ItsYou.online using the authorization code flow, it can add the `lang` query parameter to change the default language if a user has not explicitly changed it. Possible values are `en` and `nl`, if no `lang` query parameter is supplied, English is taken.
 
 ### Configuring the frequency of the 2FA challenge
 
