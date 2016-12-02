@@ -38,7 +38,7 @@ type JoinOrganizationInvitation struct {
 	Status       InvitationStatus `json:"status"`
 	Created      db.DateTime      `json:"created"`
 	Method       InviteMethod     `json:"method"`
-	EmailAddress string           `json:"-"` // for privacy reasons
-	PhoneNumber  string           `json:"-"` // for privacy reasons
+	EmailAddress string           `json:"emailaddress"`
+	PhoneNumber  string           `json:"phonenumber"`
 	Code         string           `json:"-"`
 }

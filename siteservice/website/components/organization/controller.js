@@ -158,7 +158,12 @@
             })
             .then(
                 function(invitation) {
-                    vm.invitations.push(invitation);
+                    var invite = {
+                        created: invitation.created,
+                        user: invitation.user || invitation.emailaddress || invitation.phonenumber,
+                        role: invitation.role
+                    };
+                    vm.invitations.push(invite);
                 });
         }
 

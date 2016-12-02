@@ -33,7 +33,7 @@ const (
 	itsyouonlineGlobalID                      = "itsyouonline"
 	maximumNumberOfOrganizationsPerUser       = 1000
 	maximumNumberOfInvitationsPerOrganization = 10000
-	defaultLangKey                          = "en"
+	defaultLangKey                            = "en"
 )
 
 // OrganizationsAPI is the implementation for /organizations root endpoint
@@ -349,7 +349,7 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 	}
 
 	orgReq := &invitations.JoinOrganizationInvitation{
-		Role:         invitations.RoleOwner,
+		Role:         role,
 		Organization: globalID,
 		User:         username,
 		Status:       invitations.RequestPending,
@@ -592,11 +592,19 @@ func (api OrganizationsAPI) GetPendingOrganizationInvitations(w http.ResponseWri
 		return
 	}
 
+	// todo just return normal JoinOrganizationInvitation objects here
 	pendingInvites := make([]organization.Invitation, len(requests), len(requests))
 	for index, request := range requests {
+		userInfo := request.User
+		if userInfo == "" {
+			userInfo = request.EmailAddress
+		}
+		if userInfo == "" {
+			userInfo = request.PhoneNumber
+		}
 		pendingInvites[index] = organization.Invitation{
 			Role:    request.Role,
-			User:    request.User,
+			User:    userInfo,
 			Created: request.Created,
 		}
 	}
