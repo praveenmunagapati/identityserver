@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     angular.module('itsyouonline.header', ['pascalprecht.translate'])
-        .directive('itsYouOnlineHeader', ['$location', '$translate', function ($location, $translate) {
+        .directive('itsYouOnlineHeader', ['$location', '$window', '$translate', function ($location, $window, $translate) {
             return {
                 restrict: 'E',
                 replace: true,
@@ -23,7 +23,8 @@
                         // it the user hasn't set a language yet
                         if (!scope.langKey) {
                             var urlParams = $location.search();
-                            var lang = urlParams["lang"];
+                            // urlParams doesn't work for URI encoded urls
+                            var lang = urlParams["lang"] || URI($window.location.href).search(true).lang;
                             // if a queryvalue 'lang' is set and within the supported languages use that
                             if (supportedLangs.indexOf(lang) > -1) {
                                 localStorage.setItem('langKey', lang);
