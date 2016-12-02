@@ -267,16 +267,14 @@
                 return missingScope.organization === invitation.organization;
             })[0];
             resolveMissingScope(event, missingScope).then(function () {
-                    NotificationService
-                        .accept(invitation)
-                        .then(function () {
-                            invitation.status = 'accepted';
-                            if (vm[invitation.role]) {
-                                vm[invitation.role].push(invitation.organization);
-                            }
-                            updatePendingNotificationsCount();
-                        });
+                NotificationService.accept(invitation).then(function () {
+                    invitation.status = 'accepted';
+                    if (vm[invitation.role]) {
+                        vm[invitation.role].push(invitation.organization);
+                    }
+                    updatePendingNotificationsCount();
                 });
+            });
         }
 
         function reject(invitation) {
@@ -663,7 +661,7 @@
                             .ok(translations['ok'])
                             .targetEvent(event)
                     );
-                })
+                });
                 return;
             }
             $translate(['user.controller.removeauthenticator', 'user.controller.confirmremoveauthenticator', 'user.controller.yes', 'user.controller.no']).then(function(translations){
@@ -680,7 +678,7 @@
                             vm.twoFAMethods.totp = false;
                         });
                 });
-            })
+            });
         }
 
         function resolveMissingScopeClicked(event, missingScope) {
@@ -695,6 +693,10 @@
             return $q(promise);
 
             function promise(resolve, reject) {
+                if (!missingScope) {
+                    resolve();
+                    return;
+                }
                 UserService.getAuthorization(vm.username, missingScope.organization).then(requestSuccess, requestFailed);
                 function requestFailed(response) {
                     if (response.status === 404) {
