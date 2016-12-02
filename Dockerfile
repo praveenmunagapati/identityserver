@@ -21,4 +21,4 @@ WORKDIR /go/src/github.com/itsyouonline/identityserver
 
 EXPOSE 8080
 
-ENTRYPOINT go build && ./identityserver -d
+ENTRYPOINT go generate && go build && ./identityserver -d

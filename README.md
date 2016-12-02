@@ -10,8 +10,11 @@
 
 ### Installation
 
-```
-go get github.com/itsyouonline/identityserver
+```bash
+git clone https://github.com/itsyouonline/identityserver
+cd identityserver
+go generate && go build
+./identityserver -d
 ```
 
 ### Run
