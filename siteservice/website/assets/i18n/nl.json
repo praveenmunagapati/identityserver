@@ -343,8 +343,6 @@
             "notifications": {
                 "notifications": "Meldingen",
                 "pendinginvites": "Openstaande organizatie uitnodigingen",
-                "rejectinvite": "Weiger uitnodiging",
-                "acceptinvite": "Aanvaardt uitnodiging",
                 "security": "Veiligheidsmeldingen",
                 "securitynotice": "Veiligheidsmelding",
                 "resolve": "Los op",
@@ -457,5 +455,7 @@
             "yes": "Ja",
             "no": "Nee"
         }
-    }
+    },
+    "reject": "Weiger",
+    "accept": "Aanvaardt"
 }

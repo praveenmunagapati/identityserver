@@ -343,8 +343,6 @@
             "notifications": {
                 "notifications": "Notifications",
                 "pendinginvites": "Pending organization invites",
-                "rejectinvite": "Reject invitation",
-                "acceptinvite": "Accept invitation",
                 "security": "Security notifications",
                 "securitynotice": "Security notice",
                 "resolve": "Resolve",
@@ -457,5 +455,7 @@
             "yes": "Yes",
             "no": "No"
         }
-    }
+    },
+    "reject": "Reject",
+    "accept": "Accept"
 }

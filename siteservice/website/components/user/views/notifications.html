@@ -29,13 +29,13 @@
                                     <span ng-bind="invitation.organization"></span>
                                 </p>
                             </div>
-                            <md-icon md-font-icon="fa-times" class="fa md-secondary md-warn"
-                                     ng-click="vm.reject(invitation)"
-                                     aria-label='Reject invitation' translate-attr="{ 'aria-label': 'user.views.notifications.rejectinvite' }"></md-icon>
-                            <md-icon md-font-icon="fa-check" class="fa md-secondary md-primary"
-                                     ng-click="vm.accept($event, invitation)"
-                                     aria-label='Accept invitation' translate-attr="{ 'aria-label': 'user.views.notifications.acceptinvite' }">
-                            </md-icon>
+                            <md-button class="md-secondary md-warn" ng-click="vm.reject(invitation)">
+                                <i class="fa fa-times"></i> <span translate="reject">Reject</span>
+                            </md-button>
+
+                            <md-button class="md-secondary md-primary" ng-click="vm.accept($event, invitation)">
+                                <i class="fa fa-check"></i> <span translate="accept">Accept</span>
+                            </md-button>
                         </md-list-item>
                     </md-list>
                 </div>
