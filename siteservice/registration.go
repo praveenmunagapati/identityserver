@@ -176,6 +176,7 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, request *http.Request) {
 	values := struct {
 		PhoneNumber string `json:"phonenumber"`
+		LangKey     string `json:"langkey"`
 	}{}
 
 	response := struct {
@@ -223,7 +224,7 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	validationkey, err = service.phonenumberValidationService.RequestValidation(request, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host))
+	validationkey, err = service.phonenumberValidationService.RequestValidation(request, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host), values.LangKey)
 	if err != nil {
 		log.Error("ResendPhonenumberConfirmation: Could not get validationkey: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -250,6 +251,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		TotpCode       string `json:"totpcode"`
 		Password       string `json:"password"`
 		RedirectParams string `json:"redirectparams"`
+		LangKey        string `json:"langkey"`
 	}{}
 	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
 		log.Debug("Error decoding the registration request:", err)
@@ -364,7 +366,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 
 	if twoFAMethod == "sms" {
-		validationkey, err := service.phonenumberValidationService.RequestValidation(request, newuser.Username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host))
+		validationkey, err := service.phonenumberValidationService.RequestValidation(request, newuser.Username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host), values.LangKey)
 		if err != nil {
 			log.Error(err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

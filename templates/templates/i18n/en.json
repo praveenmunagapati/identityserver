@@ -21,6 +21,9 @@
         "buttontext": "Accept invitation",
         "reason": "You’re receiving this email because someone invited you to an organization at ItsYou.Online. If you think this was a mistake please ignore this email.",
         "subject": "You have been invited to the %s organization",
-        "urlcaption": "Button not working? Paste the following link into your browser:" 
-    }
+        "urlcaption": "Button not working? Paste the following link into your browser:"
+    },
+    "smsconfirmation": "To verify your phonenumber on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s",
+    "authorizeorganizationsms": "To continue signing in at itsyou.online to authorize the organization %s, enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
+    "signinsms": "To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s"
 }

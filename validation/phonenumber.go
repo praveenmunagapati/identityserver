@@ -1,13 +1,17 @@
 package validation
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
+	"github.com/itsyouonline/identityserver/tools"
 )
 
 //SMSService is the interface an sms communication channel should have to be used by the IYOPhonenumberValidationService
@@ -21,7 +25,7 @@ type IYOPhonenumberValidationService struct {
 }
 
 //RequestValidation validates the phonenumber by sending an SMS
-func (service *IYOPhonenumberValidationService) RequestValidation(request *http.Request, username string, phonenumber user.Phonenumber, confirmationurl string) (key string, err error) {
+func (service *IYOPhonenumberValidationService) RequestValidation(request *http.Request, username string, phonenumber user.Phonenumber, confirmationurl string, langKey string) (key string, err error) {
 	valMngr := validation.NewManager(request)
 	info, err := valMngr.NewPhonenumberValidationInformation(username, phonenumber)
 	if err != nil {
@@ -31,7 +35,23 @@ func (service *IYOPhonenumberValidationService) RequestValidation(request *http.
 	if err != nil {
 		return
 	}
-	smsmessage := fmt.Sprintf("To verify your phonenumber on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s", info.SMSCode, confirmationurl, info.SMSCode, url.QueryEscape(info.Key))
+
+	translationFile, err := tools.LoadTranslations(langKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Smsconfirmation string
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
+	smsmessage := fmt.Sprintf(translations.Smsconfirmation, info.SMSCode, confirmationurl, info.SMSCode, url.QueryEscape(info.Key))
 
 	go service.SMSService.Send(phonenumber.Phonenumber, smsmessage)
 	key = info.Key

@@ -31,7 +31,8 @@
                 password: password,
                 totpcode: totpcode,
                 phonenumber: sms,
-                redirectparams: redirectparams
+                redirectparams: redirectparams,
+                langkey: localStorage.getItem('langKey')
             };
             return $http.post(url, data);
         }

@@ -53,7 +53,10 @@
 
         function sendSmsCode(phoneLabel) {
             var url = apiURL + '/smscode/' + encodeURIComponent(phoneLabel);
-            return genericHttpCall($http.post, url);
+            var data = {
+                langkey: localStorage.getItem('langKey')
+            };
+            return genericHttpCall($http.post, url, data);
         }
 
         function submitTotpCode(code, queryString) {

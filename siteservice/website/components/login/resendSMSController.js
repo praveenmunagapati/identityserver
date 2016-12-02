@@ -11,7 +11,8 @@
 
         function submit() {
             var data = {
-                phonenumber: vm.phonenumber.replace(' ', '')
+                phonenumber: vm.phonenumber.replace(' ', ''),
+                langkey: localStorage.getItem('langKey')
             };
             $http
                 .post('/login/resendsms', data)

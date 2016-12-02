@@ -1,6 +1,7 @@
 package siteservice
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
@@ -269,6 +270,16 @@ func (service *Service) getSessionKey(request *http.Request) (sessionKey string,
 //GetSmsCode returns an sms code for a specified phone label
 func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request) {
 	phoneLabel := mux.Vars(request)["phoneLabel"]
+
+	values := struct {
+		LangKey string `json:"langkey"`
+	}{}
+	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the GetSmsCode langkey request:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
 	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
 	if err != nil {
 		log.Error("Error getting login session", err)
@@ -307,13 +318,35 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 	mgoCollection.Insert(sessionInfo)
-	organizationText := ""
+
+	translationFile, err := tools.LoadTranslations(values.LangKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Authorizeorganizationsms string
+		Signinsms                string
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
+
+	smsmessage := ""
 	if authenticatingOrganization != "" {
 		split := strings.Split(authenticatingOrganization, ".")
-		organizationText = fmt.Sprintf("to authorize the organization %s, ", split[len(split)-1])
+		smsmessage = fmt.Sprintf(translations.Authorizeorganizationsms,
+			split[len(split)-1], sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+	} else {
+		smsmessage = fmt.Sprintf(translations.Signinsms,
+			sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
 	}
-	smsmessage := fmt.Sprintf("To continue signing in at itsyou.online %senter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
-		organizationText, sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+	// smsmessage := fmt.Sprintf("To continue signing in at itsyou.online %senter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
+	// 	organizationText, sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
 	sessions.Save(request, w)
 	go service.smsService.Send(phoneNumber.Phonenumber, smsmessage)
 	w.WriteHeader(http.StatusNoContent)
@@ -721,6 +754,7 @@ func (service *Service) ResetPassword(w http.ResponseWriter, request *http.Reque
 func (service *Service) LoginResendPhonenumberConfirmation(w http.ResponseWriter, request *http.Request) {
 	values := struct {
 		PhoneNumber string `json:"phonenumber"`
+		LangKey     string `json:"langkey"`
 	}{}
 
 	response := struct {
@@ -767,7 +801,7 @@ func (service *Service) LoginResendPhonenumberConfirmation(w http.ResponseWriter
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	validationkey, err = service.phonenumberValidationService.RequestValidation(request, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host))
+	validationkey, err = service.phonenumberValidationService.RequestValidation(request, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host), values.LangKey)
 	if err != nil {
 		log.Error("ResendPhonenumberConfirmation: Could not get validationkey: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

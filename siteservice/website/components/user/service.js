@@ -263,7 +263,10 @@
 
         function sendPhoneVerificationCode(username, label) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(label) + '/validate';
-            return genericHttpCall($http.post, url);
+            var data = {
+                langkey: localStorage.getItem('langKey')
+            };
+            return genericHttpCall($http.post, url, data);
         }
 
         function verifyPhone(username, label, validationKey, confirmationCode) {

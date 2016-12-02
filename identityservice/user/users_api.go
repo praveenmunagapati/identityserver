@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 
+	"regexp"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
@@ -24,7 +26,6 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/validation"
 	"gopkg.in/mgo.v2"
-	"regexp"
 )
 
 type UsersAPI struct {
@@ -701,6 +702,16 @@ func (api UsersAPI) GetUserPhonenumberByLabel(w http.ResponseWriter, r *http.Req
 func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
+
+	values := struct {
+		LangKey string `json:"langkey"`
+	}{}
+	if err := json.NewDecoder(r.Body).Decode(&values); err != nil {
+		log.Debug("Error decoding the ProcessPhonenumberConfirmation request:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
 	userMgr := user.NewManager(r)
 
 	userobj, err := userMgr.GetByName(username)
@@ -716,7 +727,7 @@ func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) 
 	}
 
 	validationKey := ""
-	validationKey, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host))
+	validationKey, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host), values.LangKey)
 	response := struct {
 		ValidationKey string `json:"validationkey"`
 	}{
