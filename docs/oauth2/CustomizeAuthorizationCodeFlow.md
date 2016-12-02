@@ -2,20 +2,22 @@
 
 ### Show an organization logo on the login/register screen
 
-When you use the authorization code flow to authenticate your users using Itsyou.Online, you can provide a better user experience by showing your logo on the login page.
+When you use the authorization code flow to authenticate your users using Itsyou.Online, you can provide a better user experience by showing your logo and customize the text on the login page.
 
-To set an organization logo go to the settings page of an organization:
+Go to the settings page of an organization:
 
 ![Organization Settings](OrganizationSettingsTab.png)
 
-and add a logo to your organization:
+where you can add an organization logo and change the text shown on the login page by modififying the organization description text.
 
-![Set organization logo](SetOrganizationLogo.png)
-
-When a user is asked to login, this logo is added to the login/register page:
+When a user is asked to login, this logo and text are added to the login/register page:
 
 ![Branded login page](BrandedLoginPage.png)
 
+
+### Choose a different default language
+
+When an external site uses ityou.online using the aurhorization code flow, it can add the `lang` query parameter to change the default language if a user has not explicitly changed it. Possible values are `en` and `nl`, if no `lang` query parameter is supplied, English is taken.
 
 ### Configuring the frequency of the 2FA challenge
 
