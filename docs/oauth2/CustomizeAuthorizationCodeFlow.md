@@ -17,7 +17,7 @@ When a user is asked to login, this logo and text are added to the login/registe
 
 ### Choose a different default language
 
-When an external site uses ityou.online using the aurhorization code flow, it can add the `lang` query parameter to change the default language if a user has not explicitly changed it. Possible values are `en` and `nl`, if no `lang` query parameter is supplied, English is taken.
+When an external site uses ItsYou.online using the aurhorization code flow, it can add the `lang` query parameter to change the default language if a user has not explicitly changed it. Possible values are `en` and `nl`, if no `lang` query parameter is supplied, English is taken.
 
 ### Configuring the frequency of the 2FA challenge
 
