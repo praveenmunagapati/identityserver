@@ -431,8 +431,8 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 	}
 
 	translations := struct {
-		Smsinvalidlink string
-		Smsloggingin   string
+		Invalidlink  string
+		Smsloggingin string
 	}{}
 
 	r := bytes.NewReader(translationFile)
@@ -449,14 +449,14 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 	}
 
 	if sessionInfo == nil {
-		service.renderSMSConfirmationPage(w, request, translations.Smsinvalidlink)
+		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
 		return
 	}
 
 	validsmscode = (smscode == sessionInfo.SMSCode)
 
 	if !validsmscode { //TODO: limit to 3 failed attempts
-		service.renderSMSConfirmationPage(w, request, translations.Smsinvalidlink)
+		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
 		return
 	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)

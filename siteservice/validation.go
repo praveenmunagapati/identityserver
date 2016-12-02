@@ -32,9 +32,9 @@ func (service *Service) PhonenumberValidation(w http.ResponseWriter, request *ht
 	}
 
 	translations := struct {
-		Smsinvalidlink string
-		Smserror       string
-		Smsconfirmed   string
+		Invalidlink  string
+		Error        string
+		Smsconfirmed string
 	}{}
 
 	r := bytes.NewReader(translationFile)
@@ -45,12 +45,12 @@ func (service *Service) PhonenumberValidation(w http.ResponseWriter, request *ht
 
 	err = service.phonenumberValidationService.ConfirmValidation(request, key, smscode)
 	if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
-		service.renderSMSConfirmationPage(w, request, translations.Smsinvalidlink)
+		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
 		return
 	}
 	if err != nil {
 		log.Error(err)
-		service.renderSMSConfirmationPage(w, request, translations.Smserror)
+		service.renderSMSConfirmationPage(w, request, translations.Error)
 		return
 	}
 
@@ -69,17 +69,36 @@ func (service *Service) EmailValidation(w http.ResponseWriter, request *http.Req
 	values := request.Form
 	key := values.Get("k")
 	smscode := values.Get("c")
+	langKey := values.Get("l")
+
+	translationFile, err := tools.LoadTranslations(langKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Invalidlink    string
+		Error          string
+		Emailconfirmed string
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
 
 	err = service.emailaddressValidationService.ConfirmValidation(request, key, smscode)
 	if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
-		service.renderEmailConfirmationPage(w, request, "Invalid or expired link")
+		service.renderEmailConfirmationPage(w, request, translations.Invalidlink)
 		return
 	}
 	if err != nil {
 		log.Error(err)
-		service.renderEmailConfirmationPage(w, request, "An unexpected error occurred, please try again later")
+		service.renderEmailConfirmationPage(w, request, translations.Error)
 		return
 	}
 
-	service.renderEmailConfirmationPage(w, request, "Your Email Address is confirmed")
+	service.renderEmailConfirmationPage(w, request, translations.Emailconfirmed)
 }

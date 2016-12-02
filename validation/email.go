@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/tools"
-	"net/http"
-	"net/url"
 )
 
 const (
@@ -77,7 +78,7 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 		return
 	}
 
-	validationurl := fmt.Sprintf("%s?c=%s&k=%s", confirmationurl, url.QueryEscape(info.Secret), url.QueryEscape(info.Key))
+	validationurl := fmt.Sprintf("%s?c=%s&k=%s&l=%s", confirmationurl, url.QueryEscape(info.Secret), url.QueryEscape(info.Key), langKey)
 	templateParameters := EmailWithButtonTemplateParams{
 		UrlCaption: translations.Emailvalidation.Urlcaption,
 		Url:        validationurl,
@@ -125,7 +126,7 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 		return
 	}
 
-	passwordreseturl := fmt.Sprintf("https://%s/login#/resetpassword/%s", request.Host, url.QueryEscape(token.Token))
+	passwordreseturl := fmt.Sprintf("https://%s/login#/resetpassword/%s&l=%s", request.Host, url.QueryEscape(token.Token), langKey)
 	templateParameters := EmailWithButtonTemplateParams{
 		UrlCaption: translations.Passwordreset.Urlcaption,
 		Url:        passwordreseturl,
