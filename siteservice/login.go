@@ -560,7 +560,6 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 
 	redirectURL := "/"
 	queryValues := request.URL.Query()
-	log.Warn(queryValues)
 	endpoint := queryValues.Get("endpoint")
 	if endpoint != "" {
 		queryValues.Del("endpoint")
