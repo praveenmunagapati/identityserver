@@ -26,11 +26,21 @@
                             var lang = urlParams["lang"];
                             // if a queryvalue 'lang' is set and within the supported languages use that
                             if (supportedLangs.indexOf(lang) > -1) {
-                                localStorage.setItem('langKey', lang)
+                                localStorage.setItem('langKey', lang);
+                                // Store the langkey requested through the url params
+                                localStorage.setItem('requestedLangKey', lang);
                                 scope.langKey = lang;
                             } else {
-                                localStorage.setItem('langKey', defaultLang)
-                                scope.langKey = defaultLang
+                                var previousLang = localStorage.getItem('requestedLangKey');
+                                // if a language was set thourgh an URL in a previous request use that
+                                if (previousLang) {
+                                    localStorage.setItem('langKey', previousLang);
+                                    scope.langKey = previousLang;
+                                } else {
+                                    //if all else fails just use English
+                                    localStorage.setItem('langKey', defaultLang);
+                                    scope.langKey = defaultLang;
+                                }
                             }
                         }
                         $translate.use(scope.langKey);
