@@ -297,8 +297,7 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 			writeErrorResponse(w, http.StatusNotFound, "user_not_found")
 			return
 		}
-	} else {
-		handleServerError(w, "searching for user", err)
+	} else if handleServerError(w, "searching for user", err) {
 		return
 	}
 	username := ""
