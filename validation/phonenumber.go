@@ -51,7 +51,7 @@ func (service *IYOPhonenumberValidationService) RequestValidation(request *http.
 		log.Error("Error while decoding translations: ", err)
 		return
 	}
-	smsmessage := fmt.Sprintf(translations.Smsconfirmation, info.SMSCode, confirmationurl, info.SMSCode, url.QueryEscape(info.Key))
+	smsmessage := fmt.Sprintf(translations.Smsconfirmation, info.SMSCode, confirmationurl, info.SMSCode, url.QueryEscape(info.Key), langKey)
 
 	go service.SMSService.Send(phonenumber.Phonenumber, smsmessage)
 	key = info.Key

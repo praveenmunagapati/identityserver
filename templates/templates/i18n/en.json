@@ -23,7 +23,11 @@
         "subject": "You have been invited to the %s organization",
         "urlcaption": "Button not working? Paste the following link into your browser:"
     },
-    "smsconfirmation": "To verify your phonenumber on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s",
-    "authorizeorganizationsms": "To continue signing in at itsyou.online to authorize the organization %s, enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
-    "signinsms": "To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s"
+    "smsconfirmation": "To verify your phonenumber on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s&l=%s",
+    "authorizeorganizationsms": "To continue signing in at itsyou.online to authorize the organization %s, enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s&l=%s",
+    "signinsms": "To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s&l=%s",
+    "smsinvalidlink": "Invalid or expired link",
+    "smsloggingin": "You will be logged in within a few seconds",
+    "smserror": "An unexpected error occurred, please try again later",
+    "smsconfirmed": "Your phonenumber is confirmed"
 }

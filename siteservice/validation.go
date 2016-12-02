@@ -1,9 +1,12 @@
 package siteservice
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/tools"
 	"github.com/itsyouonline/identityserver/validation"
 )
 
@@ -20,19 +23,38 @@ func (service *Service) PhonenumberValidation(w http.ResponseWriter, request *ht
 	values := request.Form
 	key := values.Get("k")
 	smscode := values.Get("c")
+	langKey := values.Get("l")
+
+	translationFile, err := tools.LoadTranslations(langKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Smsinvalidlink string
+		Smserror       string
+		Smsconfirmed   string
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
 
 	err = service.phonenumberValidationService.ConfirmValidation(request, key, smscode)
 	if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
-		service.renderSMSConfirmationPage(w, request, "Invalid or expired link")
+		service.renderSMSConfirmationPage(w, request, translations.Smsinvalidlink)
 		return
 	}
 	if err != nil {
 		log.Error(err)
-		service.renderSMSConfirmationPage(w, request, "An unexpected error occurred, please try again later")
+		service.renderSMSConfirmationPage(w, request, translations.Smserror)
 		return
 	}
 
-	service.renderSMSConfirmationPage(w, request, "Your phonenumber is confirmed")
+	service.renderSMSConfirmationPage(w, request, translations.Smsconfirmed)
 }
 
 func (service *Service) EmailValidation(w http.ResponseWriter, request *http.Request) {

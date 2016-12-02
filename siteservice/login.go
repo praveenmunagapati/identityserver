@@ -340,10 +340,10 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	if authenticatingOrganization != "" {
 		split := strings.Split(authenticatingOrganization, ".")
 		smsmessage = fmt.Sprintf(translations.Authorizeorganizationsms,
-			split[len(split)-1], sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+			split[len(split)-1], sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey), values.LangKey)
 	} else {
 		smsmessage = fmt.Sprintf(translations.Signinsms,
-			sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+			sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey), values.LangKey)
 	}
 	// smsmessage := fmt.Sprintf("To continue signing in at itsyou.online %senter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
 	// 	organizationText, sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
@@ -422,6 +422,24 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 	values := request.Form
 	sessionKey := values.Get("k")
 	smscode := values.Get("c")
+	langKey := values.Get("l")
+
+	translationFile, err := tools.LoadTranslations(langKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Smsinvalidlink string
+		Smsloggingin   string
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
 
 	var validsmscode bool
 	sessionInfo, err := service.getLoginSessionInformation(request, sessionKey)
@@ -431,14 +449,14 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 	}
 
 	if sessionInfo == nil {
-		service.renderSMSConfirmationPage(w, request, "Invalid or expired link")
+		service.renderSMSConfirmationPage(w, request, translations.Smsinvalidlink)
 		return
 	}
 
 	validsmscode = (smscode == sessionInfo.SMSCode)
 
 	if !validsmscode { //TODO: limit to 3 failed attempts
-		service.renderSMSConfirmationPage(w, request, "Invalid or expired link")
+		service.renderSMSConfirmationPage(w, request, translations.Smsinvalidlink)
 		return
 	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
@@ -449,7 +467,7 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	service.renderSMSConfirmationPage(w, request, "You will be logged in within a few seconds")
+	service.renderSMSConfirmationPage(w, request, translations.Smsloggingin)
 }
 
 //Check2FASMSConfirmation is called by the sms code form to check if the sms is already confirmed on the mobile phone
