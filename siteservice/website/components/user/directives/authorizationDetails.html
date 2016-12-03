@@ -68,7 +68,7 @@
         <p><i class="fa fa-users">
             <md-tooltip><span translate='user.directives.authorizationdetails.orgmembership'>Organization membership</span></md-tooltip>
         </i>
-            <span translate='memberof' translate-values='{label: label}'>Member of <span ng-bind="::label"></span></span>
+            <span translate='user.directives.authorizationdetails.memberof' translate-values='{label: label}'>Member of <span ng-bind="::label"></span></span>
             <span ng-if="vm.pendingOrganizationInvites[label]"><span translate='user.directives.authorizationdetails.acceptinvite'>(this will accept the invitation for this organization)</span></span>
         </p>
         <md-checkbox class="md-secondary" ng-model="requested.organizations[label]"></md-checkbox>
