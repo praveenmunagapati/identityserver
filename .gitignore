@@ -28,7 +28,6 @@ node_modules
 siteservice/apiconsole/dist
 .idea
 docs/examples/python/token/env
-siteservice/apiconsole/apiconsole.go
 siteservice/website/packaged
 templates/packaged
 specifications/packaged.go
