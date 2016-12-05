@@ -1,6 +1,8 @@
 package organization
 
-import "strings"
+import (
+	"regexp"
+)
 
 type Organization struct {
 	DNS             []string        `json:"dns"`
@@ -15,10 +17,7 @@ type Organization struct {
 }
 
 // IsValid performs basic validation on the content of an organizations fields
-//TODO: globalid should not contain ':,.'
-func (org *Organization) IsValid() (valid bool) {
-	valid = true
-	globalIDLength := len(org.Globalid)
-	valid = valid && (globalIDLength >= 3) && (globalIDLength <= 150) && org.Globalid == strings.ToLower(org.Globalid)
-	return
+func (org *Organization) IsValid() bool {
+	regex, _ := regexp.Compile(`^[a-z\d\-_\s]{3,150}$`)
+	return regex.MatchString(org.Globalid)
 }

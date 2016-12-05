@@ -96,7 +96,7 @@ func (u *User) GetPublicKeyByLabel(label string) (publicKey PublicKey, err error
 }
 
 func ValidateUsername(username string) bool {
-	regex, _ := regexp.Compile(`^[a-z0-9\s-_]+$`)
+	regex, _ := regexp.Compile(`^[a-z\d\-_\s]{2,30}$`)
 	matches := regex.FindAllString(username, 2)
 	return len(matches) == 1
 }

@@ -10,7 +10,7 @@ types:
     type: string
     maxLength: 50
     minLength: 2
-    pattern: ^[a-zA-Z0-9 -_]{2-50}$
+    pattern: ^[a-zA-Z\d\-_\s]{2,50}$
 
   UserAPIKey:
     description: User specific API key
@@ -258,7 +258,7 @@ types:
         type: string
         minLength: 3
         maxLength: 150
-        pattern: ^[a-z0-9]{3,150}$
+        pattern: ^[a-z\d\-_\s]{3,150}$
       publicKeys:
         type: string[]
         maxItems: 20
@@ -375,7 +375,7 @@ types:
         globalid:
             type: string
             minLength: 3
-            pattern: ^[a-z0-9]{3,150}$
+            pattern: ^[a-z\d\-_\s]{3,150}$
             maxLength: 150
         publicKeys:
             type: string[]

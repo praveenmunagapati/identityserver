@@ -218,13 +218,13 @@
     "phonenumberpattern": "Ongeldig telefoonnummer. Telefoonnummer moet starten met de landcode. Voorbeeld: +32471202020",
     "public_key": "Public key",
     "register": "Registreer",
+    "invalid_username": "Ongeldige gebruikersnaam. Enkel tekens a-z, 0-9, streepjes, underscores en spaties zijn toegelaten",
     "registration": {
         "views": {
             "registrationform": {
                 "register": "Registreer",
                 "username": "gebruikersnaam",
                 "usernametaken": "Deze gebruikersnaam is al bezet",
-                "invalidusername": "Ongeldige gebruikersnaam. Enkel tekens a-z, 0-9, streepjes, underscores en spaties zijn toegelaten",
                 "email": "Email",
                 "invalidemail": "Ongeldig email adres",
                 "password": "Wachtwoord",

@@ -24,7 +24,7 @@
                 <md-input-container ng-if="vm.editingScope.scope.vars.label">
                     <label translate="label"></label>
                     <input type="text" ng-model="vm.editingScope.label" name="label" md-maxlength="50" ng-minlength="2"
-                           ng-pattern="/^[a-z0-9 \-_]+$/" ng-change="vm.scopeChanged()">
+                           ng-pattern="/^[a-z\d\-_\s]{2,50}$/" ng-change="vm.scopeChanged()">
                     <div ng-messages="vm.form.label.$error">
                         <div ng-message="minlength" translate="min_x_characters_required"
                              translate-values="{ length: 2 }"></div>

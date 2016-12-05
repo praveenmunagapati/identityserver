@@ -17,11 +17,12 @@
                         <label translate='label'>Label</label>
                         <input ng-model="ctrl.label" minlength="2" required type="text" md-autofocus="true"
                                name="label" ng-change="PublicKeyForm.label.$setValidity('duplicate', true);"
-                               md-maxlength="50">
+                               md-maxlength="50" ng-pattern="/^[a-zA-Z\d\-_\s]{2,50}$/">
                         <div ng-messages="PublicKeyForm.label.$error">
                             <div ng-message="minlength" translate='labelminlength'>At least 2 characters are required</div>
                             <div ng-message="md-maxlength" translate='labelmaxlength'>The label cannot be longer than 50 characters</div>
                             <div ng-message="duplicate" translate='labelduplicate'>This label is already used</div>
+                            <div ng-message="pattern" translate="invalid_label"></div>
                         </div>
                     </md-input-container>
                 </div>

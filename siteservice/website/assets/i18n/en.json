@@ -218,13 +218,13 @@
     "phonenumberpattern": "Invalid phone number. Phone number must start with the country code. Example: +32471202020",
     "public_key": "Public key",
     "register": "Register",
+    "invalid_username": "Invalid username. Only characters a-z, 0-9, dashes, underscores and spaces are allowed",
     "registration": {
         "views": {
             "registrationform": {
                 "register": "Register",
                 "username": "Username",
                 "usernametaken": "This username has already been taken",
-                "invalidusername": "Invalid username. Only characters a-z, 0-9, dashes, underscores and spaces are allowed",
                 "email": "Email",
                 "invalidemail": "Invalid email address",
                 "password": "Password",
