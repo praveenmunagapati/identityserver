@@ -27,9 +27,9 @@
                             <label for="login" translate='registration.views.registrationform.username'>Username</label>
                             <input ng-model="vm.login" md-maxlength="30" minlength="2" required name="login" type="text"
                                    ng-pattern="/^[a-z0-9 \-_]+$/" ng-minlength="3" autofocus
-                                   ng-change="vm.validateUsername()" id="login">
+                                   ng-change="vm.validateUsername()" ng-model-options="{allowInvalid: true}" id="login">
                             <div ng-messages="signupform.login.$error" md-auto-hide="false">
-                                <div ng-message="duplicate_username" translate='registration.views.registrationform.usernametaken'>This username has already been taken</div>
+                                <div ng-message="user_exists" translate='registration.views.registrationform.usernametaken'>This username has already been taken</div>
                                 <div ng-message="invalid_username_format" translate='registration.views.registrationform.invalidusername'>Invalid username. Only characters a-z, 0-9,
                                     dashes, underscores and space are allowed
                                 </div>
@@ -101,7 +101,7 @@
                         </md-input-container>
                         <md-input-container ng-if="vm.twoFAMethod === 'totp'">
                             <qrcode version="6" error-correction-level="M" size="200"
-                                    data="otpauth://totp/ItsYou.online?secret={{::vm.totpsecret}}&issuer=ItsYou.Online">
+                                    data="otpauth://totp/ItsYou.Online:{{ vm.login }}?secret={{::vm.totpsecret}}&issuer=ItsYou.Online">
                             </qrcode>
                             <md-tooltip><span translate='registration.views.registrationform.2fahelp'>Scan this image with a 2-factor authentication app on your phone</span></md-tooltip>
                         </md-input-container>

@@ -21,7 +21,7 @@
         vm.description = "";
         vm.selectedTab = 0;
         vm.validateUsername = $mdUtil.debounce(function () {
-            $scope.signupform.login.$setValidity("duplicate_username", true);
+            $scope.signupform.login.$setValidity("user_exists", true);
             $scope.signupform.login.$setValidity("invalid_username_format", true);
             if ($scope.signupform.login.$valid) {
                 registrationService

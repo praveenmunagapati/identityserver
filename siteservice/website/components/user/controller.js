@@ -600,20 +600,24 @@
 
         function showSetupAuthenticatorApplication(event) {
             $mdDialog.show({
-                controller: ['$scope', '$mdDialog', 'UserService', SetupAuthenticatorController],
+                controller: ['$scope', '$mdDialog', 'UserService', 'username', SetupAuthenticatorController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/user/views/setupTOTPDialog.html',
                 targetEvent: event,
                 fullscreen: $mdMedia('sm') || $mdMedia('xs'),
                 parent: angular.element(document.body),
-                clickOutsideToClose: true
+                clickOutsideToClose: true,
+                locals: {
+                    username: vm.username
+                }
             });
 
-            function SetupAuthenticatorController($scope, $mdDialog, UserService) {
+            function SetupAuthenticatorController($scope, $mdDialog, UserService, username) {
                 var ctrl = this;
                 ctrl.close = close;
                 ctrl.submit = submit;
                 ctrl.resetValidation = resetValidation;
+                ctrl.username = username;
                 vm.config = {};
                 init();
 

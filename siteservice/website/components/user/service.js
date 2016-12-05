@@ -6,7 +6,7 @@
         .service("UserService", UserService)
         .service("NotificationService", NotificationService);
 
-    UserService.$inject = ['$http','$q'];
+    UserService.$inject = ['$http', '$q'];
     NotificationService.$inject = ['$http','$q'];
 
     function NotificationService($http, $q) {

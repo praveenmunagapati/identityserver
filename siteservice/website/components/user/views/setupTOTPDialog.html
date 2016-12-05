@@ -15,7 +15,7 @@
                     the code.</p>
                 <div layout="column" layout-align="center center">
                     <qrcode version="6" error-correction-level="M" size="200"
-                            data="otpauth://totp/ItsYou.online?secret={{ ::ctrl.totpsecret }}&issuer=ItsYou.Online">
+                            data="otpauth://totp/ItsYou.Online:{{ ::ctrl.username }}?secret={{ ::ctrl.totpsecret }}&issuer=ItsYou.Online">
                     </qrcode>
                     <md-input-container flex>
                         <label for="totpcode" translate='user.views.totpdialog.2facode'>2-Factor authentication code</label>
