@@ -1,4 +1,16 @@
 language: go
 
+
+install:
+  - go get -u github.com/jteeuwen/go-bindata/...
+  - go get -u -d github.com/Jumpscale/go-raml
+
 go:
   - 1.6
+  - 1.7
+  - master
+
+script:
+  - cd $GOPATH/src/github.com/Jumpscale/go-raml && ./build.sh && cd -
+  - go generate
+  - go test -v ./...
