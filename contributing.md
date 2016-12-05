@@ -30,29 +30,7 @@ After this execute `go generate` in the root folder of the repository. Commit th
 
 ### Development mode
 
-There are two ways to switch in development mode, manually and by means of a script.
-
-NOTE: Never commit `siteservice/website/packaged` when in development mode.
-
-#### Automaticly
-```
-bash builddev.sh
-```
-
-#####  Manually:
-
-During development it can be easier if the files are served directly, execute go-bindata with the -debug flag:
-```
-go-bindata -debug -pkg assets -prefix assets -o ./packaged/assets/assets.go siteservice/website/assets/...
-go-bindata -debug -pkg thirdpartyassets -prefix thirdpartyassets -o ./packaged/thirdpartyassets/thirdpartyassets.go siteservice/website/thirdpartyassets/...
-go-bindata -debug -pkg components -prefix components -o ./packaged/components/components.go siteservice/website/components/...
-go-bindata -debug -pkg html -o ./packaged/html/html.go siteservice/website/index.html\
- siteservice/website/registration.html siteservice/website/login.html siteservice/website/error.html\
- siteservice/website/apidocumentation.html siteservice/website/emailconfirmation.html \
- siteservice/website/smsconfirmation.html siteservice/website/base.html
-go-bindata -debug -pkg templates -prefix templates -o templates/packaged/templates.go templates/...
-
-```
+To switch to development mode run the script [`builddev.sh`](builddev.sh).
 
 ### Bower dependencies
 

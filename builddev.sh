@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 export PATH=$PATH:$GOPATH/bin
 if ! which go-bindata > /dev/null; then
     echo 'Installing go-bindata'
