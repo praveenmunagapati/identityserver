@@ -1797,16 +1797,19 @@ func (api UsersAPI) GetTwoFAMethods(w http.ResponseWriter, r *http.Request) {
 // GetTOTPSecret is the handler for GET /users/{username}/totp/
 // Gets a new TOTP secret
 func (api UsersAPI) GetTOTPSecret(w http.ResponseWriter, r *http.Request) {
-	response := struct {
-		Totpsecret string `json:"totpsecret"`
-	}{}
 	token, err := totp.NewToken()
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	response.Totpsecret = token.Secret
+	response := struct {
+		Totpsecret string `json:"totpsecret"`
+		TotpIssuer string `json:"totpissuer"`
+	}{
+		Totpsecret: token.Secret,
+		TotpIssuer: totp.GetIssuer(r),
+	}
 	json.NewEncoder(w).Encode(response)
 	w.WriteHeader(http.StatusOK)
 }

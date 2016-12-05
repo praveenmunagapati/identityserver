@@ -14,9 +14,8 @@
                 <p style="max-width:300px;" translate='user.views.totpdialog.qrcode'>Scan this QR code with a 2-factor authentication app on your phone and enter
                     the code.</p>
                 <div layout="column" layout-align="center center">
-                    <qrcode version="6" error-correction-level="M" size="200"
-                            data="otpauth://totp/ItsYou.Online:{{ ::ctrl.username }}?secret={{ ::ctrl.totpsecret }}&issuer=ItsYou.Online">
-                    </qrcode>
+                    <qrcode version="8" error-correction-level="M" size="200"
+                            data="{{ ctrl.getQrCodeData() }}"></qrcode>
                     <md-input-container flex>
                         <label for="totpcode" translate='user.views.totpdialog.2facode'>2-Factor authentication code</label>
                         <input ng-model="ctrl.totpcode" md-maxlength="6" minlength="6" id="totpcode" md-autofocus="true"

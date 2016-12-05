@@ -1,14 +1,11 @@
 (function () {
     'use strict';
     angular.module('loginApp')
-        .controller('loginController', ['$http', '$window', '$scope', '$rootScope', '$interval', 'configService', 'LoginService', loginController]);
+        .controller('loginController', ['$http', '$window', '$scope', '$rootScope', '$interval', 'LoginService', loginController]);
 
-    function loginController($http, $window, $scope, $rootScope, $interval, configService, LoginService) {
+    function loginController($http, $window, $scope, $rootScope, $interval, LoginService) {
         var vm = this;
         var urlParams = URI($window.location.href).search(true);
-        configService.getConfig(function (config) {
-            vm.totpsecret = config.totpsecret;
-        });
         vm.submit = submit;
         vm.clearValidation = clearValidation;
         vm.validateUsername = validateUsername;

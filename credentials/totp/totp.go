@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	"github.com/hgfischer/go-otp"
+	"net/http"
+	"strings"
 )
 
 const tokenLength = sha1.Size
@@ -70,4 +72,14 @@ func generateRandomBytes(length int) ([]byte, error) {
 		return b, err
 	}
 	return b, nil
+}
+
+func GetIssuer(r *http.Request) string {
+	totpIssuer := "It's You Online"
+	if strings.Contains(r.Host, "staging") {
+		totpIssuer += " staging"
+	} else if strings.Contains(r.Host, "dev") {
+		totpIssuer += " dev"
+	}
+	return totpIssuer
 }

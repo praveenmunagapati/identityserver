@@ -618,14 +618,20 @@
                 ctrl.submit = submit;
                 ctrl.resetValidation = resetValidation;
                 ctrl.username = username;
-                vm.config = {};
+                ctrl.getQrCodeData = getQrCodeData;
                 init();
 
                 function init() {
                     UserService.getAuthenticatorSecret(vm.username)
                         .then(function (data) {
                             ctrl.totpsecret = data.totpsecret;
+                            ctrl.totpissuer = encodeURIComponent(data.totpissuer);
                         });
+                }
+
+
+                function getQrCodeData() {
+                    return 'otpauth://totp/' + ctrl.totpissuer + ':' + vm.username + '?secret=' + ctrl.totpsecret + '&issuer=' + ctrl.totpissuer;
                 }
 
                 function close() {

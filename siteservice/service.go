@@ -236,11 +236,14 @@ func (service *Service) GetConfig(w http.ResponseWriter, request *http.Request) 
 	totpsession.Values["secret"] = token.Secret
 	sessions.Save(request, w)
 	data := struct {
+		TotpIssuer       string `json:"totpissuer"`
 		TotpSecret       string `json:"totpsecret"`
 		GithubClientId   string `json:"githubclientid"`
 		FacebookClientId string `json:"facebookclientid"`
-	}{}
-	data.TotpSecret = token.Secret
+	}{
+		TotpIssuer: totp.GetIssuer(request),
+		TotpSecret: token.Secret,
+	}
 	data.GithubClientId, _ = identityservice.GetOauthClientID("github")
 	data.FacebookClientId, _ = identityservice.GetOauthClientID("facebook")
 	json.NewEncoder(w).Encode(&data)

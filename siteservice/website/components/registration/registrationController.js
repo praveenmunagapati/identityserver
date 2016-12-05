@@ -10,10 +10,12 @@
         var vm = this;
         configService.getConfig(function (config) {
             vm.totpsecret = config.totpsecret;
+            vm.totpissuer = encodeURIComponent(config.totpissuer);
         });
         vm.register = register;
         vm.resetValidation = resetValidation;
         vm.basicInfoValid = basicInfoValid;
+        vm.getQrCodeData = getQrCodeData;
         vm.goToNextTabIfValid = goToNextTabIfValid;
         vm.externalSite = URI($window.location.href).search(true).client_id;
         vm.logo = "";
@@ -46,6 +48,10 @@
                 window.addEventListener('orientationchange', resizeLogo, false);
                 loadDescription();
             }
+        }
+
+        function getQrCodeData() {
+            return 'otpauth://totp/' + vm.totpissuer + ':' + vm.login + '?secret=' + vm.totpsecret + '&issuer=' + vm.totpissuer;
         }
 
         // Load the correct description after the user changes language
@@ -139,9 +145,11 @@
                     $scope.signupform[prop].$setValidity("invalid_totpcode", true);
                     break;
                 case 'twoFAMethod':
-                    $scope.signupform.totpcode.$setValidity("totpcode", true);
-                    $scope.signupform.phonenumber.$setValidity("invalid_phonenumber", true);
-                    $scope.signupform.phonenumber.$setValidity("pattern", true);
+                    if ($scope.signupform.totpcode) {
+                        $scope.signupform.totpcode.$setValidity("totpcode", true);
+                        $scope.signupform.phonenumber.$setValidity("invalid_phonenumber", true);
+                        $scope.signupform.phonenumber.$setValidity("pattern", true);
+                    }
                     break;
             }
         }

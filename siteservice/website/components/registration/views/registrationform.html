@@ -96,8 +96,7 @@
                             </div>
                         </md-input-container>
                         <md-input-container ng-if="vm.twoFAMethod === 'totp'">
-                            <qrcode version="6" error-correction-level="M" size="200"
-                                    data="otpauth://totp/ItsYou.Online:{{ vm.login }}?secret={{::vm.totpsecret}}&issuer=ItsYou.Online">
+                            <qrcode version="8" error-correction-level="M" size="200" data="{{ vm.getQrCodeData() }}">
                             </qrcode>
                             <md-tooltip><span translate='registration.views.registrationform.2fahelp'>Scan this image with a 2-factor authentication app on your phone</span></md-tooltip>
                         </md-input-container>
