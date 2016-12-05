@@ -122,7 +122,6 @@
                 "organizationmember": "Organizatie lid",
                 "editorganizationmember": "Bewerk organizatie lid",
                 "pendinginvitations": "Openstaande uitnodigingen",
-                "invitedon": "Uitgenodigt op {{timestamp}}",
                 "invite": "Nodig iemand uit",
                 "invitehelp": "Nodig iemand uit om lid te worden van {{organization}}",
                 "addorganization": "Voeg organizatie toe",
@@ -211,6 +210,8 @@
             "missinguserinfo": "Deze gebruiker heeft (een deel van) de gevraagde informatie niet gedeeld:<br />"
         }
     },
+    "invited_on_date": "Uitgenodigt op {{timestamp}}",
+    "remove_invitation": "Verwijder uitnodiging",
     "owner": "Eigenaar",
     "owners": "Eigenaars",
     "phone_number": "Telefoonnummer",

@@ -86,7 +86,7 @@
                                               aria-label="Invite">
                                     <div class="md-list-item-text">
                                         <h3 ng-bind="::invite.user"></h3>
-                                        <h4 ng-if="::invite.created" translate='organization.views.detail.invitedon'
+                                        <h4 ng-if="::invite.created" translate="invited_on_date"
                                             translate-value-timestamp="{{invite.created | date: 'd MMM y H:mm:ss'}}">
                                            Invited on <span ng-bind="::invite.created | date: 'd MMM y H:mm:ss'"></span></h4>
                                         <p>
@@ -94,6 +94,10 @@
                                             <span ng-if="invite.role === 'owner'" translate='owner'>Owner</span>
                                         </p>
                                     </div>
+                                    <md-button class="md-secondary md-warn"
+                                               ng-click="vm.removeInvitation($event, invite)"
+                                               translate="remove_invitation">Remove invitation
+                                    </md-button>
                                 </md-list-item>
                             </md-list>
                             <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)"

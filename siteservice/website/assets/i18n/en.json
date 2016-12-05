@@ -123,7 +123,6 @@
                 "organizationmember": "Organization member",
                 "editorganizationmember": "Edit organization member",
                 "pendinginvitations": "Pending invitations",
-                "invitedon": "Invited on {{timestamp}}",
                 "invite": "Invite someone",
                 "invitehelp": "Invite someone to join {{organization}}",
                 "addorganization": "Add organization",
@@ -212,6 +211,8 @@
             "missinguserinfo": "This user hasn't shared some required information:<br />"
         }
     },
+    "invited_on_date": "Invited on {{timestamp}}",
+    "remove_invitation": "Remove invitation",
     "owner": "Owner",
     "owners": "Owners",
     "phone_number": "Phone number",

@@ -42,6 +42,7 @@
         vm.showMissingScopesDialog = showMissingScopesDialog;
         vm.showDescriptionDialog = showDescriptionDialog;
         vm.getScopeTranslation = getScopeTranslation;
+        vm.removeInvitation = removeInvitation;
 
         activate();
 
@@ -525,6 +526,21 @@
 
         function getScopeTranslation(scope) {
             return ScopeService.parseScope(scope);
+        }
+
+        function removeInvitation(event, invite) {
+            var role = invite.role,
+                searchString = invite.user;
+            OrganizationService.removeInvite(globalid, role, searchString).then(removeFromView, function (response) {
+                if (response.status === 404) {
+                    removeFromView();
+                } else {
+                    $window.location.href = 'error' + response.status;
+                }
+            });
+            function removeFromView() {
+                vm.invitations.splice(vm.invitations.indexOf(invite), 1);
+            }
         }
     }
 

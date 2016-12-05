@@ -18,6 +18,7 @@
             create: create,
             get: get,
             invite: invite,
+            removeInvite: removeInvite,
             addOrganization: addOrganization,
             getUserOrganizations: getUserOrganizations,
             getInvitations: getInvitations,
@@ -68,44 +69,29 @@
                 url += '/' + encodeURIComponent(parentOrganization) + '/suborganizations';
                 name = parentOrganization + '.' + name;
             }
-            return $http.post(url, {globalid:name,dns:dns,owners:[owner]}).then(
-                function(response) {
-                    return response.data;
-                },
-                function(reason){
-                    return $q.reject(reason);
-                }
-            );
+            var data = {
+                globalid: name,
+                dns: dns,
+                owners: [owner]
+            };
+            return genericHttpCall(POST, url, data);
         }
 
         function get(globalid) {
             var url = apiURL + '/' + encodeURIComponent(globalid);
 
-            return $http
-                .get(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(GET, url);
         }
 
         function invite(globalid, searchString, role) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + encodeURIComponent(role);
+            var data = {searchstring: searchString};
+            return genericHttpCall(POST, url, data);
+        }
 
-            return $http
-                .post(url, {searchstring: searchString})
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+        function removeInvite(globalid, role, searchString) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + role + 's/invites/' + encodeURIComponent(searchString);
+            return genericHttpCall(DELETE, url);
         }
 
         function addOrganization(globalid, searchString, role) {
@@ -117,136 +103,48 @@
             } else {
                 data = {orgowner: searchString};
             }
-            return $http
-                .post(url, data)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(POST, url, data);
         }
 
         function getUserOrganizations(username) {
             var url = '/api/users/' + encodeURIComponent(username) + '/organizations';
-
-            return $http
-                .get(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(GET, url);
         }
 
         function getInvitations(globalid){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/invitations';
-
-            return $http
-                .get(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
-
+            return genericHttpCall(GET, url);
         }
 
         function getAPIKeyLabels(globalid){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys';
-
-            return $http
-                .get(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(GET, url);
         }
 
         function createAPIKey(globalid, apiKey){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys';
-
-            return $http
-                .post(url, apiKey)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(POST, url, apiKey);
         }
 
         function updateAPIKey(globalid, oldLabel, newLabel, apikey){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys/' + encodeURIComponent(oldLabel);
             apikey.label = newLabel;
-            return $http
-                .put(url, apikey)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(PUT, url, apikey);
         }
 
         function deleteAPIKey(globalid, label){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys/' + encodeURIComponent(label);
-
-            return $http
-                .delete(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(DELETE, url);
         }
 
         function getAPIKey(globalid, label){
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/apikeys/' + encodeURIComponent(label);
-
-            return $http
-                .get(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(GET, url);
         }
 
         function getOrganizationTree(globalid) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/tree';
-            return $http
-                .get(url)
-                .then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            return genericHttpCall(GET, url);
         }
 
         function getUsers(globalId) {
@@ -256,32 +154,18 @@
 
         function createDNS(globalid, dnsName) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns';
-
-            return $http
-                .post(url, {name: dnsName})
-                .then(
-                    function (response) {
-                        return response.data;
-                    },
-                    function (reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var data = {
+                name: dnsName
+            };
+            return genericHttpCall(POST, url, data);
         }
 
         function updateDNS(globalid, oldDnsName, newDnsName) {
             var url = apiURL + '/' + encodeURIComponent(globalid) + '/dns/' + encodeURIComponent(oldDnsName);
-
-            return $http
-                .put(url, {name: newDnsName})
-                .then(
-                    function (response) {
-                        return response.data;
-                    },
-                    function (reason) {
-                        return $q.reject(reason);
-                    }
-                );
+            var data = {
+                name: newDnsName
+            };
+            return genericHttpCall(PUT, url, data);
         }
 
         function deleteDNS(globalid, dnsName) {

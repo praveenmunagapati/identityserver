@@ -118,3 +118,16 @@ func (o *InvitationManager) SetAcceptedByCode(code string) error {
 	}
 	return o.collection.Update(qry, update)
 }
+
+// Remove removes an invitation
+func (o *InvitationManager) Remove(globalID string, searchString string) error {
+	qry := bson.M{
+		"organization": globalID,
+		"$or": []bson.M{
+			{"user": searchString},
+			{"emailaddress": searchString},
+			{"phonenumber": searchString},
+		},
+	}
+	return o.collection.Remove(qry)
+}

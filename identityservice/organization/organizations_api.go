@@ -381,6 +381,35 @@ func (api OrganizationsAPI) AddOrganizationMember(w http.ResponseWriter, r *http
 	api.inviteUser(w, r, invitations.RoleMember)
 }
 
+// RemoveOrganizationMemberInvite Assign a member to organization
+// It is handler for DELETE /organizations/{globalid}/members/{searchstring}
+func (api OrganizationsAPI) RemoveOrganizationMemberInvite(w http.ResponseWriter, r *http.Request) {
+	api.removeInvite(w, r)
+}
+
+// RemoveOrganizationOwnerInvite Assign a member to organization
+// It is handler for DELETE /organizations/{globalid}/owners/{searchstring}
+func (api OrganizationsAPI) RemoveOrganizationOwnerInvite(w http.ResponseWriter, r *http.Request) {
+	api.removeInvite(w, r)
+}
+
+func (api OrganizationsAPI) removeInvite(w http.ResponseWriter, r *http.Request) {
+	globalID := mux.Vars(r)["globalid"]
+	searchString := mux.Vars(r)["searchstring"]
+	invitationMgr := invitations.NewInvitationManager(r)
+	err := invitationMgr.Remove(globalID, searchString)
+	if err == mgo.ErrNotFound {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Error("Error while remove invite: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	var membership Membership
