@@ -14,6 +14,8 @@ type SessionService interface {
 	GetLoggedInUser(request *http.Request, w http.ResponseWriter) (username string, err error)
 	//SetAPIAccessToken sets the api access token for this session
 	SetAPIAccessToken(w http.ResponseWriter, token string) (err error)
+	//Logout logs out the user and redirect to the supplied url
+	LogoutAndRedirect(w http.ResponseWriter, request *http.Request, url string)
 }
 
 //IdentityService provides some basic knowledge about authorizations required for the oauthservice

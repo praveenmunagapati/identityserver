@@ -2,6 +2,9 @@ package siteservice
 
 import (
 	"bytes"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/itsyouonline/identityserver/communication"
@@ -12,10 +15,9 @@ import (
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/thirdpartyassets"
 	"github.com/itsyouonline/identityserver/specifications"
 	"github.com/itsyouonline/identityserver/validation"
-	"net/http"
-	"strconv"
 
 	"encoding/json"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	"github.com/itsyouonline/identityserver/identityservice"
@@ -158,9 +160,13 @@ func (service *Service) HomePage(w http.ResponseWriter, request *http.Request) {
 //Logout logs out the user and redirect to the homepage
 //TODO: csrf protection, really important here!
 func (service *Service) Logout(w http.ResponseWriter, request *http.Request) {
+	service.LogoutAndRedirect(w, request, "")
+}
+
+func (service *Service) LogoutAndRedirect(w http.ResponseWriter, request *http.Request, url string) {
 	service.SetLoggedInUser(w, request, "")
 	sessions.Save(request, w)
-	http.Redirect(w, request, "", http.StatusFound)
+	http.Redirect(w, request, url, http.StatusFound)
 }
 
 //ErrorPage shows the errorpage

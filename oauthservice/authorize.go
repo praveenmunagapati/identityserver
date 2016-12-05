@@ -216,8 +216,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
-	http.Redirect(w, request, redirectURI, http.StatusFound)
+	service.sessionService.LogoutAndRedirect(w, request, redirectURI)
 
 }
 
