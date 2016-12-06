@@ -223,7 +223,7 @@
     "phone_number": "Telefoonnummer",
     "phonenumber": "Telefoonnummer",
     "phonenumberpattern": "Ongeldig telefoonnummer. Telefoonnummer moet starten met de landcode. Voorbeeld: +32471202020",
-    "please_verify_email_x": "Please verify the email address {{ email }} before continuing.",
+    "please_verify_email_x": "Gelieve het email address {{ email }} te valideren voor door te gaan.",
     "public_key": "Public key",
     "register": "Registreer",
     "registration": {
@@ -463,5 +463,5 @@
             "no": "Nee"
         }
     },
-    "verify": "Verify"
+    "verify": "Valideer"
 }
