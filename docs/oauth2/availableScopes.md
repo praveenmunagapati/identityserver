@@ -67,4 +67,4 @@ The `:write` extension gives an application full access(read, update, delete) to
 
 ## `user:owneroff:email:<emailaddress>`
 
-Users have to proof they are owner of this email address before they can complete the authorization flow.
+Users need to share this verified email address to complete the authorization flow.
