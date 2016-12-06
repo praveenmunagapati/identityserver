@@ -73,6 +73,7 @@
     "member_of_organization": "Member of organization",
     "members": "Members",
     "min_x_characters_required": "At least {{length}} characters are required.",
+    "oauth_default_description": "Dear {{externalsite}} customer, We make use of the independant ItsYou.Online identity management system to highly protect the access to your {{externalsite}} products. Please login to your ItsYou.Online account to complete the {{externalsite}} onboarding process.",
     "ok": "OK",
     "organization": {
         "views": {

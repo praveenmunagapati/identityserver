@@ -41,11 +41,11 @@
                 "loginhelp": "Je kan aanmelden met je gebruikersnaam, bevestigde email of telefoonnummer.",
                 "password": "Wachtwoord",
                 "invalidcredentials": "Ongeldige credentials",
-                "forgotpassword": "Wacthwoord vergeten?",
+                "forgotpassword": "Wachtwoord vergeten?",
                 "loginbtn": "Aanmelden"
             },
             "resetpassword": {
-                "forgotpassword": "Wacthwoord vergeten",
+                "forgotpassword": "Wachtwoord vergeten",
                 "newpassword": "Nieuw wachtwoord",
                 "newpasswordminlength": "Er zijn minstens 6 tekens nodig",
                 "confirmnewpass": "Bevestig nieuw wachtwoord",
@@ -53,7 +53,7 @@
                 "submit": "Dien in"
             },
             "twofactorauthentication": {
-                "login": "Aamelden",
+                "login": "Aanmelden",
                 "method": "Authenticatie methode",
                 "code": "Code",
                 "invalidcode": "Ongeldige code",
@@ -72,6 +72,7 @@
     "member_of_organization": "Lid van organizatie",
     "members": "Leden",
     "min_x_characters_required": "Er zijn minstens {{ length }} karakters nodig.",
+    "oauth_default_description": "Beste {{externalsite}} klant, Wij maken gebruik van het onafhankelijke ItsYou.Online identity management system om de toegang tot je {{externalsite}} producten ten zeerste te beschermen. Gelieve aan te melden bij je ItsYou.Online account om de {{externalsite}} onboarding te voltooien.",
     "ok": "OK",
     "organization": {
         "views": {

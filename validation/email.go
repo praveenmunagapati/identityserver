@@ -126,7 +126,7 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 		return
 	}
 
-	passwordreseturl := fmt.Sprintf("https://%s/login#/resetpassword/%s&l=%s", request.Host, url.QueryEscape(token.Token), langKey)
+	passwordreseturl := fmt.Sprintf("https://%s/login?lang=%s#/resetpassword/%s", request.Host, langKey, url.QueryEscape(token.Token))
 	templateParameters := EmailWithButtonTemplateParams{
 		UrlCaption: translations.Passwordreset.Urlcaption,
 		Url:        passwordreseturl,
