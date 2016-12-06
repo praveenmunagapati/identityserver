@@ -51,3 +51,7 @@ In the body of the request, we specify the new duration, which we will set to 86
 }
 ```
 Also note that an access token will have to be specified, either by appending it to the request url, or by setting it in the Authorization header.
+
+### Show the register screen instead of the login screen
+
+If you are think the user has no account with ItsYou.online yet, you can supply the `prefer=register` queryparameter in the oauth flow. This will show the user the register screen instead of the login screen if we do do not detect a previous login (this is registered in the local storage).

@@ -6,9 +6,6 @@
 
 * `user:admin`
 
-### TODO: define the available scopes in case a of group membership,....
-
-
 ## /organizations/{globalid}
 
 ### User is owner of the organization
@@ -18,17 +15,6 @@
 ### User is member of the organization
 
 * `organization:member`
-
-### TODO: other cases
-
-## /companies/{globalid}
-
-### TODO
-
-## /contracts/{contractid}
-
-## TODO
-
 
 # Scopes that can be requested by an oauth client
 
@@ -68,3 +54,4 @@ The `:write` extension gives an application full access(read, update, delete) to
 ## `user:owneroff:email:<emailaddress>`
 
 Users need to share this verified email address to complete the authorization flow.
+If a user registers during an oauth flow where this scope is requested, the email address is automatically filled in the registration screen.
