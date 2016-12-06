@@ -7,7 +7,8 @@
             registrationController]);
 
     function registrationController($scope, $window, $cookies, $mdUtil, $rootScope, configService, registrationService) {
-        var vm = this;
+        var vm = this,
+            queryParams = URI($window.location.href).search(true);
         configService.getConfig(function (config) {
             vm.totpsecret = config.totpsecret;
             vm.totpissuer = encodeURIComponent(config.totpissuer);
@@ -17,7 +18,7 @@
         vm.basicInfoValid = basicInfoValid;
         vm.getQrCodeData = getQrCodeData;
         vm.goToNextTabIfValid = goToNextTabIfValid;
-        vm.externalSite = URI($window.location.href).search(true).client_id;
+        vm.externalSite = queryParams.client_id;
         $rootScope.loginUrl = '/login' + $window.location.search;
         vm.logo = "";
         vm.twoFAMethod = 'sms';
@@ -38,6 +39,16 @@
         init();
 
         function init() {
+            if (queryParams.scope.includes('ownerof:email')) {
+                var scopes = queryParams.scope.split(',');
+                for (var i = 0; i < scopes.length; i++) {
+                    if (scopes[i].includes('ownerof:email')) {
+                        var parts = scopes[i].split(':');
+                        vm.email = parts[3];
+                        break;
+                    }
+                }
+            }
             if (vm.externalSite) {
                 registrationService.getLogo(vm.externalSite).then(
                     function(data) {
