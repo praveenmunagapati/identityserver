@@ -73,7 +73,7 @@
                     <a ng-href="{{ $root.registrationUrl || 'register' }}"><i class="fa fa-user-plus"></i><span translate='shared.directives.header.register'>Register</span></a>
                 </div>
                 <div class="sign-wrap" ng-if="::!$root.user && header_login">
-                    <a href="login"><i class="fa fa-sign-in"></i><span translate='shared.directives.header.signin'>Sign in</span></a>
+                    <a ng-href="{{ $root.loginUrl || 'login' }}"><i class="fa fa-sign-in"></i><span translate='shared.directives.header.signin'>Sign in</span></a>
                 </div>
             </div>
         </div>

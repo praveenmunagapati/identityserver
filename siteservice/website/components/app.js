@@ -9,6 +9,7 @@
         .config(['$httpProvider', httpConfig])
         .config(['$routeProvider', routeConfig])
         .config(['$translateProvider', translateConfig])
+        .config([init])
         .factory('authenticationInterceptor', ['$q', '$window', authenticationInterceptor])
         .directive('pagetitle', ['$rootScope', '$timeout', pagetitle])
         .run(['$route', '$cookies', '$rootScope', '$location', runFunction]);
@@ -148,6 +149,10 @@
         $translateProvider.useMissingTranslationHandlerLog();
         $translateProvider.fallbackLanguage('en');
         $translateProvider.use('en');
+    }
+
+    function init() {
+        localStorage.setItem('hasLoggedIn', true);
     }
 
     function pagetitle($rootScope, $timeout) {

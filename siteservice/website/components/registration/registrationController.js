@@ -18,6 +18,7 @@
         vm.getQrCodeData = getQrCodeData;
         vm.goToNextTabIfValid = goToNextTabIfValid;
         vm.externalSite = URI($window.location.href).search(true).client_id;
+        $rootScope.loginUrl = '/login' + $window.location.search;
         vm.logo = "";
         vm.twoFAMethod = 'sms';
         vm.description = "";

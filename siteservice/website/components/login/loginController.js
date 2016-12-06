@@ -23,6 +23,7 @@
         activate();
 
         function activate() {
+            requestRegister();
             if (vm.externalSite) {
                 LoginService.getLogo(vm.externalSite).then(
                     function(data) {
@@ -175,6 +176,24 @@
                 logoArea.height = 240;
             }
             renderLogo();
+        }
+
+        // Check if the 'prefer' queryparam is set to register. If so, and there has been no previous login on this device
+        // according to the localStorage, remove the prefer param and redirect to the register page.
+        function requestRegister() {
+            if (localStorage.getItem('hasLoggedIn')) {
+                return;
+            }
+            if (urlParams.prefer === "register") {
+                delete urlParams.prefer;
+                var url = "/register?";
+                // Manually reconstruct the URL because angular doesn't seem to be able to delete just 1 queryparam at the moment.
+                angular.forEach(urlParams, function(value, key) {
+                    url = url + key + "=" + value + "&";
+                });
+                url = url.slice(0, -1);
+                $window.location.href = url;
+            }
         }
     }
 })();
