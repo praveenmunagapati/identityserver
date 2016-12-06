@@ -68,7 +68,7 @@
         vm.showChangePasswordDialog = showChangePasswordDialog;
         vm.showEditNameDialog = showEditNameDialog;
         vm.verifyPhone = UserDialogService.verifyPhone;
-        vm.verifyEmailAddress = verifyEmailAddress;
+        vm.verifyEmailAddress = UserDialogService.verifyEmailAddress;
         vm.showAPIKeyDialog = showAPIKeyDialog;
         vm.showPublicKeyDetail = UserDialogService.publicKey;
         vm.createOrganization = UserDialogService.createOrganization;
@@ -118,7 +118,7 @@
                                     msg: translations['user.controller.verifiedemails'],
                                     status: 'pending'
                                 });
-                            })
+                            });
                         }
                         updatePendingNotificationsCount();
                         vm.loaded.notifications = true;
@@ -464,35 +464,6 @@
                     updateName: UserService.updateName
                 }
             });
-        }
-
-        function verifyEmailAddress(event, email) {
-            UserService.sendEmailAddressVerification(vm.username, email.label)
-                .then(function () {
-                    $translate(['user.controller.emailsent', 'user.controller.emailsentto', 'user.controller.close'], {email: email.emailaddress}).then(function(translations){
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title(translations['user.controller.emailsent'])
-                                .textContent(translations['user.controller.emailsentto'])
-                                .ariaLabel(translations['user.controller.emailsent'])
-                                .ok(translations['user.controller.close'])
-                                .targetEvent(event)
-                        );
-                    })
-                }, function () {
-                    $translate(['user.controller.error', 'user.controller.couldnotsend', 'user.controller.errorwhilesending', 'user.controller.close']).then(function(translations){
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title(translations['user.controller.error'])
-                                .textContent(translations['user.controller.couldnotsend'])
-                                .ariaLabel(translations['user.controller.errorwhilesending'])
-                                .ok(translations['user.controller.close'])
-                                .targetEvent(event)
-                        );
-                    })
-                });
         }
 
         function showAPIKeyDialog(event, APIKey) {

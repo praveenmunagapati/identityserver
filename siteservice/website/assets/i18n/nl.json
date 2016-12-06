@@ -1,20 +1,26 @@
 {
+    "accept": "Aanvaardt",
     "add": "Voeg toe",
     "address": "Adres",
     "bank_account": "Bankrekening",
     "cancel": "Annuleer",
     "change": "Wijzig",
+    "close": "Sluiten",
     "closedialog": "Sluit dialoogventer",
     "create": "Maak",
     "delete": "Verwijder",
     "digital_wallet_address": "Digital wallet adres",
     "email_address": "Email adres",
+    "error": "Fout",
     "facebook_account": "Facebook account",
     "full_access": "Volledige toegang",
     "full_name": "Volledige naam",
     "github_account": "Github account",
+    "invalid_email_address": "Ongeldig email adres",
     "invalid_label": "Ongeldig label",
+    "invalid_username": "Ongeldige gebruikersnaam. Enkel tekens a-z, 0-9, streepjes, underscores en spaties zijn toegelaten",
     "invalidphonenumber": "Ongeldig telefoonnummer",
+    "invited_on_date": "Uitgenodigt op {{timestamp}}",
     "label": "Label",
     "labelduplicate": "Dit label wordt al gebruikt",
     "labelmaxlength": "Het label kan niet langer zijn dan 50 karakters",
@@ -210,16 +216,16 @@
             "missinguserinfo": "Deze gebruiker heeft (een deel van) de gevraagde informatie niet gedeeld:<br />"
         }
     },
-    "invited_on_date": "Uitgenodigt op {{timestamp}}",
-    "remove_invitation": "Verwijder uitnodiging",
     "owner": "Eigenaar",
+    "owner_of_email": "Eigenaar van email address",
+    "owner_of_email_x": "Eigenaar van email address {{ email }}",
     "owners": "Eigenaars",
     "phone_number": "Telefoonnummer",
     "phonenumber": "Telefoonnummer",
     "phonenumberpattern": "Ongeldig telefoonnummer. Telefoonnummer moet starten met de landcode. Voorbeeld: +32471202020",
+    "please_verify_email_x": "Please verify the email address {{ email }} before continuing.",
     "public_key": "Public key",
     "register": "Registreer",
-    "invalid_username": "Ongeldige gebruikersnaam. Enkel tekens a-z, 0-9, streepjes, underscores en spaties zijn toegelaten",
     "registration": {
         "views": {
             "registrationform": {
@@ -227,7 +233,6 @@
                 "username": "gebruikersnaam",
                 "usernametaken": "Deze gebruikersnaam is al bezet",
                 "email": "Email",
-                "invalidemail": "Ongeldig email adres",
                 "password": "Wachtwoord",
                 "invalidpassword": "Wachtwoord moet minstens 6 tekens bevatten.",
                 "confirmpassword": "Wachtwoord bevestigen",
@@ -255,6 +260,8 @@
             }
         }
     },
+    "reject": "Weiger",
+    "remove_invitation": "Verwijder uitnodiging",
     "role": "Rol",
     "save": "Sla op",
     "shared": {
@@ -403,7 +410,6 @@
                 "profile": "Profiel",
                 "emailaddresses": "Email adressen",
                 "verified": "Bevestigd",
-                "verify": "Bevestig",
                 "phonenumbers": "Telefoonnummers",
                 "nofacebook": "Je hebt je Facebook account nog niet toegevoegd.",
                 "nogithub": "Je hebt je Github account nog niet toegevoegd.",
@@ -457,6 +463,5 @@
             "no": "Nee"
         }
     },
-    "reject": "Weiger",
-    "accept": "Aanvaardt"
+    "verify": "Verify"
 }

@@ -34,10 +34,11 @@
                 Cancel
             </md-button>
             <span flex></span>
-            <md-button class="md-primary" type="submit" ng-if="::vm.isNew" ng-click="save()" translate='user.views.authorizationdialog.grant'>
+            <md-button class="md-primary" type="submit" ng-if="::vm.isNew" ng-click="save($event)"
+                       translate='user.views.authorizationdialog.grant'>
                 Grant authorization
             </md-button>
-            <md-button class="md-primary" type="submit" ng-if="::!vm.isNew" ng-click="save()" translate='save'>
+            <md-button class="md-primary" type="submit" ng-if="::!vm.isNew" ng-click="save($event)" translate='save'>
                 Save
             </md-button>
         </md-dialog-actions>

@@ -1,21 +1,27 @@
 {
+    "accept": "Accept",
     "add": "Add",
     "address": "Address",
     "bank_account": "Bank account",
     "cancel": "Cancel",
     "change": "Change",
+    "close": "Close",
     "closedialog": "Close dialog",
     "create": "Create",
     "delete": "Delete",
     "digital_wallet_address": "Digital wallet address",
     "email_address": "Email address",
+    "error": "Error",
     "facebook_account": "Facebook account",
     "field_required": "This field is required.",
     "full_access": "Full access",
     "full_name": "Full name",
     "github_account": "Github account",
+    "invalid_email_address": "Invalid email address",
     "invalid_label": "Invalid label",
+    "invalid_username": "Invalid username. Only characters a-z, 0-9, dashes, underscores and spaces are allowed",
     "invalidphonenumber": "Invalid phone number",
+    "invited_on_date": "Invited on {{timestamp}}",
     "label": "Label",
     "labelduplicate": "This label is already used",
     "labelmaxlength": "The label cannot be longer than 50 characters",
@@ -211,15 +217,15 @@
             "missinguserinfo": "This user hasn't shared some required information:<br />"
         }
     },
-    "invited_on_date": "Invited on {{timestamp}}",
-    "remove_invitation": "Remove invitation",
     "owner": "Owner",
+    "owner_of_email": "Owner of email address",
+    "owner_of_email_x": "Owner of email address {{ email }}",
     "owners": "Owners",
     "phone_number": "Phone number",
     "phonenumberpattern": "Invalid phone number. Phone number must start with the country code. Example: +32471202020",
+    "please_verify_email_x": "Please verify the email address {{ email }} before continuing.",
     "public_key": "Public key",
     "register": "Register",
-    "invalid_username": "Invalid username. Only characters a-z, 0-9, dashes, underscores and spaces are allowed",
     "registration": {
         "views": {
             "registrationform": {
@@ -227,7 +233,6 @@
                 "username": "Username",
                 "usernametaken": "This username has already been taken",
                 "email": "Email",
-                "invalidemail": "Invalid email address",
                 "password": "Password",
                 "invalidpassword": "Password should contain at least 6 characters.",
                 "confirmpassword": "Password confirmation",
@@ -255,6 +260,8 @@
             }
         }
     },
+    "reject": "Reject",
+    "remove_invitation": "Remove invitation",
     "role": "Role",
     "save": "Save",
     "shared": {
@@ -403,7 +410,6 @@
                 "profile": "Profile",
                 "emailaddresses": "Email addresses",
                 "verified": "Verified",
-                "verify": "Verify",
                 "phonenumbers": "Phone numbers",
                 "nofacebook": "You haven't added your Facebook account yet.",
                 "nogithub": "You haven't added your Github account yet.",
@@ -457,6 +463,5 @@
             "no": "No"
         }
     },
-    "reject": "Reject",
-    "accept": "Accept"
+    "verify": "Verify"
 }

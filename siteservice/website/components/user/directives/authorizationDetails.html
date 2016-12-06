@@ -73,7 +73,8 @@
         </p>
         <md-checkbox class="md-secondary" ng-model="requested.organizations[label]"></md-checkbox>
     </md-list-item>
-    <md-list-item ng-repeat="auth in authorizations.emailaddresses" layout="column" layout-gt-sm="row"
+    <md-list-item ng-repeat="auth in authorizations.emailaddresses track by auth.requestedlabel" layout="column"
+                  layout-gt-sm="row"
                   layout-align="space-between start" layout-align-gt-sm="start center">
         <p>
             <i class="fa fa-at">
@@ -98,7 +99,8 @@
             </md-select>
         </md-input-container>
     </md-list-item>
-    <md-list-item ng-repeat="auth in authorizations.phonenumbers" layout="column" layout-gt-sm="row"
+    <md-list-item ng-repeat="auth in authorizations.phonenumbers track by auth.requestedlabel" layout="column"
+                  layout-gt-sm="row"
                   layout-align="center start" layout-align-gt-sm="start center">
         <p>
             <i class="fa fa-phone">
@@ -123,7 +125,8 @@
             </md-select>
         </md-input-container>
     </md-list-item>
-    <md-list-item ng-repeat="auth in authorizations.addresses" layout="column" layout-gt-sm="row"
+    <md-list-item ng-repeat="auth in authorizations.addresses track by auth.requestedlabel" layout="column"
+                  layout-gt-sm="row"
                   layout-align="center start" layout-align-gt-sm="start center">
         <p>
             <i class="fa fa-envelope-o">
@@ -146,7 +149,8 @@
             </md-select>
         </md-input-container>
     </md-list-item>
-    <md-list-item ng-repeat="auth in authorizations.bankaccounts" layout="column" layout-gt-sm="row"
+    <md-list-item ng-repeat="auth in authorizations.bankaccounts track by auth.requestedlabel" layout="column"
+                  layout-gt-sm="row"
                   layout-align="center start" layout-align-gt-sm="start center">
         <p><i class="fa fa-bank">
             <md-tooltip><span translate="bank_account">Bank account</span></md-tooltip>
@@ -171,7 +175,8 @@
             </md-select>
         </md-input-container>
     </md-list-item>
-    <md-list-item ng-repeat="auth in authorizations.digitalwallet" layout="column" layout-gt-sm="row"
+    <md-list-item ng-repeat="auth in authorizations.digitalwallet track by auth.requestedlabel" layout="column"
+                  layout-gt-sm="row"
                   layout-align="center start" layout-align-gt-sm="start center">
         <p><i class="fa fa-money">
             <md-tooltip><span translate=digital_wallet_address'>Digital wallet address</span></md-tooltip>
@@ -223,8 +228,8 @@
         </div>
         <md-checkbox class="md-secondary" ng-model="authorizations.facebook"></md-checkbox>
     </md-list-item>
-    <md-list-item ng-repeat="auth in authorizations.publicKeys" layout="column" layout-gt-sm="row"
-                  layout-align="center start" layout-align-gt-sm="start center">
+    <md-list-item ng-repeat="auth in authorizations.publicKeys track by auth.requestedlabel" layout="column"
+                  layout-gt-sm="row" layout-align="center start" layout-align-gt-sm="start center">
         <p><i class="fa fa-key">
             <md-tooltip><span translate="public_key">Public key</span></md-tooltip>
         </i>
@@ -247,5 +252,16 @@
                 </md-option>
             </md-select>
         </md-input-container>
+    </md-list-item>
+    <md-list-item ng-repeat="email in authorizations.ownerof.emailaddresses" layout="column"
+                  layout-gt-sm="row" layout-align="center start" layout-align-gt-sm="start center">
+        <p><i class=" fa fa-at">
+            <md-tooltip><span translate="owner_of_email"></span></md-tooltip>
+        </i>
+            <span translate="owner_of_email_x" translate-values="{ email: email}"></span>
+        </p>
+        <md-button ng-if="vm.verifiedEmails && !vm.verifiedEmails.includes(email)" translate="verify"
+                   ng-click="vm.verifyEmail($event, email)">Verify
+        </md-button>
     </md-list-item>
 </md-list>

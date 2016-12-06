@@ -9,7 +9,7 @@
                     scope.save = save;
                     scope.fullscreenAuthorization = attr.full !== undefined && attr.full !== 'false';
 
-                    function save() {
+                    function save(event) {
                         // Filter unauthorized permission labels
                         angular.forEach(scope.authorizations, function (value) {
                             if (Array.isArray(value)) {
@@ -26,7 +26,7 @@
                                 scope.authorizations.organizations.push(organization);
                             }
                         });
-                        scope.update();
+                        scope.update(event);
                     }
                 }
             };

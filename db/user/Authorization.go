@@ -17,6 +17,7 @@ type Authorization struct {
 	PublicKeys     []AuthorizationMap           `json:"publicKeys,omitempty"`
 	Username       string                       `json:"username"`
 	Name           bool                         `json:"name"`
+	OwnerOf        OwnerOf                      `json:"ownerof,omitempty"`
 }
 
 type AuthorizationMap struct {
@@ -28,6 +29,10 @@ type AuthorizationMap struct {
 type DigitalWalletAuthorization struct {
 	AuthorizationMap
 	Currency string `json:"currency"`
+}
+
+type OwnerOf struct {
+	EmailAddresses []string `json:"emailaddresses"`
 }
 
 //FilterAuthorizedScopes filters the requested scopes to the ones this Authorization covers
@@ -66,6 +71,9 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 			authorizedScopes = append(authorizedScopes, scope)
 		}
 		if strings.HasPrefix(scope, "user:publickey") && LabelledPropertyIsAuthorized(scope, "user:publickey", authorization.PublicKeys) {
+			authorizedScopes = append(authorizedScopes, scope)
+		}
+		if strings.HasPrefix(scope, "user:ownerof:email") && OwnerOfIsAuthorized(scope, "user:ownerof:email", authorization.OwnerOf.EmailAddresses) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
 	}
@@ -129,4 +137,17 @@ func DigitalWalletIsAuthorized(scope string, scopePrefix string, authorizedLabel
 		}
 	}
 	return
+}
+
+func OwnerOfIsAuthorized(scope string, scopePrefix string, authorizedOwnerOfs []string) bool {
+	if authorizedOwnerOfs == nil {
+		return false
+	}
+	for _, authorizedOwnerOf := range authorizedOwnerOfs {
+		requestedOwnerOf := strings.TrimPrefix(scope, scopePrefix+":")
+		if authorizedOwnerOf == requestedOwnerOf {
+			return true
+		}
+	}
+	return false
 }

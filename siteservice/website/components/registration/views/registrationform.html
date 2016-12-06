@@ -39,8 +39,8 @@
                             <input ng-model="vm.email" required name="email" type="email" id="email"
                                    ng-pattern="/^([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/i">
                             <div ng-messages="signupform.email.$error" md-auto-hide="false">
-                                <div ng-message="email" translate='registration.views.registrationform.invalidemail'>Invalid email address</div>
-                                <div ng-message="pattern" translate='registration.views.registrationform.invalidemail'>Invalid email address</div>
+                                <div ng-message="email" translate="invalid_email_address">Invalid email address</div>
+                                <div ng-message="pattern" translate="invalid_email_address">Invalid email address</div>
                             </div>
                         </md-input-container>
                         <md-input-container>

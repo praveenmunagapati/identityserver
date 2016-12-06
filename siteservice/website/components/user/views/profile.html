@@ -55,7 +55,7 @@
                       <md-button ng-click="vm.verifyEmailAddress($event, email)"
                                  class="md-primary md-secondary"
                                  ng-if="vm.loaded.verifiedEmails && !email.verified">
-                          <span translate='user.views.profile.verify'>Verify</span>
+                          <span translate="verify">Verify</span>
                       </md-button>
                   </div>
               </md-list>
@@ -84,7 +84,7 @@
                       <md-button ng-click="vm.verifyPhone($event, phone)"
                                  class="md-primary md-secondary"
                                  ng-if="vm.loaded.verifiedPhones && !phone.verified">
-                          <span translate='user.views.profile.verify'>Verify</span>
+                          <span translate="verify">Verify</span>
                       </md-button>
                   </div>
               </md-list>
@@ -223,7 +223,7 @@
                             ng-click="vm.showPublicKeyDetail($event, key)"
                             aria-label="Public key {{ key.label }}">
                   <div class="md-list-item-text">
-                      <h4>{{ ::key.label }}</h3>
+                      <h4>{{ ::key.label }}</h4>
                   </div>
               </md-list-item>
           </div>

@@ -312,21 +312,9 @@ func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
 	}
 	var emails []user.EmailAddress
 	if validated {
-		emails = make([]user.EmailAddress, 0)
-		valMngr := validationdb.NewManager(r)
-		validatedemails, err := valMngr.GetByUsernameValidatedEmailAddress(username)
-		if err != nil {
-			log.Error(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		emails, err = api.getValidatedEmails(r, *userobj)
+		if handleServerError(w, "getting validated emails", err) {
 			return
-		}
-		for _, email := range userobj.EmailAddresses {
-			for _, validatedemail := range validatedemails {
-				if email.EmailAddress == validatedemail.EmailAddress {
-					emails = append(emails, email)
-					break
-				}
-			}
 		}
 	} else {
 		emails = userobj.EmailAddresses
@@ -334,6 +322,23 @@ func (api UsersAPI) ListEmailAddresses(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(emails)
+}
+
+func (api UsersAPI) getValidatedEmails(r *http.Request, userobj user.User) ([]user.EmailAddress, error) {
+	emails := make([]user.EmailAddress, 0)
+	valMngr := validationdb.NewManager(r)
+	validatedEmails, err := valMngr.GetByUsernameValidatedEmailAddress(userobj.Username)
+	if err == nil {
+		for _, email := range userobj.EmailAddresses {
+			for _, validatedEmail := range validatedEmails {
+				if email.EmailAddress == validatedEmail.EmailAddress {
+					emails = append(emails, email)
+					break
+				}
+			}
+		}
+	}
+	return emails, err
 }
 
 // DeleteEmailAddress is the handler for DELETE /users/{username}/emailaddresses/{label}
@@ -571,6 +576,10 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 				log.Debug(err)
 			}
 		}
+	}
+
+	if authorization.OwnerOf.EmailAddresses != nil {
+		respBody.OwnerOf.EmailAddresses = authorization.OwnerOf.EmailAddresses
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -1416,6 +1425,18 @@ func FilterDigitalWallet(s []user.DigitalWalletAuthorization) []user.DigitalWall
 	return p
 }
 
+func FilterOwnerOf(s user.OwnerOf, verifiedEmails []user.EmailAddress) user.OwnerOf {
+	var o user.OwnerOf
+	for _, verifiedEmail := range verifiedEmails {
+		for _, mail := range s.EmailAddresses {
+			if mail == verifiedEmail.EmailAddress {
+				o.EmailAddresses = append(o.EmailAddresses, verifiedEmail.EmailAddress)
+			}
+		}
+	}
+	return o
+}
+
 // UpdateAuthorization is the handler for PUT /users/{username}/authorizations/{grantedTo}
 // Modify which information an organization is able to see.
 func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) {
@@ -1428,6 +1449,18 @@ func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	userMgr := user.NewManager(r)
+	verifiedEmails := []user.EmailAddress{}
+	if len(authorization.OwnerOf.EmailAddresses) != 0 {
+		userobj, err := userMgr.GetByName(username)
+		if handleServerError(w, "getting user by name", err) {
+			return
+		}
+		verifiedEmails, err = api.getValidatedEmails(r, *userobj)
+		if handleServerError(w, "getting verified emails", err) {
+			return
+		}
+	}
 
 	authorization.Username = username
 	authorization.GrantedTo = grantedTo
@@ -1437,12 +1470,10 @@ func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) 
 	authorization.BankAccounts = FilterAuthorizationMaps(authorization.BankAccounts)
 	authorization.PublicKeys = FilterAuthorizationMaps(authorization.PublicKeys)
 	authorization.DigitalWallet = FilterDigitalWallet(authorization.DigitalWallet)
-
-	userMgr := user.NewManager(r)
+	authorization.OwnerOf = FilterOwnerOf(authorization.OwnerOf, verifiedEmails)
 
 	err := userMgr.UpdateAuthorization(authorization)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "updating authorization", err) {
 		return
 	}
 	w.Header().Set("Content-type", "application/json")

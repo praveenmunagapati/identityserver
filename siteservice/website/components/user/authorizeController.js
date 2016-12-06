@@ -7,10 +7,11 @@
         .controller("AuthorizeController", AuthorizeController);
 
 
-    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', '$q',
+    AuthorizeController.$inject = ['$scope', '$rootScope', '$location', '$window', '$q', '$translate',
         'UserService', 'UserDialogService', 'NotificationService'];
 
-    function AuthorizeController($scope, $rootScope, $location, $window, $q, UserService, UserDialogService, NotificationService) {
+    function AuthorizeController($scope, $rootScope, $location, $window, $q, $translate,
+                                 UserService, UserDialogService, NotificationService) {
         var vm = this;
 
         var queryParams = $location.search();
@@ -29,13 +30,18 @@
         vm.showAddressDialog = addAddress;
         vm.showBankAccountDialog = bank;
         vm.showPublicKeyDialog = addPublicKey;
+        vm.verifyEmail = verifyEmail;
         vm.submit = submit;
         vm.showDigitalWalletAddressDialog = digitalWalletAddress;
         var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet', 'publicKeys'];
         $scope.requested = {
             organizations: {}
         };
-        $scope.authorizations = {};
+        $scope.authorizations = {
+            ownerof: {
+                emailaddresses: []
+            }
+        };
         angular.forEach(properties, function (prop) {
             $scope.authorizations[prop] = [];
         });
@@ -57,6 +63,7 @@
                     function(data) {
                         vm.user = data;
                         parseScopes();
+                        getInitialData();
                     });
             NotificationService
                 .get(vm.username)
@@ -126,27 +133,88 @@
                     }
                     else if (scope === 'user:facebook') {
                         $scope.authorizations.facebook = true;
+                    } else if (scope.startsWith('user:ownerof')) {
+                        switch (splitPermission[2]) {
+                            case 'email':
+                                var emailAddress = splitPermission[3];
+                                if (emailAddress && !$scope.authorizations.ownerof.emailaddresses.includes(emailAddress)) {
+                                    $scope.authorizations.ownerof.emailaddresses.push(emailAddress);
+                                }
+                                break;
+                        }
                     }
                 });
             }
         }
 
-        function update() {
-            // called by the authorizationDetailsDirective
-            $scope.authorizations.username = vm.username;
-            $scope.authorizations.grantedTo = vm.requestingorganization;
-            UserService
-                .saveAuthorization($scope.authorizations)
-                .then(
-                    function () {
-                        var u = URI($location.absUrl());
-                        var endpoint = queryParams["endpoint"];
-                        delete queryParams.endpoint;
-                        u.pathname(endpoint);
-                        u.search(queryParams);
-                        $window.location.href = u.toString();
-                    }
-                );
+        function getInitialData() {
+            if (Object.keys($scope.authorizations.ownerof.emailaddresses).length) {
+                getVerifiedEmails();
+            }
+        }
+
+        function getVerifiedEmails() {
+            UserService.getVerifiedEmailAddresses(vm.username).then(function (confirmedEmails) {
+                vm.verifiedEmails = confirmedEmails.map(function (mail) {
+                    return mail.emailaddress;
+                });
+            });
+        }
+
+        function hasAllRequiredEmails() {
+            for (var i = 0; i < $scope.authorizations.ownerof.emailaddresses.length; i++) {
+                var email = $scope.authorizations.ownerof.emailaddresses[i];
+                if (vm.verifiedEmails && !vm.verifiedEmails.includes(email)) {
+                    return email;
+                }
+            }
+            return true;
+        }
+
+        function checkOwner() {
+            return $q(function (resolve, reject) {
+                if ($scope.authorizations.ownerof.emailaddresses.length === 0 || hasAllRequiredEmails() === true) {
+                    resolve();
+                } else {
+                    UserService.getVerifiedEmailAddresses(vm.username).then(function (confirmedEmails) {
+                        vm.verifiedEmails = confirmedEmails.map(function (mail) {
+                            return mail.emailaddress;
+                        });
+                        var requiredEmail = hasAllRequiredEmails();
+                        if (requiredEmail === true) {
+                            resolve();
+                        } else {
+                            reject({key: 'please_verify_email_x', values: {email: requiredEmail}});
+                        }
+                    });
+                }
+            });
+        }
+
+        // called by the authorizationDetailsDirective
+        function update(event) {
+            // validation
+            checkOwner().then(function () {
+                $scope.authorizations.username = vm.username;
+                $scope.authorizations.grantedTo = vm.requestingorganization;
+                console.log($scope.authorizations);
+                UserService
+                    .saveAuthorization($scope.authorizations)
+                    .then(
+                        function () {
+                            var u = URI($location.absUrl());
+                            var endpoint = queryParams["endpoint"];
+                            delete queryParams.endpoint;
+                            u.pathname(endpoint);
+                            u.search(queryParams);
+                            $window.location.href = u.toString();
+                        }
+                    );
+            }, function (translation) {
+                $translate(['error', 'close', translation.key], translation.values).then(function (translations) {
+                    UserDialogService.showSimpleDialog(translations[translation.key], translations['error'], translations['close'], event);
+                });
+            });
         }
 
         function addEmail(event, auth) {
@@ -169,7 +237,29 @@
             selectDefault(UserDialogService.publicKey, event, auth, 'publicKeys');
         }
 
-        function submit() {
+        function verifyEmail(event, email) {
+            var userEmail = vm.user.emailaddresses.filter(function (e) {
+                return e.emailaddress === email;
+            })[0];
+            if (userEmail) {
+                verify(userEmail);
+            } else {
+                var data = {
+                    label: email.replace('@', ' - ').replace('+', ' ').split('.')[0],
+                    emailaddress: email
+                };
+                UserService.registerNewEmailAddress(vm.username, data).then(function (newEmail) {
+                    vm.user.emailaddresses.push(newEmail);
+                    verify(newEmail);
+                });
+            }
+
+            function verify(email) {
+                UserDialogService.verifyEmailAddress(event, email).then(getVerifiedEmails);
+            }
+        }
+
+        function submit(event) {
             // accept all the invites first
             var requests = [];
 
@@ -179,7 +269,7 @@
 
             $q.all(requests)
                 .then(function () {
-                    $scope.save();
+                    $scope.save(event);
                 });
         }
 

@@ -64,3 +64,7 @@ The `:write` extension gives an application full access(read, update, delete) to
 ## `user:digitalwalletaddress:[<label>]:[<currency>]`
 
 ## `user:publickey[:<label>]`
+
+## `user:owneroff:email:<emailaddress>`
+
+Users have to proof they are owner of this email address before they can complete the authorization flow.

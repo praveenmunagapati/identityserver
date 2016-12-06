@@ -6,9 +6,10 @@
 
     angular
         .module('itsyouonline.user', [])
-        .factory('UserDialogService', ['$window', '$q', '$interval', '$mdMedia', '$mdDialog', 'UserService', 'configService', UserDialogService]);
+        .factory('UserDialogService', ['$window', '$q', '$interval', '$mdMedia', '$mdDialog', '$translate',
+            'UserService', 'configService', UserDialogService]);
 
-    function UserDialogService($window, $q, $interval, $mdMedia, $mdDialog, UserService, configService) {
+    function UserDialogService($window, $q, $interval, $mdMedia, $mdDialog, $translate, UserService, configService) {
         var vm;
         var genericDetailControllerParams = ['$scope', '$mdDialog', 'user', 'data',
             'createFunction', 'updateFunction', 'deleteFunction', GenericDetailDialogController];
@@ -18,6 +19,7 @@
             addressDetail: addressDetail,
             phonenumberDetail: phonenumberDetail,
             verifyPhone: verifyPhone,
+            verifyEmailAddress: verifyEmailAddress,
             bankAccount: bankAccount,
             facebook: facebook,
             addFacebook: addFacebook,
@@ -260,6 +262,39 @@
                     $scope.form.smscode.$setValidity('invalid_code', true);
                 }
             }
+        }
+
+        function verifyEmailAddress(event, email) {
+            return $q(function (res, rej) {
+                UserService.sendEmailAddressVerification(vm.username, email.label)
+                    .then(function () {
+                        $translate(['user.controller.emailsent', 'user.controller.emailsentto', 'user.controller.close'], {email: email.emailaddress}).then(function (translations) {
+                            $mdDialog.show(
+                                $mdDialog.alert()
+                                    .clickOutsideToClose(true)
+                                    .title(translations['user.controller.emailsent'])
+                                    .textContent(translations['user.controller.emailsentto'])
+                                    .ariaLabel(translations['user.controller.emailsent'])
+                                    .ok(translations['user.controller.close'])
+                                    .targetEvent(event)
+                            );
+                        });
+                        res();
+                    }, function () {
+                        $translate(['user.controller.error', 'user.controller.couldnotsend', 'user.controller.errorwhilesending', 'user.controller.close']).then(function (translations) {
+                            $mdDialog.show(
+                                $mdDialog.alert()
+                                    .clickOutsideToClose(true)
+                                    .title(translations['user.controller.error'])
+                                    .textContent(translations['user.controller.couldnotsend'])
+                                    .ariaLabel(translations['user.controller.errorwhilesending'])
+                                    .ok(translations['user.controller.close'])
+                                    .targetEvent(event)
+                            );
+                            rej();
+                        });
+                    });
+            });
         }
 
         function addressDetail(ev, address) {

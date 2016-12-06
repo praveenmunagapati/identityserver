@@ -103,23 +103,18 @@
                 currency = scopeObject.currency,
                 organization = scopeObject.organization,
                 write = scopeObject.write;
-            console.log(scopeTemplate);
             if (scopeTemplate.includes('{label}')) {
                 scopeTemplate = scopeTemplate.replace(label ? '{label}' : ':{label}', label || '');
             }
-            console.log(scopeTemplate);
             if (scopeTemplate.includes('{currency}')) {
                 scopeTemplate = scopeTemplate.replace(currency ? '{currency}' : ':{currency}', currency || '');
             }
-            console.log(scopeTemplate);
             if (scopeTemplate.includes('{organization}')) {
                 scopeTemplate = scopeTemplate.replace(organization ? '{organization}' : ':{organization}', organization || '');
             }
-            console.log(scopeTemplate);
             if (scopeTemplate.includes('{write}')) {
                 scopeTemplate = scopeTemplate.replace(':{write}', write === true ? ':write' : '');
             }
-            console.log(scopeTemplate);
             return scopeTemplate;
         }
 

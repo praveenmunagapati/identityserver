@@ -15,4 +15,5 @@ type Userview struct {
 	Username       string                     `json:"username"`
 	Firstname      string                     `json:"firstname"`
 	Lastname       string                     `json:"lastname"`
+	OwnerOf        user.OwnerOf               `json:"ownerof"`
 }
