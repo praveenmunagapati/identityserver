@@ -61,7 +61,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		}
 		if token != nil {
 			username = token.Claims["username"].(string)
-			clientID = token.Claims["aud"].(string)
+			clientID = token.Claims["azp"].(string)
 			atscopestring = security.GetScopestringFromJWT(token)
 
 		} else if accessToken != "" {
