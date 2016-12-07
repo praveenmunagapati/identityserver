@@ -10,6 +10,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
+	"gopkg.in/mgo.v2/bson"
 )
 
 //AccessTokenExpiration is the time in seconds an access token expires
@@ -17,6 +18,7 @@ var AccessTokenExpiration = time.Second * 3600 * 24 //Tokens expire after 1 day
 
 //AccessToken is an oauth2 accesstoken together with the access information it stands for
 type AccessToken struct {
+	ID          bson.ObjectId `json:"-" bson:"_id,omitempty"`
 	AccessToken string
 	Type        string
 	Username    string

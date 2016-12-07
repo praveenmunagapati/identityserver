@@ -22,6 +22,7 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/contract"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/identityservice/organization"
+	"github.com/itsyouonline/identityserver/oauthservice"
 	"github.com/itsyouonline/identityserver/validation"
 	"gopkg.in/mgo.v2"
 )
@@ -1851,6 +1852,8 @@ func (api UsersAPI) LeaveOrganization(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	organizationGlobalId := mux.Vars(r)["globalid"]
 	orgMgr := organizationDb.NewManager(r)
+	userMgr := user.NewManager(r)
+	oauthMgr := oauthservice.NewManager(r)
 	err := orgMgr.RemoveUser(organizationGlobalId, username)
 	if err == mgo.ErrNotFound {
 		writeErrorResponse(w, http.StatusNotFound, "user_not_found")
@@ -1858,9 +1861,12 @@ func (api UsersAPI) LeaveOrganization(w http.ResponseWriter, r *http.Request) {
 	} else if handleServerError(w, "removing user from organization", err) {
 		return
 	}
-	userMgr := user.NewManager(r)
 	err = userMgr.DeleteAuthorization(username, organizationGlobalId)
 	if handleServerError(w, "removing authorization", err) {
+		return
+	}
+	err = oauthMgr.RemoveOrganizationScopes(organizationGlobalId, username)
+	if handleServerError(w, "removing organization scopes", err) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

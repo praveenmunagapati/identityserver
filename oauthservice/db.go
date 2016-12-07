@@ -7,7 +7,9 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"fmt"
 	"github.com/itsyouonline/identityserver/db"
+	"strings"
 )
 
 const (
@@ -152,6 +154,43 @@ func (m *Manager) GetAccessToken(token string) (at *AccessToken, err error) {
 	}
 
 	return
+}
+
+// RemoveOrganizationScopes removes all user:memberof:globalid scopes from all access tokens
+func (m *Manager) RemoveOrganizationScopes(globalID string, username string) error {
+	var accessTokens []AccessToken
+	qry := bson.M{"username": username}
+	err := m.getAccessTokenCollection().Find(qry).All(&accessTokens)
+	if err == mgo.ErrNotFound {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	for _, accessToken := range accessTokens {
+		if !accessToken.IsExpired() {
+			memberOfScope := fmt.Sprintf("user:memberof:%s", globalID)
+			if strings.Contains(accessToken.Scope, memberOfScope) {
+				accessToken.Scope = removeScope(accessToken.Scope, memberOfScope)
+				err = m.getAccessTokenCollection().UpdateId(accessToken.ID, accessToken)
+				if err != nil && err != mgo.ErrNotFound {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func removeScope(scope string, scopeToRemove string) string {
+	scopes := []string{}
+	split := strings.Split(scope, ",")
+	for _, part := range split {
+		if part != scopeToRemove {
+			scopes = append(scopes, part)
+		}
+	}
+	return strings.Join(scopes, ",")
 }
 
 //getRefreshToken gets an refresh token by it's refresh token string
