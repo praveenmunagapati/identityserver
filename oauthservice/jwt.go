@@ -210,7 +210,7 @@ func (service *Service) createNewJWTFromParent(r *http.Request, parentToken *jwt
 	requestedScopes := splitScopeString(requestedScopeString)
 	requestedScopes, offlineAccessRequested := stripOfflineAccess(requestedScopes)
 
-	acquiredScopes := parentToken.Claims["scope"].([]string)
+	acquiredScopes := oauth2.GetScopesFromJWT(parentToken)
 	var parentRefreshToken *refreshToken
 	mgr := NewManager(r)
 	if rawParentRefreshToken, parentRefreshTokenSupplied := parentToken.Claims["refresh_token"]; parentRefreshTokenSupplied {
