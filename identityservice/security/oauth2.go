@@ -12,7 +12,7 @@ type OAuth2Middleware struct {
 }
 
 //JWTPublicKey has the public key of the allowed JWT issuer
-var JWTPublicKey ecdsa.PublicKey
+var JWTPublicKey *ecdsa.PublicKey
 
 //GetAccessToken returns the access token from the authorization header or from the query parameters.
 // If the authorization header starts with "bearer", "" is returned
