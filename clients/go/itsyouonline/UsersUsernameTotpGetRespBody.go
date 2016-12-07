@@ -5,6 +5,7 @@ import (
 )
 
 type UsersUsernameTotpGetRespBody struct {
+	Totpissuer string `json:"totpissuer" validate:"nonzero"`
 	Totpsecret string `json:"totpsecret" validate:"nonzero"`
 }
 

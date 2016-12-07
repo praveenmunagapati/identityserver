@@ -7,7 +7,7 @@ import (
 type Address struct {
 	City       string `json:"city" validate:"max=30,nonzero"`
 	Country    string `json:"country" validate:"max=40,nonzero"`
-	Label      string `json:"label" validate:"nonzero"`
+	Label      Label  `json:"label" validate:"nonzero"`
 	Nr         string `json:"nr" validate:"max=10,nonzero"`
 	Other      string `json:"other,omitempty" validate:"max=30"`
 	Postalcode string `json:"postalcode" validate:"max=20,nonzero"`

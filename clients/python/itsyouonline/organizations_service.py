@@ -49,15 +49,6 @@ class OrganizationsService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
-    def Get2faValidityTime(self, globalid, headers=None, query_params=None):
-        """
-        Get the 2FA validity time for the organization, in seconds
-        It is method for GET /organizations/{globalid}/2fa/validity
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/2fa/validity"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def Set2faValidityTime(self, data, globalid, headers=None, query_params=None):
         """
         Update the 2FA validity time for the organization
@@ -65,6 +56,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/2fa/validity"
         return self.client.post(uri, data, headers=headers, params=query_params)
+
+
+    def Get2faValidityTime(self, globalid, headers=None, query_params=None):
+        """
+        Get the 2FA validity time for the organization, in seconds
+        It is method for GET /organizations/{globalid}/2fa/validity
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/2fa/validity"
+        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def CreateNewOrganizationAPIKey(self, data, globalid, headers=None, query_params=None):
@@ -85,15 +85,6 @@ class OrganizationsService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def DeleteOrganizationAPIKey(self, label, globalid, headers=None, query_params=None):
-        """
-        Removes an API key
-        It is method for DELETE /organizations/{globalid}/apikeys/{label}
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/apikeys/"+label
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
     def UpdateOrganizationAPIKey(self, data, label, globalid, headers=None, query_params=None):
         """
         Updates the label or other properties of a key.
@@ -111,13 +102,13 @@ class OrganizationsService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def CreateOrganizationContracty(self, data, globalid, headers=None, query_params=None):
+    def DeleteOrganizationAPIKey(self, label, globalid, headers=None, query_params=None):
         """
-        Create a new contract.
-        It is method for POST /organizations/{globalid}/contracts
+        Removes an API key
+        It is method for DELETE /organizations/{globalid}/apikeys/{label}
         """
-        uri = self.client.base_url + "/organizations/"+globalid+"/contracts"
-        return self.client.post(uri, data, headers=headers, params=query_params)
+        uri = self.client.base_url + "/organizations/"+globalid+"/apikeys/"+label
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def GetOrganizationContracts(self, globalid, headers=None, query_params=None):
@@ -129,25 +120,79 @@ class OrganizationsService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def CreateOrganizationDNS(self, data, dnsname, globalid, headers=None, query_params=None):
+    def CreateOrganizationContracty(self, data, globalid, headers=None, query_params=None):
         """
-        Creates a new DNS name associated with an organization
-        It is method for POST /organizations/{globalid}/dns/{dnsname}
+        Create a new contract.
+        It is method for POST /organizations/{globalid}/contracts
         """
-        uri = self.client.base_url + "/organizations/"+globalid+"/dns/"+dnsname
+        uri = self.client.base_url + "/organizations/"+globalid+"/contracts"
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def DeleteOrganizaitonDNS(self, dnsname, globalid, headers=None, query_params=None):
+    def UpdateDescription(self, data, globalid, headers=None, query_params=None):
         """
-        Removes a DNS name
+        Update the description for this organization for a given language key
+        It is method for PUT /organizations/{globalid}/description
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/description"
+        return self.client.put(uri, data, headers=headers, params=query_params)
+
+
+    def SetDescription(self, data, globalid, headers=None, query_params=None):
+        """
+        Set the description for this organization for a given language key
+        It is method for POST /organizations/{globalid}/description
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/description"
+        return self.client.post(uri, data, headers=headers, params=query_params)
+
+
+    def DeleteDescription(self, langkey, globalid, headers=None, query_params=None):
+        """
+        Delete the description for this organization for a given language key
+        It is method for DELETE /organizations/{globalid}/description/{langkey}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/description/"+langkey
+        return self.client.session.delete(uri, headers=headers, params=query_params)
+
+
+    def GetDescription(self, langkey, globalid, headers=None, query_params=None):
+        """
+        Get the description for an organization for this langkey
+        It is method for GET /organizations/{globalid}/description/{langkey}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/description/"+langkey
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def GetDescriptionWithFallback(self, langkey, globalid, headers=None, query_params=None):
+        """
+        Get the description for an organization for this langkey, try to use the English is there is no description for this langkey
+        It is method for GET /organizations/{globalid}/description/{langkey}/withfallback
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/description/"+langkey+"/withfallback"
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def CreateOrganizationDns(self, data, globalid, headers=None, query_params=None):
+        """
+        Creates a new DNS name associated with an organization
+        It is method for POST /organizations/{globalid}/dns
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/dns"
+        return self.client.post(uri, data, headers=headers, params=query_params)
+
+
+    def DeleteOrganizationDns(self, dnsname, globalid, headers=None, query_params=None):
+        """
+        Removes a DNS name associated with an organization
         It is method for DELETE /organizations/{globalid}/dns/{dnsname}
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/dns/"+dnsname
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
-    def UpdateOrganizationDNS(self, data, dnsname, globalid, headers=None, query_params=None):
+    def UpdateOrganizationDns(self, data, dnsname, globalid, headers=None, query_params=None):
         """
         Updates an existing DNS name associated with an organization
         It is method for PUT /organizations/{globalid}/dns/{dnsname}
@@ -174,15 +219,6 @@ class OrganizationsService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
-    def DeleteOrganizationLogo(self, globalid, headers=None, query_params=None):
-        """
-        Removes the Logo from an organization
-        It is method for DELETE /organizations/{globalid}/logo
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/logo"
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
     def GetOrganizationLogo(self, globalid, headers=None, query_params=None):
         """
         Get the Logo from an organization
@@ -201,13 +237,13 @@ class OrganizationsService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
-    def AddOrganizationMember(self, data, globalid, headers=None, query_params=None):
+    def DeleteOrganizationLogo(self, globalid, headers=None, query_params=None):
         """
-        Assign a member to organization.
-        It is method for POST /organizations/{globalid}/members
+        Removes the Logo from an organization
+        It is method for DELETE /organizations/{globalid}/logo
         """
-        uri = self.client.base_url + "/organizations/"+globalid+"/members"
-        return self.client.post(uri, data, headers=headers, params=query_params)
+        uri = self.client.base_url + "/organizations/"+globalid+"/logo"
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def UpdateOrganizationMemberShip(self, data, globalid, headers=None, query_params=None):
@@ -219,6 +255,15 @@ class OrganizationsService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
+    def AddOrganizationMember(self, data, globalid, headers=None, query_params=None):
+        """
+        Assign a member to organization.
+        It is method for POST /organizations/{globalid}/members
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/members"
+        return self.client.post(uri, data, headers=headers, params=query_params)
+
+
     def RemoveOrganizationMember(self, username, globalid, headers=None, query_params=None):
         """
         Remove a member from an organization.
@@ -228,15 +273,6 @@ class OrganizationsService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
-    def SetOrgMember(self, data, globalid, headers=None, query_params=None):
-        """
-        Add another organization as a member of this one
-        It is method for POST /organizations/{globalid}/orgmembers
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/orgmembers"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
     def UpdateOrganizationOrgMemberShip(self, data, globalid, headers=None, query_params=None):
         """
         Update the membership status of an organization
@@ -244,6 +280,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/orgmembers"
         return self.client.put(uri, data, headers=headers, params=query_params)
+
+
+    def SetOrgMember(self, data, globalid, headers=None, query_params=None):
+        """
+        Add another organization as a member of this one
+        It is method for POST /organizations/{globalid}/orgmembers
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/orgmembers"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def DeleteOrgMember(self, globalid2, globalid, headers=None, query_params=None):
@@ -309,15 +354,6 @@ class OrganizationsService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def DeleteOrganizationRegistryEntry(self, key, globalid, headers=None, query_params=None):
-        """
-        Removes a RegistryEntry from the organization's registry
-        It is method for DELETE /organizations/{globalid}/registry/{key}
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/registry/"+key
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
     def GetOrganizationRegistryEntry(self, key, globalid, headers=None, query_params=None):
         """
         Get a RegistryEntry from the organization's registry.
@@ -325,6 +361,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/registry/"+key
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def DeleteOrganizationRegistryEntry(self, key, globalid, headers=None, query_params=None):
+        """
+        Removes a RegistryEntry from the organization's registry
+        It is method for DELETE /organizations/{globalid}/registry/{key}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/registry/"+key
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def AddRequiredScope(self, data, globalid, headers=None, query_params=None):
@@ -336,15 +381,6 @@ class OrganizationsService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def DeleteRequiredScope(self, requiredscope, globalid, headers=None, query_params=None):
-        """
-        Deletes a required scope
-        It is method for DELETE /organizations/{globalid}/requiredscopes/{requiredscope}
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/requiredscopes/"+requiredscope
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
     def UpdateRequiredScope(self, data, requiredscope, globalid, headers=None, query_params=None):
         """
         Updates a required scope
@@ -352,6 +388,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/requiredscopes/"+requiredscope
         return self.client.put(uri, data, headers=headers, params=query_params)
+
+
+    def DeleteRequiredScope(self, requiredscope, globalid, headers=None, query_params=None):
+        """
+        Deletes a required scope
+        It is method for DELETE /organizations/{globalid}/requiredscopes/{requiredscope}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/requiredscopes/"+requiredscope
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def GetOrganizationTree(self, globalid, headers=None, query_params=None):

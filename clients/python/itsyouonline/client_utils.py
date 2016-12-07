@@ -2,22 +2,6 @@ import datetime
 import time
 
 
-def build_query_string(query_params=None):
-    """
-    build query parameter
-    input  `query_params` : dictionary
-    output string with format `?key=val&key2=val2`
-    """
-    if query_params is None:
-        return ""
-
-    qs = "?"
-    for key, elem in query_params.items():
-        qs += key + "=" + str(elem) + "&"
-
-    return qs[:-1]
-
-
 def generate_rfc3339(d, local_tz=True):
     """
     generate rfc3339 time format

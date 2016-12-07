@@ -8,7 +8,7 @@ type DigitalAssetAddress struct {
 	Address        string   `json:"address" validate:"nonzero"`
 	Currencysymbol string   `json:"currencysymbol" validate:"nonzero"`
 	Expire         DateTime `json:"expire" validate:"nonzero"`
-	Label          string   `json:"label" validate:"nonzero"`
+	Label          Label    `json:"label" validate:"nonzero"`
 	Noexpiration   bool     `json:"noexpiration,omitempty"`
 }
 

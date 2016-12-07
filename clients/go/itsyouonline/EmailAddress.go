@@ -6,7 +6,7 @@ import (
 
 type EmailAddress struct {
 	Emailaddress string `json:"emailaddress" validate:"nonzero"`
-	Label        string `json:"label" validate:"nonzero"`
+	Label        Label  `json:"label" validate:"nonzero"`
 }
 
 func (s EmailAddress) Validate() error {

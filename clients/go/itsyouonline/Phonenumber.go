@@ -5,8 +5,8 @@ import (
 )
 
 type Phonenumber struct {
-	Label       string `json:"label" validate:"nonzero"`
-	Phonenumber string `json:"phonenumber" validate:"regexp=^\+?[0-9]+$,nonzero"`
+	Label       Label  `json:"label" validate:"nonzero"`
+	Phonenumber string `json:"phonenumber" validate:"regexp=\+[0-9]{6,50}$,nonzero"`
 }
 
 func (s Phonenumber) Validate() error {
