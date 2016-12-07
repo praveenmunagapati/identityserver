@@ -10,7 +10,7 @@ import (
 
 func TestLabelValidation(t *testing.T) {
 	type testcase struct {
-		label user.Label
+		label string
 		valid bool
 	}
 	testcases := []testcase{

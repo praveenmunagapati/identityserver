@@ -7,20 +7,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAPIKeyLabelValidation(t *testing.T) {
+func TestAPIKeyValidation(t *testing.T) {
 	type testcase struct {
-		label string
-		valid bool
+		apiKey APIKey
+		valid  bool
 	}
-	testcases := []testcase{
-		testcase{label: "", valid: false},
-		testcase{label: "a", valid: false},
-		testcase{label: "ab", valid: true},
-		testcase{label: "abc", valid: true},
-		testcase{label: strings.Repeat("1", 50), valid: true},
-		testcase{label: strings.Repeat("1", 51), valid: false},
+	cbUrl := "https://test.example.com/callback"
+	s := "asdfafdsfhowpierqwpoiosdafjalksdfls"
+	l := "labeltest"
+	testCases := []testcase{
+		{apiKey: APIKey{Label: l, CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: s}, valid: true},
+		{apiKey: APIKey{Label: "a", CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: s}, valid: false},
+		{apiKey: APIKey{Label: "ab", CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: s}, valid: true},
+		{apiKey: APIKey{Label: strings.Repeat("1", 50), CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: s}, valid: true},
+		{apiKey: APIKey{Label: strings.Repeat("1", 51), CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: s}, valid: false},
+		{apiKey: APIKey{Label: l, CallbackURL: "abcd", ClientCredentialsGrantType: true, Secret: s}, valid: false},
+		{apiKey: APIKey{Label: l, CallbackURL: "https://test.com", ClientCredentialsGrantType: true, Secret: s}, valid: true},
+		{apiKey: APIKey{Label: l, CallbackURL: strings.Repeat("1", 250), ClientCredentialsGrantType: true, Secret: s}, valid: true},
+		{apiKey: APIKey{Label: l, CallbackURL: strings.Repeat("1", 251), ClientCredentialsGrantType: true, Secret: s}, valid: false},
+		{apiKey: APIKey{Label: l, CallbackURL: cbUrl, ClientCredentialsGrantType: false, Secret: s}, valid: true},
+		{apiKey: APIKey{Label: l, CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: ""}, valid: false},
 	}
-	for _, test := range testcases {
-		assert.Equal(t, test.valid, isValidAPIKeyLabel(test.label), test.label)
+	for _, test := range testCases {
+		assert.Equal(t, test.valid, test.apiKey.Validate())
 	}
 }

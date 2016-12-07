@@ -717,6 +717,7 @@ func (api OrganizationsAPI) CreateNewAPIKey(w http.ResponseWriter, r *http.Reque
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	apiKey.Secret = "dummysecret" // else the validator complains
 	if !apiKey.Validate() {
 		log.Debug("Invalid api key: ", apiKey)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
