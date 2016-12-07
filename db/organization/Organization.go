@@ -21,3 +21,8 @@ func (org *Organization) IsValid() bool {
 	regex, _ := regexp.Compile(`^[a-z\d\-_\s]{3,150}$`)
 	return regex.MatchString(org.Globalid)
 }
+
+func (org *Organization) IsValidSubOrganization() bool {
+	regex, _ := regexp.Compile(`^[a-z\d\-_\s\.]{3,150}$`)
+	return regex.MatchString(org.Globalid)
+}
