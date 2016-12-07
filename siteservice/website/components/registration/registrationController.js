@@ -39,7 +39,7 @@
         init();
 
         function init() {
-            if (queryParams.scope.includes('ownerof:email')) {
+            if (queryParams && queryParams.scope && queryParams.scope.includes('ownerof:email')) {
                 var scopes = queryParams.scope.split(',');
                 for (var i = 0; i < scopes.length; i++) {
                     if (scopes[i].includes('ownerof:email')) {
