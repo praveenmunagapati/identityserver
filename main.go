@@ -177,7 +177,7 @@ func main() {
 		if err != nil {
 			log.Fatal("Unable to load a valid key for signing JWT's: ", err)
 		}
-		security.JWTPublicKey = ecdsaKey.PublicKey
+		security.JWTPublicKey = &ecdsaKey.PublicKey
 		oauthsc, err := oauthservice.NewService(sc, is, ecdsaKey)
 		if err != nil {
 			log.Fatal("Unable to create the oauthservice: ", err)
