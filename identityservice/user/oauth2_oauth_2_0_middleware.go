@@ -114,7 +114,8 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			}
 			possibleScopes = append(possibleScopes, scope)
 		}
-		if clientID != "itsyouonline" {
+		// atscopestring will be user:admin for user api keys
+		if !(protectedUsername == username && clientID == "itsyouonline" && atscopestring == "admin" || atscopestring == "user:admin") {
 			// todo: cache
 			userMgr := user.NewManager(r)
 			authorization, err := userMgr.GetAuthorization(protectedUsername, clientID)
@@ -129,7 +130,6 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				return
 			}
 			authorizedScopes = authorization.FilterAuthorizedScopes(authorizedScopes)
-
 		}
 
 		if protectedUsername == username && clientID == "itsyouonline" && atscopestring == "admin" {
