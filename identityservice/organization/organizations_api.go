@@ -117,6 +117,7 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	org.Globalid = strings.Trim(org.Globalid, " ")
 	if !org.IsValid() {
 		log.Debug("Invalid organization")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -138,6 +139,7 @@ func (api OrganizationsAPI) CreateNewSubOrganization(w http.ResponseWriter, r *h
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	org.Globalid = strings.Trim(org.Globalid, " ")
 	if !org.IsValidSubOrganization() {
 		log.Debug("Invalid suborganization")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
