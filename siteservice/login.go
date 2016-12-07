@@ -803,7 +803,7 @@ func (service *Service) LoginResendPhonenumberConfirmation(w http.ResponseWriter
 	_ = service.phonenumberValidationService.ExpireValidation(request, validationkey)
 
 	phonenumber := user.Phonenumber{Label: "main", Phonenumber: values.PhoneNumber}
-	if !phonenumber.IsValid() {
+	if !phonenumber.Validate() {
 		log.Debug("Invalid phone number")
 		w.WriteHeader(422)
 		response.Error = "invalid_phonenumber"

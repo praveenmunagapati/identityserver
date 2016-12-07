@@ -23,7 +23,7 @@ func (api UsersAPI) RegisterNewDigitalAssetAddress(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if !isValidLabel(currency.Label) {
+	if !currency.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -115,7 +115,7 @@ func (api UsersAPI) UpdateDigitalAssetAddress(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if !isValidLabel(newcurrency.Label) {
+	if !newcurrency.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}

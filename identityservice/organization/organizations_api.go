@@ -33,7 +33,7 @@ const (
 	itsyouonlineGlobalID                      = "itsyouonline"
 	maximumNumberOfOrganizationsPerUser       = 1000
 	maximumNumberOfInvitationsPerOrganization = 10000
-	defaultLangKey                            = "en"
+	DefaultLanguage                           = "en"
 )
 
 // OrganizationsAPI is the implementation for /organizations root endpoint
@@ -681,20 +681,6 @@ func (api OrganizationsAPI) GetAPIKeyLabels(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(labels)
 }
 
-func isValidAPIKeyLabel(label string) (valid bool) {
-	valid = true
-	labelLength := len(label)
-	valid = valid && labelLength > 1 && labelLength < 51
-	return valid
-}
-
-func isValidDNSName(label string) (valid bool) {
-	valid = true
-	labelLength := len(label)
-	valid = valid && labelLength > 2 && labelLength < 250
-	return valid
-}
-
 // GetAPIKey is the handler for GET /organizations/{globalid}/apikeys/{label}
 func (api OrganizationsAPI) GetAPIKey(w http.ResponseWriter, r *http.Request) {
 	organization := mux.Vars(r)["globalid"]
@@ -724,7 +710,7 @@ func (api OrganizationsAPI) GetAPIKey(w http.ResponseWriter, r *http.Request) {
 // Create a new API Key, a secret itself should not be provided, it will be generated
 // serverside.
 func (api OrganizationsAPI) CreateNewAPIKey(w http.ResponseWriter, r *http.Request) {
-	organization := mux.Vars(r)["globalid"]
+	globalID := mux.Vars(r)["globalid"]
 
 	apiKey := APIKey{}
 
@@ -733,15 +719,14 @@ func (api OrganizationsAPI) CreateNewAPIKey(w http.ResponseWriter, r *http.Reque
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	//TODO: validate key, not just the label property
-	if !isValidAPIKeyLabel(apiKey.Label) {
-		log.Debug("Invalid label: ", apiKey.Label)
+	if !apiKey.Validate() {
+		log.Debug("Invalid api key: ", apiKey)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	log.Debug("Creating apikey:", apiKey)
-	c := oauthservice.NewOauth2Client(organization, apiKey.Label, apiKey.CallbackURL, apiKey.ClientCredentialsGrantType)
+	c := oauthservice.NewOauth2Client(globalID, apiKey.Label, apiKey.CallbackURL, apiKey.ClientCredentialsGrantType)
 
 	mgr := oauthservice.NewManager(r)
 	err := mgr.CreateClient(c)
@@ -768,8 +753,8 @@ func (api OrganizationsAPI) CreateNewAPIKey(w http.ResponseWriter, r *http.Reque
 // UpdateAPIKey is the handler for PUT /organizations/{globalid}/apikeys/{label}
 // Updates the label or other properties of a key.
 func (api OrganizationsAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
-	organization := mux.Vars(r)["globalid"]
-	oldlabel := mux.Vars(r)["label"]
+	globalID := mux.Vars(r)["globalid"]
+	oldLabel := mux.Vars(r)["label"]
 
 	apiKey := APIKey{}
 
@@ -777,14 +762,14 @@ func (api OrganizationsAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if !isValidAPIKeyLabel(apiKey.Label) {
-		log.Debug("Invalid label: ", apiKey.Label)
+	if !apiKey.Validate() {
+		log.Debug("Invalid api key: ", apiKey)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	mgr := oauthservice.NewManager(r)
-	err := mgr.UpdateClient(organization, oldlabel, apiKey.Label, apiKey.CallbackURL, apiKey.ClientCredentialsGrantType)
+	err := mgr.UpdateClient(globalID, oldLabel, apiKey.Label, apiKey.CallbackURL, apiKey.ClientCredentialsGrantType)
 
 	if err != nil && db.IsDup(err) {
 		log.Debug("Duplicate label")
@@ -830,7 +815,7 @@ func (api OrganizationsAPI) CreateOrganizationDns(w http.ResponseWriter, r *http
 		return
 	}
 
-	if !isValidDNSName(dns.Name) {
+	if !dns.Validate() {
 		log.Debug("Invalid DNS name: ", dns.Name)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -869,7 +854,7 @@ func (api OrganizationsAPI) UpdateOrganizationDns(w http.ResponseWriter, r *http
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if !isValidDNSName(dns.Name) {
+	if !dns.Validate() {
 		log.Debug("Invalid DNS name: ", dns.Name)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -1241,7 +1226,7 @@ func (api OrganizationsAPI) Set2faValidityTime(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusOK)
 }
 
-// SetOrgMember is the handler for POST /organizations/globalid/orgmember
+// SetOrgMember is the handler for POST /organizations/{globalid}/orgmember
 // Sets an organization as a member of this one.
 func (api OrganizationsAPI) SetOrgMember(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
@@ -1698,8 +1683,8 @@ func (api OrganizationsAPI) GetDescriptionWithFallback(w http.ResponseWriter, r 
 	}
 
 	// If no translation is found for the langKey, try the default langKey
-	if description.Text == "" && langKey != defaultLangKey {
-		langKey = defaultLangKey
+	if description.Text == "" && langKey != DefaultLanguage {
+		langKey = DefaultLanguage
 	}
 	for _, storedDescription := range orgDescriptions.InfoTexts {
 		if storedDescription.LangKey == langKey {

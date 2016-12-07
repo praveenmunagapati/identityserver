@@ -145,14 +145,14 @@
         }
 
         function registerNewEmailAddress(username, emailaddress) {
-            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses';
-            emailaddress.langkey = localStorage.getItem('langKey');
+            var lang = localStorage.getItem('langKey');
+            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses?lang=' + lang;
             return genericHttpCall($http.post, url, emailaddress);
         }
 
         function updateEmailAddress(username, oldlabel, emailaddress) {
-            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(oldlabel) ;
-            emailaddress.langkey = localStorage.getItem('langKey');
+            var lang = localStorage.getItem('langKey');
+            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(oldlabel) + '?lang=' + lang;
             return genericHttpCall($http.put, url, emailaddress);
         }
 
@@ -262,11 +262,9 @@
         }
 
         function sendPhoneVerificationCode(username, label) {
-            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(label) + '/validate';
-            var data = {
-                langkey: localStorage.getItem('langKey')
-            };
-            return genericHttpCall($http.post, url, data);
+            var lang = localStorage.getItem('langKey');
+            var url = apiURL + '/' + encodeURIComponent(username) + '/phonenumbers/' + encodeURIComponent(label) + '/validate?lang=' + lang;
+            return genericHttpCall($http.post, url);
         }
 
         function verifyPhone(username, label, validationKey, confirmationCode) {
@@ -284,11 +282,9 @@
         }
 
         function sendEmailAddressVerification(username, label){
-            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(label) + '/validate';
-            var data = {
-                langkey: localStorage.getItem('langKey')
-            };
-            return genericHttpCall($http.post, url, data);
+            var lang = localStorage.getItem('langKey');
+            var url = apiURL + '/' + encodeURIComponent(username) + '/emailaddresses/' + encodeURIComponent(label) + '/validate?lang=' + lang;
+            return genericHttpCall($http.post, url);
         }
 
         function getAPIKeys(username) {

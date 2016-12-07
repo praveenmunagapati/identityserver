@@ -6,16 +6,17 @@ import (
 
 	"github.com/itsyouonline/identityserver/db"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/validator.v2"
 )
 
 type EmailAddress struct {
-	EmailAddress string `json:"emailaddress"`
-	Label        string `json:"label"`
+	EmailAddress string `json:"emailaddress" validate:"regexp=^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$"`
+	Label        string `json:"label" validate:"regexp=^[a-zA-Z\d\-_\s]{2,50}$"`
 }
 
 type PublicKey struct {
 	PublicKey string `json:"publickey"`
-	Label     string `json:"label"`
+	Label     string `json:"label" validate:"regexp=^[a-zA-Z\d\-_\s]{2,50}$"`
 }
 
 type User struct {
@@ -29,7 +30,7 @@ type User struct {
 	Phonenumbers   []Phonenumber         `json:"phonenumbers"`
 	DigitalWallet  []DigitalAssetAddress `json:"digitalwallet"`
 	PublicKeys     []PublicKey           `json:"publicKeys"`
-	Username       string                `json:"username"`
+	Username       string                `json:"username" validate:"min=2,max=30,regexp=^[a-z0-9]{2,30}$"`
 	Firstname      string                `json:"firstname"`
 	Lastname       string                `json:"lastname"`
 }
@@ -109,4 +110,14 @@ func ValidatePhoneNumber(phoneNumber string) bool {
 func ValidateEmailAddress(emailAddress string) bool {
 	regex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 	return regex.MatchString(emailAddress)
+}
+
+func (p PublicKey) Validate() bool {
+	return validator.Validate(p) == nil && regexp.MustCompile(`^[a-zA-Z\d\-_\s]{2,50}$`).MatchString(p.Label)
+}
+
+func (e EmailAddress) Validate() bool {
+	return validator.Validate(e) == nil &&
+		regexp.MustCompile(`^[a-zA-Z\d\-_\s]{2,50}$`).MatchString(e.Label) &&
+		regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`).MatchString(e.EmailAddress)
 }

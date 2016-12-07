@@ -15,7 +15,7 @@
                 <md-input-container>
                     <label translate='organization.views.dnsdialog.domain'>Domain name</label>
                     <input ng-model="newDnsName" ng-minlength="4" required type="text" md-autofocus="true"
-                           name="newDnsName"
+                           name="newDnsName" md-maxlength="250"
                            ng-pattern="/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/i">
                     <div ng-messages="form.newDnsName.$error">
                         <div ng-message="minlength" translate='organization.views.dnsdialog.domainminlength'>At least 4 characters are required</div>

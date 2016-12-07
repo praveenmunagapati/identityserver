@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"regexp"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
@@ -116,52 +114,17 @@ func (api UsersAPI) GetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(usr)
 }
 
-func isValidLabel(label string) (valid bool) {
-	labelRegex := regexp.MustCompile(`^[a-zA-Z\d\-_\s]{2,50}$`)
-	valid = labelRegex.MatchString(label)
-
-	if !valid {
-		log.Debug("Invalid label: ", label)
-	}
-	return valid
-}
-
-func isValidBankAccount(bank user.BankAccount) bool {
-	if !isValidLabel(bank.Label) {
-		return false
-	}
-	if len(bank.Bic) != 8 && len(bank.Bic) != 11 {
-		log.Debug("Invalid bic: ", bank.Bic)
-		return false
-	}
-	if len(bank.Iban) > 30 || len(bank.Iban) < 1 {
-		log.Debug("Invalid iban: ", bank.Iban)
-		return false
-	}
-	return true
-}
-
 // RegisterNewEmailAddress is the handler for POST /users/{username}/emailaddresses
 // Register a new email address
 func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	body := user.EmailAddress{}
-
-	fullbody := struct {
-		EmailAddress string `json:"emailaddress"`
-		Label        string `json:"label"`
-		LangKey      string `json:"langkey"`
-	}{}
-
-	if err := json.NewDecoder(r.Body).Decode(&fullbody); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
+	lang := r.FormValue("lang")
+	if lang == "" {
+		lang = organization.DefaultLanguage
 	}
 
-	body.EmailAddress = fullbody.EmailAddress
-	body.Label = fullbody.Label
-
-	if !isValidLabel(body.Label) {
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || !body.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -188,7 +151,7 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	if !validated {
-		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), fullbody.LangKey)
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), lang)
 	}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -201,23 +164,17 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	oldlabel := mux.Vars(r)["label"]
+	lang := r.FormValue("lang")
+	if lang == "" {
+		lang = organization.DefaultLanguage
+	}
 
-	fullbody := struct {
-		EmailAddress string `json:"emailaddress"`
-		Label        string `json:"label"`
-		LangKey      string `json:"langkey"`
-	}{}
-
-	body := user.EmailAddress{}
-	if err := json.NewDecoder(r.Body).Decode(&fullbody); err != nil {
+	var body user.EmailAddress
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-
-	body.EmailAddress = fullbody.EmailAddress
-	body.Label = fullbody.Label
-
-	if !isValidLabel(body.Label) {
+	if !body.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -258,7 +215,7 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !validated {
-		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), fullbody.LangKey)
+		_, err = api.EmailAddressValidationService.RequestValidation(r, username, body.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), lang)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -267,23 +224,15 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(body)
 }
 
-// Validate email address is the handler for GET /users/{username}/emailaddress/{label}/validate/{langkey}
+// Validate email address is the handler for GET /users/{username}/emailaddress/{label}/validate
 func (api UsersAPI) ValidateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
 	userMgr := user.NewManager(r)
-
-	body := struct {
-		LangKey string `json:"langkey"`
-	}{}
-
-	log.Info(r.Body)
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		log.Info(err)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
+	lang := r.FormValue("lang")
+	if lang == "" {
+		lang = organization.DefaultLanguage
 	}
-
 	userobj, err := userMgr.GetByName(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -296,7 +245,7 @@ func (api UsersAPI) ValidateEmailAddress(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), body.LangKey)
+	_, err = api.EmailAddressValidationService.RequestValidation(r, username, email.EmailAddress, fmt.Sprintf("https://%s/emailvalidation", r.Host), lang)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -614,12 +563,7 @@ func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if !isValidLabel(body.Label) {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
-	if !body.IsValid() {
+	if !body.Validate() {
 		log.Debug("Invalid phonenumber: ", body.Phonenumber)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -708,14 +652,9 @@ func (api UsersAPI) GetUserPhonenumberByLabel(w http.ResponseWriter, r *http.Req
 func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	label := mux.Vars(r)["label"]
-
-	values := struct {
-		LangKey string `json:"langkey"`
-	}{}
-	if err := json.NewDecoder(r.Body).Decode(&values); err != nil {
-		log.Debug("Error decoding the ProcessPhonenumberConfirmation request:", err)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
+	lang := r.FormValue("lang")
+	if lang == "" {
+		lang = "en"
 	}
 
 	userMgr := user.NewManager(r)
@@ -733,7 +672,7 @@ func (api UsersAPI) ValidatePhoneNumber(w http.ResponseWriter, r *http.Request) 
 	}
 
 	validationKey := ""
-	validationKey, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host), values.LangKey)
+	validationKey, err = api.PhonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host), lang)
 	response := struct {
 		ValidationKey string `json:"validationkey"`
 	}{
@@ -797,13 +736,8 @@ func (api UsersAPI) UpdatePhonenumber(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isValidLabel(body.Label) {
+	if !body.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-
-	if !body.IsValid() {
-		http.Error(w, "Invalid phone number", http.StatusBadRequest)
 		return
 	}
 
@@ -947,7 +881,7 @@ func (api UsersAPI) CreateUserBankAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if !isValidBankAccount(bank) {
+	if !bank.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -1029,7 +963,7 @@ func (api UsersAPI) UpdateUserBankAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if !isValidBankAccount(newbank) {
+	if !newbank.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -1114,7 +1048,7 @@ func (api UsersAPI) RegisterNewAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isValidLabel(address.Label) {
+	if !address.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -1194,7 +1128,7 @@ func (api UsersAPI) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isValidLabel(newaddress.Label) {
+	if !newaddress.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -1508,6 +1442,10 @@ func (api UsersAPI) AddAPIKey(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	if !user.IsValidLabel(body.Label) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 	apikeyMgr := apikey.NewManager(r)
 	apiKey := apikey.NewAPIKey(username, body.Label)
 	apikeyMgr.Save(apiKey)
@@ -1657,7 +1595,7 @@ func (api UsersAPI) UpdatePublicKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isValidLabel(body.Label) {
+	if !body.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}

@@ -209,7 +209,7 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	_ = service.phonenumberValidationService.ExpireValidation(request, validationkey)
 
 	phonenumber := user.Phonenumber{Label: "main", Phonenumber: values.PhoneNumber}
-	if !phonenumber.IsValid() {
+	if !phonenumber.Validate() {
 		log.Debug("Invalid phone number")
 		w.WriteHeader(422)
 		response.Error = "invalid_phonenumber"
@@ -326,7 +326,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 
 	if twoFAMethod == "sms" {
 		phonenumber = user.Phonenumber{Label: "main", Phonenumber: values.Phonenumber}
-		if !phonenumber.IsValid() {
+		if !phonenumber.Validate() {
 			log.Debug("Invalid phone number")
 			w.WriteHeader(422)
 			response.Error = "invalid_phonenumber"

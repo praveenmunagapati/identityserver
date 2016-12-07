@@ -1,11 +1,15 @@
 package organization
 
-import "github.com/itsyouonline/identityserver/oauthservice"
+import (
+	"github.com/itsyouonline/identityserver/oauthservice"
+	"gopkg.in/validator.v2"
+	"regexp"
+)
 
 type APIKey struct {
 	CallbackURL                string `json:"callbackURL,omitempty" validate:"min=5,max=250,nonzero"`
 	ClientCredentialsGrantType bool   `json:"clientCredentialsGrantType,omitempty" validate:"nonzero"`
-	Label                      string `json:"label" validate:"min=2,max=50"`
+	Label                      string `json:"label" validate:"min=2,max=50, pattern=^[a-zA-Z\d\-_\s]{2,50}$"`
 	Secret                     string `json:"secret,omitempty" validate:"max=250,nonzero"`
 }
 
@@ -18,4 +22,8 @@ func FromOAuthClient(client *oauthservice.Oauth2Client) APIKey {
 		Secret: client.Secret,
 	}
 	return apiKey
+}
+
+func (a APIKey) Validate() bool {
+	return validator.Validate(a) == nil && regexp.MustCompile(`^[a-zA-Z\d\-_\s]{2,50}$`).MatchString(a.Label)
 }

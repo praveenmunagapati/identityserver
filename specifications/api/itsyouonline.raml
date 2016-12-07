@@ -100,7 +100,7 @@ types:
      properties:
        phonenumber:
          type: string
-         pattern: ^\+?[0-9]+$
+         pattern: \+[0-9]{6,50}$
        label: Label
 
   Address:
@@ -369,6 +369,7 @@ types:
           type: string
           minLength: 4
           maxLength: 250
+          pattern: ^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$
 
   Company:
     properties:
@@ -475,8 +476,18 @@ types:
       accessscopes:
         type: string[]
         description: Which users can see the shared information.
-
-
+  LocalizedInfoText:
+    properties:
+      langkey: string
+      text: string
+  Membership:
+    properties:
+      username: string
+      role: string
+  MissingScopes:
+    properties:
+      organization: string
+      scopes: string[]
 securedBy: [ oauth_2_0 ]
 /users:
   post:
@@ -546,32 +557,32 @@ securedBy: [ oauth_2_0 ]
       post:
           displayName: RegisterNewEmailAddress
           description: Register a new email address
+          queryParameters:
+            lang:
+              type: string
+              description: language that the validation email should be in.
           body:
             application/json:
-              properties:
-                label: Label
-                emailaddress: string
-                langkey: string
+              type: EmailAddress
           responses:
               201:
                 description: Registered a new email address
                 body:
                   application/json:
-                      properties:
-                         label: Label
-                         emailaddress: string
+                      type: EmailAddress
               409:
                   description: Label is already used.
       /{label}:
         put:
             displayName: UpdateEmailAddress
             description: Updates the label and/or value of an email address
+            queryParameters:
+              lang:
+                type: string
+                description: language that the validation email should be in.
             body:
               application/json:
-                properties:
-                  label: Label
-                  emailaddress: string
-                  langkey: string
+                type: EmailAddress
             responses:
               201:
                   description: Updated
@@ -590,10 +601,10 @@ securedBy: [ oauth_2_0 ]
           post:
             displayName: ValidateEmailAddress
             description: Sends validation email to email address
-            body:
-              application/json:
-                properties:
-                  langkey: string
+            queryParameters:
+              lang:
+                type: string
+                description: language that the validation email should be in.
             responses:
               204:
                description: Validation email has been send
@@ -780,10 +791,10 @@ securedBy: [ oauth_2_0 ]
     get:
       displayName: GetUserAddresses
       responses:
-            200:
-                body:
-                    application/json:
-                         type: Address[]
+        200:
+          body:
+            application/json:
+              type: Address[]
     post:
       displayName: RegisterNewUserAddress
       description: Register a new address
@@ -830,10 +841,10 @@ securedBy: [ oauth_2_0 ]
     get:
       displayName: GetDigitalWallet
       responses:
-            200:
-                body:
-                    application/json:
-                         type: DigitalAssetAddress[]
+        200:
+          body:
+            application/json:
+              type: DigitalAssetAddress[]
     post:
       displayName: RegisterNewDigitalAssetAddress
       description: Register a new digital asset address
@@ -1012,6 +1023,7 @@ securedBy: [ oauth_2_0 ]
                             invitations: JoinOrganizationInvitation[]
                             approvals: JoinOrganizationInvitation[]
                             contractRequests: ContractSigningRequest[]
+                            missingscopes : MissingScopes[]
 
   /{username}/contracts:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -1287,17 +1299,13 @@ securedBy: [ oauth_2_0 ]
         description: Set the description for this organization for a given language key
         body:
           application/json:
-            properties:
-              langkey: string
-              text: string
+            type: LocalizedInfoText
         responses:
            201:
              description: description set successfully
              body:
                application/json:
-                 properties:
-                   langkey: string
-                   text: string
+                 type: LocalizedInfoText
 
       put:
         securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
@@ -1305,17 +1313,13 @@ securedBy: [ oauth_2_0 ]
         description: Update the description for this organization for a given language key
         body:
           application/json:
-            properties:
-              langkey: string
-              text: string
+            type: LocalizedInfoText
         responses:
           200:
             description: description updated successfully
             body:
               application/json:
-                properties:
-                  langkey: string
-                  text: string
+                type: LocalizedInfoText
 
       /{langkey}:
         get:
@@ -1326,9 +1330,7 @@ securedBy: [ oauth_2_0 ]
               description: Description retrieved successfully
               body:
                 application/json:
-                  properties:
-                    langkey: string
-                    text: string
+                  type: LocalizedInfoText
 
         delete:
           securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
@@ -1347,9 +1349,7 @@ securedBy: [ oauth_2_0 ]
                 description: Description retrieved successfully
                 body:
                   application/json:
-                    properties:
-                      langkey: string
-                      text: string
+                    type: LocalizedInfoText
 
     /logo:
       get:
@@ -1541,9 +1541,7 @@ securedBy: [ oauth_2_0 ]
         description: Update an organization membership
         body:
           application/json:
-            properties:
-              username: string
-              role: string
+            type: Membership
         responses:
           200:
             description: updated successfully
@@ -1803,11 +1801,7 @@ securedBy: [ oauth_2_0 ]
           description: Updates an existing DNS name associated with an organization
           body:
             application/json:
-              properties:
-                oldname:
-                  type: DnsAddress
-                newname:
-                  type: DnsAddress
+              type: DnsAddress
           responses:
               201:
                   description: Renamed

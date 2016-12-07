@@ -264,7 +264,7 @@
         }
 
         function updateDescription(globalId, langKey, description) {
-            var url = apiURL + '/' + encodeURIComponent(globalId) + '/description'
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/description';
             var data = {
                 langkey: langKey,
                 text: description
@@ -273,7 +273,7 @@
         }
 
         function saveDescription(globalId, langKey, description) {
-            var url = apiURL + '/' + encodeURIComponent(globalId) + '/description'
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/description';
             var data = {
                 langkey: langKey,
                 text: description
