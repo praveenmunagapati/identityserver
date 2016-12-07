@@ -511,13 +511,12 @@ func (api OrganizationsAPI) UpdateOrganizationOrgMemberShip(w http.ResponseWrite
 		body.Role = "orgowners"
 	}
 	err = orgMgr.UpdateOrgMembership(globalid, body.Org, oldRole, body.Role)
-	if err != nil {
-		handleServerError(w, "updating organizations membership in another org", err)
+	if handleServerError(w, "updating organizations membership in another org", err) {
 		return
 	}
 	org, err = orgMgr.GetByName(globalid)
-	if err != nil {
-		handleServerError(w, "getting organization", err)
+	if handleServerError(w, "getting organization", err) {
+		return
 	}
 	json.NewEncoder(w).Encode(org)
 
@@ -1788,7 +1787,7 @@ func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, 
 
 func handleServerError(responseWriter http.ResponseWriter, actionText string, err error) bool {
 	if err != nil {
-		log.Error("Error while "+actionText, " - ", err)
+		log.Error("organizations_api: error while "+actionText, " - ", err)
 		http.Error(responseWriter, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return true
 	}

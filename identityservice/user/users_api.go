@@ -536,15 +536,6 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(respBody)
 }
 
-// ValidateUsername is the handler for GET /users/{username}/validate
-func (api UsersAPI) ValidateUsername(w http.ResponseWriter, r *http.Request) {
-
-	// token := req.FormValue("token")
-
-	// uncomment below line to add header
-	// w.Header.Set("key","value")
-}
-
 // RegisterNewPhonenumber is the handler for POST /users/{username}/phonenumbers
 // Register a new phonenumber
 func (api UsersAPI) RegisterNewPhonenumber(w http.ResponseWriter, r *http.Request) {

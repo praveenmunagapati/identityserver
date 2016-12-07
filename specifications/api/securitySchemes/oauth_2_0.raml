@@ -14,8 +14,10 @@ describedBy:
         Used to send a valid OAuth 2 access token. Do not use together with
         the "Authorization" header
   responses:
-    404:
+    401:
       description: Unauthorized
+    403:
+      description: Forbidden
 settings:
   authorizationUri: https://itsyou.online/v1/oauth/authorize
   accessTokenUri: https://itsyou.online/v1/oauth/access_token

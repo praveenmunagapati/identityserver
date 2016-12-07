@@ -216,7 +216,7 @@ types:
               bic: ABCDEFGH
               country: Tomorrowland
 
-  userview:
+  Userview:
     properties:
         username:
             type: string
@@ -494,18 +494,18 @@ securedBy: [ oauth_2_0 ]
     displayName: CreateUser
     description: Create a new user
     body:
-        application/json:
-            type: User
+      application/json:
+        type: User
 
   /{username}:
     get:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       displayName: GetUser
       responses:
-            200:
-                body:
-                    application/json:
-                        type: User
+        200:
+          body:
+            application/json:
+              type: User
     /name:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       put:
@@ -525,21 +525,21 @@ securedBy: [ oauth_2_0 ]
     /password:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       put:
-          displayName: UpdatePassword
-          description: Update the user his password
-          body:
-            application/json:
-              properties:
-                currentpassword: string
-                newpassword: string
-          responses:
-              204:
-                description: No response data
-              422:
-                  description: Invalid password format or invallid currentpassword
-                  body:
-                    application/json:
-                      type: Error
+        displayName: UpdatePassword
+        description: Update the user his password
+        body:
+          application/json:
+            properties:
+              currentpassword: string
+              newpassword: string
+        responses:
+          204:
+            description: Password successfully updated
+          422:
+            description: Invalid password format or invallid currentpassword
+            body:
+              application/json:
+                type: Error
     /emailaddresses:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       get:
@@ -555,8 +555,27 @@ securedBy: [ oauth_2_0 ]
               application/json:
                 type: EmailAddress[]
       post:
-          displayName: RegisterNewEmailAddress
-          description: Register a new email address
+        displayName: RegisterNewEmailAddress
+        description: Register a new email address
+        queryParameters:
+          lang:
+            type: string
+            description: language that the validation email should be in.
+        body:
+          application/json:
+            type: EmailAddress
+        responses:
+          201:
+            description: Registered a new email address
+            body:
+              application/json:
+                type: EmailAddress
+          409:
+              description: Label is already used.
+      /{label}:
+        put:
+          displayName: UpdateEmailAddress
+          description: Updates the label and/or value of an email address
           queryParameters:
             lang:
               type: string
@@ -565,37 +584,18 @@ securedBy: [ oauth_2_0 ]
             application/json:
               type: EmailAddress
           responses:
-              201:
-                description: Registered a new email address
-                body:
-                  application/json:
-                      type: EmailAddress
-              409:
-                  description: Label is already used.
-      /{label}:
-        put:
-            displayName: UpdateEmailAddress
-            description: Updates the label and/or value of an email address
-            queryParameters:
-              lang:
-                type: string
-                description: language that the validation email should be in.
-            body:
-              application/json:
-                type: EmailAddress
-            responses:
-              201:
-                  description: Updated
-              409:
-                  description: The new label is already used
+            201:
+              description: Updated
+            409:
+              description: The new label is already used
         delete:
-            displayName: DeleteEmailAddress
-            description: Removes an email address
-            responses:
-                204:
-                  description: Email address removed.
-                409:
-                  description: The last email address can not be removed.
+          displayName: DeleteEmailAddress
+          description: Removes an email address
+          responses:
+            204:
+              description: Email address removed.
+            409:
+              description: The last email address can not be removed.
 
         /validate:
           post:
@@ -612,59 +612,58 @@ securedBy: [ oauth_2_0 ]
     /apikeys:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       post:
-          displayName: AddApiKey
-          description: Adds an APIKey to the user
+        displayName: AddApiKey
+        description: Adds an APIKey to the user
+        body:
+          application/json:
+            properties:
+              label: Label
+        responses:
+          201:
+            description: Added a APIKey to the user
+            body:
+              application/json:
+                type: UserAPIKey
+          409:
+            description: Label is already used.
+      get:
+        displayName: ListAPIKeys
+        description: Lists the API keys
+        responses:
+          200:
+            description: List of API keys
+            body:
+              application/json:
+                type: UserAPIKey[]
+      /{label}:
+        put:
+          displayName: UpdateAPIkey
+          description: Updates the label for the API key
           body:
             application/json:
               properties:
                 label: Label
           responses:
-              201:
-                description: Added a APIKey to the user
-                body:
-                  application/json:
-                      type: UserAPIKey
-              409:
-                  description: Label is already used.
-      get:
-          displayName: ListAPIKeys
-          description: Lists the API keys
-          responses:
-              200:
-                description: List of API keys
-                body:
-                  application/json:
-                      type: UserAPIKey[]
-      /{label}:
-        put:
-            displayName: UpdateAPIkey
-            description: Updates the label for the api key
-            body:
-              application/json:
-                properties:
-                  label: Label
-            responses:
-              201:
-                  description: Updated
-              409:
-                  description: The new label is already used
+            201:
+              description: API key updated
+            409:
+              description: The new label is already used
         get:
-            displayName: GetAPIkey
-            description: Get an API key by label
-            responses:
-              200:
-                  description: API key
-                  body:
-                    application/json:
-                      type: UserAPIKey
+          displayName: GetAPIkey
+          description: Get an API key by label
+          responses:
+            200:
+              description: API key
+              body:
+                application/json:
+                  type: UserAPIKey
 
         delete:
-            displayName: DeleteAPIkey
-            description: Removes an API key
-            responses:
-                204:
-                  description: API key removed.
-
+          displayName: DeleteAPIkey
+          description: Removes an API key
+          responses:
+            204:
+              description: API key removed.
 
     /registry:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -675,41 +674,40 @@ securedBy: [ oauth_2_0 ]
           application/json:
             type: RegistryEntry
         responses:
-            201:
-              description: Added the RegistryEntry to the user's registry
-              body:
-                application/json:
-                    type: RegistryEntry
-            409:
-                description: Label is already used.
+          201:
+            description: Added the RegistryEntry to the user's registry
+            body:
+              application/json:
+                type: RegistryEntry
+          409:
+              description: Label is already used.
       get:
         displayName: ListUserRegistry
         description: Lists the Registry entries
         responses:
+          200:
+            description: List of Registry entries
+            body:
+              application/json:
+                type: RegistryEntry[]
+      /{key}:
+        delete:
+          displayName: DeleteUserRegistryEntry
+          description: Removes a RegistryEntry from the user's registry
+          responses:
+            204:
+              description: RegistryEntry removed.
+        get:
+          displayName: GetUserRegistryEntry
+          description: Get a RegistryEntry from the user's registry.
+          responses:
             200:
-              description: List of Registry entries
+              description: Registry Entry
               body:
                 application/json:
-                    type: RegistryEntry[]
-      /{key}:
-          delete:
-            displayName: DeleteUserRegistryEntry
-            description: Removes a RegistryEntry from the user's registry
-            responses:
-                204:
-                  description: RegistryEntry removed.
-          get:
-            displayName: GetUserRegistryEntry
-            description: Get a RegistryEntry from the user's registry.
-            responses:
-              200:
-                  description: Registry Entry
-                  body:
-                    application/json:
-                      type: RegistryEntry
-              404:
-                  description: Not found
-
+                  type: RegistryEntry
+            404:
+              description: Not found
 
     /github:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -717,8 +715,8 @@ securedBy: [ oauth_2_0 ]
         displayName: DeleteGithubAccount
         description: Unlink Github Account
         responses:
-            204:
-              description: Account unlinked
+          204:
+            description: Account unlinked
 
     /facebook:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -726,14 +724,14 @@ securedBy: [ oauth_2_0 ]
         displayName: DeleteFacebookAccount
         description: Delete the associated facebook account
         responses:
-            204:
-                description: Deleted facebook account
+          204:
+            description: Deleted facebook account
 
     /twofamethods:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       get:
         displayName: GetTwoFAMethods
-        description: Get the possible two factor authentication methods
+        description: Get the possible two-factor authentication methods"
         responses:
           200:
             body:
@@ -745,6 +743,7 @@ securedBy: [ oauth_2_0 ]
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
       get:
         displayName: GetTOTPSecret
+        description: 'Get a TOTP secret and issuer that can be used for setting up two-factor authentication.'
         responses:
           200:
             body:
@@ -754,10 +753,13 @@ securedBy: [ oauth_2_0 ]
                   totpissuer: string
       post:
         displayName: SetupTOTP
+        description: Enable two-factor authentication using TOTP.
         body:
           application/json:
-              properties:
-                  totpcode: string
+            properties:
+              totpcode:
+                type: string
+                description: This is a code that is generated by an authenticator application (e.g. Google Authenticator)
         responses:
           422:
             description: Invalid totpcode
@@ -765,31 +767,29 @@ securedBy: [ oauth_2_0 ]
             description: TOTP setup successfully
       delete:
         displayName: RemoveTOTP
+        description: Disable TOTP two-factor authentication.
         responses:
           409:
             description: Cannot remove TOTP authentication because this is the last available login method
           204:
             description: TOTP successfully removed
+
   /{username}/info:
     get:
       securedBy: [oauth_2_0: { scopes: [ "user:info", "user:admin" ] } ]
       displayName: GetUserInformation
+      description: Get all of the user his information. This will be limited to the scopes that the user has authorized. See https://gig.gitbooks.io/itsyouonline/content/oauth2/scopes.html and https://gig.gitbooks.io/itsyouonline/content/oauth2/availableScopes.html for more information.
       responses:
-            200:
-                body:
-                    application/json:
-                        type: userview
-  /{username}/validate:
-    get:
-      displayName: ValidateUsername
-      queryParameters:
-            token:
-                type: string
+        200:
+          body:
+            application/json:
+              type: Userview
 
   /{username}/addresses:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
       displayName: GetUserAddresses
+      description: List of all of the user his email addresses.
       responses:
         200:
           body:
@@ -800,34 +800,35 @@ securedBy: [ oauth_2_0 ]
       description: Register a new address
       body:
         application/json:
-             type: Address
+          type: Address
       responses:
         201:
           description: Registered a new address
           body:
             application/json:
-               type: Address
+              type: Address
         409:
            description: Label is already used.
     /{label}:
       get:
         displayName: GetUserAddressByLabel
+        description: Get the details of an address.
         responses:
-            200:
-                body:
-                    application/json:
-                      type: Address
+          200:
+            body:
+              application/json:
+                type: Address
       put:
-          displayName: UpdateUserAddress
-          description: Update the label and/or value of an existing address.
-          body:
-            application/json:
-               type: Address
-          responses:
-            201:
-                description: Updated
-            409:
-                description: The new label is already used
+        displayName: UpdateUserAddress
+        description: Update the label and/or value of an existing address.
+        body:
+          application/json:
+            type: Address
+        responses:
+          201:
+            description: Updated
+          409:
+            description: The new label is already used
       delete:
           displayName: DeleteUserAddress
           description: Removes an address
@@ -835,11 +836,11 @@ securedBy: [ oauth_2_0 ]
               204:
                 description: Address removed.
 
-
   /{username}/digitalwallet:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
       displayName: GetDigitalWallet
+      description: List all of the user his digital wallets.
       responses:
         200:
           body:
@@ -862,22 +863,23 @@ securedBy: [ oauth_2_0 ]
     /{label}:
       get:
         displayName: GetDigitalAssetAddressByLabel
+        description: Get the details of a digital wallet address.
         responses:
-            200:
-                body:
-                    application/json:
-                      type: DigitalAssetAddress
+          200:
+            body:
+              application/json:
+                type: DigitalAssetAddress
       put:
-          displayName: UpdateDigitalAssetAddress
-          description: Update the label and/or value of an existing address.
-          body:
-            application/json:
-               type: DigitalAssetAddress
-          responses:
-            201:
-                description: Updated
-            409:
-                description: The new label is already used
+        displayName: UpdateDigitalAssetAddress
+        description: Update the label and/or value of an existing address.
+        body:
+          application/json:
+            type: DigitalAssetAddress
+        responses:
+          201:
+             description: Updated
+          409:
+             description: The new label is already used
       delete:
           displayName: DeleteDigitalAssetAddress
           description: Removes an address
@@ -889,6 +891,7 @@ securedBy: [ oauth_2_0 ]
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
       displayName: GetUserPhoneNumbers
+      description: List of all of the user his phone numbers.
       queryParameters:
         validated:
           type: string
@@ -897,29 +900,30 @@ securedBy: [ oauth_2_0 ]
         200:
           body:
             application/json:
-                   type: Phonenumber[]
+              type: Phonenumber[]
     post:
       displayName: RegisterNewUserPhonenumber
       description: Register a new phonenumber
       body:
         application/json:
-            type: Phonenumber
+          type: Phonenumber
       responses:
-          201:
-            description: Registered a new phone number
-            body:
-              application/json:
-                 type: Phonenumber
-          409:
-              description: Label is already used.
+         201:
+           description: Registered a new phone number
+           body:
+             application/json:
+               type: Phonenumber
+         409:
+           description: Label is already used.
     /{label}:
       get:
         displayName: GetUserPhonenumberByLabel
+        description: Get the details of a phone number.
         responses:
-            200:
-                body:
-                    application/json:
-                        type: Phonenumber
+          200:
+            body:
+              application/json:
+                type: Phonenumber
       put:
         displayName: UpdateUserPhonenumber
         description: Update the label and/or value of an existing phonenumber.
@@ -935,19 +939,19 @@ securedBy: [ oauth_2_0 ]
         displayName: DeleteUserPhonenumber
         description: Removes a phonenumber
         responses:
-            204:
-              description: Phone number removed.
+          204:
+            description: Phone number removed.
       /activate:
         post:
           displayName: ValidatePhonenumber
-          description: Sends validation text to phone numbers
+          description: Sends a validation text message to the phone number.
           responses:
             200:
               description: Validation number send
               body:
                 application/json:
-                    properties:
-                        validationkey: string
+                  properties:
+                    validationkey: string
         put:
           displayName: VerifyPhoneNumber
           description: Verifies a phone number
@@ -960,7 +964,7 @@ securedBy: [ oauth_2_0 ]
             204:
               description: Phone number verified
             422:
-              description: invalid validationkey or code
+              description: Invalid validationkey or code
               body:
                 application/json:
                   type: Error
@@ -981,49 +985,51 @@ securedBy: [ oauth_2_0 ]
                 properties:
                     type: BankAccount
     get:
-        displayName: GetUserBankAccounts
-        responses:
-            200:
-                body:
-                    application/json:
-                         type: BankAccount[]
+      displayName: GetUserBankAccounts
+      description: List of the user his bank accounts.
+      responses:
+        200:
+          body:
+            application/json:
+              type: BankAccount[]
   /{username}/banks/{label}:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
-        displayName: GetUserBankAccountByLabel
-        responses:
-            200:
-                body:
-                    application/json:
-                        type: BankAccount
-    put:
-        displayName: UpdateUserBankAccount
-        description: Update an existing bankaccount and label.
-        body:
+      displayName: GetUserBankAccountByLabel
+      description: Get the details of a bank account
+      responses:
+        200:
+          body:
             application/json:
-                type: BankAccount
+              type: BankAccount
+    put:
+      displayName: UpdateUserBankAccount
+      description: Update an existing bankaccount and label.
+      body:
+        application/json:
+          type: BankAccount
     delete:
-        displayName: DeleteUserBankAccount
-        description: Delete a BankAccount
-        responses:
-          404:
-            description: BankAccount not found
-          204:
-            description: BankAccount deleted
+      displayName: DeleteUserBankAccount
+      description: Delete a BankAccount
+      responses:
+        404:
+          description: BankAccount not found
+        204:
+          description: BankAccount deleted
   /{username}/notifications:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
-        displayName: GetNotifications
-        description: Get the list of notifications, these are pending invitations or approvals
-        responses:
-            200:
-                body:
-                    application/json:
-                        properties:
-                            invitations: JoinOrganizationInvitation[]
-                            approvals: JoinOrganizationInvitation[]
-                            contractRequests: ContractSigningRequest[]
-                            missingscopes : MissingScopes[]
+      displayName: GetNotifications
+      description: Get the list of notifications, these are pending invitations or approvals or other requests.
+      responses:
+        200:
+          body:
+            application/json:
+              properties:
+                invitations: JoinOrganizationInvitation[]
+                approvals: JoinOrganizationInvitation[]
+                contractRequests: ContractSigningRequest[]
+                missingscopes : MissingScopes[]
 
   /{username}/contracts:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -1032,70 +1038,70 @@ securedBy: [ oauth_2_0 ]
       description: Get the contracts where the user is 1 of the parties. Order descending by date.
       queryParameters:
         includeExpired:
-            type: boolean
-            description: Include the expired contracts, by default only the active contracts are returned.
-            required: false
+          type: boolean
+          description: Include the expired contracts, by default only the active contracts are returned.
+          required: false
         start:
-            type: integer
-            description: Start offset, useful for paging. Default is `0`.
-            required: false
+          type: integer
+          description: Start offset, useful for paging. Default is `0`.
+          required: false
         max:
-            type: integer
-            description: Max page size, useful for paging. Default is `50`.
-            required: false
-            maximum: 250
+          type: integer
+          description: Max page size, useful for paging. Default is `50`.
+          required: false
+          maximum: 250
 
     post:
-        displayName: CreateUserContract
-        description: Create a new contract.
-        body:
+      displayName: CreateUserContract
+      description: Create a new contract.
+      body:
+        application/json:
+          type: Contract
+      responses:
+        201:
+          body:
             application/json:
               type: Contract
-        responses:
-            201:
-                body:
-                    application/json:
-                        type: Contract
-            401:
-                description: Unauthorized
+        401:
+            description: Unauthorized
 
 
   /{username}/authorizations:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
     get:
-        displayName: GetAllAuthorizations
-        description: Get the list of authorizations.
-        responses:
-            200:
-                body:
-                    application/json:
-                        type: Authorization[]
+      displayName: GetAllAuthorizations
+      description: Get the list of authorizations.
+      responses:
+        200:
+          body:
+            application/json:
+              type: Authorization[]
     /{grantedTo}:
       get:
         displayName: GetAuthorization
         description: Get the authorization for a specific organization.
         responses:
-            200:
-                body:
-                    application/json:
-                        type: Authorization
-            404:
-                description: No authorization for this organization was not found.
+          200:
+            body:
+              application/json:
+                type: Authorization
+          404:
+            description: No authorization for this organization was not found.
       delete:
         displayName: DeleteAuthorization
         description: Remove the authorization for an organization, the granted organization will no longer have access the user's information.
         responses:
-            204:
-                description: Successfully revoked authorization.
+          204:
+            description: Successfully revoked authorization.
       put:
         displayName: UpdateAuthorization
         description: Modify which information an organization is able to see.
         body:
-            application/json:
-                type: Authorization
+          application/json:
+            type: Authorization
         responses:
-            201:
-                description: Authorization updated successfully.
+          201:
+            description: Authorization updated successfully.
 
   /{username}/organizations:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -1233,8 +1239,6 @@ securedBy: [ oauth_2_0 ]
           body:
             application/json:
               type: Organization
-        401:
-          description: Unauthorized
         404:
           description: Not found
     put:
@@ -1249,8 +1253,6 @@ securedBy: [ oauth_2_0 ]
           body:
             application/json:
               type: Organization
-        401:
-          description: Unauthorized
         404:
           description: Not found
     post:
@@ -1258,20 +1260,18 @@ securedBy: [ oauth_2_0 ]
       displayName: CreateNewSubOrganization
       description: Create a new suborganization.
       body:
-          application/json:
-            type: Organization
+        application/json:
+          type: Organization
       responses:
-          201:
-            body:
-              application/json:
-                type: Organization
-          401:
-            description: Unauthorized
-          422:
-            description: Maximum amount of organizations reached
-            body:
-              application/json:
-                type: Error
+        201:
+          body:
+            application/json:
+              type: Organization
+        422:
+          description: Maximum amount of organizations reached
+          body:
+            application/json:
+              type: Error
     delete:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       displayName: DeleteOrganization
@@ -1331,7 +1331,6 @@ securedBy: [ oauth_2_0 ]
               body:
                 application/json:
                   type: LocalizedInfoText
-
         delete:
           securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
           displayName: DeleteDescription
@@ -1339,7 +1338,6 @@ securedBy: [ oauth_2_0 ]
           responses:
             204:
               description: Description deleted successfully
-
         /withfallback:
           get:
             displayName: GetDescriptionWithFallback
@@ -1361,8 +1359,6 @@ securedBy: [ oauth_2_0 ]
             body:
               application/json:
                 type: string
-
-
       put:
         displayName: SetOrganizationLogo
         securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
@@ -1378,10 +1374,6 @@ securedBy: [ oauth_2_0 ]
               application/json:
                 description: The updated logo
                 type: string
-          401:
-            description: Unauthorized
-          403:
-            description: no permission for this action
           413:
             description: file size too large
 
@@ -1390,10 +1382,6 @@ securedBy: [ oauth_2_0 ]
         securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Removes the Logo from an organization
         responses:
-          401:
-            description: Unauthorized
-          403:
-            description: No permission for this action
           404:
             description: Organization not found
           204:
@@ -1430,9 +1418,9 @@ securedBy: [ oauth_2_0 ]
               description: Organization not found
 
     /orgmembers:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       post:
         displayName: SetOrgMember
-        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Add another organization as a member of this one
         body:
           application/json:
@@ -1441,10 +1429,6 @@ securedBy: [ oauth_2_0 ]
         responses:
           201:
             description: Organization successfully added as a member
-          401:
-            description: Unauthorized
-          403:
-            description: No permission for this action
           404:
             description: Organization not found
           409:
@@ -1452,7 +1436,6 @@ securedBy: [ oauth_2_0 ]
 
       put:
         displayName: UpdateOrganizationOrgMemberShip
-        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Update the membership status of an organization
         body:
           application/json:
@@ -1464,27 +1447,17 @@ securedBy: [ oauth_2_0 ]
             description: updated organization membership successfulyy
             body:
               application/json:
-                properties:
-                  org: Organization
-          401:
-            description: Unauthorized
-          403:
-            description: No permission for this action
+                type: Organization
           404:
             description: Organization not found
 
       /{globalid2}:
         delete:
           displayName: DeleteOrgMember
-          securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
           description: Remove an organization as a member
           responses:
             204:
               description: Organization member removed successfully
-            401:
-              description: Unauthorized
-            403:
-              description: No permission for this action
             404:
               description: The user or the organization does not exist.
     /users:
@@ -1498,9 +1471,9 @@ securedBy: [ oauth_2_0 ]
               application/json:
                 type: GetOrganizationUsersResponseBody
     /orgowners:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       post:
         displayName: SetOrgOwner
-        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Add another organization as an owner of this one
         body:
           application/json:
@@ -1509,10 +1482,6 @@ securedBy: [ oauth_2_0 ]
         responses:
           201:
             description: Organization successfully added as an owner
-          401:
-            description: Unauthorized
-          403:
-            description: No permission for this action
           404:
             description: Organization not found
           409:
@@ -1521,23 +1490,17 @@ securedBy: [ oauth_2_0 ]
       /{globalid2}:
         delete:
           displayName: DeleteOrgOwner
-          securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
           description: Remove an organization as an owner
           responses:
             204:
               description: Organization owner removed successfully
-            401:
-              description: Unauthorized
-            403:
-              description: No permission for this action
             404:
               description: The organization does not exist.
 
-
     /members:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       put:
         displayName: UpdateOrganizationMemberShip
-        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Update an organization membership
         body:
           application/json:
@@ -1549,10 +1512,6 @@ securedBy: [ oauth_2_0 ]
               application/json:
                 description: The updated organization
                 type: Organization
-          401:
-            description: Unauthorized
-          403:
-            description: No permission for this action
           404:
             description: Organization not found
           422:
@@ -1563,7 +1522,6 @@ securedBy: [ oauth_2_0 ]
 
       post:
         displayName: AddOrganizationMember
-        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Assign a member to organization.
         body:
           application/json:
@@ -1574,57 +1532,49 @@ securedBy: [ oauth_2_0 ]
             body:
               application/json:
                 type: Member
-          401:
-            description: Unauthorized
           404:
             description: Not found
 
       /{username}:
         delete:
           displayName: RemoveOrganizationMember
-          securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
           description: Remove a member from an organization.
           responses:
             204:
               description: Member deleted successfully
-            401:
-              description: Unauthorized
             404:
               description: The user or the organization does not exist.
 
     /owners:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       post:
         displayName: AddOrganizationOwner
-        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
         description: Invite a user to become owner of an organization.
         body:
-            application/json:
-              type: Member
+          application/json:
+            type: Member
         responses:
-            201:
-              description: Invite created successfully
-              body:
-                application/json:
-                  type: Member
+          201:
+            description: Invite created successfully
+            body:
+              application/json:
+                type: Member
+          404:
+            description: The user or the organization does not exist.
+          409:
+            description: The user already is an owner.
+
+      /{username}:
+        delete:
+          displayName: RemoveOrganizationOwner
+          description: Remove an owner from organization
+          responses:
+            204:
+              description: Owner removed successfully
             401:
               description: Unauthorized
             404:
               description: The user or the organization does not exist.
-            409:
-              description: The user already is an owner.
-
-      /{username}:
-          delete:
-            displayName: RemoveOrganizationOwner
-            securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
-            description: Remove an owner from organization
-            responses:
-              204:
-                description: Owner removed successfully
-              401:
-                description: Unauthorized
-              404:
-                description: The user or the organization does not exist.
 
     /contracts:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
@@ -1633,18 +1583,18 @@ securedBy: [ oauth_2_0 ]
         description: Get the contracts where the organization is 1 of the parties. Order descending by date.
         queryParameters:
           includeExpired:
-              type: boolean
-              description: Include the expired contracts, by default only the active contracts are returned.
-              required: false
+            type: boolean
+            description: Include the expired contracts, by default only the active contracts are returned.
+            required: false
           start:
-              type: integer
-              description: Start offset, useful for paging. Default is `0`.
-              required: false
+            type: integer
+            description: Start offset, useful for paging. Default is `0`.
+            required: false
           max:
-              type: integer
-              description: Max page size, useful for paging. Default is `50`.
-              required: false
-              maximum: 250
+            type: integer
+            description: Max page size, useful for paging. Default is `50`.
+            required: false
+            maximum: 250
 
       post:
         displayName: CreateOrganizationContracty
@@ -1657,8 +1607,6 @@ securedBy: [ oauth_2_0 ]
             body:
               application/json:
                 type: Contract
-          401:
-            description: Unauthorized
 
     /invitations:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
@@ -1673,11 +1621,11 @@ securedBy: [ oauth_2_0 ]
 
       /{username}:
         delete:
-            displayName: RemovePendingOrganizationInvitation
-            description: Cancel a pending invitation.
-            responses:
-                204:
-                  description: Invitation cancelled
+          displayName: RemovePendingOrganizationInvitation
+          description: Cancel a pending invitation.
+          responses:
+            204:
+              description: Invitation cancelled
 
     /apikeys:
       description: API keys are the oauth2 client secrets and callbacks needed to access the api.
@@ -1686,10 +1634,10 @@ securedBy: [ oauth_2_0 ]
         displayName: GetOrganizationAPIKeyLabels
         description: Get the list of active api keys.
         responses:
-            200:
-              body:
-                application/json:
-                    type: string[]
+          200:
+            body:
+              application/json:
+                type: string[]
       post:
         displayName: CreateNewOrganizationAPIKey
         description: Create a new API Key, a secret itself should not be provided, it will be generated serverside.
@@ -1697,22 +1645,23 @@ securedBy: [ oauth_2_0 ]
           application/json:
             type: OrganizationAPIKey
         responses:
-            201:
-              body:
-                application/json:
-                    type: OrganizationAPIKey
-            409:
-                description: Label is already used.
+          201:
+            body:
+              application/json:
+                type: OrganizationAPIKey
+          409:
+            description: Label is already used.
       /{label}:
         get:
           displayName: GetOrganizationAPIKey
+          description: Get an api key from an organization
           responses:
             200:
-                body:
-                    application/json:
-                     type: OrganizationAPIKey
+              body:
+                application/json:
+                 type: OrganizationAPIKey
             404:
-                description: Not found
+              description: No API key with this label found
         put:
           displayName: UpdateOrganizationAPIKey
           description: Updates the label or other properties of a key.
@@ -1729,9 +1678,8 @@ securedBy: [ oauth_2_0 ]
           displayName: DeleteOrganizationAPIKey
           description: Removes an API key
           responses:
-              204:
-                description: API key removed
-
+            204:
+              description: API key removed
 
     /registry:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -1742,42 +1690,42 @@ securedBy: [ oauth_2_0 ]
           application/json:
             type: RegistryEntry
         responses:
-            201:
-              description: Added the RegistryEntry to the user's registry
-              body:
-                application/json:
-                    type: RegistryEntry
-            409:
-                description: Label is already used.
+          201:
+            description: Added the RegistryEntry to the user's registry
+            body:
+              application/json:
+                type: RegistryEntry
+          409:
+              description: Label is already used.
       get:
         displayName: ListOrganizationRegistry
         description: Lists the RegistryEntries in an organization's registry.
         responses:
-            200:
-              description: List of Registry Entries
-              body:
-                application/json:
+          200:
+            description: List of Registry Entries
+            body:
+              application/json:
                     type: RegistryEntry[]
     /registry/{key}:
-        delete:
-          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
-          displayName: DeleteOrganizationRegistryEntry
-          description: Removes a RegistryEntry from the organization's registry
-          responses:
-              204:
-                description: RegistryEntry removed.
+      delete:
+        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+        displayName: DeleteOrganizationRegistryEntry
+        description: Removes a RegistryEntry from the organization's registry
+        responses:
+          204:
+            description: RegistryEntry removed.
 
-        get:
-          displayName: GetOrganizationRegistryEntry
-          description: Get a RegistryEntry from the organization's registry.
-          responses:
-            200:
-                description: Registry Entry
-                body:
-                  application/json:
-                    type: RegistryEntry
-            404:
-                description: Not found
+      get:
+        displayName: GetOrganizationRegistryEntry
+        description: Get a RegistryEntry from the organization's registry.
+        responses:
+          200:
+            description: Registry Entry
+            body:
+              application/json:
+                type: RegistryEntry
+          404:
+            description: Not found
 
     /dns:
       description: Manage domain names linked to an organization.
@@ -1790,7 +1738,7 @@ securedBy: [ oauth_2_0 ]
             type: DnsAddress
         responses:
           409:
-              description: DNS name is already used.
+            description: DNS name is already used.
           201:
             body:
               application/json:
@@ -1803,25 +1751,26 @@ securedBy: [ oauth_2_0 ]
             application/json:
               type: DnsAddress
           responses:
-              201:
-                  description: Renamed
-              409:
-                  description: New DNS name is already used
-              404:
-                description: DNS Name not found
+            201:
+              description: Renamed
+            409:
+              description: New DNS name is already used
+            404:
+              description: DNS Name not found
         delete:
           displayName: DeleteOrganizationDns
           description: Removes a DNS name associated with an organization
           responses:
-              204:
-                description: DNS name removed
-              404:
-                description: DNS Name not found
+            204:
+              description: DNS name removed
+            404:
+              description: DNS Name not found
 
     /tree:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner", "organization:member" ] } ]
       get:
         displayName: GetOrganizationTree
+        description: Tree structure of all suborganizations
         responses:
           200:
             body:
@@ -1837,119 +1786,118 @@ securedBy: [ oauth_2_0 ]
           application/json:
             type: RequiredScope
         responses:
-            201:
-              description: Added the required scope to the organization.
-            409:
-              description: The required scope conflicts with an existing one
+          201:
+            description: Added the required scope to the organization.
+          409:
+            description: The required scope conflicts with an existing one
       /{requiredscope}:
-          put:
-            displayName: UpdateRequiredScope
-            description: Updates a required scope
-            responses:
-                204:
-                  description: Updated the required scope
-                404:
-                  description: The required scope was not found.
-                409:
-                  description: The new required scope conflicts with an existing one
-          delete:
-            displayName: DeleteRequiredScope
-            description: Deletes a required scope
-            responses:
-                204:
-                  description: Deleted the required scope
-                404:
-                  description: The required scope was not found.
+        put:
+          displayName: UpdateRequiredScope
+          description: Updates a required scope
+          responses:
+            204:
+              description: Updated the required scope
+            404:
+              description: The required scope was not found.
+            409:
+              description: The new required scope conflicts with an existing one
+        delete:
+          displayName: DeleteRequiredScope
+          description: Deletes a required scope
+          responses:
+            204:
+              description: Deleted the required scope
+            404:
+              description: The required scope was not found.
 
 /companies:
-    post:
-      displayName: CreateCompany
-      description: Register a new company
-      body:
+  post:
+    displayName: CreateCompany
+    description: Register a new company
+    body:
+      application/json:
+        type: Company
+  get:
+    displayName: GetCompanyList
+    description: Get companies. Authorization limits are applied to requesting user.
+    responses:
+      200:
+        body:
           application/json:
-              type: Company
+            type: Company[]
+  /{globalId}:
     get:
-      displayName: GetCompanyList
-      description: |
-            Get companies. Authorization limits are applied to requesting user.
+      displayName: GetCompany
+      securedBy: [oauth_2_0: { scopes: [ "company:read", "company:admin" ] } ]
+      description: Get organization info
       responses:
-            200:
+        200:
+          body:
+            application/json:
+              type: Company
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+    put:
+      displayName: UpdateCompany
+      securedBy: [oauth_2_0: { scopes: [ "company:admin" ] } ]
+      description: Update existing company. Updating ``globalId`` is not allowed.
+      responses:
+        200:
+          body:
+            application/json:
+              type: Company
+        403:
+          description: Updating globalId is Forbidden!
+    /info:
+      securedBy: [oauth_2_0: { scopes: [ "company:info" ] } ]
+      get:
+        displayName: GetCompanyInfo
+        responses:
+          200:
+            body:
+              application/json:
+                type: companyview
+    /validate:
+      get:
+        queryParameters:
+          token:
+            type: string
+
+    /contracts:
+      get:
+        displayName: GetCompanyContracts
+        securedBy: [oauth_2_0: { scopes: [ "company:admin", "company:contracts:read" ] } ]
+        description: Get the contracts where the organization is 1 of the parties. Order descending by date.
+        queryParameters:
+          includeExpired:
+            type: boolean
+            description: Include the expired contracts, by default only the active contracts are returned.
+            required: false
+          start:
+            type: integer
+            description: Start offset, useful for paging. Default is `0`.
+            required: false
+          max:
+            type: integer
+            description: Max page size, useful for paging. Default is `50`.
+            required: false
+            maximum: 250
+      post:
+          displayName: CreateCompanyContract
+          securedBy: [oauth_2_0: { scopes: [ "company:admin" ] } ]
+          description: Create a new contract.
+          body:
+            application/json:
+              type: Contract
+          responses:
+            201:
               body:
                 application/json:
-                  type: Company[]
-    /{globalId}:
-      get:
-        displayName: GetCompany
-        securedBy: [oauth_2_0: { scopes: [ "company:read", "company:admin" ] } ]
-        description: Get organization info
-        responses:
-          200:
-            body:
-              application/json:
-                type: Company
-          401:
-            description: Unauthorized
-          404:
-            description: Not found
-      put:
-        displayName: UpdateCompany
-        securedBy: [oauth_2_0: { scopes: [ "company:admin" ] } ]
-        description: Update existing company. Updating ``globalId`` is not allowed.
-        responses:
-          200:
-            body:
-              application/json:
-                type: Company
-          403:
-            description: Updating globalId is Forbidden!
-      /info:
-        securedBy: [oauth_2_0: { scopes: [ "company:info" ] } ]
-        get:
-          displayName: GetCompanyInfo
-          responses:
-              200:
-                  body:
-                      application/json:
-                          type: companyview
-      /validate:
-        get:
-          queryParameters:
-              token:
-                  type: string
-
-      /contracts:
-        get:
-          displayName: GetCompanyContracts
-          securedBy: [oauth_2_0: { scopes: [ "company:admin", "company:contracts:read" ] } ]
-          description: Get the contracts where the organization is 1 of the parties. Order descending by date.
-          queryParameters:
-            includeExpired:
-                type: boolean
-                description: Include the expired contracts, by default only the active contracts are returned.
-                required: false
-            start:
-                type: integer
-                description: Start offset, useful for paging. Default is `0`.
-                required: false
-            max:
-                type: integer
-                description: Max page size, useful for paging. Default is `50`.
-                required: false
-                maximum: 250
-        post:
-            displayName: CreateCompanyContract
-            securedBy: [oauth_2_0: { scopes: [ "company:admin" ] } ]
-            description: Create a new contract.
-            body:
-                application/json:
                   type: Contract
-            responses:
-              201:
-                body:
-                  application/json:
-                    type: Contract
-              401:
-                description: Unauthorized
+            401:
+              description: Unauthorized
 
 /contracts:
   /{contractId}:
@@ -1965,10 +1913,10 @@ securedBy: [ oauth_2_0 ]
         404:
           description: Not found
     /signatures:
-        post:
-          displayName: SignContract
-          securedBy: [oauth_2_0: { scopes: [ "contract:participant" ] } ]
-          description: Sign a contract
-          body:
-            application/json:
-              type: Signature
+      post:
+        displayName: SignContract
+        securedBy: [oauth_2_0: { scopes: [ "contract:participant" ] } ]
+        description: Sign a contract
+        body:
+          application/json:
+            type: Signature
