@@ -8,6 +8,7 @@
     "close": "Close",
     "closedialog": "Close dialog",
     "create": "Create",
+    "currency_symbol": "Currency symbol",
     "delete": "Delete",
     "digital_wallet_address": "Digital wallet address",
     "email_address": "Email address",
@@ -336,7 +337,6 @@
             "digitalwallet": {
                 "registerwallet": "Register a digital wallet address",
                 "digitalwallet": "Digital wallet address details",
-                "symbol": "Symbol",
                 "hasexpiredate": "This wallet has an expiration date",
                 "expirydate": "Expiry date"
             },

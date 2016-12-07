@@ -8,6 +8,7 @@
     "close": "Sluiten",
     "closedialog": "Sluit dialoogventer",
     "create": "Maak",
+    "currency_symbol": "Valuta symbool",
     "delete": "Verwijder",
     "digital_wallet_address": "Digital wallet adres",
     "email_address": "Email adres",
@@ -336,7 +337,6 @@
             "digitalwallet": {
                 "registerwallet": "Registreer een digital wallet adres",
                 "digitalwallet": "Digital wallet adres details",
-                "symbol": "Symbool",
                 "hasexpiredate": "Deze wallet heeft een vervaldatum",
                 "expirydate": "Vervaldatum"
             },
