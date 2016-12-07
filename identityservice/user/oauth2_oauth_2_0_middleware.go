@@ -62,7 +62,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		if token != nil {
 			username = token.Claims["username"].(string)
 			clientID = token.Claims["aud"].(string)
-			atscopestring = token.Claims["scope"].(string)
+			atscopestring = security.GetScopestringFromJWT(token)
 
 		} else if accessToken != "" {
 			//TODO: cache
