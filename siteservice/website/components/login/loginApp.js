@@ -102,8 +102,38 @@
         });
         $translateProvider.useSanitizeValueStrategy('sanitize');
         $translateProvider.useMissingTranslationHandlerLog();
-        $translateProvider.fallbackLanguage('en');
-        $translateProvider.use('en');
+
+        var supportedLangs = ["en", "nl"];
+        var defaultLang = "en";
+
+        // selectedLangKey is the language key that has explicitly been selected by the user
+        var langKey = localStorage.getItem('selectedLangKey');
+        // set the langKey, this is the sites language, to the selected language. if its null, it'll be overriden anyway
+        localStorage.setItem('langKey', langKey);
+        // it the user hasn't set a language yet
+        if (!langKey) {
+            var langParam = getParameterByName("lang");
+            var lang = langParam || URI(window.location.href).search(true).lang;
+            // if a queryvalue 'lang' is set and within the supported languages use that
+            if (supportedLangs.indexOf(lang) > -1) {
+                localStorage.setItem('langKey', lang);
+                // Store the langkey requested through the url params
+                localStorage.setItem('requestedLangKey', lang);
+                langKey = lang;
+            } else {
+                var previousLang = localStorage.getItem('requestedLangKey');
+                // if a language was set thourgh an URL in a previous request use that
+                if (previousLang) {
+                    localStorage.setItem('langKey', previousLang);
+                    langKey = previousLang;
+                } else {
+                    //if all else fails just use English
+                    localStorage.setItem('langKey', defaultLang);
+                    langKey = defaultLang;
+                }
+            }
+        }
+        $translateProvider.use(langKey);
     }
 
     if (!String.prototype.includes) {
@@ -119,5 +149,18 @@
                 return this.indexOf(search, start) !== -1;
             }
         };
+    }
+
+
+    function getParameterByName(name, url) {
+        if (!url) {
+              url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
     }
 })();

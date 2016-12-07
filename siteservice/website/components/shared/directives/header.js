@@ -11,40 +11,10 @@
                     scope.showCookieWarning = !localStorage.getItem('cookiewarning-dismissed');
                     scope.hideCookieWarning  = hideCookieWarning;
                     scope.updateLanguage = updateLanguage;
-                    var supportedLangs = ["en", "nl"];
-                    var defaultLang = "en";
                     init();
 
                     function init() {
-                        // selectedLangKey is the language key that has explicitly been selected by the user
-                        scope.langKey = localStorage.getItem('selectedLangKey');
-                        // set the langKey, this is the sites language, to the selected language. if its null, it'll be overriden anyway
-                        localStorage.setItem('langKey', scope.langKey);
-                        // it the user hasn't set a language yet
-                        if (!scope.langKey) {
-                            var urlParams = $location.search();
-                            // urlParams doesn't work for URI encoded urls
-                            var lang = urlParams["lang"] || URI($window.location.href).search(true).lang;
-                            // if a queryvalue 'lang' is set and within the supported languages use that
-                            if (supportedLangs.indexOf(lang) > -1) {
-                                localStorage.setItem('langKey', lang);
-                                // Store the langkey requested through the url params
-                                localStorage.setItem('requestedLangKey', lang);
-                                scope.langKey = lang;
-                            } else {
-                                var previousLang = localStorage.getItem('requestedLangKey');
-                                // if a language was set thourgh an URL in a previous request use that
-                                if (previousLang) {
-                                    localStorage.setItem('langKey', previousLang);
-                                    scope.langKey = previousLang;
-                                } else {
-                                    //if all else fails just use English
-                                    localStorage.setItem('langKey', defaultLang);
-                                    scope.langKey = defaultLang;
-                                }
-                            }
-                        }
-                        $translate.use(scope.langKey);
+                        scope.langKey = localStorage.getItem('langKey');
                     }
 
                     function hideCookieWarning(){
