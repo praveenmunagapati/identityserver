@@ -12,15 +12,17 @@ func TestOrganizationValidation(t *testing.T) {
 		org   *Organization
 		valid bool
 	}
-	testcases := []testcase{
-		testcase{org: &Organization{Globalid: ""}, valid: false},
-		testcase{org: &Organization{Globalid: "ab"}, valid: false},
-		//	testcase{org: &Organization{Globalid: "a♥"}, valid: false}, Let's just limit the amount of bytes for now
-		testcase{org: &Organization{Globalid: "abc"}, valid: true},
-		testcase{org: &Organization{Globalid: strings.Repeat("1", 150)}, valid: true},
-		testcase{org: &Organization{Globalid: strings.Repeat("1", 151)}, valid: false},
+	owners := []string{"testowner"}
+	testCases := []testcase{
+		{org: &Organization{Owners: owners, Globalid: ""}, valid: false},
+		{org: &Organization{Owners: owners, Globalid: "ab"}, valid: false},
+		{org: &Organization{Owners: owners, Globalid: "a♥"}, valid: false},
+		{org: &Organization{Owners: owners, Globalid: "abc"}, valid: true},
+		{org: &Organization{Owners: owners, Globalid: strings.Repeat("1", 150)}, valid: true},
+		{org: &Organization{Owners: owners, Globalid: strings.Repeat("1", 151)}, valid: false},
+		{org: &Organization{Owners: []string{}, Globalid: "abc"}, valid: false},
 	}
-	for _, test := range testcases {
+	for _, test := range testCases {
 		assert.Equal(t, test.valid, test.org.IsValid(), test.org.Globalid)
 	}
 }
