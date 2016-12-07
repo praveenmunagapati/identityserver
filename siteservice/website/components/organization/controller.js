@@ -339,7 +339,13 @@
                         OrganizationService
                             .deleteOrganization(globalid)
                             .then(function () {
-                                $window.location.hash = '#/';
+                                // Check if there is a parent organization. If there is, redirect there, else go to the users profile page
+                                var orgTree = $window.location.hash;
+                                var url = '#/';
+                                if (orgTree.indexOf('.') > -1) {
+                                    url = orgTree.slice(0, orgTree.lastIndexOf('.'));
+                                }
+                                $window.location.hash = url;
                             }, function (response) {
                                 if (response.status === 422) {
                                     var msg = translations['organization.controller.haschildren'];
