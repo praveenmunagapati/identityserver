@@ -924,20 +924,25 @@ func (api OrganizationsAPI) DeleteOrganizationDns(w http.ResponseWriter, r *http
 func (api OrganizationsAPI) DeleteOrganization(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	orgMgr := organization.NewManager(r)
+	suborganizations, err := orgMgr.GetSubOrganizations(globalid)
+	if handleServerError(w, "fetching suborganizations", err) {
+		return
+	}
+	for _, org := range suborganizations {
+		api.actualOrganizationDeletion(w, r, org.Globalid)
+	}
+	api.actualOrganizationDeletion(w, r, globalid)
+}
+
+// Delete organization with globalid.
+func (api OrganizationsAPI) actualOrganizationDeletion(w http.ResponseWriter, r *http.Request, globalid string) {
+	orgMgr := organization.NewManager(r)
 	logoMgr := organization.NewLogoManager(r)
 	if !orgMgr.Exists(globalid) {
 		writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
 		return
 	}
-	suborganizations, err := orgMgr.GetSubOrganizations(globalid)
-	if handleServerError(w, "fetching suborganizations", err) {
-		return
-	}
-	if len(suborganizations) != 0 {
-		writeErrorResponse(w, 422, "organization_has_children")
-		return
-	}
-	err = orgMgr.Remove(globalid)
+	err := orgMgr.Remove(globalid)
 	if handleServerError(w, "removing organization", err) {
 		return
 	}
