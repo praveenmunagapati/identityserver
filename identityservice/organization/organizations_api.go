@@ -117,9 +117,8 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-
-	if strings.Contains(org.Globalid, ".") {
-		log.Debug("globalid contains a '.'")
+	if !org.IsValid() {
+		log.Debug("Invalid organization")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -136,6 +135,11 @@ func (api OrganizationsAPI) CreateNewSubOrganization(w http.ResponseWriter, r *h
 
 	if err := json.NewDecoder(r.Body).Decode(&org); err != nil {
 		log.Debug("Error decoding the organization:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if !org.IsValidSubOrganization() {
+		log.Debug("Invalid suborganization")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -162,12 +166,6 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	if strings.TrimSpace(org.Globalid) == itsyouonlineGlobalID {
 		log.Debug("Duplicate organization")
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-		return
-	}
-
-	if !org.IsValid() {
-		log.Debug("Invalid organization")
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
