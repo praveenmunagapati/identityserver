@@ -65,6 +65,7 @@ The redirect would look something like this (assuming the application is "petsho
 ```
 https://petshop.com/callback?code=AUTHORIZATION_CODE&state=STATE
 ```
+This code is only valid for 10 seconds, so an access token should be requested immediately after the callback is received.
 
 ### Step 4: Application Requests Access Token
 
