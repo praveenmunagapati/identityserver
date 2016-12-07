@@ -8,6 +8,10 @@
 
 ## install and run locally
 
+### Prerequisites
+
+* go 1.7
+
 ### Installation
 
 ```bash

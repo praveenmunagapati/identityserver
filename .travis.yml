@@ -6,7 +6,6 @@ install:
   - go get -u -d github.com/Jumpscale/go-raml
 
 go:
-  - 1.6
   - 1.7
   - master
 
