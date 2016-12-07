@@ -101,12 +101,16 @@ func (m *Manager) getRefreshTokenCollection() *mgo.Collection {
 }
 
 // Get an authorizationRequest by it's authorizationcode.
-func (m *Manager) getAuthorizationRequest(authorizationcode string) (*authorizationRequest, error) {
-	var ar authorizationRequest
+func (m *Manager) getAuthorizationRequest(authorizationcode string) (ar *authorizationRequest, err error) {
+	ar = &authorizationRequest{}
 
-	err := m.getAuthorizationRequestCollection().Find(bson.M{"authorizationcode": authorizationcode}).One(&ar)
-
-	return &ar, err
+	err = m.getAuthorizationRequestCollection().Find(bson.M{"authorizationcode": authorizationcode}).One(ar)
+	if err != nil && err == mgo.ErrNotFound {
+		ar = nil
+		err = nil
+		return
+	}
+	return
 }
 
 // saveAuthorizationRequest stores an authorizationRequest, only adding new authorizationRequests is allowed, updating is not
