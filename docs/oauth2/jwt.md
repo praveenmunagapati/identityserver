@@ -144,7 +144,7 @@ Be sure to use `bearer` instead of `token` in the authorization header.
 ```
 curl -H "Authorization: bearer ABCDEFGH........ABCDEFGH" https://itsyou.online/v1/oauth/jwt?scope=user:memberof:org1
 ```
-If the supplied jwt has a refresh_token, the newly generated jwt has a fresh expiration time, regardless of the expiration time of the supplied jwt. If not, the expiration time is of the newly generated jwt is set to the expiration time of the supplied jwt. 
+If the supplied jwt has a refresh_token, the newly generated jwt has a fresh expiration time, regardless of the expiration time of the supplied jwt. If not, the expiration time of the newly generated jwt is set to the expiration time of the supplied jwt.
 
 If a jwt with for example less scopes is created and the `offline_access` scope is requested, ityou.online keeps a reference to the parent jwt's authorization and this in effect creates a tree of refreshable authorizations. If a specific authorization is removed from a parent, it is removed from all children as well.
 Note that it is not possible to create a jwt with a refresh_token using an jwt that does not have a refresh_token.

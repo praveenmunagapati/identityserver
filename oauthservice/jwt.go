@@ -30,7 +30,7 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 	audiences := strings.TrimSpace(r.FormValue("aud"))
 
 	//First check if the user uses an existing jwt to authenticate and authorize itself
-	idToken, err := oauth2.GetValidJWT(r, service.jwtSigningKey.PublicKey)
+	idToken, err := oauth2.GetValidJWT(r, &service.jwtSigningKey.PublicKey)
 	if err != nil {
 		log.Warning(err)
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
@@ -83,7 +83,7 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 // If the stored allowed scopes no longer contains a specific scope present in the jwt, this scope is also dropped in the newly created JWT.
 func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request) {
 
-	originalToken, err := oauth2.GetValidJWT(r, service.jwtSigningKey.PublicKey)
+	originalToken, err := oauth2.GetValidJWT(r, &service.jwtSigningKey.PublicKey)
 	if err != nil {
 		log.Warning(err)
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
