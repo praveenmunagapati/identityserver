@@ -216,7 +216,7 @@ types:
               bic: ABCDEFGH
               country: Tomorrowland
 
-  Userview:
+  userview:
     properties:
         username:
             type: string
@@ -783,7 +783,7 @@ securedBy: [ oauth_2_0 ]
         200:
           body:
             application/json:
-              type: Userview
+              type: userview
 
   /{username}/addresses:
     securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
