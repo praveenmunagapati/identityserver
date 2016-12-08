@@ -428,22 +428,34 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respBody := &Userview{
-		Username: userobj.Username,
+		Username:       userobj.Username,
+		Github:         user.GithubAccount{},
+		Facebook:       user.FacebookAccount{},
+		Addresses:      []user.Address{},
+		EmailAddresses: []user.EmailAddress{},
+		Phonenumbers:   []user.Phonenumber{},
+		BankAccounts:   []user.BankAccount{},
+		DigitalWallet:  []user.DigitalAssetAddress{},
+		OwnerOf: user.OwnerOf{
+			EmailAddresses: []string{},
+		},
+		PublicKeys: []user.PublicKey{},
 	}
 
 	if authorization.Name {
 		respBody.Firstname = userobj.Firstname
 		respBody.Lastname = userobj.Lastname
 	}
+
 	if authorization.Github {
 		respBody.Github = userobj.Github
 	}
+
 	if authorization.Facebook {
 		respBody.Facebook = userobj.Facebook
 	}
-	if authorization.Addresses != nil {
-		respBody.Addresses = make([]user.Address, 0)
 
+	if authorization.Addresses != nil {
 		for _, addressmap := range authorization.Addresses {
 			address, err := userobj.GetAddressByLabel(addressmap.RealLabel)
 			if err == nil {
@@ -464,8 +476,6 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authorization.EmailAddresses != nil {
-		respBody.EmailAddresses = make([]user.EmailAddress, 0)
-
 		for _, emailmap := range authorization.EmailAddresses {
 			email, err := userobj.GetEmailAddressByLabel(emailmap.RealLabel)
 			if err == nil {
@@ -481,7 +491,6 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authorization.Phonenumbers != nil {
-		respBody.Phonenumbers = make([]user.Phonenumber, 0)
 		for _, phonemap := range authorization.Phonenumbers {
 			phonenumber, err := userobj.GetPhonenumberByLabel(phonemap.RealLabel)
 			if err == nil {
@@ -497,8 +506,6 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authorization.BankAccounts != nil {
-		respBody.BankAccounts = make([]user.BankAccount, 0)
-
 		for _, bankmap := range authorization.BankAccounts {
 			bank, err := userobj.GetBankAccountByLabel(bankmap.RealLabel)
 			if err == nil {
@@ -514,14 +521,25 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	if authorization.DigitalWallet != nil {
-		respBody.DigitalWallet = make([]user.DigitalAssetAddress, 0)
 
+	if authorization.DigitalWallet != nil {
 		for _, addressMap := range authorization.DigitalWallet {
 			walletAddress, err := userobj.GetDigitalAssetAddressByLabel(addressMap.RealLabel)
 			if err == nil {
 				walletAddress.Label = addressMap.RequestedLabel
 				respBody.DigitalWallet = append(respBody.DigitalWallet, walletAddress)
+			} else {
+				log.Debug(err)
+			}
+		}
+	}
+
+	if authorization.PublicKeys != nil {
+		for _, publicKeyMap := range authorization.PublicKeys {
+			publicKey, err := userobj.GetPublicKeyByLabel(publicKeyMap.RealLabel)
+			if err == nil {
+				publicKey.Label = publicKeyMap.RequestedLabel
+				respBody.PublicKeys = append(respBody.PublicKeys, publicKey)
 			} else {
 				log.Debug(err)
 			}
