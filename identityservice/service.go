@@ -26,6 +26,7 @@ import (
 	"github.com/itsyouonline/identityserver/communication"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
+	"github.com/itsyouonline/identityserver/db/registry"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/validation"
 )
@@ -76,6 +77,9 @@ func (service *Service) AddRoutes(router *mux.Router) {
 
 	// Initialize Password models
 	password.InitModels()
+
+	// Initialize registry models
+	registry.InitModels()
 
 }
 
