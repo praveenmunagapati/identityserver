@@ -670,11 +670,12 @@
             var ctrl = this;
             ctrl.submit = submit;
             ctrl.cancel = cancel;
-            ctrl.organizationNameChanged = organizationNameChanged;
+            ctrl.resetValidation = resetValidation;
             ctrl.name = '';
             ctrl.parentOrganization = parentOrganization || '';
 
             function submit() {
+                ctrl.name = ctrl.name ? ctrl.name.trim() : '';
                 if (!$scope.form.$valid) {
                     return;
                 }
@@ -703,11 +704,6 @@
             function cancel() {
                 $mdDialog.cancel();
             }
-
-            function organizationNameChanged() {
-                ctrl.name = ctrl.name.trim();
-            }
-
             function resetValidation() {
                 $scope.form.name.$setValidity('duplicate', true);
             }
