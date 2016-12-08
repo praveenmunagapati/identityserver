@@ -2,6 +2,7 @@ package oauthservice
 
 import (
 	"encoding/base64"
+	"github.com/itsyouonline/identityserver/db"
 	"math/rand"
 	"time"
 )
@@ -12,6 +13,7 @@ type refreshToken struct {
 	Parent          string
 	Scopes          []string
 	Expires         *time.Time
+	LastUsed        db.DateTime
 	Subject         string
 	AuthorizedParty string
 }

@@ -65,6 +65,12 @@ func InitModels() {
 	} //Do not drop duplicates since it would hijack another refreshtoken, better to error out
 
 	db.EnsureIndex(refreshTokenCollectionName, index)
+	automaticExpiration = mgo.Index{
+		Key:         []string{"lastused"},
+		ExpireAfter: time.Second * 86400 * 30,
+		Background:  true,
+	}
+	db.EnsureIndex(refreshTokenCollectionName, automaticExpiration)
 
 }
 

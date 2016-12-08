@@ -22,6 +22,7 @@ curl -H "Authorization: bearer OLD-JWT-TOKEN" https://itsyou.online/v1/oauth/jwt
 ```
 If some of the authorizations for this token were removed, they are no longer returned in the scopes of the newly generated jwt.
 
+If a refresh token has not been used for more than 30 days it will no longer be valid.
 
 ## Acquiring a jwt
 

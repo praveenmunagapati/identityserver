@@ -10,6 +10,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/itsyouonline/identityserver/credentials/oauth2"
+	"github.com/itsyouonline/identityserver/db"
 )
 
 var errUnauthorized = errors.New("Unauthorized")
@@ -117,14 +118,21 @@ func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
-	//Take the scope from the stored refreshtoken, it might be that certain authorizations are revoked
+	// Take the scope from the stored refreshtoken, it might be that certain authorizations are revoked
 	originalToken.Claims["scope"] = rt.Scopes
-	//Set a new expiration time
+	// Set a new expiration time
 	originalToken.Claims["exp"] = time.Now().Add(AccessTokenExpiration).Unix()
-	//Sign it and return
+	// Sign it and return
 	tokenString, err := originalToken.SignedString(service.jwtSigningKey)
 	if err != nil {
 		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	rt.LastUsed = db.DateTime(time.Now())
+	err = mgr.saveRefreshToken(rt)
+	if err != nil {
+		log.Error("Error while saving refresh token:", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -186,6 +194,7 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 		rt := newRefreshToken()
 		rt.AuthorizedParty = at.ClientID
 		rt.Scopes = grantedScopes
+		rt.LastUsed = db.DateTime(time.Now())
 		token.Claims["refresh_token"] = rt.RefreshToken
 		mgr := NewManager(r)
 		if err = mgr.saveRefreshToken(&rt); err != nil {
@@ -251,8 +260,13 @@ func (service *Service) createNewJWTFromParent(r *http.Request, parentToken *jwt
 		token.Claims["aud"] = audiencesArr
 	}
 	token.Claims["azp"] = parentToken.Claims["azp"]
+	lastUsed := db.DateTime(time.Now())
 	if parentRefreshToken != nil {
 		token.Claims["exp"] = time.Now().Add(AccessTokenExpiration).Unix()
+		parentRefreshToken.LastUsed = lastUsed
+		if err = mgr.saveRefreshToken(parentRefreshToken); err != nil {
+			return
+		}
 	} else {
 		token.Claims["exp"] = parentToken.Claims["exp"]
 	}
@@ -263,6 +277,7 @@ func (service *Service) createNewJWTFromParent(r *http.Request, parentToken *jwt
 		rt.Parent = parentRefreshToken.RefreshToken
 		rt.AuthorizedParty = token.Claims["azp"].(string)
 		rt.Scopes = grantedScopes
+		rt.LastUsed = lastUsed
 		token.Claims["refresh_token"] = rt.RefreshToken
 		if err = mgr.saveRefreshToken(&rt); err != nil {
 			return
