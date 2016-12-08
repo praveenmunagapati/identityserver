@@ -326,8 +326,11 @@
 
         function showDeleteOrganizationDialog(event) {
             $translate(['organization.controller.confirmdelete', 'organization.controller.deleteorg', 'organization.controller.deleteorganization',
-                'organization.controller.haschildren', 'organization.controller.yes', 'organization.controller.no'], {organization: globalid}).then(function(translations){
+                'organization.controller.haschildren', 'organization.controller.yes', 'organization.controller.no', 'delete_org_with_children'], {organization: globalid}).then(function(translations){
                     var text = translations['organization.controller.confirmdelete'];
+                    if (hasActualChildren(vm.organization.globalid, vm.organizationRoot.children[0])) {
+                       text = translations['delete_org_with_children'];
+                    }
                     var confirm = $mdDialog.confirm()
                         .title(translations['organization.controller.deleteorg'])
                         .textContent(text)
@@ -336,24 +339,24 @@
                         .ok(translations['organization.controller.yes'])
                         .cancel(translations['organization.controller.no']);
                     $mdDialog.show(confirm).then(function () {
-                        OrganizationService
-                            .deleteOrganization(globalid)
-                            .then(function () {
-                                // Check if there is a parent organization. If there is, redirect there, else go to the users profile page
-                                var orgTree = $window.location.hash;
-                                var url = '#/';
-                                if (orgTree.indexOf('.') > -1) {
-                                    url = orgTree.slice(0, orgTree.lastIndexOf('.'));
-                                }
-                                $window.location.hash = url;
-                            }, function (response) {
-                                if (response.status === 422) {
-                                    var msg = translations['organization.controller.haschildren'];
-                                    UserDialogService.showSimpleDialog(msg, 'Error', 'Ok', event);
-                                }
-                            });
+                        OrganizationService.deleteOrganization(globalid).then(function() {
+                            // Check if there is a parent organization. If there is, redirect there, else go to the users profile page
+                            var orgTree = $window.location.hash;
+                            var url = '#/';
+                            if (orgTree.indexOf('.') > -1) {
+                                url = orgTree.slice(0, orgTree.lastIndexOf('.'));
+                            }
+                            $window.location.hash = url;
+                        });
                     });
             });
+        }
+
+        function hasActualChildren(globalid, branch) {
+            if (globalid === branch.globalid) {
+                return branch.children.length > 0;
+            }
+            return hasActualChildren(globalid, branch.children[0]);
         }
 
         function canEditRole(member) {

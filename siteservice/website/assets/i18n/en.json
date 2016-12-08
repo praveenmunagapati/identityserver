@@ -464,5 +464,6 @@
             "no": "No"
         }
     },
-    "verify": "Verify"
+    "verify": "Verify",
+    "delete_org_with_children": "This organization has children. Deleting this organization will also delete ALL these child organizations. Are you really sure?"
 }

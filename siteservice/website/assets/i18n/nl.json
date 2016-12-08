@@ -464,5 +464,6 @@
             "no": "Nee"
         }
     },
-    "verify": "Valideer"
+    "verify": "Valideer",
+    "delete_org_with_children": "Deze organizatie heeft suborganizaties. Als je deze organizatie verwijdert, worden ook ALLE suborganizaties verwijderd. Ben je echt zeker?"
 }
