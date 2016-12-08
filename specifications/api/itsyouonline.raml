@@ -1650,7 +1650,6 @@ securedBy: [ oauth_2_0 ]
               description: Invitation cancelled
 
     /apikeys:
-      description: API keys are the oauth2 client secrets and callbacks needed to access the api.
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       get:
         displayName: GetOrganizationAPIKeyLabels
@@ -1750,7 +1749,6 @@ securedBy: [ oauth_2_0 ]
             description: Not found
 
     /dns:
-      description: Manage domain names linked to an organization.
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       post:
         displayName: CreateOrganizationDns
