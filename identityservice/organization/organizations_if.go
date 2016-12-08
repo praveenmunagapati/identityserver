@@ -55,22 +55,14 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// AddOrganizationOwner is the handler for POST /organizations/{globalid}/owners
 	// Invite a user to become owner of an organization.
 	AddOrganizationOwner(http.ResponseWriter, *http.Request)
-	// RemoveOrganizationMemberInvite is the handler for DELETE /organizations/{globalid}/owners/{searchstring}
-	// Removes an owner invitation
-	RemoveOrganizationOwnerInvite(http.ResponseWriter, *http.Request)
-	// RemoveOrganizationOwnerInvite is the handler for DELETE /organizations/{globalid}/members/{searchstring}
-	// Removes a member invitation
-	RemoveOrganizationMemberInvite(http.ResponseWriter, *http.Request)
-	// RemoveOrganizationOwner is the handler for DELETE /organizations/{globalid}/owners/{username}
-	// Remove an owner from organization
 	RemoveOrganizationOwner(http.ResponseWriter, *http.Request)
 	// GetContracts is the handler for GET /organizations/{globalid}/contracts
 	// Get the contracts where the organization is 1 of the parties. Order descending by
 	// date.
 	GetContracts(http.ResponseWriter, *http.Request)
-	// GetPendingOrganizationInvitations is the handler for GET /organizations/{globalid}/invitations
-	// Get the list of pending invitations for users to join this organization.
-	GetPendingOrganizationInvitations(http.ResponseWriter, *http.Request)
+	// GetInvitations is the handler for GET /organizations/{globalid}/invitations
+	// Get the list of invitations for users to join this organization.
+	GetInvitations(http.ResponseWriter, *http.Request)
 	// RemovePendingInvitation is the handler for DELETE /organizations/{globalid}/invitations/{username}
 	// Cancel a pending invitation.
 	RemovePendingInvitation(http.ResponseWriter, *http.Request)
@@ -170,13 +162,11 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/members", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddOrganizationMember))).Methods("POST")
 	r.Handle("/organizations/{globalid}/members", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateOrganizationMemberShip))).Methods("PUT")
 	r.Handle("/organizations/{globalid}/members/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveOrganizationMember))).Methods("DELETE")
-	r.Handle("/organizations/{globalid}/members/invites/{searchstring}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveOrganizationMemberInvite))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/owners", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddOrganizationOwner))).Methods("POST")
 	r.Handle("/organizations/{globalid}/owners/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveOrganizationOwner))).Methods("DELETE")
-	r.Handle("/organizations/{globalid}/owners/invites/{searchstring}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveOrganizationOwnerInvite))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner", "organization:contracts:read"}).Handler).Then(http.HandlerFunc(i.GetContracts))).Methods("GET")
-	r.Handle("/organizations/{globalid}/invitations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetPendingOrganizationInvitations))).Methods("GET")
-	r.Handle("/organizations/{globalid}/invitations/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemovePendingInvitation))).Methods("DELETE")
+	r.Handle("/organizations/{globalid}/invitations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetInvitations))).Methods("GET")
+	r.Handle("/organizations/{globalid}/invitations/{searchstring}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemovePendingInvitation))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/suborganizations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateNewSubOrganization))).Methods("POST")
 	r.Handle("/organizations/{globalid}/dns", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateOrganizationDns))).Methods("POST")
 	r.Handle("/organizations/{globalid}/dns/{dnsname}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateOrganizationDns))).Methods("PUT")

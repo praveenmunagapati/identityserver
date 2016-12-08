@@ -3,6 +3,7 @@ package invitations
 import (
 	"github.com/itsyouonline/identityserver/db"
 	"gopkg.in/mgo.v2/bson"
+	"reflect"
 )
 
 type InvitationStatus string
@@ -41,4 +42,16 @@ type JoinOrganizationInvitation struct {
 	EmailAddress string           `json:"emailaddress"`
 	PhoneNumber  string           `json:"phonenumber"`
 	Code         string           `json:"-"`
+}
+
+func ParseInvitationType(invitationType string) string {
+	val := reflect.ValueOf(RequestAccepted).String()
+	if val == invitationType {
+		return val
+	}
+	val = reflect.ValueOf(RequestRejected).String()
+	if val == invitationType {
+		return val
+	}
+	return reflect.ValueOf(RequestPending).String()
 }

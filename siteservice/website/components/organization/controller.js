@@ -20,6 +20,9 @@
         vm.organizationRoot = {};
         vm.childOrganizationNames = [];
         vm.logo = "";
+        vm.loading = {
+            invitations: false
+        };
 
         vm.initSettings = initSettings;
         vm.showInvitationDialog = showInvitationDialog;
@@ -116,13 +119,11 @@
             if (!vm.hasEditPermission || vm.invitations.length) {
                 return;
             }
-            OrganizationService
-                .getInvitations(globalid)
-                .then(
-                    function (data) {
-                        vm.invitations = data;
-                    }
-                );
+            vm.loading.invitations = true;
+            OrganizationService.getInvitations(globalid).then(function (data) {
+                vm.loading.invitations = false;
+                vm.invitations = data;
+            });
         }
 
         function fetchAPIKeyLabels(){
@@ -528,19 +529,15 @@
                 var closeText = 'Close';
                 UserDialogService.showSimpleDialog(msg, title, closeText, event);
             });
-            // msg += user.missingscopes.join('<br />');
-            // var closeText = 'Close';
-            // UserDialogService.showSimpleDialog(msg, title, closeText, event);
         }
 
         function getScopeTranslation(scope) {
             return ScopeService.parseScope(scope);
         }
 
-        function removeInvitation(event, invite) {
-            var role = invite.role,
-                searchString = invite.user;
-            OrganizationService.removeInvite(globalid, role, searchString).then(removeFromView, function (response) {
+        function removeInvitation(invite) {
+            var searchString = invite.user || invite.phonenumber || invite.emailaddress;
+            OrganizationService.removeInvitation(globalid, searchString).then(removeFromView, function (response) {
                 if (response.status === 404) {
                     removeFromView();
                 } else {

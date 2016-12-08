@@ -1243,7 +1243,7 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 
 	invititationMgr := invitations.NewInvitationManager(r)
 
-	userOrgRequests, err := invititationMgr.GetByUser(username)
+	userOrgRequests, err := invititationMgr.FilterByUser(username, "pending")
 	if handleServerError(w, "getting invitations by user", err) {
 		return
 	}

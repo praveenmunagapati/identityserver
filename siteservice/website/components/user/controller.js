@@ -131,7 +131,7 @@
                 vm.pendingCount = getPendingCount('all');
                 vm.notificationMessage = vm.pendingCount ? '' : translations['user.controller.notifications'];
                 $rootScope.notificationCount = vm.pendingCount;
-            })
+            });
         }
 
         function loadOrganizations() {
@@ -241,20 +241,17 @@
         function getPendingCount(obj) {
             var count = 0;
             if (obj === 'all') {
-                count += vm.notifications.approvals.filter(pendingFilter).length;
-                count += vm.notifications.contractRequests.filter(pendingFilter).length;
-                count += vm.notifications.invitations.filter(pendingFilter).length;
+                count += vm.notifications.approvals.length;
+                count += vm.notifications.contractRequests.length;
+                count += vm.notifications.invitations.length;
                 count += vm.notifications.security.length;
-                vm.orgsWithInvitation = vm.notifications.invitations.filter(pendingFilter).map(function (invitation) {
+                vm.orgsWithInvitation = vm.notifications.invitations.map(function (invitation) {
                     return invitation.organization;
                 });
                 count += vm.notifications.missingscopes.filter(missingScopeFilter).length;
                 return count;
             } else {
-                return obj ? obj.filter(pendingFilter).length : 0;
-            }
-            function pendingFilter(prop) {
-                return prop.status === 'pending';
+                return obj ? obj.length : 0;
             }
 
             function missingScopeFilter(missingScope) {

@@ -381,35 +381,6 @@ func (api OrganizationsAPI) AddOrganizationMember(w http.ResponseWriter, r *http
 	api.inviteUser(w, r, invitations.RoleMember)
 }
 
-// RemoveOrganizationMemberInvite Assign a member to organization
-// It is handler for DELETE /organizations/{globalid}/members/{searchstring}
-func (api OrganizationsAPI) RemoveOrganizationMemberInvite(w http.ResponseWriter, r *http.Request) {
-	api.removeInvite(w, r)
-}
-
-// RemoveOrganizationOwnerInvite Assign a member to organization
-// It is handler for DELETE /organizations/{globalid}/owners/{searchstring}
-func (api OrganizationsAPI) RemoveOrganizationOwnerInvite(w http.ResponseWriter, r *http.Request) {
-	api.removeInvite(w, r)
-}
-
-func (api OrganizationsAPI) removeInvite(w http.ResponseWriter, r *http.Request) {
-	globalID := mux.Vars(r)["globalid"]
-	searchString := mux.Vars(r)["searchstring"]
-	invitationMgr := invitations.NewInvitationManager(r)
-	err := invitationMgr.Remove(globalID, searchString)
-	if err == mgo.ErrNotFound {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-	if err != nil {
-		log.Error("Error while remove invite: ", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
-}
-
 func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
 	var membership Membership
@@ -604,46 +575,39 @@ func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *ht
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GetPendingOrganizationInvitations is the handler for GET /organizations/{globalid}/invitations
+// GetInvitations is the handler for GET /organizations/{globalid}/invitations
 // Get the list of pending invitations for users to join this organization.
-func (api OrganizationsAPI) GetPendingOrganizationInvitations(w http.ResponseWriter, r *http.Request) {
+func (api OrganizationsAPI) GetInvitations(w http.ResponseWriter, r *http.Request) {
 	globalid := mux.Vars(r)["globalid"]
+	status := invitations.ParseInvitationType(r.FormValue("status"))
 
 	invitationMgr := invitations.NewInvitationManager(r)
+	invites, err := invitationMgr.FilterByOrganization(globalid, status)
 
-	requests, err := invitationMgr.GetPendingByOrganization(globalid)
-
-	if err != nil {
-		log.Error("Error in GetPendingByOrganization: ", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if handleServerError(w, "filtering invitations by organization", err) {
 		return
 	}
-
-	// todo just return normal JoinOrganizationInvitation objects here
-	pendingInvites := make([]organization.Invitation, len(requests), len(requests))
-	for index, request := range requests {
-		userInfo := request.User
-		if userInfo == "" {
-			userInfo = request.EmailAddress
-		}
-		if userInfo == "" {
-			userInfo = request.PhoneNumber
-		}
-		pendingInvites[index] = organization.Invitation{
-			Role:    request.Role,
-			User:    userInfo,
-			Created: request.Created,
-		}
-	}
 	w.Header().Set("Content-Type", "application/json")
-
-	json.NewEncoder(w).Encode(pendingInvites)
+	json.NewEncoder(w).Encode(invites)
 }
 
 // RemovePendingInvitation is the handler for DELETE /organizations/{globalid}/invitations/{username}
 // Cancel a pending invitation.
 func (api OrganizationsAPI) RemovePendingInvitation(w http.ResponseWriter, r *http.Request) {
-	log.Error("RemovePendingInvitation is not implemented")
+	globalID := mux.Vars(r)["globalid"]
+	searchString := mux.Vars(r)["searchstring"]
+	invitationMgr := invitations.NewInvitationManager(r)
+	err := invitationMgr.Remove(globalID, searchString)
+	if err == mgo.ErrNotFound {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Error("Error while remove invite: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetContracts is the handler for GET /organizations/{globalid}/contracts

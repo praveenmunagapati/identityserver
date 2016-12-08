@@ -236,15 +236,27 @@ types:
         organization: string
         user: string
         role:
-            type: string
-            enum: [owner, member]
+          type: string
+          enum: [owner, member]
         created?: datetime
+        status:
+          type: string
+          enum: [pending, accepted, rejected]
+        method:
+          type: string
+          enum: [website, email, phone]
+        emailaddress: string
+        phonenumber: string
 
     example:
       organization: mycoolsoccerclub
       user: bob
       role: owner
       created: 2016-02-28T16:41:41.090Z
+      status: pending
+      method: website
+      emailaddress: ""
+      phonenumber: ""
 
   ContractSigningRequest:
     properties:
@@ -1611,13 +1623,23 @@ securedBy: [ oauth_2_0 ]
     /invitations:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       get:
-        displayName: GetPendingOrganizationInvitations
+        displayName: GetInvitations
         description: Get the list of pending invitations for users to join this organization.
+        queryParameters:
+          status:
+            type: string
+            description: What status to filter the invitations on. Possible values are pending, accepted and rejected. When not provided, defaults to pending.
+            default: pending
+            required: false
+            enum:
+              - pending
+              - accepted
+              - rejected
         responses:
-            200:
-              body:
-                application/json:
-                  type: JoinOrganizationInvitation[]
+          200:
+            body:
+              application/json:
+                type: JoinOrganizationInvitation[]
 
       /{username}:
         delete:

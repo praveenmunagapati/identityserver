@@ -35,18 +35,42 @@ func NewInvitationManager(r *http.Request) *InvitationManager {
 // GetByUser gets all invitations for a user.
 func (o *InvitationManager) GetByUser(username string) ([]JoinOrganizationInvitation, error) {
 	orgRequests := []JoinOrganizationInvitation{}
-
 	err := o.collection.Find(bson.M{"user": username}).All(&orgRequests)
-
 	return orgRequests, err
 }
 
-// GetPendingByOrganization gets all pending invitations for a user.
-func (o *InvitationManager) GetPendingByOrganization(globalid string) ([]JoinOrganizationInvitation, error) {
+// FilterByUser gets all invitations for a user, filtered on status
+func (o *InvitationManager) FilterByUser(username string, status string) ([]JoinOrganizationInvitation, error) {
 	orgRequests := []JoinOrganizationInvitation{}
+	if status == "" {
+		return o.GetByUser(username)
+	}
+	qry := bson.M{
+		"user":   username,
+		"status": status,
+	}
+	err := o.collection.Find(qry).All(&orgRequests)
+	return orgRequests, err
+}
 
-	err := o.collection.Find(bson.M{"organization": globalid, "status": RequestPending}).All(&orgRequests)
+// GetByOrganization gets all invitations for an organization
+func (o *InvitationManager) GetByOrganization(globalid string) ([]JoinOrganizationInvitation, error) {
+	orgRequests := []JoinOrganizationInvitation{}
+	err := o.collection.Find(bson.M{"organization": globalid}).All(&orgRequests)
+	return orgRequests, err
+}
 
+// FilterByOrganization gets all invitations for a user, filtered on status
+func (o *InvitationManager) FilterByOrganization(globalID string, status string) ([]JoinOrganizationInvitation, error) {
+	orgRequests := []JoinOrganizationInvitation{}
+	if status == "" {
+		return o.GetByOrganization(globalID)
+	}
+	qry := bson.M{
+		"organization": globalID,
+		"status":       status,
+	}
+	err := o.collection.Find(qry).All(&orgRequests)
 	return orgRequests, err
 }
 

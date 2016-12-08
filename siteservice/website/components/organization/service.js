@@ -18,7 +18,7 @@
             create: create,
             get: get,
             invite: invite,
-            removeInvite: removeInvite,
+            removeInvitation: removeInvitation,
             addOrganization: addOrganization,
             getUserOrganizations: getUserOrganizations,
             getInvitations: getInvitations,
@@ -89,8 +89,8 @@
             return genericHttpCall(POST, url, data);
         }
 
-        function removeInvite(globalid, role, searchString) {
-            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + role + 's/invites/' + encodeURIComponent(searchString);
+        function removeInvitation(globalid, searchString) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/invitations/' + encodeURIComponent(searchString);
             return genericHttpCall(DELETE, url);
         }
 
