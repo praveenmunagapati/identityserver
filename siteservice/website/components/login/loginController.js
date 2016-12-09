@@ -28,7 +28,7 @@
                 LoginService.getLogo(vm.externalSite).then(
                     function(data) {
                         vm.logo = data.logo;
-                        renderLogo();
+                        resizeLogo();
                     }
                 );
                 $window.addEventListener('resize', resizeLogo, false);
