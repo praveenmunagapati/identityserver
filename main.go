@@ -26,6 +26,8 @@ func main() {
 	app.Version = "0.1-Dev"
 
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+	// Set log output to stdout so we can pipe it
+	log.SetOutput(os.Stdout)
 
 	var debugLogging, ignoreDevcert bool
 	var bindAddress, dbConnectionString string
