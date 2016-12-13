@@ -33,8 +33,8 @@
                 );
         }
 
-        function accept(invitation) {
-            var url = apiURL + '/' + encodeURIComponent(invitation.user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role) ;
+        function accept(invitation, user) {
+            var url = apiURL + '/' + encodeURIComponent(user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role) ;
             return $http
                 .post(url, invitation)
                 .then(
@@ -47,8 +47,8 @@
                 );
         }
 
-        function reject(invitation) {
-            var url = apiURL + '/' + encodeURIComponent(invitation.user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role) ;
+        function reject(invitation, user) {
+            var url = apiURL + '/' + encodeURIComponent(user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role) ;
 
             return $http
                 .delete(url)

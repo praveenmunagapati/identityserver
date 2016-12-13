@@ -6,10 +6,13 @@ import (
 	"encoding/json"
 	"net/http"
 
+	mgo "gopkg.in/mgo.v2"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 
 	organizationdb "github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 )
 
@@ -74,11 +77,44 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	}
 
 	orgReqMgr := invitations.NewInvitationManager(r)
+	valMgr := validation.NewManager(r)
 
-	orgRequest, err := orgReqMgr.Get(username, organization, role, invitations.RequestPending)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
+	var orgRequest *invitations.JoinOrganizationInvitation
+	var err error
+
+	switch j.Method {
+	case invitations.MethodEmail:
+		orgRequest, err = orgReqMgr.GetWithEmail(j.EmailAddress, organization, role, invitations.RequestPending)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		validatedEmail, e := valMgr.GetByEmailAddressValidatedEmailAddress(j.EmailAddress)
+		if e != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		username = validatedEmail.Username
+		break
+	case invitations.MethodPhone:
+		orgRequest, err = orgReqMgr.GetWithPhonenumber(j.PhoneNumber, organization, role, invitations.RequestPending)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		validatedPhonenumber, e := valMgr.GetByPhoneNumber(j.PhoneNumber)
+		if e != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		username = validatedPhonenumber.Username
+		break
+	default:
+		orgRequest, err = orgReqMgr.Get(username, organization, role, invitations.RequestPending)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
 	}
 
 	// TODO: Save member
@@ -130,7 +166,56 @@ func (api UsersusernameorganizationsAPI) globalidrolesroleDelete(w http.Response
 	orgReqMgr := invitations.NewInvitationManager(r)
 
 	orgRequest, err := orgReqMgr.Get(username, organization, role, invitations.RequestPending)
-	if err != nil {
+	if err != nil && err != mgo.ErrNotFound {
+		log.Error("error while trying to load the invite")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	// User was invited through phone or email
+	// TODO: maybe think about a better way to handle this in the future.
+	if orgRequest == nil {
+		valMgr := validation.NewManager(r)
+		validatedPhonenumbers, err := valMgr.GetByUsernameValidatedPhonenumbers(username)
+		if err != nil {
+			log.Error("error while loading verified phone numbers for user ", username)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		for _, number := range validatedPhonenumbers {
+			orgRequest, err := orgReqMgr.GetWithPhonenumber(number.Phonenumber, organization, role, invitations.RequestPending)
+			if err != nil && err != mgo.ErrNotFound {
+				http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+				return
+			}
+			if orgRequest != nil {
+				break
+			}
+		}
+
+		if orgRequest == nil {
+			validatedEmailaddresses, err := valMgr.GetByUsernameValidatedEmailAddress(username)
+			if err != nil {
+				log.Error("error while loading verified phone numbers for user ", username)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			for _, email := range validatedEmailaddresses {
+				orgRequest, err := orgReqMgr.GetWithEmail(email.EmailAddress, organization, role, invitations.RequestPending)
+				if err != nil && err != mgo.ErrNotFound {
+					http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+					return
+				}
+				if orgRequest != nil {
+					break
+				}
+			}
+		}
+	}
+	// All possible invite options exhausted, if we still haven't found the invite it just isn't there
+	// This is possible when a user validates an email/phonennumber AFTER it was invited, then deletes
+	// the verified email/phone and finally tries to decline the invitation before reloading the page
+	if orgRequest == nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}

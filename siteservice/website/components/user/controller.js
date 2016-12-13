@@ -264,7 +264,7 @@
                 return missingScope.organization === invitation.organization;
             })[0];
             resolveMissingScope(event, missingScope).then(function () {
-                NotificationService.accept(invitation).then(function () {
+                NotificationService.accept(invitation, vm.username).then(function () {
                     invitation.status = 'accepted';
                     if (vm[invitation.role]) {
                         vm[invitation.role].push(invitation.organization);
@@ -276,7 +276,7 @@
 
         function reject(invitation) {
             NotificationService
-                .reject(invitation)
+                .reject(invitation, vm.username)
                 .then(function () {
                     invitation.status = 'rejected';
                     updatePendingNotificationsCount();

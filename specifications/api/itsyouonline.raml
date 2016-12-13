@@ -1538,6 +1538,10 @@ securedBy: [ oauth_2_0 ]
         body:
           application/json:
             type: Member
+        queryParameters:
+          invitenotification?:
+            type: string
+            description: Tell the server how email/sms invites should be handled
         responses:
           201:
             description: Member assigned successfully
@@ -1565,6 +1569,10 @@ securedBy: [ oauth_2_0 ]
         body:
           application/json:
             type: Member
+        queryParameters:
+          invitenotification?:
+            type: string
+            description: Tell the server how email/sms invites should be handled
         responses:
           201:
             description: Invite created successfully

@@ -269,7 +269,10 @@ func (api OrganizationsAPI) UpdateOrganization(w http.ResponseWriter, r *http.Re
 
 func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, role string) {
 	globalID := mux.Vars(r)["globalid"]
-
+	invitenotification := r.FormValue("invitenotification")
+	if invitenotification == "" {
+		invitenotification = "default"
+	}
 	var s searchMember
 
 	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
@@ -365,9 +368,11 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 		return
 	}
 
-	err = api.sendInvite(r, orgReq)
-	if handleServerError(w, "sending organization invite", err) {
-		return
+	if invitenotification != "none" {
+		err = api.sendInvite(r, orgReq)
+		if handleServerError(w, "sending organization invite", err) {
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

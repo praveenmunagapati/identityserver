@@ -39,6 +39,20 @@ func (o *InvitationManager) GetByUser(username string) ([]JoinOrganizationInvita
 	return orgRequests, err
 }
 
+// GetByEmail gets all invitations for an email address.
+func (o *InvitationManager) GetByEmail(email string) ([]JoinOrganizationInvitation, error) {
+	orgRequests := []JoinOrganizationInvitation{}
+	err := o.collection.Find(bson.M{"emailaddress": email}).All(&orgRequests)
+	return orgRequests, err
+}
+
+// GetByPhonenumber gets all invitations for a phone number.
+func (o *InvitationManager) GetByPhonenumber(phonenumber string) ([]JoinOrganizationInvitation, error) {
+	orgRequests := []JoinOrganizationInvitation{}
+	err := o.collection.Find(bson.M{"phonenumber": phonenumber}).All(&orgRequests)
+	return orgRequests, err
+}
+
 // FilterByUser gets all invitations for a user, filtered on status
 func (o *InvitationManager) FilterByUser(username string, status string) ([]JoinOrganizationInvitation, error) {
 	orgRequests := []JoinOrganizationInvitation{}
@@ -48,6 +62,34 @@ func (o *InvitationManager) FilterByUser(username string, status string) ([]Join
 	qry := bson.M{
 		"user":   username,
 		"status": status,
+	}
+	err := o.collection.Find(qry).All(&orgRequests)
+	return orgRequests, err
+}
+
+// FilterByEmail gets all invitations for an email address, filtered on status
+func (o *InvitationManager) FilterByEmail(email string, status string) ([]JoinOrganizationInvitation, error) {
+	orgRequests := []JoinOrganizationInvitation{}
+	if status == "" {
+		return o.GetByEmail(email)
+	}
+	qry := bson.M{
+		"emailaddress": email,
+		"status":       status,
+	}
+	err := o.collection.Find(qry).All(&orgRequests)
+	return orgRequests, err
+}
+
+// FilterByPhonenumber gets all invitations for a phone number, filtered on status
+func (o *InvitationManager) FilterByPhonenumber(phonenumber string, status string) ([]JoinOrganizationInvitation, error) {
+	orgRequests := []JoinOrganizationInvitation{}
+	if status == "" {
+		return o.GetByPhonenumber(phonenumber)
+	}
+	qry := bson.M{
+		"phonenumber": phonenumber,
+		"status":      status,
 	}
 	err := o.collection.Find(qry).All(&orgRequests)
 	return orgRequests, err
@@ -80,6 +122,38 @@ func (o *InvitationManager) Get(username string, organization string, role strin
 
 	query := bson.M{
 		"user":         username,
+		"role":         role,
+		"organization": organization,
+		"status":       status,
+	}
+
+	err := o.collection.Find(query).One(&orgRequest)
+
+	return &orgRequest, err
+}
+
+//GetWithEmail get an invitation by it's content, not really this usefull, TODO: just make an exists method
+func (o *InvitationManager) GetWithEmail(email string, organization string, role string, status InvitationStatus) (*JoinOrganizationInvitation, error) {
+	var orgRequest JoinOrganizationInvitation
+
+	query := bson.M{
+		"emailaddress": email,
+		"role":         role,
+		"organization": organization,
+		"status":       status,
+	}
+
+	err := o.collection.Find(query).One(&orgRequest)
+
+	return &orgRequest, err
+}
+
+//GetWithPhonenumber get an invitation by it's content, not really this usefull, TODO: just make an exists method
+func (o *InvitationManager) GetWithPhonenumber(phonenumber string, organization string, role string, status InvitationStatus) (*JoinOrganizationInvitation, error) {
+	var orgRequest JoinOrganizationInvitation
+
+	query := bson.M{
+		"phonenumber":  phonenumber,
 		"role":         role,
 		"organization": organization,
 		"status":       status,

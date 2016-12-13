@@ -1241,11 +1241,40 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	}
 	var notifications NotificationList
 
-	invititationMgr := invitations.NewInvitationManager(r)
+	invitationMgr := invitations.NewInvitationManager(r)
+	valMgr := validationdb.NewManager(r)
 
-	userOrgRequests, err := invititationMgr.FilterByUser(username, "pending")
+	userOrgRequests, err := invitationMgr.FilterByUser(username, "pending")
 	if handleServerError(w, "getting invitations by user", err) {
 		return
+	}
+
+	// Add the invites for the users verified phone numbers. This is required if the invite
+	// was added before the phone number was verified, and no invite sms was send
+	validatedPhonenumbers, err := valMgr.GetByUsernameValidatedPhonenumbers(username)
+	if handleServerError(w, "getting verified phone numbers", err) {
+		return
+	}
+	for _, number := range validatedPhonenumbers {
+		phonenumberRequests, err := invitationMgr.FilterByPhonenumber(number.Phonenumber, "pending")
+		if handleServerError(w, "getting invitations by user for phonenumber", err) {
+			return
+		}
+		userOrgRequests = append(userOrgRequests, phonenumberRequests...)
+	}
+
+	// Add the invites for the users verified email addresses> This is required if the invite
+	// was added before the email address was verified, and no invite email was send
+	validatedEmailaddresses, err := valMgr.GetByUsernameValidatedEmailAddress(username)
+	if handleServerError(w, "getting verified email addresses", err) {
+		return
+	}
+	for _, email := range validatedEmailaddresses {
+		emailRequests, err := invitationMgr.FilterByEmail(email.EmailAddress, "pending")
+		if handleServerError(w, "getting invitations by user for email", err) {
+			return
+		}
+		userOrgRequests = append(userOrgRequests, emailRequests...)
 	}
 
 	notifications.Invitations = userOrgRequests
