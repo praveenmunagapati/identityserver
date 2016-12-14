@@ -102,8 +102,8 @@ md-dialog md-dialog-actions {
     text-decoration: none;
     float: left;
     background: url(../img/its-you-online.gif) no-repeat;
-    margin-top: 20px;
-    height: 38px;
+    margin-top: -60px;
+    height: 120px;
     width: 360px;
     background-size: cover;
 }
