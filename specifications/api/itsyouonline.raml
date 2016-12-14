@@ -1534,14 +1534,14 @@ securedBy: [ oauth_2_0 ]
 
       post:
         displayName: AddOrganizationMember
-        description: Assign a member to organization.
+        description: Invite someone to become member of an organization.
         body:
           application/json:
             type: Member
         queryParameters:
           invitenotification?:
             type: string
-            description: Tell the server how email/sms invites should be handled
+            description: Set to `none` to suppress sending an sms or email
         responses:
           201:
             description: Member assigned successfully
@@ -1565,14 +1565,14 @@ securedBy: [ oauth_2_0 ]
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       post:
         displayName: AddOrganizationOwner
-        description: Invite a user to become owner of an organization.
+        description: Invite someone to become owner of an organization.
         body:
           application/json:
             type: Member
         queryParameters:
           invitenotification?:
             type: string
-            description: Tell the server how email/sms invites should be handled
+            description: Set to `none` to suppress sending an sms or email
         responses:
           201:
             description: Invite created successfully
