@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	mgo "gopkg.in/mgo.v2"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 
@@ -86,6 +84,11 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	case invitations.MethodEmail:
 		orgRequest, err = orgReqMgr.GetWithEmail(j.EmailAddress, organization, role, invitations.RequestPending)
 		if err != nil {
+			log.Error("error while trying to get invitation for email address")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if orgRequest == nil {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
@@ -99,6 +102,11 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	case invitations.MethodPhone:
 		orgRequest, err = orgReqMgr.GetWithPhonenumber(j.PhoneNumber, organization, role, invitations.RequestPending)
 		if err != nil {
+			log.Error("error while trying to get invitation for email address")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if orgRequest == nil {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
@@ -112,6 +120,11 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	default:
 		orgRequest, err = orgReqMgr.Get(username, organization, role, invitations.RequestPending)
 		if err != nil {
+			log.Error("error while trying to get invitation for email address")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if orgRequest == nil {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			return
 		}
@@ -166,7 +179,7 @@ func (api UsersusernameorganizationsAPI) globalidrolesroleDelete(w http.Response
 	orgReqMgr := invitations.NewInvitationManager(r)
 
 	orgRequest, err := orgReqMgr.Get(username, organization, role, invitations.RequestPending)
-	if err != nil && err != mgo.ErrNotFound {
+	if err != nil {
 		log.Error("error while trying to load the invite")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -183,9 +196,10 @@ func (api UsersusernameorganizationsAPI) globalidrolesroleDelete(w http.Response
 			return
 		}
 		for _, number := range validatedPhonenumbers {
-			orgRequest, err := orgReqMgr.GetWithPhonenumber(number.Phonenumber, organization, role, invitations.RequestPending)
-			if err != nil && err != mgo.ErrNotFound {
-				http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			orgRequest, err = orgReqMgr.GetWithPhonenumber(number.Phonenumber, organization, role, invitations.RequestPending)
+			if err != nil {
+				log.Error("error while trying to get invite for phone number")
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
 			if orgRequest != nil {
@@ -201,9 +215,9 @@ func (api UsersusernameorganizationsAPI) globalidrolesroleDelete(w http.Response
 				return
 			}
 			for _, email := range validatedEmailaddresses {
-				orgRequest, err := orgReqMgr.GetWithEmail(email.EmailAddress, organization, role, invitations.RequestPending)
-				if err != nil && err != mgo.ErrNotFound {
-					http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+				orgRequest, err = orgReqMgr.GetWithEmail(email.EmailAddress, organization, role, invitations.RequestPending)
+				if err != nil {
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 					return
 				}
 				if orgRequest != nil {

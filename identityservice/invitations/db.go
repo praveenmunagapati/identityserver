@@ -128,6 +128,9 @@ func (o *InvitationManager) Get(username string, organization string, role strin
 	}
 
 	err := o.collection.Find(query).One(&orgRequest)
+	if err == mgo.ErrNotFound {
+		return nil, nil
+	}
 
 	return &orgRequest, err
 }
@@ -144,6 +147,9 @@ func (o *InvitationManager) GetWithEmail(email string, organization string, role
 	}
 
 	err := o.collection.Find(query).One(&orgRequest)
+	if err == mgo.ErrNotFound {
+		return nil, nil
+	}
 
 	return &orgRequest, err
 }
@@ -160,6 +166,9 @@ func (o *InvitationManager) GetWithPhonenumber(phonenumber string, organization 
 	}
 
 	err := o.collection.Find(query).One(&orgRequest)
+	if err == mgo.ErrNotFound {
+		return nil, nil
+	}
 
 	return &orgRequest, err
 }
