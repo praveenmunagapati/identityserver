@@ -108,6 +108,16 @@ md-dialog md-dialog-actions {
     background-size: cover;
 }
 
+.mobile-logo {
+  text-decoration: none;
+  float: left;
+  background: url(../img/its-you-online.png) no-repeat;
+  margin-top: 17px;
+  height: 40px;
+  width: 320px;
+  background-size: cover;
+}
+
 
 /*= LOGO ANIMATION
 --------------------------------------------------------*/
