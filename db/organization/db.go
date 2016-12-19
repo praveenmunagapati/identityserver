@@ -349,7 +349,8 @@ func (m *Manager) Get(id string) (*Organization, error) {
 // GetByName gets an organization by Name.
 func (m *Manager) GetByName(globalID string) (organization *Organization, err error) {
 	err = m.collection.Find(bson.M{"globalid": globalID}).One(&organization)
-	if organization.RequiredScopes == nil {
+	// Check if organization isnt a nullpointer in case no org was found with this globalID
+	if organization != nil && organization.RequiredScopes == nil {
 		organization.RequiredScopes = []RequiredScope{}
 	}
 	return
