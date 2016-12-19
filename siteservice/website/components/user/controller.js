@@ -47,6 +47,8 @@
         vm.pageSelected = pageSelected;
         vm.accept = accept;
         vm.reject = reject;
+        vm.acceptorganizationinvite = acceptorganizationinvite;
+        vm.rejectorganizationinvite = rejectorganizationinvite;
         vm.getPendingCount = getPendingCount;
         vm.showEmailDetailDialog = UserDialogService.emailDetail;
         vm.showPhonenumberDetailDialog = UserDialogService.phonenumberDetail;
@@ -249,6 +251,7 @@
                     return invitation.organization;
                 });
                 count += vm.notifications.missingscopes.filter(missingScopeFilter).length;
+                count += vm.notifications.organizationinvitations.length;
                 return count;
             } else {
                 return obj ? obj.length : 0;
@@ -281,6 +284,20 @@
                     invitation.status = 'rejected';
                     updatePendingNotificationsCount();
                 });
+        }
+
+        function acceptorganizationinvite(event, invitation) {
+            NotificationService.acceptorganizationinvite(invitation).then(function() {
+                invitation.status = 'accepted';
+                updatePendingNotificationsCount();
+            });
+        }
+
+        function rejectorganizationinvite(invitation) {
+            NotificationService.rejectorganizationinvite(invitation).then(function() {
+                invitation.status = 'rejected';
+                updatePendingNotificationsCount();
+            })
         }
 
         function showAuthorizationDetailDialog(authorization, event, isNew) {

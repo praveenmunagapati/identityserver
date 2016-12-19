@@ -219,10 +219,18 @@
             "missinguserinfo": "Deze gebruiker heeft (een deel van) de gevraagde informatie niet gedeeld:<br />"
         }
     },
+    "organization_globalid": "Organizatie globalId",
+    "organization_invite_organization": "Nodig organizatie uit",
+    "organization_invite_organization_duplicate": "De uitgenodigde organizatie is al lid van de organzatie",
+    "organization_invite_organization_help": "Nodig een andere organizatie uit om deel te worden van {{organization}}",
+    "organization_invite_organization_nosuchorganization": "Geen organizatie gevonden met het gegeven globalid",
+    "organization_invite_organization_owner_must_accept": "Een eigenaar van de organizatie moet deze uitnodiging aanvaarden <br/> om de uitgenodigde organizatie lid te maken van deze organizatie.",
+    "organization_invited_by": "Jouw organizatie {{invitedorg}} is uitgenodigt om een deel te worden van de {{invitingorg}} organizatie",
     "owner": "Eigenaar",
     "owner_of_email": "Eigenaar van email address",
     "owner_of_email_x": "Eigenaar van email address {{ email }}",
     "owners": "Eigenaars",
+    "pending_invites_for_organization": "Openstaande uitnodigingen voor jouw organizaties",
     "phone_number": "Telefoonnummer",
     "phonenumber": "Telefoonnummer",
     "phonenumberpattern": "Ongeldig telefoonnummer. Telefoonnummer moet starten met de landcode. Voorbeeld: +32471202020",

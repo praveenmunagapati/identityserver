@@ -1,0 +1,48 @@
+<md-dialog>
+    <form name="organizationinviteform">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2 translate='organization_invite_organization'>Invite organization</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="cancel()">
+                    <md-icon md-svg-src="assets/img/ic_close_24px.svg" aria-label="Close dialog" translate-attr="{ 'aria-label': 'closedialog' }"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
+                <md-input-container>
+                    <label translate='role'>Role</label>
+                    <md-select ng-model="role">
+                        <md-option value="orgowners" translate='owner'>Owner</md-option>
+                        <md-option value="orgmembers" translate='member'>Member</md-option>
+                    </md-select>
+                </md-input-container>
+                <md-input-container flex>
+                    <label translate='organization_globalid'>Organization globalId</label>
+                    <input ng-model="organizationtoinvite" minlength="2" required type="text" md-autofocus="true"
+                           name="searchterm">
+                    <div ng-messages="validationerrors" md-auto-hide="false">
+                        <div ng-message="duplicate" translate='organization_invite_organization_duplicate'>The invited organization has already joined the organization</div>
+                        <div ng-message="nosuchuser" translate='organization_invite_organization_nosuchorganization'>No organization found matching this globalId
+                        </div>
+                    </div>
+                </md-input-container>
+                <div>
+                    <p translate='organization.views.invitationdialog.invitesend'>A request to join this organization will be sent.</p>
+                    <p translate='organization_invite_organization_owner_must_accept'>An owner of the organization needs to accept this invitation <br/> before actually becoming part of this
+                        organization.</p>
+                </div>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="space-between center">
+            <md-button ng-click="cancel()" translate='cancel'>
+                Cancel
+            </md-button>
+            <md-button class="md-primary" type="submit" ng-click="invite(organizationtoinvite, role)"
+                       ng-disabled="!organizationinviteform.$valid" translate='organization.views.invitationdialog.invite'>
+                Invite
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

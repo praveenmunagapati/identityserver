@@ -15,7 +15,9 @@
         return {
             get: get,
             accept: accept,
-            reject: reject
+            reject: reject,
+            acceptorganizationinvite: acceptorganizationinvite,
+            rejectorganizationinvite: rejectorganizationinvite
         };
 
         function get(username) {
@@ -60,6 +62,36 @@
                         return $q.reject(reason);
                     }
                 );
+        }
+
+        function acceptorganizationinvite(invitation) {
+            var url = 'api/organizations/' + encodeURIComponent(invitation.user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role);
+
+            return $http
+                .post(url, invitation)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+            );
+        }
+
+        function rejectorganizationinvite(invitation) {
+            var url = 'api/organizations/' + encodeURIComponent(invitation.user) + '/organizations/' + encodeURIComponent(invitation.organization) + '/roles/' + encodeURIComponent(invitation.role);
+
+            return $http
+                .delete(url)
+                .then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(reason) {
+                        return $q.reject(reason);
+                    }
+            );
         }
     }
 

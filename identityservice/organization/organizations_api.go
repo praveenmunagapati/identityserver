@@ -351,15 +351,16 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 	}
 
 	orgReq := &invitations.JoinOrganizationInvitation{
-		Role:         role,
-		Organization: globalID,
-		User:         username,
-		Status:       invitations.RequestPending,
-		Created:      db.DateTime(time.Now()),
-		Method:       method,
-		EmailAddress: emailAddress,
-		PhoneNumber:  phoneNumber,
-		Code:         code,
+		Role:           role,
+		Organization:   globalID,
+		User:           username,
+		Status:         invitations.RequestPending,
+		Created:        db.DateTime(time.Now()),
+		Method:         method,
+		EmailAddress:   emailAddress,
+		PhoneNumber:    phoneNumber,
+		Code:           code,
+		IsOrganization: false,
 	}
 
 	if err = invitationMgr.Save(orgReq); err != nil {
@@ -1748,6 +1749,205 @@ func (api OrganizationsAPI) UpdateDescription(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(localInfo)
+}
+
+// AcceptOrganizationInvite is the handler for POST /organizations/{globalid}/organizations/{invitingorg}/roles/{role}
+// Accept the organization invite for one of your organizations
+func (api OrganizationsAPI) AcceptOrganizationInvite(w http.ResponseWriter, r *http.Request) {
+	invitedorgname := mux.Vars(r)["globalid"]
+	role := mux.Vars(r)["role"]
+	invitingorgname := mux.Vars(r)["invitingorg"]
+
+	var j invitations.JoinOrganizationInvitation
+
+	if err := json.NewDecoder(r.Body).Decode(&j); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	orgReqMgr := invitations.NewInvitationManager(r)
+	orgMgr := organization.NewManager(r)
+
+	if !orgMgr.Exists(invitedorgname) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	invitingorg, err := orgMgr.GetByName(invitingorgname)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	orgRequest, err := orgReqMgr.Get(invitedorgname, invitingorgname, role, invitations.RequestPending)
+	if err != nil {
+		log.Error("error while trying to get invitation for organization")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if orgRequest == nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if orgRequest.Role == invitations.RoleOrgOwner {
+		if err := orgMgr.SaveOrgOwner(invitingorg, invitedorgname); err != nil {
+			log.Error("Failed to save organization owner: ", invitedorgname)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		if err := orgMgr.SaveOrgMember(invitingorg, invitedorgname); err != nil {
+			log.Error("Failed to save organization member: ", invitedorgname)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	orgRequest.Status = invitations.RequestAccepted
+
+	if err := orgReqMgr.Save(orgRequest); err != nil {
+		log.Error("Failed to update org request status: ", orgRequest.Organization)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(orgRequest)
+}
+
+// RejectOrganizationInvite is the handler for DELETE /organizations/{globalid}/organizations/{invitingorg}/role/{role}
+// Reject the organization invite for one of your organizations
+func (api OrganizationsAPI) RejectOrganizationInvite(w http.ResponseWriter, r *http.Request) {
+	invitedorgname := mux.Vars(r)["globalid"]
+	role := mux.Vars(r)["role"]
+	invitingorgname := mux.Vars(r)["invitingorg"]
+
+	orgReqMgr := invitations.NewInvitationManager(r)
+
+	orgRequest, err := orgReqMgr.Get(invitedorgname, invitingorgname, role, invitations.RequestPending)
+	if err != nil {
+		log.Error("error while trying to load the invite")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if orgRequest == nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	orgRequest.Status = invitations.RequestRejected
+
+	if err := orgReqMgr.Save(orgRequest); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// AddOrganizationOwner is the handler for POST /organizations/{globalid}/orgowners/invite
+// Invite an organization to become owner of an organization.
+func (api OrganizationsAPI) AddOrganizationOrgOwner(w http.ResponseWriter, r *http.Request) {
+	api.inviteOrganization(w, r, invitations.RoleOrgOwner)
+}
+
+// AddOrganizationMember is the handler for POST /organizations/{globalid}/orgmembers/invite
+// Invite an organization to become a member of an organization.
+func (api OrganizationsAPI) AddOrganizationOrgMember(w http.ResponseWriter, r *http.Request) {
+	api.inviteOrganization(w, r, invitations.RoleOrgMember)
+}
+
+func (api OrganizationsAPI) inviteOrganization(w http.ResponseWriter, r *http.Request, role string) {
+	globalID := mux.Vars(r)["globalid"]
+
+	var s searchMember
+
+	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	searchString := s.SearchString
+	// An organization can't invite itself.
+	if searchString == globalID {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	orgMgr := organization.NewManager(r)
+	org, err := orgMgr.GetByName(globalID)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
+		return
+	}
+	invitedOrg, err := orgMgr.GetByName(searchString)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			writeErrorResponse(w, http.StatusNotFound, "invited_organization_not_found")
+		} else {
+			handleServerError(w, "getting invited organization", err)
+		}
+		return
+	}
+
+	if role == invitations.RoleOrgMember {
+		for _, orgmembername := range org.OrgMembers {
+			if orgmembername == invitedOrg.Globalid {
+				http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+				return
+			}
+		}
+	}
+	for _, orgmemberName := range org.OrgOwners {
+		if orgmemberName == invitedOrg.Globalid {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
+
+	// Create JoinRequest
+	invitationMgr := invitations.NewInvitationManager(r)
+	count, err := invitationMgr.CountByOrganization(globalID)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if count >= maximumNumberOfInvitationsPerOrganization {
+		log.Error("Reached invitation limit for organization ", globalID)
+		writeErrorResponse(w, 422, "max_amount_of_invitations_reached")
+		return
+	}
+
+	orgReq := &invitations.JoinOrganizationInvitation{
+		Role:           role,
+		Organization:   globalID,
+		User:           invitedOrg.Globalid,
+		Status:         invitations.RequestPending,
+		Created:        db.DateTime(time.Now()),
+		Method:         invitations.MethodWebsite,
+		EmailAddress:   "",
+		PhoneNumber:    "",
+		Code:           "",
+		IsOrganization: true,
+	}
+
+	if err = invitationMgr.Save(orgReq); err != nil {
+		log.Error("Error inviting organization: ", err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(orgReq)
 }
 
 func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, message string) {

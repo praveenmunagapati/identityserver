@@ -104,20 +104,28 @@
                                     </md-button>
                                 </md-list-item>
                             </md-list>
-                            <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)"
-                                       ng-if="::vm.hasEditPermission">
-                                <i class="fa fa-user-plus"></i> <span translate='organization.views.detail.invite'>Invite someone</span>
-                                <md-tooltip ng-cloak><span translate='organization.views.detail.invitehelp' translate-values="{organization: vm.getOrganizationDisplayname(vm.organization.globalid)}">
-                                    Invite someone to join <span ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span></span>
-                                </md-tooltip>
-                            </md-button>
-                            <md-button class="md-primary" ng-click="vm.showAddOrganizationDialog($event)"
-                                       ng-if="::vm.hasEditPermission">
-                                <i class="fa fa-users"></i> <span translate='organization.views.detail.addorganization'>Add organization</span>
-                                <md-tooltip ng-cloak><span translate='organization.views.detail.addorganizationhelp' translate-values="{organization: vm.getOrganizationDisplayname(vm.organization.globalid)}">
-                                    Add another organization as a member or owner of <span ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span></span>
-                                </md-tooltip>
-                            </md-button>
+                            <div layout="column" layout-align="center start">
+                                <md-button class="md-primary" ng-click="vm.showInvitationDialog($event)"
+                                           ng-if="::vm.hasEditPermission">
+                                    <i class="fa fa-user-plus"></i> <span translate='organization.views.detail.invite'>Invite someone</span>
+                                    <md-tooltip ng-cloak><span translate='organization.views.detail.invitehelp' translate-values="{organization: vm.getOrganizationDisplayname(vm.organization.globalid)}">
+                                        Invite someone to join <span ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span></span>
+                                    </md-tooltip>
+                                </md-button>
+                                <md-button class="md-primary" ng-click="vm.showAddOrganizationDialog($event)"
+                                           ng-if="::vm.hasEditPermission">
+                                    <i class="fa fa-users"></i> <span translate='organization.views.detail.addorganization'>Add organization</span>
+                                    <md-tooltip ng-cloak><span translate='organization.views.detail.addorganizationhelp' translate-values="{organization: vm.getOrganizationDisplayname(vm.organization.globalid)}">
+                                        Add another organization as a member or owner of <span ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span></span>
+                                    </md-tooltip>
+                                </md-button>
+                                <md-button class="md-primary" ng-click="vm.showOrganizationInvitationDialog($event)"
+                                           ng-if="::vm.hasEditPermission">
+                                    <i class="fa fa-users"></i> <span translate='organization_invite_organization'>Invite organization</span>
+                                    <md-tooltip ng-cloak><span translate='organization_invite_organization_help' translate-values="{organization: vm.getOrganizationDisplayname(vm.organization.globalid)}">
+                                        Invite another organization to join <span ng-bind="::vm.getOrganizationDisplayname(vm.organization.globalid)"></span></span>
+                                    </md-tooltip>
+                            </div>
                         </div>
                     </md-tab-body>
                 </md-tab>

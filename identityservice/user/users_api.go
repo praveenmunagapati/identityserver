@@ -1234,10 +1234,11 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
 	type NotificationList struct {
-		Approvals        []invitations.JoinOrganizationInvitation `json:"approvals"`
-		ContractRequests []contractdb.ContractSigningRequest      `json:"contractRequests"`
-		Invitations      []invitations.JoinOrganizationInvitation `json:"invitations"`
-		MissingScopes    []organizationDb.MissingScope            `json:"missingscopes"`
+		Approvals               []invitations.JoinOrganizationInvitation `json:"approvals"`
+		ContractRequests        []contractdb.ContractSigningRequest      `json:"contractRequests"`
+		Invitations             []invitations.JoinOrganizationInvitation `json:"invitations"`
+		MissingScopes           []organizationDb.MissingScope            `json:"missingscopes"`
+		OrganizationInvitations []invitations.JoinOrganizationInvitation `json:"organizationinvitations"`
 	}
 	var notifications NotificationList
 
@@ -1263,7 +1264,7 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		userOrgRequests = append(userOrgRequests, phonenumberRequests...)
 	}
 
-	// Add the invites for the users verified email addresses> This is required if the invite
+	// Add the invites for the users verified email addresses. This is required if the invite
 	// was added before the email address was verified, and no invite email was send
 	validatedEmailaddresses, err := valMgr.GetByUsernameValidatedEmailAddress(username)
 	if handleServerError(w, "getting verified email addresses", err) {
@@ -1277,7 +1278,38 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		userOrgRequests = append(userOrgRequests, emailRequests...)
 	}
 
+	// Add the invites for the organizations where this user is an owner
+	orgMgr := organizationDb.NewManager(r)
+
+	orgs, err := orgMgr.AllByUser(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	var ownedOrgs []string
+
+	for _, org := range orgs {
+		if exists(username, org.Owners) {
+			ownedOrgs = append(ownedOrgs, org.Globalid)
+		}
+	}
+
+	//var orgInvites []invitations.JoinOrganizationInvitation
+	orgInvites := make([]invitations.JoinOrganizationInvitation, 0)
+
+	for _, org := range ownedOrgs {
+		invites, err := invitationMgr.GetOpenOrganizationInvites(org)
+		if err != nil {
+			log.Error("Error while loading all invites where the organization ", org, " is invited")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		orgInvites = append(orgInvites, invites...)
+	}
+
 	notifications.Invitations = userOrgRequests
+	notifications.OrganizationInvitations = orgInvites
 	// TODO: Get Approvals and Contract requests
 	notifications.Approvals = []invitations.JoinOrganizationInvitation{}
 	notifications.ContractRequests = []contractdb.ContractSigningRequest{}
@@ -2013,5 +2045,15 @@ func handleServerError(responseWriter http.ResponseWriter, actionText string, er
 		http.Error(responseWriter, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return true
 	}
+	return false
+}
+
+func exists(value string, list []string) bool {
+	for _, val := range list {
+		if val == value {
+			return true
+		}
+	}
+
 	return false
 }

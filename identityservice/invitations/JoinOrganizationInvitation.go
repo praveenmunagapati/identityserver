@@ -1,9 +1,10 @@
 package invitations
 
 import (
+	"reflect"
+
 	"github.com/itsyouonline/identityserver/db"
 	"gopkg.in/mgo.v2/bson"
-	"reflect"
 )
 
 type InvitationStatus string
@@ -15,8 +16,10 @@ const (
 )
 
 const (
-	RoleMember = "member"
-	RoleOwner  = "owner"
+	RoleMember    = "member"
+	RoleOwner     = "owner"
+	RoleOrgMember = "orgmember"
+	RoleOrgOwner  = "orgowner"
 )
 
 type InviteMethod string
@@ -32,16 +35,17 @@ const (
 
 //JoinOrganizationInvitation defines an invitation to join an organization
 type JoinOrganizationInvitation struct {
-	ID           bson.ObjectId    `json:"-" bson:"_id,omitempty"`
-	Organization string           `json:"organization"`
-	Role         string           `json:"role"`
-	User         string           `json:"user"`
-	Status       InvitationStatus `json:"status"`
-	Created      db.DateTime      `json:"created"`
-	Method       InviteMethod     `json:"method"`
-	EmailAddress string           `json:"emailaddress"`
-	PhoneNumber  string           `json:"phonenumber"`
-	Code         string           `json:"-"`
+	ID             bson.ObjectId    `json:"-" bson:"_id,omitempty"`
+	Organization   string           `json:"organization"`
+	Role           string           `json:"role"`
+	User           string           `json:"user"`
+	Status         InvitationStatus `json:"status"`
+	Created        db.DateTime      `json:"created"`
+	Method         InviteMethod     `json:"method"`
+	EmailAddress   string           `json:"emailaddress"`
+	PhoneNumber    string           `json:"phonenumber"`
+	Code           string           `json:"-"`
+	IsOrganization bool             `json:"isorganization"`
 }
 
 func ParseInvitationType(invitationType string) string {

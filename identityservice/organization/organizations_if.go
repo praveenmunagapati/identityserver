@@ -144,6 +144,18 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// GetDescriptionWithFallback is the handler for GET /organizations/{globalid}/description/{langkey}/withfallback
 	// Get the description for this organization for this langKey. If it doesn't exist, get the desription for the default langKey
 	GetDescriptionWithFallback(w http.ResponseWriter, r *http.Request)
+	// AddOrganizationOwner is the handler for POST /organizations/{globalid}/orgowners/invite
+	// Invite an organization to become owner of an organization.
+	AddOrganizationOrgOwner(w http.ResponseWriter, r *http.Request)
+	// AddOrganizationMember is the handler for POST /organizations/{globalid}/orgmembers/invite
+	// Invite an organization to become a member of an organization.
+	AddOrganizationOrgMember(w http.ResponseWriter, r *http.Request)
+	// AcceptOrganizationInvite is the handler for POST /organizations/{globalid}/organizations/{invitingorg}/roles/{role}
+	// Accept the organization invite for one of your organizations
+	AcceptOrganizationInvite(w http.ResponseWriter, r *http.Request)
+	// rejectorganizationinvite is the handler for DELETE /organization/{globalid}/organizations/{invitingorg}/roles/{role}
+	// Reject the organization invite for one of your organizations
+	RejectOrganizationInvite(w http.ResponseWriter, r *http.Request)
 }
 
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
@@ -195,4 +207,8 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/description/{langkey}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.DeleteDescription))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/description", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.SetDescription))).Methods("POST")
 	r.Handle("/organizations/{globalid}/description", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UpdateDescription))).Methods("PUT")
+	r.Handle("/organizations/{globalid}/orgowners/invite", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddOrganizationOrgOwner))).Methods("POST")
+	r.Handle("/organizations/{globalid}/orgmembers/invite", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddOrganizationOrgMember))).Methods("POST")
+	r.Handle("/organizations/{globalid}/organizations/{invitingorg}/roles/{role}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AcceptOrganizationInvite))).Methods("POST")
+	r.Handle("/organizations/{globalid}/organizations/{invitingorg}/roles/{role}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RejectOrganizationInvite))).Methods("DELETE")
 }

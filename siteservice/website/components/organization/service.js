@@ -20,6 +20,7 @@
             invite: invite,
             removeInvitation: removeInvitation,
             addOrganization: addOrganization,
+            inviteOrganization: inviteOrganization,
             getUserOrganizations: getUserOrganizations,
             getInvitations: getInvitations,
             createAPIKey: createAPIKey,
@@ -103,6 +104,12 @@
             } else {
                 data = {orgowner: searchString};
             }
+            return genericHttpCall(POST, url, data);
+        }
+
+        function inviteOrganization(globalid, searchString, role) {
+            var url = apiURL + '/' + encodeURIComponent(globalid) + '/' + encodeURIComponent(role) + '/invite';
+            var data = {searchstring: searchString};
             return genericHttpCall(POST, url, data);
         }
 

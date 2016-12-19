@@ -237,7 +237,7 @@ types:
         user: string
         role:
           type: string
-          enum: [owner, member]
+          enum: [owner, member, orgowner, orgmember]
         created?: datetime
         status:
           type: string
@@ -247,6 +247,7 @@ types:
           enum: [website, email, phone]
         emailaddress: string
         phonenumber: string
+        isorganization: boolean
 
     example:
       organization: mycoolsoccerclub
@@ -257,6 +258,7 @@ types:
       method: website
       emailaddress: ""
       phonenumber: ""
+      isorganization: false
 
   ContractSigningRequest:
     properties:
@@ -1463,6 +1465,28 @@ securedBy: [ oauth_2_0 ]
           404:
             description: Organization not found
 
+      /invite:
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        post:
+          displayName: AddOrganizationMember
+          description: Invite another organization as a member of this one
+          body:
+            application/json:
+              properties:
+                searchstring: string
+          responses:
+            201:
+              description: Organization successfully invited
+              body:
+                application/json:
+                  type: JoinOrganizationInvitation
+            404:
+              description: Organization not found
+            409:
+              description: Organization is already an owner or a member
+            422:
+              description: Max amount of invitations reached.
+
       /{globalid2}:
         delete:
           displayName: DeleteOrgMember
@@ -1508,6 +1532,55 @@ securedBy: [ oauth_2_0 ]
               description: Organization owner removed successfully
             404:
               description: The organization does not exist.
+
+      /invite:
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        post:
+          displayName: AddOrganizationOwner
+          description: Invite another organization as an owner of this one
+          body:
+            application/json:
+              properties:
+                searchstring: string
+          responses:
+            201:
+              description: Organization successfully invited
+              body:
+                application/json:
+                  type: JoinOrganizationInvitation
+            404:
+              description: Organization not found
+            409:
+              description: Organization is already an owner or a member
+            422:
+              description: Max amount of invitations reached.
+
+    /organizations/{invitingorg}/roles/{role}:
+      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+      post:
+        displayName: AcceptOrganizationInvite
+        description: Accept the invite for one of your organizations
+        body:
+          application/json:
+            type: JoinOrganizationInvitation
+        responses:
+          201:
+            description: Invite accepted
+            body:
+              application/json:
+                type: JoinOrganizationInvitation
+          404:
+            description: Invite not found
+
+      delete:
+        displayName: RejectOrganizationInvite
+        description: Reject the invite for one of your organizations
+        responses:
+          204:
+            description: Invite rejected
+          404:
+            description: Invite not found
+
 
     /members:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

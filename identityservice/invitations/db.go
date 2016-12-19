@@ -13,7 +13,7 @@ const (
 	mongoOrganizationRequestCollectionName = "join-organization-invitations"
 )
 
-//InvitationManager is used to store organizations
+//InvitationManager is used to store invitations
 type InvitationManager struct {
 	session    *mgo.Session
 	collection *mgo.Collection
@@ -237,4 +237,19 @@ func (o *InvitationManager) Remove(globalID string, searchString string) error {
 		},
 	}
 	return o.collection.Remove(qry)
+}
+
+// GetInvites gets all invites where the organization is invited
+func (o *InvitationManager) GetOpenOrganizationInvites(globalID string) ([]JoinOrganizationInvitation, error) {
+	invites := []JoinOrganizationInvitation{}
+	qry := bson.M{
+		"user":   globalID,
+		"status": "pending",
+		//"isorganization": true,
+	}
+	err := o.collection.Find(qry).All(&invites)
+	if err == mgo.ErrNotFound {
+		err = nil
+	}
+	return invites, err
 }

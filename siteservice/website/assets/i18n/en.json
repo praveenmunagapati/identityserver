@@ -219,10 +219,18 @@
             "missinguserinfo": "This user hasn't shared some required information:<br />"
         }
     },
+    "organization_globalid": "Organization globalId",
+    "organization_invite_organization": "Invite organization",
+    "organization_invite_organization_duplicate": "The invited organization has already joined the organization",
+    "organization_invite_organization_help": "Invite another organization to join {{organization}}",
+    "organization_invite_organization_nosuchorganization": "No organization found matching this globalId",
+    "organization_invite_organization_owner_must_accept": "An owner of the organization needs to accept this invitation <br/> before actually becoming part of this organization.",
+    "organization_invited_by": "Your organization {{invitedorg}} has been invited to become a part of the {{invitingorg}} organization",
     "owner": "Owner",
     "owner_of_email": "Owner of email address",
     "owner_of_email_x": "Owner of email address {{ email }}",
     "owners": "Owners",
+    "pending_invites_for_organization": "Pending invites for your organizations",
     "phone_number": "Phone number",
     "phonenumberpattern": "Invalid phone number. Phone number must start with the country code. Example: +32471202020",
     "please_verify_email_x": "Please verify the email address {{ email }} before continuing.",
