@@ -31,7 +31,7 @@
                 <md-input-container flex="80">
                     <label translate='email_address'>Email address</label>
                     <input ng-model="data.emailaddress" required type="email" name="emailaddress"
-                           ng-pattern="/^([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/i">
+                           ng-pattern="/^([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,25})$/i">
                     <div ng-messages="dataform.emailaddress.$error">
                         <div ng-message="pattern" translate='user.views.emaildialog.emailpattern'>Invalid email address</div>
                     </div>
