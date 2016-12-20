@@ -21,7 +21,7 @@ func TestAPIKeyValidation(t *testing.T) {
 		{apiKey: APIKey{Label: "ab", CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: s}, valid: true},
 		{apiKey: APIKey{Label: strings.Repeat("1", 50), CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: s}, valid: true},
 		{apiKey: APIKey{Label: strings.Repeat("1", 51), CallbackURL: cbUrl, ClientCredentialsGrantType: true, Secret: s}, valid: false},
-		{apiKey: APIKey{Label: l, CallbackURL: "abcd", ClientCredentialsGrantType: true, Secret: s}, valid: false},
+		{apiKey: APIKey{Label: l, CallbackURL: "abcd", ClientCredentialsGrantType: true, Secret: s}, valid: true},
 		{apiKey: APIKey{Label: l, CallbackURL: "https://test.com", ClientCredentialsGrantType: true, Secret: s}, valid: true},
 		{apiKey: APIKey{Label: l, CallbackURL: strings.Repeat("1", 250), ClientCredentialsGrantType: true, Secret: s}, valid: true},
 		{apiKey: APIKey{Label: l, CallbackURL: strings.Repeat("1", 251), ClientCredentialsGrantType: true, Secret: s}, valid: false},
