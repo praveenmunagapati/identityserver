@@ -11,6 +11,7 @@
     "currency_symbol": "Currency symbol",
     "delete": "Delete",
     "digital_wallet_address": "Digital wallet address",
+    "emailmaxlength": "Het email adres kan niet langer zijn dan 80 tekens",
     "email_address": "Email address",
     "error": "Error",
     "facebook_account": "Facebook account",
