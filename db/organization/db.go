@@ -252,12 +252,21 @@ func (m *Manager) isDirectMember(globalID, username string) (ismember bool, err 
 
 //IsMember checks if a specific user is in the members list of an organization
 // or belongs to an organization that is in the member list
+// it also checks this for the parentorganization
 func (m *Manager) IsMember(globalID, username string) (result bool, err error) {
 	result, err = m.isDirectMember(globalID, username)
 	if result || err != nil {
 		return
 	}
-	// If not a direct owner, iterate through the list of member organizations
+	// If not a direct member, check the membership in the parent organization
+	lastSubOrgSeperator := strings.LastIndex(globalID, ".")
+	if lastSubOrgSeperator > 0 {
+		result, err = m.IsMember(globalID[:lastSubOrgSeperator], username)
+		if result || err != nil {
+			return
+		}
+	}
+	// If not a direct or inherited member, iterate through the list of member organizations
 	var org Organization
 	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgmember": 1}).One(&org)
 	if err != nil {
