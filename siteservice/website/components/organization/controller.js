@@ -60,6 +60,12 @@
                 .then(
                     function(data) {
                         vm.organization = data;
+                        if (!vm.organization.orgowners) {
+                          vm.organization.orgowners = [];
+                        }
+                        if (!vm.organization.orgmembers) {
+                          vm.organization.orgmembers = [];
+                        }
                         vm.childOrganizationNames = getChildOrganizations(vm.organization.globalid);
                         getUsers();
                     }

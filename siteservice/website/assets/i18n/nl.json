@@ -11,6 +11,7 @@
     "currency_symbol": "Valuta symbool",
     "delete": "Verwijder",
     "digital_wallet_address": "Digital wallet adres",
+    "emailmaxlength": "The email address cannot be longer than 80 characters",
     "email_address": "Email adres",
     "error": "Fout",
     "facebook_account": "Facebook account",

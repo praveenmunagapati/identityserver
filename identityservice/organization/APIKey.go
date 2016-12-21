@@ -1,13 +1,14 @@
 package organization
 
 import (
+	"regexp"
+
 	"github.com/itsyouonline/identityserver/oauthservice"
 	"gopkg.in/validator.v2"
-	"regexp"
 )
 
 type APIKey struct {
-	CallbackURL                string `json:"callbackURL,omitempty" validate:"min=5,max=250,nonzero"`
+	CallbackURL                string `json:"callbackURL,omitempty" validate:"max=250"`
 	ClientCredentialsGrantType bool   `json:"clientCredentialsGrantType,omitempty"`
 	Label                      string `json:"label" validate:"min=2,max=50, pattern=^[a-zA-Z\d\-_\s]{2,50}$"`
 	Secret                     string `json:"secret,omitempty" validate:"max=250,nonzero"`

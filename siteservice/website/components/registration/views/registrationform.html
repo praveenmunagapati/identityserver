@@ -37,11 +37,12 @@
                         </md-input-container>
                         <md-input-container>
                             <label for="email" translate='registration.views.registrationform.email'>Email</label>
-                            <input ng-model="vm.email" required name="email" type="email" id="email"
-                                   ng-pattern="/^([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/i">
+                            <input ng-model="vm.email" required name="email" type="email" id="email" md-maxlength="80">
                             <div ng-messages="signupform.email.$error" md-auto-hide="false">
                                 <div ng-message="email" translate="invalid_email_address">Invalid email address</div>
-                                <div ng-message="pattern" translate="invalid_email_address">Invalid email address</div>
+                                <div ng-message="md-maxlength" translate='emailmaxlength'>The email address cannot be longer than 80
+                                    characters
+                                </div>
                             </div>
                         </md-input-container>
                         <md-input-container>

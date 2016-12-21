@@ -30,10 +30,12 @@
                 <span flex="5"></span>
                 <md-input-container flex="80">
                     <label translate='email_address'>Email address</label>
-                    <input ng-model="data.emailaddress" required type="email" name="emailaddress"
-                           ng-pattern="/^([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/i">
+                    <input ng-model="data.emailaddress" required type="email" name="emailaddress" md-maxlength="80">
                     <div ng-messages="dataform.emailaddress.$error">
-                        <div ng-message="pattern" translate='user.views.emaildialog.emailpattern'>Invalid email address</div>
+                        <div ng-message="email" translate="invalid_email_address">Invalid email address</div>
+                        <div ng-message="md-maxlength" translate='emailmaxlength'>The email address cannot be longer than 80
+                            characters
+                        </div>
                     </div>
                 </md-input-container>
             </div>

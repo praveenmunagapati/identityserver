@@ -10,7 +10,7 @@ import (
 )
 
 type EmailAddress struct {
-	EmailAddress string `json:"emailaddress" validate:"regexp=^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$"`
+	EmailAddress string `json:"emailaddress" validate:"max=100"`
 	Label        string `json:"label" validate:"regexp=^[a-zA-Z\d\-_\s]{2,50}$"`
 }
 
@@ -108,8 +108,7 @@ func ValidatePhoneNumber(phoneNumber string) bool {
 }
 
 func ValidateEmailAddress(emailAddress string) bool {
-	regex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-	return regex.MatchString(emailAddress)
+	return len(emailAddress) > 0 && len(emailAddress) <= 100
 }
 
 func (p PublicKey) Validate() bool {
@@ -119,5 +118,5 @@ func (p PublicKey) Validate() bool {
 func (e EmailAddress) Validate() bool {
 	return validator.Validate(e) == nil &&
 		regexp.MustCompile(`^[a-zA-Z\d\-_\s]{2,50}$`).MatchString(e.Label) &&
-		regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`).MatchString(e.EmailAddress)
+		len(e.EmailAddress) < 100
 }
