@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"regexp"
+	"strings"
 
 	"github.com/itsyouonline/identityserver/db"
 	"gopkg.in/mgo.v2/bson"
@@ -108,7 +109,7 @@ func ValidatePhoneNumber(phoneNumber string) bool {
 }
 
 func ValidateEmailAddress(emailAddress string) bool {
-	return len(emailAddress) > 0 && len(emailAddress) <= 100
+	return strings.Contains(emailAddress, "@") && len(emailAddress) <= 100
 }
 
 func (p PublicKey) Validate() bool {
