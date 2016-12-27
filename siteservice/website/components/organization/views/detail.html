@@ -41,6 +41,12 @@
                                     <div class="md-list-item-text">
                                         <p ng-bind="::orgowner"></p>
                                     </div>
+                                    <div ng-if="::vm.canEditRole(owner)" class="md-secondary md-primary">
+                                        <md-switch ng-model="vm.includemap[orgowner]" ng-change="vm.includeChanged(orgowner)"></md-switch>
+                                        <md-tooltip>
+                                            <span translate='organization_include_orgowner_suborgs'>Include suborganizations of this organization in the owner list</span>
+                                        </md-tooltip>
+                                    </div>
                                     <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
                                              aria-label="Edit organization owner" translate-attr="{ 'aria-label': 'organization.views.detail.editorganizationowner' }"
                                              ng-if="::vm.canEditRole(owner)" ng-click="vm.editOrgMember($event, orgowner)">
@@ -73,6 +79,12 @@
                                               aria-label="Organization member" translate-attr="{ 'aria-label': 'organization.views.detail.organizationmember' }">
                                     <div class="md-list-item-text">
                                         <p ng-bind="::orgmember"></p>
+                                    </div>
+                                    <div ng-if="::vm.canEditRole(owner)" class="md-secondary md-primary">
+                                        <md-switch ng-model="vm.includemap[orgmember]" ng-change="vm.includeChanged(orgmember)"></md-switch>
+                                        <md-tooltip>
+                                            <span translate='organization_include_orgmember_suborgs'>Include suborganizations of this organization in the member list</span>
+                                        </md-tooltip>
                                     </div>
                                     <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
                                              aria-label="Edit organization member"  translate-attr="{ 'aria-label': 'organization.views.detail.editorganizationmember' }"

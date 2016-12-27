@@ -1,20 +1,22 @@
 package organization
 
 import (
-	"gopkg.in/validator.v2"
 	"regexp"
+
+	"gopkg.in/validator.v2"
 )
 
 type Organization struct {
-	DNS             []string        `json:"dns"`
-	Globalid        string          `json:"globalid"`
-	Members         []string        `json:"members"`
-	Owners          []string        `json:"owners"`
-	PublicKeys      []string        `json:"publicKeys"`
-	SecondsValidity int             `json:"secondsvalidity"`
-	OrgOwners       []string        `json:"orgowners"`  //OrgOwners are other organizations that are owner of this organization
-	OrgMembers      []string        `json:"orgmembers"` //OrgMembers are other organizations that are member of this organization
-	RequiredScopes  []RequiredScope `json:"requiredscopes"`
+	DNS              []string        `json:"dns"`
+	Globalid         string          `json:"globalid"`
+	Members          []string        `json:"members"`
+	Owners           []string        `json:"owners"`
+	PublicKeys       []string        `json:"publicKeys"`
+	SecondsValidity  int             `json:"secondsvalidity"`
+	OrgOwners        []string        `json:"orgowners"`  //OrgOwners are other organizations that are owner of this organization
+	OrgMembers       []string        `json:"orgmembers"` //OrgMembers are other organizations that are member of this organization
+	RequiredScopes   []RequiredScope `json:"requiredscopes"`
+	IncludeSubOrgsOf []string        `json:"includesuborgsof"`
 }
 
 // IsValid performs basic validation on the content of an organizations fields

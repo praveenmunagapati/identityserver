@@ -49,7 +49,9 @@
             getDescription: getDescription,
             deleteDescription: deleteDescription,
             updateDescription: updateDescription,
-            saveDescription: saveDescription
+            saveDescription: saveDescription,
+            addInclude: addInclude,
+            removeInclude: removeInclude
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -286,6 +288,19 @@
                 text: description
             };
             return genericHttpCall(POST, url, data);
+        }
+
+        function addInclude(globalId, include) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/orgmembers/includesuborgs';
+            var data = {
+                globalid: include
+            };
+            return genericHttpCall(POST, url, data);
+        }
+
+        function removeInclude(globalId, include) {
+            var url = apiURL + '/' + encodeURIComponent(globalId) + '/orgmembers/includesuborgs/' + encodeURIComponent(include);
+            return genericHttpCall(DELETE, url);
         }
     }
 })();

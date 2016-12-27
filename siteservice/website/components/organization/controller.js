@@ -20,6 +20,7 @@
         vm.organizationRoot = {};
         vm.childOrganizationNames = [];
         vm.logo = "";
+        vm.includemap = {};
         vm.loading = {
             invitations: false
         };
@@ -47,6 +48,7 @@
         vm.showDescriptionDialog = showDescriptionDialog;
         vm.getScopeTranslation = getScopeTranslation;
         vm.removeInvitation = removeInvitation;
+        vm.includeChanged = includeChanged;
 
         activate();
 
@@ -68,6 +70,7 @@
                         }
                         vm.childOrganizationNames = getChildOrganizations(vm.organization.globalid);
                         getUsers();
+                        fillIncludeMap();
                     }
                 );
 
@@ -86,6 +89,14 @@
                     vm.logo = data.logo;
                 }
             );
+        }
+
+        function fillIncludeMap() {
+            if (vm.organization.includesuborgsof) {
+                for (var i = 0; i < vm.organization.includesuborgsof.length; i++) {
+                    vm.includemap[vm.organization.includesuborgsof[i]] = true;
+                }
+            }
         }
 
         function renderLogo() {
@@ -579,6 +590,15 @@
             function removeFromView() {
                 vm.invitations.splice(vm.invitations.indexOf(invite), 1);
             }
+        }
+
+        function includeChanged(org) {
+            if (vm.includemap[org]) {
+                OrganizationService.addInclude(vm.organization.globalid, org);
+                return;
+            }
+            OrganizationService.removeInclude(vm.organization.globalid, org);
+            return;
         }
     }
 

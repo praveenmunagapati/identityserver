@@ -1950,6 +1950,90 @@ func (api OrganizationsAPI) inviteOrganization(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(orgReq)
 }
 
+// AddIncludeSubOrgsOf is the handler for POST /organization/{globalid}/orgmembers/includesuborgs
+// Include the suborganizations of the given organization in the member/owner hierarchy of this organization
+func (api OrganizationsAPI) AddIncludeSubOrgsOf(w http.ResponseWriter, r *http.Request) {
+	globalID := mux.Vars(r)["globalid"]
+
+	includeSubOrgOf := struct {
+		GlobalID string
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&includeSubOrgOf); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	orgMgr := organization.NewManager(r)
+	org, err := orgMgr.GetByName(globalID)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
+		return
+	}
+
+	if !orgMgr.Exists(includeSubOrgOf.GlobalID) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// check if the organization to add is already in the list
+	for _, orgMembers := range org.IncludeSubOrgsOf {
+		if orgMembers == includeSubOrgOf.GlobalID {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
+
+	// add the organization to the list
+	err = orgMgr.AddIncludeSubOrgOf(org.Globalid, includeSubOrgOf.GlobalID)
+	if handleServerError(w, "adding organization to 'includesuborgsof' list", err) {
+		return
+	}
+
+	org, err = orgMgr.GetByName(globalID)
+	if handleServerError(w, "getting organization", err) {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(org)
+}
+
+// RemoveIncludeSubOrgsOf is the handler for DELETE /organization/{globalid}/orgmembers/includesuborgs/{orgmember}
+// Removes the suborganizations of the given organization from the member/owner hierarchy of this organization
+func (api OrganizationsAPI) RemoveIncludeSubOrgsOf(w http.ResponseWriter, r *http.Request) {
+	globalID := mux.Vars(r)["globalid"]
+	orgMember := mux.Vars(r)["orgmember"]
+
+	orgMgr := organization.NewManager(r)
+	org, err := orgMgr.GetByName(globalID)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			writeErrorResponse(w, http.StatusNotFound, "organization_not_found")
+		} else {
+			handleServerError(w, "getting organization", err)
+		}
+		return
+	}
+
+	if !orgMgr.Exists(orgMember) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	err = orgMgr.RemoveIncludeSubOrgOf(org.Globalid, orgMember)
+	if handleServerError(w, "removing organization from 'includesuborgsof' list", err) {
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, message string) {
 	log.Debug(httpStatusCode, message)
 	errorResponse := struct {

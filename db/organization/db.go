@@ -181,12 +181,35 @@ func (m *Manager) isOwnerOrMember(globalID, username string, excludelist map[str
 	}
 	// If not a direct owner or member, iterate through the list of owner/member organizations
 	var org Organization
-	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgowners": 1, "orgmembers": 1}).One(&org)
+	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgowners": 1, "orgmembers": 1, "includesuborgsof": 1}).One(&org)
 	if err != nil {
 		return
 	}
 	excludelist[globalID] = true
-	for _, owningOrganization := range append(org.OrgOwners, org.OrgMembers...) {
+	// Add the suborganizations from the includelist
+	var includesuborgs []string
+	for _, owner := range append(org.OrgOwners, org.OrgMembers...) {
+		for _, include := range org.IncludeSubOrgsOf {
+			if owner == include {
+				includesuborgs = append(includesuborgs, include)
+			}
+		}
+	}
+	var subOrgs []Organization
+	for _, subOrg := range includesuborgs {
+		subOrganizations, err := m.GetSubOrganizations(subOrg)
+		if err != nil && err != mgo.ErrNotFound {
+			return false, err
+		}
+		subOrgs = append(subOrgs, subOrganizations...)
+	}
+	var orgs []string
+	for _, suborganization := range subOrgs {
+		orgs = append(orgs, suborganization.Globalid)
+	}
+	orgs = append(orgs, org.OrgMembers...)
+
+	for _, owningOrganization := range append(org.OrgOwners, orgs...) {
 		if _, excluded := excludelist[owningOrganization]; excluded {
 			continue
 		}
@@ -217,7 +240,7 @@ func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
 	}
 	// If not a direct or inherited owner, iterate through the list of owning organizations
 	var org Organization
-	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgowners": 1}).One(&org)
+	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgowners": 1, "includesuborgsof": 1}).One(&org)
 	if err != nil {
 		if mgo.ErrNotFound == err {
 			err = nil
@@ -226,7 +249,30 @@ func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
 	}
 	excludelist := make(map[string]bool)
 	excludelist[globalID] = true
-	for _, owningOrganization := range org.OrgOwners {
+
+	// Also get the suborganizations if they have been added
+	var includesuborgs []string
+	for _, owner := range org.OrgOwners {
+		for _, include := range org.IncludeSubOrgsOf {
+			if owner == include {
+				includesuborgs = append(includesuborgs, include)
+			}
+		}
+	}
+	var subOrgs []Organization
+	for _, subOrg := range includesuborgs {
+		subOrganizations, err := m.GetSubOrganizations(subOrg)
+		if err != nil && err != mgo.ErrNotFound {
+			return false, err
+		}
+		subOrgs = append(subOrgs, subOrganizations...)
+	}
+	var orgs []string
+	for _, suborganization := range subOrgs {
+		orgs = append(orgs, suborganization.Globalid)
+	}
+
+	for _, owningOrganization := range append(orgs, org.OrgOwners...) {
 		isowner, err = m.isOwnerOrMember(owningOrganization, username, excludelist)
 		if isowner || err != nil {
 			return
@@ -268,7 +314,7 @@ func (m *Manager) IsMember(globalID, username string) (result bool, err error) {
 	}
 	// If not a direct or inherited member, iterate through the list of member organizations
 	var org Organization
-	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgmembers": 1}).One(&org)
+	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgmembers": 1, "includesuborgsof": 1}).One(&org)
 	if err != nil {
 		if mgo.ErrNotFound == err {
 			err = nil
@@ -277,7 +323,29 @@ func (m *Manager) IsMember(globalID, username string) (result bool, err error) {
 	}
 	excludelist := make(map[string]bool)
 	excludelist[globalID] = true
-	for _, owningOrganization := range org.OrgMembers {
+
+	// Also get the suborganizations if they have been added
+	var includesuborgs []string
+	for _, member := range org.OrgMembers {
+		for _, include := range org.IncludeSubOrgsOf {
+			if member == include {
+				includesuborgs = append(includesuborgs, include)
+			}
+		}
+	}
+	var subOrgs []Organization
+	for _, subOrg := range includesuborgs {
+		subOrganizations, err := m.GetSubOrganizations(subOrg)
+		if err != nil && err != mgo.ErrNotFound {
+			return false, err
+		}
+		subOrgs = append(subOrgs, subOrganizations...)
+	}
+	var orgs []string
+	for _, suborganization := range subOrgs {
+		orgs = append(orgs, suborganization.Globalid)
+	}
+	for _, owningOrganization := range append(org.OrgMembers, orgs...) {
 		result, err = m.isOwnerOrMember(owningOrganization, username, excludelist)
 		if result || err != nil {
 			return
@@ -481,6 +549,20 @@ func (m *Manager) RemoveOrgOwner(organization *Organization, organizationID stri
 	return m.collection.Update(
 		bson.M{"globalid": organization.Globalid},
 		bson.M{"$pull": bson.M{"orgowners": organizationID}})
+}
+
+// AddIncludeSubOrgOf adds an organization to the list of orgs who's suborgs are included in the owner/member hierarchy
+func (m *Manager) AddIncludeSubOrgOf(globalId, orgMemberId string) error {
+	return m.collection.Update(
+		bson.M{"globalid": globalId},
+		bson.M{"$addToSet": bson.M{"includesuborgsof": orgMemberId}})
+}
+
+// RemoveIncludeSubOrgOf removes an organization from the list of orgs who's suborgs are included in the owner/member hierarchy
+func (m *Manager) RemoveIncludeSubOrgOf(globalId, orgMemberId string) error {
+	return m.collection.Update(
+		bson.M{"globalid": globalId},
+		bson.M{"$pull": bson.M{"includesuborgsof": orgMemberId}})
 }
 
 func (m *Manager) AddDNS(organization *Organization, dnsName string) error {

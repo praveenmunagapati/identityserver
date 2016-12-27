@@ -221,6 +221,8 @@
         }
     },
     "organization_globalid": "Organizatie globalId",
+    "organization_include_orgmember_suborgs": "Suborganizaties van deze organizatie opnemen in de ledenlijst",
+    "organization_include_orgowner_suborgs": "Suborganizaties van deze organizatie opnemen in de eigenarenlijst",
     "organization_invite_organization": "Nodig organizatie uit",
     "organization_invite_organization_duplicate": "De uitgenodigde organizatie is al lid van de organzatie",
     "organization_invite_organization_help": "Nodig een andere organizatie uit om deel te worden van {{organization}}",

@@ -221,6 +221,8 @@
         }
     },
     "organization_globalid": "Organization globalId",
+    "organization_include_orgmember_suborgs": "Include suborganizations of this organization in the member list",
+    "organization_include_orgowner_suborgs": "Include suborganizations of this organization in the owner list",
     "organization_invite_organization": "Invite organization",
     "organization_invite_organization_duplicate": "The invited organization has already joined the organization",
     "organization_invite_organization_help": "Invite another organization to join {{organization}}",

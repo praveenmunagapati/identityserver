@@ -302,6 +302,10 @@ types:
         type: RequiredScope[]
         maxItems: 20
         description: List of scopes that are required to join this organization
+      includesuborgsof:
+        type: string[]
+        description: List of orgowners and orgmembers who's children should be included in the organizations membershi or ownership hierarchy
+
     example:
       globalid: greenitglobe
       publicKeys:
@@ -329,6 +333,8 @@ types:
         - scope: user:email:personal email
           accessscopes:
             - organization:owner
+      includesuborgsof:
+        - organization2
 
   OrganizationUser:
     properties:
@@ -1457,12 +1463,44 @@ securedBy: [ oauth_2_0 ]
               role: string
         responses:
           200:
-            description: updated organization membership successfulyy
+            description: updated organization membership successfully
             body:
               application/json:
                 type: Organization
           404:
             description: Organization not found
+
+      /includesuborgs:
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        post:
+          displayName: AddIncludeSubOrgsOf
+          description: Add an orgmember or orgowner organization to the includesuborgsof list
+          body:
+            application/json:
+              properties:
+                globalid: string
+          responses:
+            201:
+              description: organization addedd successfully
+              body:
+                application/json:
+                  properties:
+                    type: Organization
+            404:
+              description: Organization not found
+            409:
+              description: Organization is already in the list
+
+        /{orgmember}:
+          securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+          delete:
+            displayName: RemoveIncludeSubOrgsOf
+            description: Remove an orgmember or orgowner organization to the includesuborgsof list
+            responses:
+              204:
+                description: organization removed from includelist
+              404:
+                description: organization not found
 
       /invite:
         securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

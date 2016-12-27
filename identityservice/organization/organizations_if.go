@@ -153,9 +153,15 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// AcceptOrganizationInvite is the handler for POST /organizations/{globalid}/organizations/{invitingorg}/roles/{role}
 	// Accept the organization invite for one of your organizations
 	AcceptOrganizationInvite(w http.ResponseWriter, r *http.Request)
-	// rejectorganizationinvite is the handler for DELETE /organization/{globalid}/organizations/{invitingorg}/roles/{role}
+	// Rejectorganizationinvite is the handler for DELETE /organization/{globalid}/organizations/{invitingorg}/roles/{role}
 	// Reject the organization invite for one of your organizations
 	RejectOrganizationInvite(w http.ResponseWriter, r *http.Request)
+	// AddIncludeSubOrgsOf is the handler for POST /organization/{globalid}/orgmembers/includesuborgs
+	// Include the suborganizations of the given organization in the member/owner hierarchy of this organization
+	AddIncludeSubOrgsOf(w http.ResponseWriter, r *http.Request)
+	// RemoveIncludeSubOrgsOf is the handler for DELETE /organization/{globalid}/orgmembers/includesuborgs/{orgmember}
+	// Removes the suborganizations of the given organization from the member/owner hierarchy of this organization
+	RemoveIncludeSubOrgsOf(w http.ResponseWriter, r *http.Request)
 }
 
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
@@ -211,4 +217,6 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/orgmembers/invite", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddOrganizationOrgMember))).Methods("POST")
 	r.Handle("/organizations/{globalid}/organizations/{invitingorg}/roles/{role}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AcceptOrganizationInvite))).Methods("POST")
 	r.Handle("/organizations/{globalid}/organizations/{invitingorg}/roles/{role}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RejectOrganizationInvite))).Methods("DELETE")
+	r.Handle("/organizations/{globalid}/orgmembers/includesuborgs", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddIncludeSubOrgsOf))).Methods("POST")
+	r.Handle("/organizations/{globalid}/orgmembers/includesuborgs/{orgmember}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveIncludeSubOrgsOf))).Methods("DELETE")
 }
