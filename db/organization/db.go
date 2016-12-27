@@ -268,7 +268,7 @@ func (m *Manager) IsMember(globalID, username string) (result bool, err error) {
 	}
 	// If not a direct or inherited member, iterate through the list of member organizations
 	var org Organization
-	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgmember": 1}).One(&org)
+	err = m.collection.Find(bson.M{"globalid": globalID}).Select(bson.M{"orgmembers": 1}).One(&org)
 	if err != nil {
 		if mgo.ErrNotFound == err {
 			err = nil
