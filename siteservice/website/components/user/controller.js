@@ -181,15 +181,17 @@
             if (!root || !structure) {
                 return;
             }
-            if (root[structure[0]]) {
-                parseItemInTree(root[structure[0]].children, structure.slice(1), target);
-            } else {
-                // childrenCollapsed is a property used by the tree directive to decide if the child elements should be shown.
-                // Setting it here increases the reusability of the tree directive. The value is optional, and defaults to false.
-                // Since it doesn't matter if there are any actual children, we can just set it on any node.
-                // Set all values to true since the tree should only show root organizations by default.
-                root[structure.join(".")] = { name: structure.join('.'), link: target, children: {}, childrenCollapsed: true};
+            for (var i = 0; i < structure.length; i++) {
+                if (root[structure.slice(0, i + 1).join('.')]) {
+                    parseItemInTree(root[structure.slice(0, i + 1).join('.')].children, structure.slice(i + 1), target);
+                    return
+                }
             }
+            // childrenCollapsed is a property used by the tree directive to decide if the child elements should be shown.
+            // Setting it here increases the reusability of the tree directive. The value is optional, and defaults to false.
+            // Since it doesn't matter if there are any actual children, we can just set it on any node.
+            // Set all values to true since the tree should only show root organizations by default.
+            root[structure.join(".")] = { name: structure.join('.'), link: target, children: {}, childrenCollapsed: true};
         }
 
         function loadAuthorizations() {
