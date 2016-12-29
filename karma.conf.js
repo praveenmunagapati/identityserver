@@ -41,6 +41,7 @@ module.exports = function(config) {
           // load main app and dependancies
           'components/app.js',
           'components/user/directives/authorizationDetailsDirective.js',
+          'components/user/directives/treeDirective.js',
           'components/user/UserDialogService.js',
           'components/user/authorizeController.js',
           'components/user/controller.js',

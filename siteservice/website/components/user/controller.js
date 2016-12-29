@@ -8,10 +8,10 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$routeParams', '$location', '$window', '$mdMedia', '$mdDialog', '$translate',
+        '$q', '$rootScope', '$routeParams', '$location', '$window', '$filter', '$mdMedia', '$mdDialog', '$translate',
         'NotificationService', 'OrganizationService', 'UserService', 'UserDialogService'];
 
-    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $mdMedia, $mdDialog, $translate,
+    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $filter, $mdMedia, $mdDialog, $translate,
                                 NotificationService, OrganizationService, UserService, UserDialogService) {
         var vm = this;
         vm.username = $rootScope.user;
@@ -33,7 +33,9 @@
         var TABS = [TAB_YOU, TAB_NOTIFICATIONS, TAB_ORGANIZATIONS,TAB_AUTHORIZATIONS, TAB_SETTINGS];
 
         vm.owner = [];
+        vm.ownerTree = {};
         vm.member = [];
+        vm.memberTree = {};
         vm.twoFAMethods = {};
         vm.user = {};
 
@@ -144,11 +146,50 @@
                 .getUserOrganizations(vm.username)
                 .then(
                     function (data) {
-                        vm.owner = data.owner;
-                        vm.member = data.member;
+                        vm.owner = $filter('orderBy')(data.owner);
+                        fillTree('owner');
+                        vm.member = $filter('orderBy')(data.member);
+                        fillTree('member');
                         vm.loaded.organizations = true;
                     }
                 );
+        }
+
+        function fillTree(type) {
+            var tree;
+            var list;
+            switch (type) {
+                case 'owner':
+                    tree = vm.ownerTree;
+                    list = vm.owner;
+                    break;
+                case 'member':
+                    tree = vm.memberTree;
+                    list = vm.member;
+                    break;
+                default:
+                    return;
+            }
+
+            // IMPORTANT: this depends on the list being semi-sorted: The parent organizations should come before their (direct) children.
+            for (var i = 0; i < list.length; i++) {
+                parseItemInTree(tree, list[i].split('.'), list[i]);
+            }
+        }
+
+        function parseItemInTree(root, structure, target) {
+            if (!root || !structure) {
+                return;
+            }
+            if (root[structure[0]]) {
+                parseItemInTree(root[structure[0]].children, structure.slice(1), target);
+            } else {
+                // childrenCollapsed is a property used by the tree directive to decide if the child elements should be shown.
+                // Setting it here increases the reusability of the tree directive. The value is optional, and defaults to false.
+                // Since it doesn't matter if there are any actual children, we can just set it on any node.
+                // Set all values to true since the tree should only show root organizations by default.
+                root[structure.join(".")] = { name: structure.join('.'), link: target, children: {}, childrenCollapsed: true};
+            }
         }
 
         function loadAuthorizations() {

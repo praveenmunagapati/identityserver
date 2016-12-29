@@ -459,6 +459,34 @@ md-select.header-select:not([disabled]):focus .md-select-value {
     overflow-y: hidden;
 }
 
+ul.organizationstree {
+  list-style-type: none;
+  padding-left:20px;
+}
+
+/* Apply a small visual style to show the node depth */
+li > ul.organizationstree {
+  border-left: dotted 0.5px;
+  margin-left: 30px;
+  padding-left: 5px;
+}
+
+.organizationstreenode {
+  text-align: left;
+  margin: 0px 0px;
+  width: 100%;
+  text-transform: none;
+}
+
+/* Hide the icon but don't remove it from the DOM, small hack to ensure that all organizations are lined up*/
+.hiddenicon {
+  opacity: 0;
+}
+
+.nodecontainer {
+  padding-left: 10px;
+}
+
 .breadcrumb-container {
     padding: 0 8px;
 }
