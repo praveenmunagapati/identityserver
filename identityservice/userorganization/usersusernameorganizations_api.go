@@ -34,7 +34,7 @@ func (api UsersusernameorganizationsAPI) Get(w http.ResponseWriter, r *http.Requ
 
 	orgMgr := organizationdb.NewManager(r)
 
-	orgs, err := orgMgr.AllByUser(username)
+	orgs, err := orgMgr.AllByUserChain(username)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -50,10 +50,14 @@ func (api UsersusernameorganizationsAPI) Get(w http.ResponseWriter, r *http.Requ
 	}
 
 	for _, org := range orgs {
-		if exists(username, org.Owners) {
-			userOrgs.Owner = append(userOrgs.Owner, org.Globalid)
+		isOwner, err := orgMgr.IsOwner(org, username)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		if isOwner {
+			userOrgs.Owner = append(userOrgs.Owner, org)
 		} else {
-			userOrgs.Member = append(userOrgs.Member, org.Globalid)
+			userOrgs.Member = append(userOrgs.Member, org)
 		}
 	}
 	w.Header().Set("Content-type", "application/json")

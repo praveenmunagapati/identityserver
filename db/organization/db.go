@@ -393,6 +393,180 @@ func (m *Manager) AllByUser(username string) ([]Organization, error) {
 	return organizations, err
 }
 
+// AllByUserChain returns all organizations where the user is involved, explicitly or implicit
+func (m *Manager) AllByUserChain(username string) ([]string, error) {
+	var ownedOrgs []string
+
+	// Get organization names where this user is an explicit owner or member
+	userOrgs, err := m.AllByUser(username)
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			return nil, err
+		}
+		err = nil
+	}
+
+	// Now load all suborganizations to account for owner- and member-heritance
+	var suborganizations []Organization
+	for _, org := range userOrgs {
+		orgs, err := m.GetSubOrganizations(org.Globalid)
+		if err != nil {
+			if err != mgo.ErrNotFound {
+				return nil, err
+			}
+			err = nil
+		}
+		suborganizations = append(suborganizations, orgs...)
+	}
+
+	newOrgsFound := true
+	var orgs []string
+
+	var parentOrgs []string
+
+	// We only want the globalids. Also remove possible duplicates
+	for _, org := range append(userOrgs, suborganizations...) {
+		exists := false
+		for _, value := range orgs {
+			if org.Globalid == value {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			orgs = append(orgs, org.Globalid)
+		}
+	}
+
+	// Copy the elements in the slice
+	for _, org := range orgs {
+		ownedOrgs = append(ownedOrgs, org)
+	}
+
+	var orgsFoundThisIteration []string
+
+	// while we find new organizations
+	for newOrgsFound {
+
+		// Get the organizations where our currently know organizations are owners or members.
+		for _, org := range orgs {
+			ownedbyorg, err := m.AllByOrg(org)
+			if err != nil {
+				if err != mgo.ErrNotFound {
+					return nil, err
+				}
+				err = nil
+			}
+			for _, obOrg := range ownedbyorg {
+				alreadyFound := false
+				for _, knownOrg := range ownedOrgs {
+					if obOrg.Globalid == knownOrg {
+						alreadyFound = true
+						break
+					}
+				}
+				if !alreadyFound {
+					ownedOrgs = append(ownedOrgs, obOrg.Globalid)
+					orgs = append(orgs, obOrg.Globalid)
+					orgsFoundThisIteration = append(orgsFoundThisIteration, obOrg.Globalid)
+				}
+			}
+		}
+
+		// Now get the subOrganizations we haven't discovered yet
+		for _, org := range orgsFoundThisIteration {
+			subOrgs, err := m.GetSubOrganizations(org)
+			if err != nil {
+				if err != mgo.ErrNotFound {
+					return nil, err
+				}
+				err = nil
+			}
+			for _, subOrg := range subOrgs {
+				alreadyFound := false
+				for _, knownOrg := range ownedOrgs {
+					if subOrg.Globalid == knownOrg {
+						alreadyFound = true
+						break
+					}
+				}
+				if !alreadyFound {
+					ownedOrgs = append(ownedOrgs, subOrg.Globalid)
+					orgs = append(orgs, subOrg.Globalid)
+					orgsFoundThisIteration = append(orgsFoundThisIteration, subOrg.Globalid)
+				}
+			}
+		}
+
+		// Get parent orgs
+		for _, possibleChild := range orgs {
+			subOrgSeperator := strings.LastIndex(possibleChild, ".")
+			for subOrgSeperator > 0 {
+				alreadyFoud := false
+				for _, parentOrg := range parentOrgs {
+					if parentOrg == possibleChild[:subOrgSeperator] {
+						alreadyFoud = true
+						break
+					}
+				}
+				if !alreadyFoud {
+					for _, knownOrg := range ownedOrgs {
+						if knownOrg == possibleChild[:subOrgSeperator] {
+							alreadyFoud = true
+							break
+						}
+					}
+				}
+				if !alreadyFoud {
+					parentOrgs = append(parentOrgs, possibleChild[:subOrgSeperator])
+				}
+				subOrgSeperator = strings.LastIndex(possibleChild[:subOrgSeperator], ".")
+			}
+		}
+
+		// Get orgs where parentorgs are owner or member and parentorgs are on the includechildren list.
+		for _, parentOrg := range parentOrgs {
+			includedOrgs, err := m.AllByOrg(parentOrg)
+			if err != nil {
+				if err != mgo.ErrNotFound {
+					return nil, err
+				}
+				err = nil
+			}
+			for _, includedOrg := range includedOrgs {
+				alreadyFound := false
+				for _, org := range ownedOrgs {
+					if includedOrg.Globalid == org {
+						alreadyFound = true
+						break
+					}
+				}
+				if alreadyFound {
+					break
+				}
+				for _, subOrgsIncludedOf := range includedOrg.IncludeSubOrgsOf {
+					if parentOrg == subOrgsIncludedOf {
+						ownedOrgs = append(ownedOrgs, includedOrg.Globalid)
+						orgs = append(orgs, includedOrg.Globalid)
+						orgsFoundThisIteration = append(orgsFoundThisIteration, includedOrg.Globalid)
+					}
+				}
+			}
+		}
+
+		newOrgsFound = len(orgsFoundThisIteration) > 0
+
+		// Copy orgsFoundThisIteration to orgs && clear orgsFoundThisIteration
+		orgs = []string{}
+		for _, org := range orgsFoundThisIteration {
+			orgs = append(orgs, org)
+		}
+		orgsFoundThisIteration = []string{}
+	}
+
+	return ownedOrgs, nil
+}
+
 // AllByOrg get organizations where certain organization is a member/owner.
 func (m *Manager) AllByOrg(globalID string) ([]Organization, error) {
 	var organizations []Organization
