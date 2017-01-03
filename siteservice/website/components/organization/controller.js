@@ -404,7 +404,7 @@
         }
 
         function canEditRole(member) {
-            return vm.organization.owners.indexOf($rootScope.user) > -1 && member !== $rootScope.user;
+            return vm.hasEditPermission && member !== $rootScope.user;
         }
 
         function editMember(event, user) {
