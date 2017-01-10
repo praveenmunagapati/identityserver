@@ -297,7 +297,8 @@
                 "signout": "Afmelden",
                 "register": "Registreer",
                 "signin": "Aanmelden",
-                "language": "taal"
+                "language": "taal",
+                "notifications": "meldingen"
             }
         }
     },

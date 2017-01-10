@@ -11,6 +11,9 @@
                     scope.showCookieWarning = !localStorage.getItem('cookiewarning-dismissed');
                     scope.hideCookieWarning  = hideCookieWarning;
                     scope.updateLanguage = updateLanguage;
+                    scope.setLanguage = setLanguage;
+                    scope.pushClick = pushClick;
+                    scope.toggleMenu = toggleMenu;
                     init();
 
                     function init() {
@@ -26,6 +29,23 @@
                         localStorage.setItem('langKey', scope.langKey);
                         localStorage.setItem('selectedLangKey', scope.langKey)
                         $translate.use(scope.langKey);
+                    }
+
+                    function setLanguage(lang) {
+                        scope.langKey = lang;
+                        scope.langSelect = !scope.langSelect;
+                        scope.toggleNavMenu = !scope.toggleNavMenu;
+                        updateLanguage();
+                    }
+
+                    function pushClick(url) {
+                        $location.path(url);
+                        scope.toggleNavMenu = !scope.toggleNavMenu;
+                    }
+
+                    function toggleMenu() {
+                        scope.toggleNavMenu = !scope.toggleNavMenu;
+                        scope.langSelect = false;
                     }
                 }
             };

@@ -296,7 +296,8 @@
                 "signout": "Signout",
                 "register": "Register",
                 "signin": "Sign in",
-                "language": "language"
+                "language": "language",
+                "notifications": "notifications"
             }
         }
     },
