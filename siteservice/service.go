@@ -31,16 +31,20 @@ type Service struct {
 	phonenumberValidationService  *validation.IYOPhonenumberValidationService
 	EmailService                  communication.EmailService
 	emailaddressValidationService *validation.IYOEmailAddressValidationService
+	version                       string
 }
 
 //NewService creates and initializes a Service
-func NewService(cookieSecret string, smsService communication.SMSService, emailService communication.EmailService) (service *Service) {
+func NewService(cookieSecret string, smsService communication.SMSService, emailService communication.EmailService, version string) (service *Service) {
 	service = &Service{smsService: smsService}
 
 	p := &validation.IYOPhonenumberValidationService{SMSService: smsService}
 	service.phonenumberValidationService = p
 	e := &validation.IYOEmailAddressValidationService{EmailService: emailService}
 	service.emailaddressValidationService = e
+
+	service.version = version
+
 	service.initializeSessions(cookieSecret)
 	return
 }
@@ -88,6 +92,17 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("GET").Path("/error").HandlerFunc(service.ErrorPage)
 	router.Methods("GET").Path("/error{errornumber}").HandlerFunc(service.ErrorPage)
 	router.Methods("GET").Path("/config").HandlerFunc(service.GetConfig)
+
+	router.Methods("GET").Path("/version").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		response := struct {
+			Version string
+		}{
+			Version: service.version,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(&response)
+	})
 
 	//host the assets used in the htmlpages
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(
