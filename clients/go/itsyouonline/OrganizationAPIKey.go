@@ -5,7 +5,7 @@ import (
 )
 
 type OrganizationAPIKey struct {
-	CallbackURL                string `json:"callbackURL,omitempty" validate:"min=5,max=250"`
+	CallbackURL                string `json:"callbackURL,omitempty" validate:"max=250"`
 	ClientCredentialsGrantType bool   `json:"clientCredentialsGrantType,omitempty"`
 	Label                      Label  `json:"label" validate:"nonzero"`
 	Secret                     string `json:"secret,omitempty" validate:"max=250"`
