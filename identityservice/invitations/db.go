@@ -173,7 +173,7 @@ func (o *InvitationManager) GetWithPhonenumber(phonenumber string, organization 
 	return &orgRequest, err
 }
 
-// Save save/update an invitation
+// Save saves/updates an invitation
 func (o *InvitationManager) Save(invite *JoinOrganizationInvitation) error {
 
 	_, err := o.collection.Upsert(
@@ -181,6 +181,8 @@ func (o *InvitationManager) Save(invite *JoinOrganizationInvitation) error {
 			"user":         invite.User,
 			"organization": invite.Organization,
 			"role":         invite.Role,
+			"emailaddress": invite.EmailAddress,
+			"phonenumber":  invite.PhoneNumber,
 		}, invite)
 
 	return err
