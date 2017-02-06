@@ -101,7 +101,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		}
 
 		// atscopestring will be user:admin for user api keys, which is only valid if the api key is owned by the user being accessed off course
-		if !(protectedUsername == username && atscopestring == "user:admin") {
+		if !((protectedUsername == username && atscopestring == "user:admin") || (clientID == "itsyouonline" && atscopestring == "admin")) {
 			// todo: cache
 			userMgr := user.NewManager(r)
 			authorization, err := userMgr.GetAuthorization(protectedUsername, clientID)
