@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -58,6 +59,6 @@ func main() {
 
 	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {})
 
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }

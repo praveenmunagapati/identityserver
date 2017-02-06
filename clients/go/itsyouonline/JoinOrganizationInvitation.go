@@ -5,10 +5,15 @@ import (
 )
 
 type JoinOrganizationInvitation struct {
-	Created      DateTime `json:"created,omitempty"`
-	Organization string   `json:"organization" validate:"nonzero"`
-	Role         string   `json:"role" validate:"nonzero"`
-	User         string   `json:"user" validate:"nonzero"`
+	Created        DateTime `json:"created,omitempty"`
+	Emailaddress   string   `json:"emailaddress" validate:"nonzero"`
+	Isorganization bool     `json:"isorganization" validate:"nonzero"`
+	Method         string   `json:"method" validate:"nonzero"`
+	Organization   string   `json:"organization" validate:"nonzero"`
+	Phonenumber    string   `json:"phonenumber" validate:"nonzero"`
+	Role           string   `json:"role" validate:"nonzero"`
+	Status         string   `json:"status" validate:"nonzero"`
+	User           string   `json:"user" validate:"nonzero"`
 }
 
 func (s JoinOrganizationInvitation) Validate() error {
