@@ -27,22 +27,6 @@ func newOauth2oauth_2_0Middleware(scopes []string) *Oauth2oauth_2_0Middleware {
 	return &om
 }
 
-// CheckScopes checks whether user has needed scopes
-func checkScopes(possibleScopes []string, authorizedScopes []string) bool {
-	if len(possibleScopes) == 0 {
-		return true
-	}
-
-	for _, allowed := range possibleScopes {
-		for _, scope := range authorizedScopes {
-			if scope == allowed {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // Handler return HTTP handler representation of this middleware
 func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -89,6 +73,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 				}
 			}
 		}
+		log.Debugln("Accessing user:", username, "- Accessing clientID:", clientID)
 		if username == "" || clientID == "" {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
@@ -114,8 +99,9 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 			}
 			possibleScopes = append(possibleScopes, scope)
 		}
-		// atscopestring will be user:admin for user api keys
-		if !(protectedUsername == username && clientID == "itsyouonline" && atscopestring == "admin" || atscopestring == "user:admin") {
+
+		// atscopestring will be user:admin for user api keys, which is only valid if the api key is owned by the user being accessed off course
+		if !(protectedUsername == username && atscopestring == "user:admin") {
 			// todo: cache
 			userMgr := user.NewManager(r)
 			authorization, err := userMgr.GetAuthorization(protectedUsername, clientID)
@@ -145,7 +131,7 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		// check scopes
 		log.Debug("Authorized scopes: ", authorizedScopes)
 		log.Debug("Needed possible scopes: ", possibleScopes)
-		if !checkScopes(possibleScopes, authorizedScopes) {
+		if !oauth2.CheckScopes(possibleScopes, authorizedScopes) {
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return
 		}

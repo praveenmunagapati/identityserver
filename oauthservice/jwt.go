@@ -154,9 +154,9 @@ func stripOfflineAccess(scopes []string) (result []string, offlineAccessRequeste
 
 func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, audiences string) (tokenString string, err error) {
 
-	requestedScopes := splitScopeString(requestedScopeString)
+	requestedScopes := oauth2.SplitScopeString(requestedScopeString)
 	requestedScopes, offlineAccessRequested := stripOfflineAccess(requestedScopes)
-	acquiredScopes := splitScopeString(at.Scope)
+	acquiredScopes := oauth2.SplitScopeString(at.Scope)
 
 	if !jwtScopesAreAllowed(acquiredScopes, requestedScopes) {
 		err = errUnauthorized
@@ -207,7 +207,7 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 
 func (service *Service) createNewJWTFromParent(r *http.Request, parentToken *jwt.Token, requestedScopeString, audiences string) (tokenString string, err error) {
 
-	requestedScopes := splitScopeString(requestedScopeString)
+	requestedScopes := oauth2.SplitScopeString(requestedScopeString)
 	requestedScopes, offlineAccessRequested := stripOfflineAccess(requestedScopes)
 
 	acquiredScopes := oauth2.GetScopesFromJWT(parentToken)

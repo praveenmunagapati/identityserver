@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/communication"
+	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
@@ -27,6 +28,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+//UsersAPI is the actual implementation of the /users api
 type UsersAPI struct {
 	SmsService                    communication.SMSService
 	PhonenumberValidationService  *validation.IYOPhonenumberValidationService
@@ -415,15 +417,49 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
-	if requestingClient == organization.ItsyouonlineClientID {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(userobj)
-		return
-	}
+	availableScopes, _ := context.Get(r, "availablescopes").(string)
+	isAdmin := oauth2.CheckScopes([]string{"user:admin"}, oauth2.SplitScopeString(availableScopes))
 
 	authorization, err := userMgr.GetAuthorization(username, requestingClient)
 	if handleServerError(w, "getting authorization", err) {
+		return
+	}
+
+	//Create an administrator authorization
+	if authorization == nil && isAdmin {
+		authorization = &user.Authorization{
+			Name:           true,
+			Github:         true,
+			Facebook:       true,
+			Addresses:      []user.AuthorizationMap{},
+			BankAccounts:   []user.AuthorizationMap{},
+			DigitalWallet:  []user.DigitalWalletAuthorization{},
+			EmailAddresses: []user.AuthorizationMap{},
+			Phonenumbers:   []user.AuthorizationMap{},
+			PublicKeys:     []user.AuthorizationMap{},
+		}
+		for _, address := range userobj.Addresses {
+			authorization.Addresses = append(authorization.Addresses, user.AuthorizationMap{RequestedLabel: address.Label, RealLabel: address.Label})
+		}
+		for _, a := range userobj.BankAccounts {
+			authorization.BankAccounts = append(authorization.BankAccounts, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+		for _, a := range userobj.DigitalWallet {
+			authorization.DigitalWallet = append(authorization.DigitalWallet, user.DigitalWalletAuthorization{Currency: a.CurrencySymbol, AuthorizationMap: user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label}})
+		}
+		for _, a := range userobj.EmailAddresses {
+			authorization.EmailAddresses = append(authorization.EmailAddresses, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+		for _, a := range userobj.Phonenumbers {
+			authorization.Phonenumbers = append(authorization.Phonenumbers, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+		for _, a := range userobj.PublicKeys {
+			authorization.PublicKeys = append(authorization.PublicKeys, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+
+	}
+	if authorization == nil {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 
