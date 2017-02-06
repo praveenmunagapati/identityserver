@@ -13,7 +13,7 @@ const (
 	mongoOrganizationRequestCollectionName = "join-organization-invitations"
 )
 
-//InvitationManager is used to store organizations
+//InvitationManager is used to store invitations
 type InvitationManager struct {
 	session    *mgo.Session
 	collection *mgo.Collection
@@ -173,7 +173,7 @@ func (o *InvitationManager) GetWithPhonenumber(phonenumber string, organization 
 	return &orgRequest, err
 }
 
-// Save save/update an invitation
+// Save saves/updates an invitation
 func (o *InvitationManager) Save(invite *JoinOrganizationInvitation) error {
 
 	_, err := o.collection.Upsert(
@@ -181,6 +181,8 @@ func (o *InvitationManager) Save(invite *JoinOrganizationInvitation) error {
 			"user":         invite.User,
 			"organization": invite.Organization,
 			"role":         invite.Role,
+			"emailaddress": invite.EmailAddress,
+			"phonenumber":  invite.PhoneNumber,
 		}, invite)
 
 	return err
@@ -237,4 +239,19 @@ func (o *InvitationManager) Remove(globalID string, searchString string) error {
 		},
 	}
 	return o.collection.Remove(qry)
+}
+
+// GetInvites gets all invites where the organization is invited
+func (o *InvitationManager) GetOpenOrganizationInvites(globalID string) ([]JoinOrganizationInvitation, error) {
+	invites := []JoinOrganizationInvitation{}
+	qry := bson.M{
+		"user":   globalID,
+		"status": "pending",
+		//"isorganization": true,
+	}
+	err := o.collection.Find(qry).All(&invites)
+	if err == mgo.ErrNotFound {
+		err = nil
+	}
+	return invites, err
 }

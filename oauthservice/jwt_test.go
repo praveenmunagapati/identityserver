@@ -3,6 +3,7 @@ package oauthservice
 import (
 	"testing"
 
+	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +23,7 @@ func TestJWTScopesAreAllowed(t *testing.T) {
 		testcase{allowed: "user:admin", requested: "user:memberof:org1", valid: true},
 	}
 	for _, test := range testcases {
-		valid := jwtScopesAreAllowed(splitScopeString(test.allowed), splitScopeString(test.requested))
+		valid := jwtScopesAreAllowed(oauth2.SplitScopeString(test.allowed), oauth2.SplitScopeString(test.requested))
 		assert.Equal(t, test.valid, valid, "Allowed: \"%s\" - Requested: \"%s\"", test.allowed, test.requested)
 	}
 }

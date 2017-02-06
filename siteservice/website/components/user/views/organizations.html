@@ -17,25 +17,12 @@
             </div>
             <div layout ng-show="vm.loaded.organizations">
                 <div flex flex-gt-xs="50">
-                    <md-list>
-                        <md-subheader><span translate='owner'>Owner</span></md-subheader>
-                        <md-list-item
-                                ng-repeat="organization in vm.owner" class="noright"
-                                ng-href="#/organization/{{ ::organization }}"
-                                aria-label="{{::organization}}">
-                              <p ng-bind="organization"></p>
-                        </md-list-item>
-                    </md-list>
+                    <md-subheader><span translate='owner'>Owner</span></md-subheader>
+                    <tree src="vm.ownerTree"></tree>
                 </div>
                 <div flex flex-gt-xs="50">
-                    <md-list>
-                        <md-subheader><span translate='member'>Member</span></md-subheader>
-                        <md-list-item
-                                ng-repeat="organization in vm.member" class="noright"
-                                ng-href="#/organization/{{ ::organization }}">
-                            <p>{{ ::organization }}</p>
-                        </md-list-item>
-                    </md-list>
+                    <md-subheader><span translate='member'>Member</span></md-subheader>
+                    <tree src="vm.memberTree"></tree>
                 </div>
             </div>
         </md-card-content>

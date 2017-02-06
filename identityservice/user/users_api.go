@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/communication"
+	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
@@ -27,6 +28,7 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+//UsersAPI is the actual implementation of the /users api
 type UsersAPI struct {
 	SmsService                    communication.SMSService
 	PhonenumberValidationService  *validation.IYOPhonenumberValidationService
@@ -415,15 +417,49 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
-	if requestingClient == organization.ItsyouonlineClientID {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(userobj)
-		return
-	}
+	availableScopes, _ := context.Get(r, "availablescopes").(string)
+	isAdmin := oauth2.CheckScopes([]string{"user:admin"}, oauth2.SplitScopeString(availableScopes))
 
 	authorization, err := userMgr.GetAuthorization(username, requestingClient)
 	if handleServerError(w, "getting authorization", err) {
+		return
+	}
+
+	//Create an administrator authorization
+	if authorization == nil && isAdmin {
+		authorization = &user.Authorization{
+			Name:           true,
+			Github:         true,
+			Facebook:       true,
+			Addresses:      []user.AuthorizationMap{},
+			BankAccounts:   []user.AuthorizationMap{},
+			DigitalWallet:  []user.DigitalWalletAuthorization{},
+			EmailAddresses: []user.AuthorizationMap{},
+			Phonenumbers:   []user.AuthorizationMap{},
+			PublicKeys:     []user.AuthorizationMap{},
+		}
+		for _, address := range userobj.Addresses {
+			authorization.Addresses = append(authorization.Addresses, user.AuthorizationMap{RequestedLabel: address.Label, RealLabel: address.Label})
+		}
+		for _, a := range userobj.BankAccounts {
+			authorization.BankAccounts = append(authorization.BankAccounts, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+		for _, a := range userobj.DigitalWallet {
+			authorization.DigitalWallet = append(authorization.DigitalWallet, user.DigitalWalletAuthorization{Currency: a.CurrencySymbol, AuthorizationMap: user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label}})
+		}
+		for _, a := range userobj.EmailAddresses {
+			authorization.EmailAddresses = append(authorization.EmailAddresses, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+		for _, a := range userobj.Phonenumbers {
+			authorization.Phonenumbers = append(authorization.Phonenumbers, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+		for _, a := range userobj.PublicKeys {
+			authorization.PublicKeys = append(authorization.PublicKeys, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+
+	}
+	if authorization == nil {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 
@@ -1234,10 +1270,11 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 
 	type NotificationList struct {
-		Approvals        []invitations.JoinOrganizationInvitation `json:"approvals"`
-		ContractRequests []contractdb.ContractSigningRequest      `json:"contractRequests"`
-		Invitations      []invitations.JoinOrganizationInvitation `json:"invitations"`
-		MissingScopes    []organizationDb.MissingScope            `json:"missingscopes"`
+		Approvals               []invitations.JoinOrganizationInvitation `json:"approvals"`
+		ContractRequests        []contractdb.ContractSigningRequest      `json:"contractRequests"`
+		Invitations             []invitations.JoinOrganizationInvitation `json:"invitations"`
+		MissingScopes           []organizationDb.MissingScope            `json:"missingscopes"`
+		OrganizationInvitations []invitations.JoinOrganizationInvitation `json:"organizationinvitations"`
 	}
 	var notifications NotificationList
 
@@ -1263,7 +1300,7 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		userOrgRequests = append(userOrgRequests, phonenumberRequests...)
 	}
 
-	// Add the invites for the users verified email addresses> This is required if the invite
+	// Add the invites for the users verified email addresses. This is required if the invite
 	// was added before the email address was verified, and no invite email was send
 	validatedEmailaddresses, err := valMgr.GetByUsernameValidatedEmailAddress(username)
 	if handleServerError(w, "getting verified email addresses", err) {
@@ -1277,7 +1314,38 @@ func (api UsersAPI) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		userOrgRequests = append(userOrgRequests, emailRequests...)
 	}
 
+	// Add the invites for the organizations where this user is an owner
+	orgMgr := organizationDb.NewManager(r)
+
+	orgs, err := orgMgr.AllByUser(username)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	var ownedOrgs []string
+
+	for _, org := range orgs {
+		if exists(username, org.Owners) {
+			ownedOrgs = append(ownedOrgs, org.Globalid)
+		}
+	}
+
+	//var orgInvites []invitations.JoinOrganizationInvitation
+	orgInvites := make([]invitations.JoinOrganizationInvitation, 0)
+
+	for _, org := range ownedOrgs {
+		invites, err := invitationMgr.GetOpenOrganizationInvites(org)
+		if err != nil {
+			log.Error("Error while loading all invites where the organization ", org, " is invited")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		orgInvites = append(orgInvites, invites...)
+	}
+
 	notifications.Invitations = userOrgRequests
+	notifications.OrganizationInvitations = orgInvites
 	// TODO: Get Approvals and Contract requests
 	notifications.Approvals = []invitations.JoinOrganizationInvitation{}
 	notifications.ContractRequests = []contractdb.ContractSigningRequest{}
@@ -2013,5 +2081,15 @@ func handleServerError(responseWriter http.ResponseWriter, actionText string, er
 		http.Error(responseWriter, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return true
 	}
+	return false
+}
+
+func exists(value string, list []string) bool {
+	for _, val := range list {
+		if val == value {
+			return true
+		}
+	}
+
 	return false
 }

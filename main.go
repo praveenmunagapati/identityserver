@@ -19,13 +19,19 @@ import (
 	"github.com/itsyouonline/identityserver/siteservice"
 )
 
-func main() {
+var version string
 
+func main() {
+	if version == "" {
+		version = "Dev"
+	}
 	app := cli.NewApp()
 	app.Name = "Identity server"
-	app.Version = "0.1-Dev"
+	app.Version = version
 
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+	// Set log output to stdout so we can pipe it
+	log.SetOutput(os.Stdout)
 
 	var debugLogging, ignoreDevcert bool
 	var bindAddress, dbConnectionString string
@@ -111,12 +117,13 @@ func main() {
 		if debugLogging {
 			log.SetLevel(log.DebugLevel)
 			log.Debug("Debug logging enabled")
-			log.Debug(app.Name, "-", app.Version)
 		}
 		return nil
 	}
 
 	app.Action = func(c *cli.Context) {
+
+		log.Infoln(app.Name, "version", app.Version)
 		// Connect to DB!
 		go db.Connect(dbConnectionString)
 		defer db.Close()
@@ -147,7 +154,7 @@ func main() {
 			emailService = communication.NewSMTPEmailService(smtpserver, smtpport, smtpuser, smtppassword)
 		}
 
-		sc := siteservice.NewService(cookieSecret, smsService, emailService)
+		sc := siteservice.NewService(cookieSecret, smsService, emailService, version)
 		is := identityservice.NewService(smsService, emailService)
 
 		config := globalconfig.NewManager()

@@ -5,12 +5,10 @@ from .contracts_service import  ContractsService
 from .organizations_service import  OrganizationsService 
 from .users_service import  UsersService 
 
-BASE_URI = "https://itsyou.online/api"
-
 
 class Client:
-    def __init__(self):
-        self.base_url = BASE_URI
+    def __init__(self, base_uri = "https://itsyou.online/api"):
+        self.base_url = base_uri
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
         

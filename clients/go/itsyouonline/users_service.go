@@ -44,6 +44,7 @@ func (s *UsersService) RegisterNewUserAddress(username string, address Address, 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// List of all of the user his email addresses.
 func (s *UsersService) GetUserAddresses(username string, headers, queryParams map[string]interface{}) ([]Address, *http.Response, error) {
 	var u []Address
 
@@ -56,6 +57,13 @@ func (s *UsersService) GetUserAddresses(username string, headers, queryParams ma
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Removes an address
+func (s *UsersService) DeleteUserAddress(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/addresses/"+label, headers, queryParams)
+}
+
+// Get the details of an address.
 func (s *UsersService) GetUserAddressByLabel(label, username string, headers, queryParams map[string]interface{}) (Address, *http.Response, error) {
 	var u Address
 
@@ -66,12 +74,6 @@ func (s *UsersService) GetUserAddressByLabel(label, username string, headers, qu
 	defer resp.Body.Close()
 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
-// Removes an address
-func (s *UsersService) DeleteUserAddress(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/addresses/"+label, headers, queryParams)
 }
 
 // Update the label and/or value of an existing address.
@@ -112,6 +114,18 @@ func (s *UsersService) ListAPIKeys(username string, headers, queryParams map[str
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// Updates the label for the API key
+func (s *UsersService) UpdateAPIkey(label, username string, usersusernameapikeyslabelputreqbody UsersUsernameApikeysLabelPutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
+
+	resp, err := s.client.doReqWithBody("PUT", s.client.BaseURI+"/users/"+username+"/apikeys/"+label, &usersusernameapikeyslabelputreqbody, headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
+}
+
 // Removes an API key
 func (s *UsersService) DeleteAPIkey(label, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create request object
@@ -131,23 +145,24 @@ func (s *UsersService) GetAPIkey(label, username string, headers, queryParams ma
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Updates the label for the api key
-func (s *UsersService) UpdateAPIkey(label, username string, usersusernameapikeyslabelputreqbody UsersUsernameApikeysLabelPutReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
-
-	resp, err := s.client.doReqWithBody("PUT", s.client.BaseURI+"/users/"+username+"/apikeys/"+label, &usersusernameapikeyslabelputreqbody, headers, queryParams)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return resp, nil
-}
-
 // Get the list of authorizations.
 func (s *UsersService) GetAllAuthorizations(username string, headers, queryParams map[string]interface{}) ([]Authorization, *http.Response, error) {
 	var u []Authorization
 
 	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/authorizations", headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Get the authorization for a specific organization.
+func (s *UsersService) GetAuthorization(grantedTo, username string, headers, queryParams map[string]interface{}) (Authorization, *http.Response, error) {
+	var u Authorization
+
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/authorizations/"+grantedTo, headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -174,19 +189,6 @@ func (s *UsersService) DeleteAuthorization(grantedTo, username string, headers, 
 	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/authorizations/"+grantedTo, headers, queryParams)
 }
 
-// Get the authorization for a specific organization.
-func (s *UsersService) GetAuthorization(grantedTo, username string, headers, queryParams map[string]interface{}) (Authorization, *http.Response, error) {
-	var u Authorization
-
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/authorizations/"+grantedTo, headers, queryParams)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
 // Create new bank account
 func (s *UsersService) CreateUserBankAccount(username string, usersusernamebankspostreqbody UsersUsernameBanksPostReqBody, headers, queryParams map[string]interface{}) (UsersUsernameBanksPostRespBody, *http.Response, error) {
 	var u UsersUsernameBanksPostRespBody
@@ -200,28 +202,11 @@ func (s *UsersService) CreateUserBankAccount(username string, usersusernamebanks
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
+// List of the user his bank accounts.
 func (s *UsersService) GetUserBankAccounts(username string, headers, queryParams map[string]interface{}) ([]BankAccount, *http.Response, error) {
 	var u []BankAccount
 
 	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/banks", headers, queryParams)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
-// Delete a BankAccount
-func (s *UsersService) DeleteUserBankAccount(username, label string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/banks/"+label, headers, queryParams)
-}
-
-func (s *UsersService) GetUserBankAccountByLabel(username, label string, headers, queryParams map[string]interface{}) (BankAccount, *http.Response, error) {
-	var u BankAccount
-
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/banks/"+label, headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -242,16 +227,23 @@ func (s *UsersService) UpdateUserBankAccount(username, label string, bankaccount
 	return resp, nil
 }
 
-// Get the contracts where the user is 1 of the parties. Order descending by date.
-func (s *UsersService) GetUserContracts(username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+// Delete a BankAccount
+func (s *UsersService) DeleteUserBankAccount(username, label string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/banks/"+label, headers, queryParams)
+}
 
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/contracts", headers, queryParams)
+// Get the details of a bank account
+func (s *UsersService) GetUserBankAccountByLabel(username, label string, headers, queryParams map[string]interface{}) (BankAccount, *http.Response, error) {
+	var u BankAccount
+
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/banks/"+label, headers, queryParams)
 	if err != nil {
-		return nil, err
+		return u, nil, err
 	}
 	defer resp.Body.Close()
 
-	return resp, nil
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
 // Create a new contract.
@@ -267,10 +259,23 @@ func (s *UsersService) CreateUserContract(username string, contract Contract, he
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-func (s *UsersService) GetDigitalWallet(username string, headers, queryParams map[string]interface{}) ([]DigitalAssetAddress, *http.Response, error) {
-	var u []DigitalAssetAddress
+// Get the contracts where the user is 1 of the parties. Order descending by date.
+func (s *UsersService) GetUserContracts(username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/digitalwallet", headers, queryParams)
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/contracts", headers, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
+}
+
+// Register a new digital asset address
+func (s *UsersService) RegisterNewDigitalAssetAddress(username string, digitalassetaddress DigitalAssetAddress, headers, queryParams map[string]interface{}) (DigitalAssetAddress, *http.Response, error) {
+	var u DigitalAssetAddress
+
+	resp, err := s.client.doReqWithBody("POST", s.client.BaseURI+"/users/"+username+"/digitalwallet", &digitalassetaddress, headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -279,11 +284,11 @@ func (s *UsersService) GetDigitalWallet(username string, headers, queryParams ma
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Register a new digital asset address
-func (s *UsersService) RegisterNewDigitalAssetAddress(username string, digitalassetaddress DigitalAssetAddress, headers, queryParams map[string]interface{}) (DigitalAssetAddress, *http.Response, error) {
-	var u DigitalAssetAddress
+// List all of the user his digital wallets.
+func (s *UsersService) GetDigitalWallet(username string, headers, queryParams map[string]interface{}) ([]DigitalAssetAddress, *http.Response, error) {
+	var u []DigitalAssetAddress
 
-	resp, err := s.client.doReqWithBody("POST", s.client.BaseURI+"/users/"+username+"/digitalwallet", &digitalassetaddress, headers, queryParams)
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/digitalwallet", headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -304,6 +309,7 @@ func (s *UsersService) UpdateDigitalAssetAddress(label, username string, digital
 	return resp, nil
 }
 
+// Get the details of a digital wallet address.
 func (s *UsersService) GetDigitalAssetAddressByLabel(label, username string, headers, queryParams map[string]interface{}) (DigitalAssetAddress, *http.Response, error) {
 	var u DigitalAssetAddress
 
@@ -322,11 +328,11 @@ func (s *UsersService) DeleteDigitalAssetAddress(label, username string, headers
 	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/digitalwallet/"+label, headers, queryParams)
 }
 
-// Register a new email address
-func (s *UsersService) RegisterNewEmailAddress(username string, emailaddress EmailAddress, headers, queryParams map[string]interface{}) (EmailAddress, *http.Response, error) {
-	var u EmailAddress
+// Get a list of the user his email addresses.
+func (s *UsersService) GetEmailAddresses(username string, headers, queryParams map[string]interface{}) ([]EmailAddress, *http.Response, error) {
+	var u []EmailAddress
 
-	resp, err := s.client.doReqWithBody("POST", s.client.BaseURI+"/users/"+username+"/emailaddresses", &emailaddress, headers, queryParams)
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/emailaddresses", headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -335,11 +341,11 @@ func (s *UsersService) RegisterNewEmailAddress(username string, emailaddress Ema
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Get a list of the user his email addresses.
-func (s *UsersService) GetEmailAddresses(username string, headers, queryParams map[string]interface{}) ([]EmailAddress, *http.Response, error) {
-	var u []EmailAddress
+// Register a new email address
+func (s *UsersService) RegisterNewEmailAddress(username string, emailaddress EmailAddress, headers, queryParams map[string]interface{}) (EmailAddress, *http.Response, error) {
+	var u EmailAddress
 
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/emailaddresses", headers, queryParams)
+	resp, err := s.client.doReqWithBody("POST", s.client.BaseURI+"/users/"+username+"/emailaddresses", &emailaddress, headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
@@ -390,6 +396,7 @@ func (s *UsersService) DeleteGithubAccount(username string, headers, queryParams
 	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/github", headers, queryParams)
 }
 
+// Get all of the user his information. This will be limited to the scopes that the user has authorized. See https://gig.gitbooks.io/itsyouonline/content/oauth2/scopes.html and https://gig.gitbooks.io/itsyouonline/content/oauth2/availableScopes.html for more information.
 func (s *UsersService) GetUserInformation(username string, headers, queryParams map[string]interface{}) (userview, *http.Response, error) {
 	var u userview
 
@@ -414,7 +421,7 @@ func (s *UsersService) UpdateUserName(username string, usersusernamenameputreqbo
 	return resp, nil
 }
 
-// Get the list of notifications, these are pending invitations or approvals
+// Get the list of notifications, these are pending invitations or approvals or other requests.
 func (s *UsersService) GetNotifications(username string, headers, queryParams map[string]interface{}) (UsersUsernameNotificationsGetRespBody, *http.Response, error) {
 	var u UsersUsernameNotificationsGetRespBody
 
@@ -446,12 +453,6 @@ func (s *UsersService) LeaveOrganization(globalid, username string, headers, que
 	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/organizations/"+globalid+"/leave", headers, queryParams)
 }
 
-// Reject membership invitation in an organization.
-func (s *UsersService) UsersUsernameOrganizationsGlobalidRolesRoleDelete(role, globalid, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/organizations/"+globalid+"/roles/"+role, headers, queryParams)
-}
-
 // Accept membership in organization
 func (s *UsersService) AcceptMembership(role, globalid, username string, joinorganizationinvitation JoinOrganizationInvitation, headers, queryParams map[string]interface{}) (JoinOrganizationInvitation, *http.Response, error) {
 	var u JoinOrganizationInvitation
@@ -463,6 +464,12 @@ func (s *UsersService) AcceptMembership(role, globalid, username string, joinorg
 	defer resp.Body.Close()
 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Reject membership invitation in an organization.
+func (s *UsersService) UsersUsernameOrganizationsGlobalidRolesRoleDelete(role, globalid, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/organizations/"+globalid+"/roles/"+role, headers, queryParams)
 }
 
 // Update the user his password
@@ -477,6 +484,7 @@ func (s *UsersService) UpdatePassword(username string, usersusernamepasswordputr
 	return resp, nil
 }
 
+// List of all of the user his phone numbers.
 func (s *UsersService) GetUserPhoneNumbers(username string, headers, queryParams map[string]interface{}) ([]Phonenumber, *http.Response, error) {
 	var u []Phonenumber
 
@@ -520,6 +528,7 @@ func (s *UsersService) UpdateUserPhonenumber(label, username string, phonenumber
 	return resp, nil
 }
 
+// Get the details of a phone number.
 func (s *UsersService) GetUserPhonenumberByLabel(label, username string, headers, queryParams map[string]interface{}) (Phonenumber, *http.Response, error) {
 	var u Phonenumber
 
@@ -532,7 +541,7 @@ func (s *UsersService) GetUserPhonenumberByLabel(label, username string, headers
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Sends validation text to phone numbers
+// Sends a validation text message to the phone number.
 func (s *UsersService) ValidatePhonenumber(label, username string, headers, queryParams map[string]interface{}) (UsersUsernamePhonenumbersLabelActivatePostRespBody, *http.Response, error) {
 	var u UsersUsernamePhonenumbersLabelActivatePostRespBody
 
@@ -641,12 +650,6 @@ func (s *UsersService) ListUserRegistry(username string, headers, queryParams ma
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Removes a RegistryEntry from the user's registry
-func (s *UsersService) DeleteUserRegistryEntry(key, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-	// create request object
-	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/registry/"+key, headers, queryParams)
-}
-
 // Get a RegistryEntry from the user's registry.
 func (s *UsersService) GetUserRegistryEntry(key, username string, headers, queryParams map[string]interface{}) (RegistryEntry, *http.Response, error) {
 	var u RegistryEntry
@@ -660,11 +663,13 @@ func (s *UsersService) GetUserRegistryEntry(key, username string, headers, query
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-func (s *UsersService) RemoveTOTP(username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+// Removes a RegistryEntry from the user's registry
+func (s *UsersService) DeleteUserRegistryEntry(key, username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create request object
-	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/totp", headers, queryParams)
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/registry/"+key, headers, queryParams)
 }
 
+// Enable two-factor authentication using TOTP.
 func (s *UsersService) SetupTOTP(username string, usersusernametotppostreqbody UsersUsernameTotpPostReqBody, headers, queryParams map[string]interface{}) (*http.Response, error) {
 
 	resp, err := s.client.doReqWithBody("POST", s.client.BaseURI+"/users/"+username+"/totp", &usersusernametotppostreqbody, headers, queryParams)
@@ -676,6 +681,7 @@ func (s *UsersService) SetupTOTP(username string, usersusernametotppostreqbody U
 	return resp, nil
 }
 
+// Get a TOTP secret and issuer that can be used for setting up two-factor authentication.
 func (s *UsersService) GetTOTPSecret(username string, headers, queryParams map[string]interface{}) (UsersUsernameTotpGetRespBody, *http.Response, error) {
 	var u UsersUsernameTotpGetRespBody
 
@@ -688,7 +694,13 @@ func (s *UsersService) GetTOTPSecret(username string, headers, queryParams map[s
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Get the possible two factor authentication methods
+// Disable TOTP two-factor authentication.
+func (s *UsersService) RemoveTOTP(username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
+	// create request object
+	return s.client.doReqNoBody("DELETE", s.client.BaseURI+"/users/"+username+"/totp", headers, queryParams)
+}
+
+// Get the possible two-factor authentication methods"
 func (s *UsersService) GetTwoFAMethods(username string, headers, queryParams map[string]interface{}) (UsersUsernameTwofamethodsGetRespBody, *http.Response, error) {
 	var u UsersUsernameTwofamethodsGetRespBody
 
@@ -699,15 +711,4 @@ func (s *UsersService) GetTwoFAMethods(username string, headers, queryParams map
 	defer resp.Body.Close()
 
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
-func (s *UsersService) ValidateUsername(username string, headers, queryParams map[string]interface{}) (*http.Response, error) {
-
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/users/"+username+"/validate", headers, queryParams)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return resp, nil
 }

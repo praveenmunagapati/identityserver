@@ -28,7 +28,7 @@ If a refresh token has not been used for more than 30 days it will no longer be 
 
 Itsyou.online supports several ways of obtaining JWTs:
 1. Use an OAuth2 token for JWT creation where the JWT's claim set is a subset of the OAuth token's scopes.
-2. Directly get a JWT instead of a normal OAuth token when following the OAut2 grant type flows.
+2. Directly get a JWT instead of a normal OAuth token when following the OAuth2 grant type flows.
 3. Create a new jwt by using an existing jwt as authentication/authorization
 
 ### Case 1: Use an OAuth2 token for JWT creation where the JWT's claim set is a subset of the OAuth token's scopes
@@ -120,10 +120,10 @@ The audience field is a list of audiences, the first audience is always the `cli
 ### Case 2: Directly get a JWT instead of a normal oauth2 token when following the oauth2 grant type flows
 
 When using 1 of the authorization flows explained in the [Authorization grant types](oauth2.md) documentation, it is also possible to directly get a JWT returned instead of an OAuth2 token itself.
-Add the `return_type=id_token` and a `scope` parameter with the desired scopes to the `/v1/oauth/access_token` call to do this.
+Add the `response_type=id_token` and a `scope` parameter with the desired scopes to the `/v1/oauth/access_token` call to do this.
 For example:
 ```
-https://itsyou.online/v1/oauth/access_token?grant_type=client_credentials&client_id=CLIENT_ID&client_secret=CLIENT_SECRET&reponse_type=id_token&scope=user:memberof:org1&aud=external1
+https://itsyou.online/v1/oauth/access_token?grant_type=client_credentials&client_id=CLIENT_ID&client_secret=CLIENT_SECRET&response_type=id_token&scope=user:memberof:org1&aud=external1
 ```
 
 In this case, the scope parameter needs to be given to prevent consumers to accidentally handing out `user:admin` or `organization:owner` scoped tokens to third party services

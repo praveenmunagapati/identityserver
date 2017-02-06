@@ -20,6 +20,7 @@
         vm.organizationRoot = {};
         vm.childOrganizationNames = [];
         vm.logo = "";
+        vm.includemap = {};
         vm.loading = {
             invitations: false
         };
@@ -27,6 +28,7 @@
         vm.initSettings = initSettings;
         vm.showInvitationDialog = showInvitationDialog;
         vm.showAddOrganizationDialog = showAddOrganizationDialog;
+        vm.showOrganizationInvitationDialog = showOrganizationInvitationDialog;
         vm.showAPIKeyCreationDialog = showAPIKeyCreationDialog;
         vm.showAPIKeyDialog = showAPIKeyDialog;
         vm.showDNSDialog = showDNSDialog;
@@ -46,6 +48,7 @@
         vm.showDescriptionDialog = showDescriptionDialog;
         vm.getScopeTranslation = getScopeTranslation;
         vm.removeInvitation = removeInvitation;
+        vm.includeChanged = includeChanged;
 
         activate();
 
@@ -67,6 +70,7 @@
                         }
                         vm.childOrganizationNames = getChildOrganizations(vm.organization.globalid);
                         getUsers();
+                        fillIncludeMap();
                     }
                 );
 
@@ -85,6 +89,14 @@
                     vm.logo = data.logo;
                 }
             );
+        }
+
+        function fillIncludeMap() {
+            if (vm.organization.includesuborgsof) {
+                for (var i = 0; i < vm.organization.includesuborgsof.length; i++) {
+                    vm.includemap[vm.organization.includesuborgsof[i]] = true;
+                }
+            }
         }
 
         function renderLogo() {
@@ -169,6 +181,31 @@
                     var invite = {
                         created: invitation.created,
                         user: invitation.user || invitation.emailaddress || invitation.phonenumber,
+                        role: invitation.role
+                    };
+                    vm.invitations.push(invite);
+                });
+        }
+
+        function showOrganizationInvitationDialog(ev) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            $mdDialog.show({
+                controller: OrganizationInvitationDialogController,
+                templateUrl: 'components/organization/views/organizationinvitationdialog.html',
+                targetEvent: ev,
+                fullscreen: useFullScreen,
+                locals:
+                    {
+                        OrganizationService: OrganizationService,
+                        organization: vm.organization.globalid,
+                        $window: $window
+                    }
+            })
+            .then(
+                function(invitation) {
+                    var invite = {
+                        created: invitation.created,
+                        user: invitation.user,
                         role: invitation.role
                     };
                     vm.invitations.push(invite);
@@ -367,7 +404,7 @@
         }
 
         function canEditRole(member) {
-            return vm.organization.owners.indexOf($rootScope.user) > -1 && member !== $rootScope.user;
+            return vm.hasEditPermission && member !== $rootScope.user;
         }
 
         function editMember(event, user) {
@@ -554,6 +591,15 @@
                 vm.invitations.splice(vm.invitations.indexOf(invite), 1);
             }
         }
+
+        function includeChanged(org) {
+            if (vm.includemap[org]) {
+                OrganizationService.addInclude(vm.organization.globalid, org);
+                return;
+            }
+            OrganizationService.removeInclude(vm.organization.globalid, org);
+            return;
+        }
     }
 
     function getOrganizationDisplayname(globalid) {
@@ -626,6 +672,42 @@
                     }
                     else if (reason.status == 404){
                         $scope.validationerrors.nosuchorganization = true;
+                    }
+                }
+            );
+
+        }
+    }
+
+    function OrganizationInvitationDialogController($scope, $mdDialog, $translate, organization, OrganizationService, UserDialogService) {
+
+        $scope.role = "orgmembers";
+
+        $scope.cancel = cancel;
+        $scope.invite = invite;
+        $scope.validationerrors = {};
+
+
+        function cancel(){
+            $mdDialog.cancel();
+        }
+
+        function invite(searchString, role){
+            $scope.validationerrors = {};
+            OrganizationService.inviteOrganization(organization, searchString, role).then(
+                function(data){
+                    $mdDialog.hide(data);
+                },
+                function(reason){
+                    if (reason.status == 409){
+                        $scope.validationerrors.duplicate = true;
+                    }
+                    else if (reason.status == 404){
+                        $scope.validationerrors.nosuchorganization = true;
+                    } else if (reason.status === 422) {
+                        cancel();
+                        var msg = 'Organization ' + organization + ' has reached the maximum amount of invitations.';
+                        UserDialogService.showSimpleDialog(msg, 'Error');
                     }
                 }
             );

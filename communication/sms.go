@@ -50,5 +50,6 @@ func (s *TwilioSMSService) Send(phonenumber string, message string) (err error) 
 		log.Error("Problem when sending sms via Twilio: ", resp.StatusCode, "\n", string(body))
 		err = errors.New("Error sending sms")
 	}
+	log.Infof("SMS: sms send to %s", phonenumber)
 	return
 }

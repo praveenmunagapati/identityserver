@@ -264,7 +264,7 @@
             var requests = [];
 
             vm.pendingNotifications.forEach(function (invitation) {
-                requests.push(NotificationService.accept(invitation));
+                requests.push(NotificationService.accept(invitation, vm.username));
             });
 
             $q.all(requests)

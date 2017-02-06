@@ -9,6 +9,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/credentials/oauth2"
 )
 
 type authorizationRequest struct {
@@ -157,7 +158,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	requestedScopes := splitScopeString(request.Form.Get("scope"))
+	requestedScopes := oauth2.SplitScopeString(request.Form.Get("scope"))
 	possibleScopes, err := service.filterPossibleScopes(request, username, requestedScopes, true)
 	if err != nil {
 		log.Error(err)

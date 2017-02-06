@@ -102,7 +102,7 @@ md-dialog md-dialog-actions {
     text-decoration: none;
     float: left;
     background: url(../img/its-you-online.gif) no-repeat;
-    margin-top: -60px;
+    margin-top: -61px;
     height: 120px;
     width: 360px;
     background-size: cover;
@@ -324,6 +324,36 @@ md-select.header-select:not([disabled]):focus .md-select-value {
     border-top: 1px solid #AAAAAA;
 }
 
+.header-pushmenu-item {
+  border-bottom: 1px solid #939598;
+  color: #939598;
+  background-color: #FFF;
+}
+
+.menu-hamburger {
+  color: #FFF;
+  padding-top: 20px;
+}
+
+.push-sub-menu-button {
+  padding-left: 40px !important;
+}
+
+.push-menu-button {
+  padding-left: 24px !important;
+}
+
+@media (max-width: 650px) {
+  #logo a {
+    width: 300px;
+    height: 100px;
+    margin-top: -44px;
+  }
+  .menu-hamburger {
+    padding-top: 23px;
+  }
+}
+
 /*= PUBLIC KEYS
 --------------------------------------------------------*/
 .public-key {
@@ -457,6 +487,34 @@ md-select.header-select:not([disabled]):focus .md-select-value {
 .treeview {
     overflow-x: auto;
     overflow-y: hidden;
+}
+
+ul.organizationstree {
+  list-style-type: none;
+  padding-left:20px;
+}
+
+/* Apply a small visual style to show the node depth */
+li > ul.organizationstree {
+  border-left: dotted 0.5px;
+  margin-left: 30px;
+  padding-left: 5px;
+}
+
+.organizationstreenode {
+  text-align: left;
+  margin: 0px 0px;
+  width: 100%;
+  text-transform: none;
+}
+
+/* Hide the icon but don't remove it from the DOM, small hack to ensure that all organizations are lined up*/
+.hiddenicon {
+  opacity: 0;
+}
+
+.nodecontainer {
+  padding-left: 10px;
 }
 
 .breadcrumb-container {

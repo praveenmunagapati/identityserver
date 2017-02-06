@@ -39,6 +39,29 @@
                         </md-list-item>
                     </md-list>
                 </div>
+                <div ng-if="vm.getPendingCount(vm.notifications.organizationinvitations) > 0">
+                    <md-subheader class="md-no-sticky"><span translate='pending_invites_for_organization'>Pending invites for your organizations</span></md-subheader>
+                    <md-list>
+                        <md-list-item class="md-1-line"
+                                      ng-repeat="invitation in vm.notifications.organizationinvitations | filter: {status: 'pending'}">
+                            <div class="md-list-item-text">
+                                <p>
+                                    <i class="fa fa-users"></i>
+                                    <span translate="organization_invited_by" translate-values="{invitedorg: invitation.user, invitingorg: invitation.organization}">
+                                    Your organization {{ ::invitation.user }} has been invited to become a part of the
+                                    {{ ::invitation.organization }} organization</span>
+                                </p>
+                            </div>
+                            <md-button class="md-secondary md-warn" ng-click="vm.rejectorganizationinvite(invitation)">
+                                <i class="fa fa-times"></i> <span translate="reject">Reject</span>
+                            </md-button>
+
+                            <md-button class="md-secondary md-primary" ng-click="vm.acceptorganizationinvite($event, invitation)">
+                                <i class="fa fa-check"></i> <span translate="accept">Accept</span>
+                            </md-button>
+                        </md-list-item>
+                    </md-list>
+                </div>
                 <div ng-if="vm.getPendingCount(vm.notifications.security) > 0">
                     <md-list>
                         <md-subheader class="md-no-sticky"><span translate='user.views.notifications.security'>Security notifications</span></md-subheader>
