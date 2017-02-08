@@ -77,7 +77,7 @@
                         </md-input-container>
                         <md-input-container ng-if="vm.twoFAMethod === 'sms'">
                             <label for="sms" translate="phone_number">Phone number</label>
-                            <input ng-model="vm.sms" minlength="4" ng-required="vm.twoFAMethod === 'sms'"
+                            <input ng-model="vm.sms" minlength="7" ng-required="vm.twoFAMethod === 'sms'"
                                    name="phonenumber" ng-pattern="/^\+[0-9 ]*$/" ng-change="vm.resetValidation('phone')"
                                    id="sms">
                             <div ng-messages="signupform.phonenumber.$error">
