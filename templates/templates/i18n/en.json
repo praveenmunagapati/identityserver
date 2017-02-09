@@ -24,11 +24,13 @@
         "urlcaption": "Button not working? Paste the following link into your browser:"
     },
     "smsconfirmation": "To verify your phonenumber on itsyou.online enter the code %s in the form or use this link: %s?c=%s&k=%s&l=%s",
+    "smsconfirmationandlogin": "To verify your phonenumber on itsyou.online and continue to login, enter the code %s in the form or use this link: %s?c=%s&k=%s&l=%s",
     "authorizeorganizationsms": "To continue signing in at itsyou.online to authorize the organization %s, enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s&l=%s",
     "signinsms": "To continue signing in at itsyou.online enter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s&l=%s",
     "invalidlink": "Invalid or expired link",
     "smsloggingin": "You will be logged in within a few seconds",
     "error": "An unexpected error occurred, please try again later",
     "smsconfirmed": "Your phonenumber is confirmed",
+    "smsconfirmedandlogin": "Your phonenumber is confirmed, and you will be logged in within a few seconds",
     "emailconfirmed": "Your Email Address is confirmed"
 }
