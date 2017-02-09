@@ -28,11 +28,13 @@
         }
 
         function submit() {
+            var query = $window.location.search;
             var data = {
                 smscode: vm.smscode
             };
             $http
-                .post('login/smsconfirmation', data)
+                // append the query to this call so we don't drop out of an oauth flow
+                .post('login/smsconfirmation' + query, data)
                 .then(function (response) {
                     $window.location.href = response.data.redirecturl;
                     $cookies.remove('registrationdetails');
