@@ -171,19 +171,29 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 		return
 	}
 
-	username := context.Get(r, "authenticateduser").(string)
+	//Clear any possible unauthorized links to organizations/users
+	org.Owners = []string{}
+	org.Members = []string{}
+	org.OrgMembers = []string{}
+	org.OrgOwners = []string{}
+
 	orgMgr := organization.NewManager(r)
 	logoMgr := organization.NewLogoManager(r)
-	count, err := orgMgr.CountByUser(username)
-	if handleServerError(w, "counting organizations by user", err) {
-		return
+	username := context.Get(r, "authenticateduser").(string)
+	if username != "" {
+		count, err := orgMgr.CountByUser(username)
+		if handleServerError(w, "counting organizations by user", err) {
+			return
+		}
+		if count >= maximumNumberOfOrganizationsPerUser {
+			log.Error("Reached organization limit for user ", username)
+			writeErrorResponse(w, 422, "maximum_amount_of_organizations_reached")
+			return
+		}
+		//Set the logged in user as owner of the new organization
+		org.Owners = []string{username}
 	}
-	if count >= maximumNumberOfOrganizationsPerUser {
-		log.Error("Reached organization limit for user ", username)
-		writeErrorResponse(w, 422, "maximum_amount_of_organizations_reached")
-		return
-	}
-	err = orgMgr.Create(&org)
+	err := orgMgr.Create(&org)
 
 	if err == db.ErrDuplicate {
 		log.Debug("Duplicate organization")

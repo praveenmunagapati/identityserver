@@ -28,4 +28,17 @@ describe('User Home Controller test', function() {
     it('User Home Controller username property should be set to $rootScope.user', function () {
         expect(UserHomeController.username).toBe(TEST_USER);
     });
+
+    it('String startsWith method should be definded', function () {
+        expect(String.prototype.startsWith).toBeDefined();
+    });
+
+    it('String includes method should be defined', function () {
+      expect(String.prototype.includes).toBeDefined();
+    });
+
+    it('Array find method should be defined', function () {
+      expect(Array.prototype.find).toBeDefined();
+    });
+
 });

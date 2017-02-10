@@ -119,6 +119,8 @@
         $translateProvider.use(langKey);
     }
 
+    initializePolyfills();
+
     function getParameterByName(name, url) {
         if (!url) {
               url = window.location.href;
