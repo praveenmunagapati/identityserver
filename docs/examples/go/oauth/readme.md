@@ -2,4 +2,5 @@
 
 Run this example simply by typing `go run main.go` in this folder and browse to http://localhost:8080
 
-The callback has not been implemented, it currently only shows sending the request to Itsyou.online
+The callback is partially implemented, it currently shows sending the request to Itsyou.online,
+pick up the access token, and prints it in its raw form to the terminal.

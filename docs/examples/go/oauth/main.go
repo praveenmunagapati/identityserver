@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -57,7 +58,61 @@ func main() {
 		http.Redirect(w, r, u.String(), http.StatusFound)
 	})
 
-	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {})
+	http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		code := r.FormValue("code")
+		fmt.Println("Code: ", code)
+		state := r.FormValue("state")
+
+		sessionCookie, err := r.Cookie(state)
+		if err != nil || sessionCookie == nil {
+			fmt.Println("Failed to retrieve session cookie: ", err)
+			fmt.Println("Cookie: ", sessionCookie)
+			return
+		}
+
+		fmt.Println("Cookie value: ", sessionCookie.Value)
+
+		decodedCookie, err := base64.URLEncoding.DecodeString(sessionCookie.Value)
+		if err != nil {
+			fmt.Println("Could not decode session cookie value: ", err)
+		}
+		s := &sessionInformation{}
+
+		err = json.Unmarshal(decodedCookie, s)
+		if err != nil {
+			fmt.Println("Failed to convert session cookie: ", err)
+			return
+		}
+
+		fmt.Println(s)
+
+		hc := &http.Client{}
+		req, err := http.NewRequest("POST", "https://itsyou.online/v1/oauth/access_token", nil)
+		if err != nil {
+			return
+		}
+		q := req.URL.Query()
+		q.Add("client_id", s.ClientID)
+		q.Add("client_secret", s.Secret)
+		q.Add("code", code)
+		q.Add("redirect_uri", "http://localhost:8080/callback")
+		q.Add("state", state)
+		req.URL.RawQuery = q.Encode()
+
+		resp, err := hc.Do(req)
+		if err != nil {
+			fmt.Println("Error while getting the access token: ", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+
+		fmt.Println("Response body: ", string(body))
+		return
+
+	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 

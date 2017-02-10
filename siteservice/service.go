@@ -63,6 +63,7 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	router.Methods("GET").Path("/register").HandlerFunc(service.ShowRegistrationForm)
 	router.Methods("POST").Path("/register").HandlerFunc(service.ProcessRegistrationForm)
 	router.Methods("GET").Path("/phonevalidation").HandlerFunc(service.PhonenumberValidation)
+	router.Methods("GET").Path("/pvl").HandlerFunc(service.PhonenumberValidationAndLogin)
 	router.Methods("GET").Path("/emailvalidation").HandlerFunc(service.EmailValidation)
 	router.Methods("POST").Path("/register/resendsms").HandlerFunc(service.ResendPhonenumberConfirmation)
 	router.Methods("GET").Path("/register/smsconfirmed").HandlerFunc(service.CheckRegistrationSMSConfirmation)

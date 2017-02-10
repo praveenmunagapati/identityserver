@@ -409,6 +409,80 @@ func (service *Service) getLoginSessionInformation(request *http.Request, sessio
 	return
 }
 
+// PhonenumberValidationAndLogin is the page that is linked to in the SMS for phonenumbervalidation
+// and login. Therefore it is accessed on the mobile phone
+func (service *Service) PhonenumberValidationAndLogin(w http.ResponseWriter, request *http.Request) {
+
+	err := request.ParseForm()
+	if err != nil {
+		log.Debug(err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	values := request.Form
+	key := values.Get("k")
+	smscode := values.Get("c")
+	langKey := values.Get("l")
+
+	translationFile, err := tools.LoadTranslations(langKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Invalidlink          string
+		Error                string
+		Smsconfirmedandlogin string
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
+
+	err = service.phonenumberValidationService.ConfirmValidation(request, key, smscode)
+	if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
+		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		service.renderSMSConfirmationPage(w, request, translations.Error)
+		return
+	}
+
+	sessionInfo, err := service.getLoginSessionInformation(request, key)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if sessionInfo == nil {
+		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		return
+	}
+
+	validsmscode := (smscode == sessionInfo.SMSCode)
+
+	if !validsmscode { //TODO: limit to 3 failed attempts
+		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		return
+	}
+	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
+
+	_, err = mgoCollection.UpdateAll(bson.M{"sessionkey": key}, bson.M{"$set": bson.M{"confirmed": true}})
+	if err != nil {
+		log.Error("Error while confirming sms 2fa - ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	service.renderSMSConfirmationPage(w, request, translations.Smsconfirmedandlogin)
+}
+
 //MobileSMSConfirmation is the page that is linked to in the SMS and is thus accessed on the mobile phone
 func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *http.Request) {
 
@@ -818,13 +892,55 @@ func (service *Service) LoginResendPhonenumberConfirmation(w http.ResponseWriter
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	validationkey, err = service.phonenumberValidationService.RequestValidation(request, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host), values.LangKey)
+
+	// save the phone number validation request
+	valMngr := validationdb.NewManager(request)
+	info, err := valMngr.NewPhonenumberValidationInformation(username, phonenumber)
 	if err != nil {
-		log.Error("ResendPhonenumberConfirmation: Could not get validationkey: ", err)
+		log.Error("ResendPhonenumberConfirmation: Could not create phonenumber validation information: ", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	loginSession.Values["phonenumbervalidationkey"] = validationkey
+	err = valMngr.SavePhonenumberValidationInformation(info)
+	if err != nil {
+		log.Error("ResendPhonenumberConfirmation: Could not save phonenumber validation information: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	loginSession.Values["phonenumbervalidationkey"] = info.Key
+
+	sessionInfo := &loginSessionInformation{
+		Confirmed:  false,
+		CreatedAt:  time.Now(),
+		SessionKey: info.Key,
+		SMSCode:    info.SMSCode,
+	}
+
+	loginSession.Values["sessionkey"] = sessionInfo.SessionKey
+
+	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
+	mgoCollection.Insert(sessionInfo)
+
+	translationFile, err := tools.LoadTranslations(values.LangKey)
+	if err != nil {
+		log.Error("Error while loading translations: ", err)
+		return
+	}
+
+	translations := struct {
+		Smsconfirmationandlogin string
+	}{}
+
+	r := bytes.NewReader(translationFile)
+	if err = json.NewDecoder(r).Decode(&translations); err != nil {
+		log.Error("Error while decoding translations: ", err)
+		return
+	}
+	smsmessage := fmt.Sprintf(translations.Smsconfirmationandlogin, info.SMSCode, fmt.Sprintf("https://%s/pvl", request.Host), info.SMSCode, url.QueryEscape(info.Key), values.LangKey)
+
+	go service.phonenumberValidationService.SMSService.Send(values.PhoneNumber, smsmessage)
+
 	sessions.Save(request, w)
 	w.WriteHeader(http.StatusNoContent)
 }
