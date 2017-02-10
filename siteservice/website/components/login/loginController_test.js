@@ -21,4 +21,16 @@ describe('Login Controller test', function() {
     it('loginController should be defined', function() {
         expect(loginController).toBeDefined();
     });
+
+    it('String startsWith method should be definded', function () {
+        expect(String.prototype.startsWith).toBeDefined();
+    });
+
+    it('String includes method should be defined', function () {
+      expect(String.prototype.includes).toBeDefined();
+    });
+
+    it('Array find method should be defined', function () {
+      expect(Array.prototype.find).toBeDefined();
+    });
 });
