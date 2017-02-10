@@ -37,6 +37,7 @@ module.exports = function(config) {
           'thirdpartyassets/angular-qrcode/angular-qrcode.js',
           'components/shared/shared.js',
           'components/shared/configService.js',
+          'components/patches.js',
 
           // load main app and dependancies
           'components/app.js',
