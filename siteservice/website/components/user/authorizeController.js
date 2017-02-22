@@ -197,7 +197,6 @@
             checkOwner().then(function () {
                 $scope.authorizations.username = vm.username;
                 $scope.authorizations.grantedTo = vm.requestingorganization;
-                console.log($scope.authorizations);
                 UserService
                     .saveAuthorization($scope.authorizations)
                     .then(
