@@ -10,6 +10,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/itsyouonline/identityserver/credentials/oauth2"
+	organizationdb "github.com/itsyouonline/identityserver/db/organization"
 )
 
 type authorizationRequest struct {
@@ -128,14 +129,25 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 	}
 
 	//Check if the user is already authenticated, if not, redirect to the login page before returning here
+	var protectedSession bool
 	username, err := service.GetWebuser(request, w)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if username == "" {
-		redirecToLoginPage(w, request)
-		return
+		username, err = service.GetOauthUser(request, w)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if username != "" {
+			log.Info("protected session")
+			protectedSession = true
+		} else {
+			redirecToLoginPage(w, request)
+			return
+		}
 	}
 
 	//Validate client and redirect_uri
@@ -193,6 +205,23 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 
 	//If no valid authorization, ask the user for authorizations
 	if !validAuthorization {
+		log.Info("authorization is not valid")
+		if protectedSession {
+			log.Info("but we are in a protected session")
+			// We need a full session to give authorizations, so remove the l2fa entry
+			// This way the login function will require 2fa and give a full session with admin scopes
+			l2faMgr := organizationdb.NewLast2FAManager(request)
+			if l2faMgr.Exists(clientID, username) {
+				err = l2faMgr.RemoveLast2FA(clientID, username)
+				if err != nil {
+					log.Error(err)
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+			}
+			redirecToLoginPage(w, request)
+			return
+		}
 		token, e := service.createItsYouOnlineAdminToken(username, request)
 		if e != nil {
 			log.Error(e)
@@ -217,7 +246,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	service.sessionService.LogoutAndRedirect(w, request, redirectURI)
+	http.Redirect(w, request, redirectURI, http.StatusFound)
 
 }
 

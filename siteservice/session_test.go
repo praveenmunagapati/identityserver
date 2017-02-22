@@ -9,7 +9,7 @@ import (
 
 func TestAvailableSessions(t *testing.T) {
 
-	siteService := NewService("MyCookieSecret", nil, nil, "test")
+	siteService := NewService("MyCookieSecret", nil, nil, nil, "test")
 	request := &http.Request{}
 
 	session, err := siteService.GetSession(request, SessionForRegistration, "akey")

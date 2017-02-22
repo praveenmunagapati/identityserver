@@ -19,6 +19,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
 	organizationdb "github.com/itsyouonline/identityserver/db/organization"
@@ -162,31 +163,78 @@ func (service *Service) ProcessLoginForm(w http.ResponseWriter, request *http.Re
 	loginSession.Values["username"] = u.Username
 	//check if 2fa validity has passed
 	if client != "" {
-		l2faMgr := organizationdb.NewLast2FAManager(request)
-		if l2faMgr.Exists(client, u.Username) {
-			timestamp, err := l2faMgr.GetLast2FA(client, u.Username)
-			if err != nil {
-				log.Error(err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
-			mgr := organizationdb.NewManager(request)
-			seconds, err := mgr.GetValidity(client)
-			if err != nil {
-				log.Error(err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
-			timeconverted := time.Time(timestamp)
-			if timeconverted.Add(time.Second * time.Duration(seconds)).After(time.Now()) {
-				service.loginUser(w, request, u.Username)
-				return
+
+		// Check if we have a valid authorization
+		requestedScopes := oauth2.SplitScopeString(request.Form.Get("scope"))
+		possibleScopes, err := service.identityService.FilterPossibleScopes(request, u.Username, requestedScopes, true)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		validAuthorization, err := service.verifyExistingAuthorization(request, u.Username, client, possibleScopes)
+		if err != nil {
+			log.Error(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		// Only attempt to bypass 2fa if we have a valid authorization
+		if validAuthorization {
+			l2faMgr := organizationdb.NewLast2FAManager(request)
+			if l2faMgr.Exists(client, u.Username) {
+				timestamp, err := l2faMgr.GetLast2FA(client, u.Username)
+				if err != nil {
+					log.Error(err)
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+				mgr := organizationdb.NewManager(request)
+				seconds, err := mgr.GetValidity(client)
+				if err != nil {
+					log.Error(err)
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+				timeconverted := time.Time(timestamp)
+				if timeconverted.Add(time.Second * time.Duration(seconds)).After(time.Now()) {
+					log.Debug("Try to build protected session")
+					service.loginOauthUser(w, request, u.Username)
+					return
+				}
 			}
 		}
 	}
 
 	sessions.Save(request, w)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (service *Service) verifyExistingAuthorization(request *http.Request, username string, clientID string, possibleScopes []string) (bool, error) {
+	authorizedScopes, err := service.identityService.FilterAuthorizedScopes(request, username, clientID, possibleScopes)
+	if err != nil {
+		log.Error(err)
+		return false, err
+	}
+
+	var validAuthorization bool
+
+	if authorizedScopes != nil {
+
+		validAuthorization = len(possibleScopes) == len(authorizedScopes)
+		//Check if we are redirected from the authorize page, it might be that not all authorizations were given,
+		// authorize the login but only with the authorized scopes
+		referrer := request.Header.Get("Referer")
+		if referrer != "" && !validAuthorization { //If we already have a valid authorization, no need to check if we come from the authorize page
+			if referrerURL, e := url.Parse(referrer); e == nil {
+				validAuthorization = referrerURL.Host == request.Host && referrerURL.Path == "/authorize"
+			} else {
+				log.Debug("Error parsing referrer: ", e)
+			}
+		}
+	}
+	return validAuthorization, err
 }
 
 // GetTwoFactorAuthenticationMethods returns the possible two factor authentication methods the user can use to login with.
@@ -647,8 +695,21 @@ func (service *Service) loginUser(w http.ResponseWriter, request *http.Request, 
 		return
 	}
 	sessions.Save(request, w)
-
 	log.Debugf("Successfull login by '%s'", username)
+	service.login(w, request, username)
+}
+
+func (service *Service) loginOauthUser(w http.ResponseWriter, request *http.Request, username string) {
+	if err := service.SetLoggedInOauthUser(w, request, username); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	sessions.Save(request, w)
+	log.Debugf("Successfull oauth login without 2 factor authentication by '%s'", username)
+	service.login(w, request, username)
+}
+
+func (service *Service) login(w http.ResponseWriter, request *http.Request, username string) {
 
 	redirectURL := "/"
 	queryValues := request.URL.Query()

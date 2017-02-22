@@ -6,8 +6,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/sessions"
 
-	"github.com/gorilla/context"
 	"time"
+
+	"github.com/gorilla/context"
 )
 
 //SessionType is used to define the type of session
@@ -20,6 +21,8 @@ const (
 	SessionInteractive SessionType = iota
 	//SessionLogin is the session during the login flow
 	SessionLogin SessionType = iota
+	//SessionOauth is the session during an oauth flow
+	SessionOauth SessionType = iota
 )
 
 //initializeSessionStore creates a cookieStore
@@ -39,6 +42,7 @@ func (service *Service) initializeSessions(cookieSecret string) {
 	service.Sessions[SessionForRegistration] = initializeSessionStore(cookieSecret, 10*60)
 	service.Sessions[SessionInteractive] = initializeSessionStore(cookieSecret, 10*60)
 	service.Sessions[SessionLogin] = initializeSessionStore(cookieSecret, 5*60)
+	service.Sessions[SessionOauth] = initializeSessionStore(cookieSecret, 10*60)
 
 }
 
@@ -64,6 +68,30 @@ func (service *Service) SetLoggedInUser(w http.ResponseWriter, request *http.Req
 		Value: username,
 	}
 	http.SetCookie(w, cookie)
+
+	// Clear login session
+	loginCookie := &http.Cookie{
+		Name:    "loginsession",
+		Path:    "/",
+		Value:   "",
+		Expires: time.Unix(1, 0),
+	}
+	http.SetCookie(w, loginCookie)
+
+	return
+}
+
+// SetOauthUser creates a protected session after an oauth flow and clears the login session
+// Also sets the clientID and state
+func (service *Service) SetLoggedInOauthUser(w http.ResponseWriter, r *http.Request, username /*, clientId, state*/ string) (err error) {
+	oauthSession, err := service.GetSession(r, SessionOauth, "oauthsession")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	oauthSession.Values["username"] = username
+
+	// No need to set a user cookie since we don't pass through the UI
 
 	// Clear login session
 	loginCookie := &http.Cookie{
@@ -104,6 +132,25 @@ func (service *Service) GetLoggedInUser(request *http.Request, w http.ResponseWr
 		return
 	}
 	savedusername := authenticatedSession.Values["username"]
+	if savedusername != nil {
+		username, _ = savedusername.(string)
+	}
+	return
+}
+
+// GetOauthUser returns the user in an oauth session, or an empty string if there is none
+func (service *Service) GetOauthUser(r *http.Request, w http.ResponseWriter) (username string, err error) {
+	oauthSession, err := service.GetSession(r, SessionOauth, "oauthsession")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	err = oauthSession.Save(r, w)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	savedusername := oauthSession.Values["username"]
 	if savedusername != nil {
 		username, _ = savedusername.(string)
 	}

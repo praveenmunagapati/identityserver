@@ -32,16 +32,20 @@ type Service struct {
 	EmailService                  communication.EmailService
 	emailaddressValidationService *validation.IYOEmailAddressValidationService
 	version                       string
+	identityService               *identityservice.Service
 }
 
 //NewService creates and initializes a Service
-func NewService(cookieSecret string, smsService communication.SMSService, emailService communication.EmailService, version string) (service *Service) {
+func NewService(cookieSecret string, smsService communication.SMSService, emailService communication.EmailService,
+	identityservice *identityservice.Service, version string) (service *Service) {
 	service = &Service{smsService: smsService}
 
 	p := &validation.IYOPhonenumberValidationService{SMSService: smsService}
 	service.phonenumberValidationService = p
 	e := &validation.IYOEmailAddressValidationService{EmailService: emailService}
 	service.emailaddressValidationService = e
+
+	service.identityService = identityservice
 
 	service.version = version
 
@@ -176,13 +180,9 @@ func (service *Service) HomePage(w http.ResponseWriter, request *http.Request) {
 //Logout logs out the user and redirect to the homepage
 //TODO: csrf protection, really important here!
 func (service *Service) Logout(w http.ResponseWriter, request *http.Request) {
-	service.LogoutAndRedirect(w, request, "")
-}
-
-func (service *Service) LogoutAndRedirect(w http.ResponseWriter, request *http.Request, url string) {
 	service.SetLoggedInUser(w, request, "")
 	sessions.Save(request, w)
-	http.Redirect(w, request, url, http.StatusFound)
+	http.Redirect(w, request, "", http.StatusFound)
 }
 
 //ErrorPage shows the errorpage

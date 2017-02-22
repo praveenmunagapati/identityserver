@@ -154,8 +154,8 @@ func main() {
 			emailService = communication.NewSMTPEmailService(smtpserver, smtpport, smtpuser, smtppassword)
 		}
 
-		sc := siteservice.NewService(cookieSecret, smsService, emailService, version)
 		is := identityservice.NewService(smsService, emailService)
+		sc := siteservice.NewService(cookieSecret, smsService, emailService, is, version)
 
 		config := globalconfig.NewManager()
 
