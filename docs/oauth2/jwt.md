@@ -151,3 +151,9 @@ If a jwt with for example less scopes is created and the `offline_access` scope 
 Note that it is not possible to create a jwt with a refresh_token using an jwt that does not have a refresh_token.
 
 Consumers should be careful not to pass jwt's with a refresh_token to third party service since they can keep using this authorization for as long as consumer's authorization is valid. When passing a jwt to an external service, it is best to ask for a new jwt first and pass that one.
+
+#### JWT expiration date ####
+
+Although the expiration time can not be set directly, a `validity` query parameter can be set when acquiring a jwt. The value of this parameter is interpreted as the duration you want the jwt to be valid and is expressed in seconds. This value can only be used to reduce the default duration of one day, i.e. you can use this parameter to ask for a jwt that is valid for 5 minutes, but a request for a jwt that is valid for a week will be ignored (a jwt will still be handed out if the remainder of the request is valid, but it will have the default 1 day expiration). Usage of this parameter is optional, if it is absent, the default expiration of one day will be used.
+
+The same `validity` parameter can also be set when refreshing the jwt (if the `offline_access` scope was requested initially). The same restrictions apply here as when the jwt is handed out initially. If a jwt was acquired with a custom validity period, but no validity period is specified when refreshing it, the refreshed jwt will have the default 1 day validity

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -129,7 +130,18 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 	if responseType == "id_token" {
 		requestedScopeParameter := r.FormValue("scope")
 		extraAudiences := r.FormValue("aud")
-		tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences)
+
+		validityString := r.FormValue("validity")
+		var validity int64
+		if validityString == "" {
+			validity = -1
+		}
+		validity, err = strconv.ParseInt(validityString, 10, 64)
+		if err != nil {
+			log.Debugf("Failed to parse validty argument (%v) as int64", validityString)
+			validity = -1
+		}
+		tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences, validity)
 		if err == errUnauthorized {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return

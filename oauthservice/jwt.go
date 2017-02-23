@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -64,7 +65,18 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		tokenString, err = service.convertAccessTokenToJWT(r, at, requestedScopeParameter, audiences)
+		validityString := r.FormValue("validity")
+		var validity int64
+		if validityString == "" {
+			validity = -1
+		}
+		validity, err = strconv.ParseInt(validityString, 10, 64)
+		if err != nil {
+			log.Debugf("Failed to parse validty argument (%v) as int64", validityString)
+			validity = -1
+		}
+
+		tokenString, err = service.convertAccessTokenToJWT(r, at, requestedScopeParameter, audiences, validity)
 	}
 	if err == errUnauthorized {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
@@ -83,6 +95,13 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 // The original JWT needs to be passed in the authorization header as a bearer token
 // If the stored allowed scopes no longer contains a specific scope present in the jwt, this scope is also dropped in the newly created JWT.
 func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Debug("Error parsing form: ", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	originalToken, err := oauth2.GetValidJWT(r, &service.jwtSigningKey.PublicKey)
 	if err != nil {
@@ -121,7 +140,28 @@ func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request
 	// Take the scope from the stored refreshtoken, it might be that certain authorizations are revoked
 	originalToken.Claims["scope"] = rt.Scopes
 	// Set a new expiration time
-	originalToken.Claims["exp"] = time.Now().Add(AccessTokenExpiration).Unix()
+
+	validityString := r.FormValue("validity")
+	var validity int64
+	if validityString == "" {
+		validity = -1
+	}
+	validity, err = strconv.ParseInt(validityString, 10, 64)
+	if err != nil {
+		log.Debugf("Failed to parse validty argument (%v) as int64", validityString)
+		validity = -1
+	}
+
+	expiration := time.Now().Add(AccessTokenExpiration).Unix()
+
+	requestedExpiration := expiration
+	if validity > 0 {
+		requestedExpiration = time.Now().Unix() + validity
+		if requestedExpiration < expiration {
+			expiration = requestedExpiration
+		}
+	}
+	originalToken.Claims["exp"] = expiration
 	// Sign it and return
 	tokenString, err := originalToken.SignedString(service.jwtSigningKey)
 	if err != nil {
@@ -152,8 +192,7 @@ func stripOfflineAccess(scopes []string) (result []string, offlineAccessRequeste
 	return
 }
 
-func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, audiences string) (tokenString string, err error) {
-
+func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken, requestedScopeString, audiences string, maxValid int64) (tokenString string, err error) {
 	requestedScopes := oauth2.SplitScopeString(requestedScopeString)
 	requestedScopes, offlineAccessRequested := stripOfflineAccess(requestedScopes)
 	acquiredScopes := oauth2.SplitScopeString(at.Scope)
@@ -187,7 +226,19 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 	// It does not hurt to always set the azp claim while it is only needed when the ID Token has a single
 	// audience value and that audience is different than the authorized party
 	token.Claims["azp"] = at.ClientID
-	token.Claims["exp"] = at.ExpirationTime().Unix()
+
+	expiration := at.ExpirationTime().Unix()
+	// If a custom validity period for the jwt is set, verify that it expires sooner
+	// then the access_token would, and set that timestamp. If not, just keep the old expiration
+	// timestamp
+	requestedExpiration := expiration
+	if maxValid > 0 {
+		requestedExpiration = time.Now().Unix() + maxValid
+		if requestedExpiration < expiration {
+			expiration = requestedExpiration
+		}
+	}
+	token.Claims["exp"] = expiration
 	token.Claims["iss"] = issuer
 
 	if offlineAccessRequested {
