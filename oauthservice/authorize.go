@@ -142,7 +142,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 			return
 		}
 		if username != "" {
-			log.Info("protected session")
+			log.Debug("protected session")
 			protectedSession = true
 		} else {
 			redirecToLoginPage(w, request)
