@@ -205,9 +205,8 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 
 	//If no valid authorization, ask the user for authorizations
 	if !validAuthorization {
-		log.Info("authorization is not valid")
 		if protectedSession {
-			log.Info("but we are in a protected session")
+			log.Debug("protected session active, but need to give authorizations")
 			// We need a full session to give authorizations, so remove the l2fa entry
 			// This way the login function will require 2fa and give a full session with admin scopes
 			l2faMgr := organizationdb.NewLast2FAManager(request)
