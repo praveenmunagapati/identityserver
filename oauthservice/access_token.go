@@ -137,11 +137,12 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		var validity int64
 		if validityString == "" {
 			validity = -1
-		}
-		validity, err = strconv.ParseInt(validityString, 10, 64)
-		if err != nil {
-			log.Debugf("Failed to parse validty argument (%v) as int64", validityString)
-			validity = -1
+		} else {
+			validity, err = strconv.ParseInt(validityString, 10, 64)
+			if err != nil {
+				log.Debugf("Failed to parse validty argument (%v) as int64", validityString)
+				validity = -1
+			}
 		}
 		tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences, validity)
 		if err == errUnauthorized {
