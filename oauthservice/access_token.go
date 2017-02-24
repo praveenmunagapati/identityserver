@@ -5,11 +5,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -165,6 +167,14 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 	}
 	mgr.saveAccessToken(at)
 
+	orgMgr := organization.NewManager(r)
+	scope, err := verifyScopes(at.Scope, at.Username, at.ClientID, orgMgr)
+	if err != nil {
+		log.Error("Failed to verify token scopes: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	response := struct {
 		AccessToken string      `json:"access_token"`
 		TokenType   string      `json:"token_type"`
@@ -174,7 +184,7 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 	}{
 		AccessToken: at.AccessToken,
 		TokenType:   at.Type,
-		Scope:       at.Scope,
+		Scope:       scope,
 		ExpiresIn:   int64(at.ExpirationTime().Sub(time.Now()).Seconds() - 600),
 
 		Info: struct {
@@ -281,4 +291,85 @@ func (service *Service) createItsYouOnlineAdminToken(username string, r *http.Re
 		token = at.AccessToken
 	}
 	return
+}
+
+// verifyScopes checks for a user:memberof:clientid scope. If present, check if the user
+// really is a member or owner in this organization. Should this not be the case,
+// remove the scope and add the correct memberof:childorg scopes
+func verifyScopes(scopeString string, username string, clientID string, orgMgr *organization.Manager) (string, error) {
+	scopes := strings.Split(scopeString, ",")
+	for i, scope := range scopes {
+		// If the scope is memberof:clientid, where clientid is the globalid of the
+		// organization requesting authorization, verify if we really have this scope
+		// or if we have the scope on one or more children. In case of the latter, replace
+		// the scopes by the appropriate ones
+		if scope == "user:memberof:"+clientID {
+			isMember, err := orgMgr.IsMember(clientID, username)
+			if err != nil {
+				return scopeString, err
+			}
+			if isMember {
+				return scopeString, nil
+			}
+			isOwner, err := orgMgr.IsOwner(clientID, username)
+			if err != nil {
+				return scopeString, err
+			}
+			if isOwner {
+				return scopeString, nil
+			}
+			log.Debugf("Access token contains scope %v, but user is not a member of %v - parse suborganizations",
+				scope, clientID)
+			// Remove the memberof:parentOrg scope
+			scopes = append(scopes[:i], scopes[i+1:]...)
+			var subOrgScopes []string
+			subOrgScopes, err = findSuborgScopes(clientID, username, orgMgr)
+			if err != nil {
+				return scope, err
+			}
+			// Add the correct memberof scopes
+			scopes = append(scopes, subOrgScopes...)
+			scopeString = strings.Join(scopes, ",")
+		}
+	}
+	return scopeString, nil
+}
+
+func findSuborgScopes(parentId string, username string, orgMgr *organization.Manager) ([]string, error) {
+	subOrgs, err := orgMgr.GetSubOrganizations(parentId)
+	if err != nil {
+		return nil, err
+	}
+	orgIds := make([]string, len(subOrgs))
+	for i, subOrg := range subOrgs {
+		orgIds[i] = subOrg.Globalid
+	}
+	sort.Strings(orgIds)
+
+	foundScopes := make([]string, 0)
+
+	var foundId string
+	for _, orgId := range orgIds {
+		if foundId != "" && strings.HasPrefix(orgId, foundId) {
+			// This is a suborg of an organization we already know about so skip it
+			continue
+		}
+		isMember, err := orgMgr.IsMember(orgId, username)
+		if err != nil {
+			return nil, err
+		}
+		if isMember {
+			foundScopes = append(foundScopes, "user:memberof:"+orgId)
+			foundId = orgId
+		}
+		isOwner, err := orgMgr.IsOwner(orgId, username)
+		if err != nil {
+			return nil, err
+		}
+		if isOwner {
+			foundScopes = append(foundScopes, "user:memberof:"+orgId)
+			foundId = orgId
+		}
+	}
+	return foundScopes, nil
 }

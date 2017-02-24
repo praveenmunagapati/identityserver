@@ -156,6 +156,7 @@ func (service *Service) FilterAuthorizedScopes(r *http.Request, username string,
 // If allowInvitations is true, invitations to organizations allows the "user:memberof:organization" as possible scopes
 func (service *Service) FilterPossibleScopes(r *http.Request, username string, requestedScopes []string, allowInvitations bool) (possibleScopes []string, err error) {
 	possibleScopes = make([]string, 0, len(requestedScopes))
+	clientId := r.Form.Get("client_id")
 	orgmgr := organizationdb.NewManager(r)
 	invitationMgr := invitations.NewInvitationManager(r)
 	for _, rawscope := range requestedScopes {
@@ -185,6 +186,17 @@ func (service *Service) FilterPossibleScopes(r *http.Request, username string, r
 					return nil, err
 				}
 				if hasInvite {
+					possibleScopes = append(possibleScopes, scope)
+				}
+			}
+			if clientId != "" && orgid == clientId {
+				log.Debugf("Checking if user %v is part of the %v organization structure", username, orgid)
+				isPart, err := isPartOfOrgTree(orgid, username, orgmgr)
+				if err != nil {
+					log.Error("Failed to verify if user is part of the organization tree")
+					return nil, err
+				}
+				if isPart {
 					possibleScopes = append(possibleScopes, scope)
 				}
 			}
@@ -225,4 +237,34 @@ func GetOauthClientID(service string) (string, error) {
 			service, service)
 	}
 	return clientIDModel.Value, err
+}
+
+func isPartOfOrgTree(globalId string, username string, orgMgr *organizationdb.Manager) (bool, error) {
+	orgs := make([]string, 0)
+	// Don't include the parent org in the checks because the caller has already verified
+	// that the user is not a member or owner there
+	subOrgs, err := orgMgr.GetSubOrganizations(globalId)
+	if err != nil {
+		return false, err
+	}
+	for _, subOrg := range subOrgs {
+		orgs = append(orgs, subOrg.Globalid)
+	}
+	for _, org := range orgs {
+		isMember, err := orgMgr.IsMember(org, username)
+		if err != nil {
+			return false, err
+		}
+		if isMember {
+			return true, nil
+		}
+		isOwner, err := orgMgr.IsOwner(org, username)
+		if err != nil {
+			return false, err
+		}
+		if isOwner {
+			return true, nil
+		}
+	}
+	return false, nil
 }

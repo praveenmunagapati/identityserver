@@ -12,6 +12,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/db/organization"
 )
 
 var errUnauthorized = errors.New("Unauthorized")
@@ -138,9 +139,17 @@ func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	// Take the scope from the stored refreshtoken, it might be that certain authorizations are revoked
-	originalToken.Claims["scope"] = rt.Scopes
-	// Set a new expiration time
+	// Also validate a possible memberof:clientId scope
+	orgMgr := organization.NewManager(r)
+	username := originalToken.Claims["username"].(string)
+	clientId := originalToken.Claims["azp"].(string)
+	scope, err := verifyScopes(strings.Join(rt.Scopes, ","), username, clientId, orgMgr)
+	if err != nil {
+		return
+	}
+	originalToken.Claims["scope"] = strings.Split(scope, ",")
 
+	// Set a new expiration time
 	validityString := r.FormValue("validity")
 	var validity int64
 	if validityString == "" {
@@ -252,6 +261,13 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 			return
 		}
 	}
+	orgMgr := organization.NewManager(r)
+	scope, err := verifyScopes(strings.Join(grantedScopes, ","), at.Username, at.ClientID, orgMgr)
+	if err != nil {
+		return
+	}
+	token.Claims["scope"] = strings.Split(scope, ",")
+
 	tokenString, err = token.SignedString(service.jwtSigningKey)
 	return
 }
