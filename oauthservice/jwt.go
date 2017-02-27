@@ -106,18 +106,11 @@ func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	originalToken, err := oauth2.GetValidJWT(r, &service.jwtSigningKey.PublicKey)
+	err = oauth2.IgnoreExpired(err)
 	if err != nil {
-		// Check if the error is a jwt.ValidationError and if only the expired byte is set
-		vErr, ok := err.(*jwt.ValidationError)
-		if ok && vErr.Errors == jwt.ValidationErrorExpired {
-			log.Debug("Trying to refresh an expired but otherwise valid jwt")
-			// Clear the error as we allow expired jwtstring
-			err = nil
-		} else {
-			log.Warning(err)
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
+		log.Warning(err)
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
 	}
 	if originalToken == nil {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)

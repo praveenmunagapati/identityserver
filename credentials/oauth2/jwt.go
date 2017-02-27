@@ -58,3 +58,13 @@ func GetScopestringFromJWT(token *jwt.Token) (scopestring string) {
 	scopestring = strings.Join(scopes, ",")
 	return
 }
+
+// IgnoreExpired checks if the input error is only an expired error. Nil is returned in
+// this case, else the original error
+func IgnoreExpired(err error) error {
+	vErr, ok := err.(*jwt.ValidationError)
+	if ok && vErr.Errors == jwt.ValidationErrorExpired {
+		return nil
+	}
+	return err
+}
