@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
-	log "github.com/Sirupsen/logrus"
-	"github.com/itsyouonline/identityserver/templates/packaged"
 	"html/template"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/itsyouonline/identityserver/templates/packaged"
 )
 
 const (
@@ -20,7 +21,9 @@ func GenerateRandomString() (randomString string, err error) {
 	if err != nil {
 		return
 	}
-	randomString = base64.StdEncoding.EncodeToString(b)
+	// Use URLencoding to avoid '/' characters. The generated string it then safe to use
+	// in URLs
+	randomString = base64.URLEncoding.EncodeToString(b)
 	return
 }
 
