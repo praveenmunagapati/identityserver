@@ -209,6 +209,13 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 	requestedScopes, offlineAccessRequested := stripOfflineAccess(requestedScopes)
 	acquiredScopes := oauth2.SplitScopeString(at.Scope)
 
+	if len(requestedScopes) == 0 {
+		// if the scope parameter is ommited, give all the authorized scopes
+		// offline_access is already removed here, so just requesting that scope will
+		// also give all requested scopes
+		requestedScopes = acquiredScopes
+	}
+
 	if !jwtScopesAreAllowed(acquiredScopes, requestedScopes) {
 		err = errUnauthorized
 		return
