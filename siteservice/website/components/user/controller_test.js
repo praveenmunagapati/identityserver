@@ -40,5 +40,7 @@ describe('User Home Controller test', function() {
     it('Array find method should be defined', function () {
       expect(Array.prototype.find).toBeDefined();
     });
-
+    it('Array includes method should be defined', function () {
+      expect(Array.prototype.includes).toBeDefined();
+    });
 });
