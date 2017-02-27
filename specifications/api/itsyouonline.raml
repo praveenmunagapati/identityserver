@@ -1303,13 +1303,8 @@ securedBy: [ oauth_2_0 ]
           body:
             application/json:
               type: Error
-        422:
-          description: The organization still has child organizations so it cannot be removed
-          body:
-            application/json:
-              type: Error
         204:
-          description: Organization deleted
+          description: Organization and all child organizations deleted
 
     /description:
       post:
