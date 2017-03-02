@@ -2044,6 +2044,46 @@ func (api OrganizationsAPI) RemoveIncludeSubOrgsOf(w http.ResponseWriter, r *htt
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// UserIsMember is the handler for GET /organization/{globalid}/users/ismember/{username}
+// Checks if the user has membership rights on the organization
+func (api OrganizationsAPI) UserIsMember(w http.ResponseWriter, r *http.Request) {
+	globalID := mux.Vars(r)["globalid"]
+	username := mux.Vars(r)["username"]
+
+	var isMember bool
+
+	user, err := SearchUser(r, username)
+	if err == mgo.ErrNotFound {
+		user = nil
+	} else if handleServerError(w, "getting user from database", err) {
+		return
+	}
+
+	if user != nil {
+		orgMgr := organization.NewManager(r)
+		isMember, err = orgMgr.IsMember(globalID, username)
+		if handleServerError(w, "checking if user is a member of the organization", err) {
+			return
+		}
+
+		if !isMember {
+			isMember, err = orgMgr.IsOwner(globalID, username)
+			if handleServerError(w, "checking if user is an owner of the organization", err) {
+				return
+			}
+		}
+	}
+
+	response := struct {
+		IsMember bool
+	}{
+		IsMember: isMember,
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&response)
+}
+
 func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, message string) {
 	log.Debug(httpStatusCode, message)
 	errorResponse := struct {

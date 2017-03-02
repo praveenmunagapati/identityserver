@@ -162,6 +162,9 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// RemoveIncludeSubOrgsOf is the handler for DELETE /organization/{globalid}/orgmembers/includesuborgs/{orgmember}
 	// Removes the suborganizations of the given organization from the member/owner hierarchy of this organization
 	RemoveIncludeSubOrgsOf(w http.ResponseWriter, r *http.Request)
+	// UserIsMember is the handler for GET /organization/{globalid}/users/ismember/{username}
+	// Checks if the user has membership rights on the organization
+	UserIsMember(w http.ResponseWriter, r *http.Request)
 }
 
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
@@ -219,4 +222,5 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/organizations/{invitingorg}/roles/{role}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RejectOrganizationInvite))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/orgmembers/includesuborgs", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddIncludeSubOrgsOf))).Methods("POST")
 	r.Handle("/organizations/{globalid}/orgmembers/includesuborgs/{orgmember}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveIncludeSubOrgsOf))).Methods("DELETE")
+	r.Handle("/organizations/{globalid}/users/ismember/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UserIsMember))).Methods("GET")
 }

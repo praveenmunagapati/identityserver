@@ -1538,6 +1538,17 @@ securedBy: [ oauth_2_0 ]
             body:
               application/json:
                 type: GetOrganizationUsersResponseBody
+    /ismember/{username}:
+      get:
+        displayName: UserIsMember
+        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
+        description: Checks if the user has memberschip rights on the organization
+        responses:
+          200:
+            body:
+              application/json:
+                properties:
+                  IsMember: boolean
     /orgowners:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
       post:
