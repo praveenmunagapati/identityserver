@@ -1653,7 +1653,8 @@ securedBy: [ oauth_2_0 ]
         description: Invite someone to become member of an organization.
         body:
           application/json:
-            type: Member
+            properties:
+              searchstring: string
         queryParameters:
           invitenotification?:
             type: string
