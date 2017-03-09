@@ -111,12 +111,7 @@
             "createorganizationdialog": {
                 "neworg": "Nieue organizatie",
                 "createchild": "Maak een suborganizatie in {{org}}",
-                "createnew": "Maak een nieuwe organizatie",
-                "orgname": "Naam van de organizatie",
-                "orgnameduplicate": "Deze naam is al bezet",
-                "orgnamepattern": "Ongeldige organizatie naam.<br/>Enkel tekens a-z, 0-9, streepjes,<br/>underscores en spaties zijn toegelaten",
-                "orgnameminlength": "Minimum 3 tekens zijn nodig",
-                "orgnamemaxlength": "De naam van de organizatie kan niet langer zijn dan 150 tekens"
+                "createnew": "Maak een nieuwe organizatie"
             },
             "detail": {
                 "organization": "Organizatie",
@@ -229,6 +224,9 @@
     "organization_invite_organization_nosuchorganization": "Geen organizatie gevonden met het gegeven globalid",
     "organization_invite_organization_owner_must_accept": "Een eigenaar van de organizatie moet deze uitnodiging aanvaarden <br/> om de uitgenodigde organizatie lid te maken van deze organizatie.",
     "organization_invited_by": "Jouw organizatie {{invitedorg}} is uitgenodigt om een deel te worden van de {{invitingorg}} organizatie",
+    "organization_name": "Naam van de organizatie",
+    "organization_name_pattern": "Ongeldige organizatie naam.<br/>Enkel tekens a-z, 0-9, streepjes,<br/>underscores en spaties zijn toegelaten",
+    "organization_with_name_exists": "Er bestaat een organizatie met deze naam. Kies een andere naam.",
     "owner": "Eigenaar",
     "owner_of_email": "Eigenaar van email address",
     "owner_of_email_x": "Eigenaar van email address {{ email }}",
@@ -246,6 +244,7 @@
                 "register": "Registreer",
                 "username": "gebruikersnaam",
                 "usernametaken": "Deze gebruikersnaam is al bezet",
+                "invalidusername": "Ongeldige gebruikersnaam. Enkel tekens a-z, 0-9, streepjes, underscores en spaties zijn toegelaten",
                 "email": "Email",
                 "password": "Wachtwoord",
                 "invalidpassword": "Wachtwoord moet minstens 6 tekens bevatten.",
@@ -478,5 +477,9 @@
         }
     },
     "verify": "Valideer",
-    "delete_org_with_children": "Deze organizatie heeft suborganizaties. Als je deze organizatie verwijdert, worden ook ALLE suborganizaties verwijderd. Ben je echt zeker?"
+    "delete_org_with_children": "Deze organizatie heeft suborganizaties. Als je deze organizatie verwijdert, worden ook ALLE suborganizaties verwijderd. Ben je echt zeker?",
+    "reject": "Weiger",
+    "accept": "Aanvaardt",
+    "username_taken": "Deze gebruikersnaam is al bezet",
+    "user_with_name_exists": "Er bestaat al een gebruiker met deze naam. Kies een andere naaam."
 }

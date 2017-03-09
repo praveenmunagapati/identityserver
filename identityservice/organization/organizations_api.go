@@ -178,6 +178,7 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 	org.OrgOwners = []string{}
 
 	orgMgr := organization.NewManager(r)
+	userMgr := user.NewManager(r)
 	logoMgr := organization.NewLogoManager(r)
 	username := context.Get(r, "authenticateduser").(string)
 	if username != "" {
@@ -193,11 +194,21 @@ func (api OrganizationsAPI) actualOrganizationCreation(org organization.Organiza
 		//Set the logged in user as owner of the new organization
 		org.Owners = []string{username}
 	}
-	err := orgMgr.Create(&org)
+	userExists, err := userMgr.Exists(org.Globalid)
+	if handleServerError(w, "chekcing if user exists", err) {
+		return
+	}
+	if userExists {
+		log.Debugf("Cannot create organizatino with globalid %s because a user with this name exists", org.Globalid)
+		writeErrorResponse(w, http.StatusConflict, "user_exists")
+		return
+	}
+
+	err = orgMgr.Create(&org)
 
 	if err == db.ErrDuplicate {
 		log.Debug("Duplicate organization")
-		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		writeErrorResponse(w, http.StatusConflict, "organization_exists")
 		return
 	}
 	if handleServerError(w, "creating organization", err) {
