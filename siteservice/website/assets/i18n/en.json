@@ -111,12 +111,7 @@
             "createorganizationdialog": {
                 "neworg": "New organization",
                 "createchild": "Create a suborganization in {{org}}",
-                "createnew": "Create a new organization",
-                "orgname": "Organization name",
-                "orgnameduplicate": "This name is already taken",
-                "orgnamepattern": "Invalid organization name. <br/>Only characters a-z, 0-9, dashes, <br/>underscores and space are allowed",
-                "orgnameminlength": "Minimum 3 characters are required",
-                "orgnamemaxlength": "The organization name cannot be longer than 150 characters"
+                "createnew": "Create a new organization"
             },
             "detail": {
                 "organization": "Organization",
@@ -229,6 +224,9 @@
     "organization_invite_organization_nosuchorganization": "No organization found matching this globalId",
     "organization_invite_organization_owner_must_accept": "An owner of the organization needs to accept this invitation <br/> before actually becoming part of this organization.",
     "organization_invited_by": "Your organization {{invitedorg}} has been invited to become a part of the {{invitingorg}} organization",
+    "organization_name": "Organization name",
+    "organization_name_pattern": "Invalid organization name. <br/>Only characters a-z, 0-9, dashes, <br/>underscores and space are allowed",
+    "organization_with_name_exists": "An organization with this name exists. Please choose another name.",
     "owner": "Owner",
     "owner_of_email": "Owner of email address",
     "owner_of_email_x": "Owner of email address {{ email }}",
@@ -245,6 +243,7 @@
                 "register": "Register",
                 "username": "Username",
                 "usernametaken": "This username has already been taken",
+                "invalidusername": "Invalid username. Only characters a-z, 0-9, dashes, underscores and spaces are allowed",
                 "email": "Email",
                 "password": "Password",
                 "invalidpassword": "Password should contain at least 6 characters.",
@@ -477,5 +476,9 @@
         }
     },
     "verify": "Verify",
-    "delete_org_with_children": "This organization has children. Deleting this organization will also delete ALL these child organizations. Are you really sure?"
+    "delete_org_with_children": "This organization has children. Deleting this organization will also delete ALL these child organizations. Are you really sure?",
+    "reject": "Reject",
+    "accept": "Accept",
+    "username_taken": "This username has already been taken",
+    "user_with_name_exists": "A user with this name already exists. Please pick another name."
 }
