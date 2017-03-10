@@ -1447,6 +1447,8 @@ securedBy: [ oauth_2_0 ]
             description: Organization not found
           409:
             description: Organization is already an owner or a member
+          422:
+            description: Max amount of invitations reached.
 
       put:
         displayName: UpdateOrganizationOrgMemberShip
@@ -1497,28 +1499,6 @@ securedBy: [ oauth_2_0 ]
               404:
                 description: organization not found
 
-      /invite:
-        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
-        post:
-          displayName: AddOrganizationOrgMember
-          description: Invite another organization as a member of this one
-          body:
-            application/json:
-              properties:
-                searchstring: string
-          responses:
-            201:
-              description: Organization successfully invited
-              body:
-                application/json:
-                  type: JoinOrganizationInvitation
-            404:
-              description: Organization not found
-            409:
-              description: Organization is already an owner or a member
-            422:
-              description: Max amount of invitations reached.
-
       /{globalid2}:
         delete:
           displayName: DeleteOrgMember
@@ -1565,6 +1545,8 @@ securedBy: [ oauth_2_0 ]
             description: Organization not found
           409:
             description: Organization is already an owner or a member
+          422:
+            description: Max amount of invitations reached.
 
       /{globalid2}:
         delete:
@@ -1575,28 +1557,6 @@ securedBy: [ oauth_2_0 ]
               description: Organization owner removed successfully
             404:
               description: The organization does not exist.
-
-      /invite:
-        securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
-        post:
-          displayName: AddOrganizationOrgOwner
-          description: Invite another organization as an owner of this one
-          body:
-            application/json:
-              properties:
-                searchstring: string
-          responses:
-            201:
-              description: Organization successfully invited
-              body:
-                application/json:
-                  type: JoinOrganizationInvitation
-            404:
-              description: Organization not found
-            409:
-              description: Organization is already an owner or a member
-            422:
-              description: Max amount of invitations reached.
 
     /organizations/{invitingorg}/roles/{role}:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

@@ -28,7 +28,6 @@
         vm.initSettings = initSettings;
         vm.showInvitationDialog = showInvitationDialog;
         vm.showAddOrganizationDialog = showAddOrganizationDialog;
-        vm.showOrganizationInvitationDialog = showOrganizationInvitationDialog;
         vm.showAPIKeyCreationDialog = showAPIKeyCreationDialog;
         vm.showAPIKeyDialog = showAPIKeyDialog;
         vm.showDNSDialog = showDNSDialog;
@@ -187,31 +186,6 @@
                 });
         }
 
-        function showOrganizationInvitationDialog(ev) {
-            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
-            $mdDialog.show({
-                controller: OrganizationInvitationDialogController,
-                templateUrl: 'components/organization/views/organizationinvitationdialog.html',
-                targetEvent: ev,
-                fullscreen: useFullScreen,
-                locals:
-                    {
-                        OrganizationService: OrganizationService,
-                        organization: vm.organization.globalid,
-                        $window: $window
-                    }
-            })
-            .then(
-                function(invitation) {
-                    var invite = {
-                        created: invitation.created,
-                        user: invitation.user,
-                        role: invitation.role
-                    };
-                    vm.invitations.push(invite);
-                });
-        }
-
         function showAddOrganizationDialog(ev) {
             var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
             $mdDialog.show({
@@ -228,17 +202,26 @@
             })
             .then(
                 function(data) {
-                    if (data.role === 'members') {
+                    if (data.status) {
+                        // this is an invite
+                        var invite = {
+                            created: data.created,
+                            user: data.user,
+                            role: data.role
+                        };
+                        vm.invitations.push(invite);
+                    }
+                    else if (data.role === 'members') {
                         if (!vm.organization.orgmembers) {
-                          vm.organization.orgmembers = [];
-                      }
-                      vm.organization.orgmembers.push(data.organization);
-                  } else {
+                            vm.organization.orgmembers = [];
+                        }
+                        vm.organization.orgmembers.push(data.organization);
+                    } else {
                         if (!vm.organization.orgowners) {
                             vm.organization.orgowners = [];
-                      }
-                      vm.organization.orgowners.push(data.organization);
-                  }
+                        }
+                        vm.organization.orgowners.push(data.organization);
+                    }
                 });
         }
 
@@ -663,40 +646,13 @@
         function addOrganization(searchString, role){
             $scope.validationerrors = {};
             OrganizationService.addOrganization(organization, searchString, role).then(
-                function(){
-                    $mdDialog.hide({organization: searchString,role: role});
-                },
-                function(reason){
-                    if (reason.status == 409){
-                        $scope.validationerrors.duplicate = true;
-                    }
-                    else if (reason.status == 404){
-                        $scope.validationerrors.nosuchorganization = true;
-                    }
-                }
-            );
-
-        }
-    }
-
-    function OrganizationInvitationDialogController($scope, $mdDialog, $translate, organization, OrganizationService, UserDialogService) {
-
-        $scope.role = "orgmembers";
-
-        $scope.cancel = cancel;
-        $scope.invite = invite;
-        $scope.validationerrors = {};
-
-
-        function cancel(){
-            $mdDialog.cancel();
-        }
-
-        function invite(searchString, role){
-            $scope.validationerrors = {};
-            OrganizationService.inviteOrganization(organization, searchString, role).then(
                 function(data){
-                    $mdDialog.hide(data);
+                    if (!data) {
+                        $mdDialog.hide({organization: searchString,role: role});
+                    }
+                    else {
+                        $mdDialog.hide(data);
+                    }
                 },
                 function(reason){
                     if (reason.status == 409){
@@ -704,7 +660,8 @@
                     }
                     else if (reason.status == 404){
                         $scope.validationerrors.nosuchorganization = true;
-                    } else if (reason.status === 422) {
+                    }
+                    else if (reason.status === 422) {
                         cancel();
                         var msg = 'Organization ' + organization + ' has reached the maximum amount of invitations.';
                         UserDialogService.showSimpleDialog(msg, 'Error');

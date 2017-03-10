@@ -1256,7 +1256,8 @@ func (api OrganizationsAPI) SetOrgMember(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if !isOwner {
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		// invite the organization if we can't add it directly
+		api.inviteOrganization(w, r, invitations.RoleOrgMember, body.OrgMember)
 		return
 	}
 
@@ -1363,6 +1364,7 @@ func (api OrganizationsAPI) SetOrgOwner(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if !isOwner {
+		api.inviteOrganization(w, r, invitations.RoleOrgOwner, body.OrgOwner)
 		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -1831,28 +1833,9 @@ func (api OrganizationsAPI) RejectOrganizationInvite(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// AddOrganizationOwner is the handler for POST /organizations/{globalid}/orgowners/invite
-// Invite an organization to become owner of an organization.
-func (api OrganizationsAPI) AddOrganizationOrgOwner(w http.ResponseWriter, r *http.Request) {
-	api.inviteOrganization(w, r, invitations.RoleOrgOwner)
-}
-
-// AddOrganizationMember is the handler for POST /organizations/{globalid}/orgmembers/invite
-// Invite an organization to become a member of an organization.
-func (api OrganizationsAPI) AddOrganizationOrgMember(w http.ResponseWriter, r *http.Request) {
-	api.inviteOrganization(w, r, invitations.RoleOrgMember)
-}
-
-func (api OrganizationsAPI) inviteOrganization(w http.ResponseWriter, r *http.Request, role string) {
+func (api OrganizationsAPI) inviteOrganization(w http.ResponseWriter, r *http.Request, role string, searchString string) {
 	globalID := mux.Vars(r)["globalid"]
 
-	var s searchMember
-
-	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	searchString := s.SearchString
 	// An organization can't invite itself.
 	if searchString == globalID {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
