@@ -1308,20 +1308,6 @@ func (api OrganizationsAPI) DeleteOrgMember(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// now that we know OrgMember is a member of {globalid}, check if the authenticated user is an owner of the OrgMember
-	// the user is known to be an owner of {globalid} since we've required the organization:owner scope
-	authenticateduser := context.Get(r, "authenticateduser").(string)
-	isOwner, err := mgr.IsOwner(orgMember, authenticateduser)
-	if err != nil {
-		log.Error("Error while removing another organization as member: ", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	if !isOwner {
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-		return
-	}
-
 	err = mgr.RemoveOrganization(globalid, orgMember)
 	if err != nil {
 		log.Error("Error while removing another organization as member: ", err.Error())
@@ -1426,20 +1412,6 @@ func (api OrganizationsAPI) DeleteOrgOwner(w http.ResponseWriter, r *http.Reques
 
 	if !isOwner {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-
-	// now that we know OrgOwner is an OrgOwner of {globalid}, check if the authenticated user is an owner of the OrgOwner
-	// the user is known to be an owner of {globalid} since we've required the organization:owner scope
-	authenticateduser := context.Get(r, "authenticateduser").(string)
-	isOwner, err = mgr.IsOwner(orgOwner, authenticateduser)
-	if err != nil {
-		log.Error("Error while removing another organization as owner: ", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	if !isOwner {
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
 
