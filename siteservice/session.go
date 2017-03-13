@@ -167,3 +167,23 @@ func (service *Service) SetWebUserMiddleWare(next http.Handler) http.Handler {
 		next.ServeHTTP(w, request)
 	})
 }
+
+// KillSession removes the authenticated and oauthsession
+// TODO: REMOVE
+func (service *Service) KillSession(r *http.Request, w http.ResponseWriter) {
+	authenticatedSession, err := service.GetSession(r, SessionInteractive, "authenticatedsession")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	authenticatedSession.Values["username"] = ""
+	authenticatedSession.Options.MaxAge = -1
+	oauthSession, err := service.GetSession(r, SessionInteractive, "oauthsession")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	oauthSession.Values["username"] = ""
+	oauthSession.Options.MaxAge = -1
+	sessions.Save(r, w)
+}
