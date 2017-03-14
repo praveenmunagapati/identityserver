@@ -16,7 +16,6 @@ type SessionService interface {
 	GetOauthUser(request *http.Request, w http.ResponseWriter) (username string, err error)
 	//SetAPIAccessToken sets the api access token for this session
 	SetAPIAccessToken(w http.ResponseWriter, token string) (err error)
-	KillSession(request *http.Request, w http.ResponseWriter)
 }
 
 //IdentityService provides some basic knowledge about authorizations required for the oauthservice

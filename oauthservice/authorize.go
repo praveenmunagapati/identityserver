@@ -120,11 +120,6 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 		return
 	}
 
-	newSessionString := request.Form.Get("newsession")
-	if newSessionString == "true" {
-		service.sessionService.KillSession(request, w)
-	}
-
 	//Check if the requested authorization grant type is supported
 	requestedResponseType := request.Form.Get("response_type")
 	if requestedResponseType != AuthorizationGrantCodeType {
