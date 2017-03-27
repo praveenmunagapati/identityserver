@@ -186,6 +186,7 @@ func (service *Service) FilterPossibleScopes(r *http.Request, username string, r
 				}
 				if hasInvite {
 					possibleScopes = append(possibleScopes, scope)
+					continue
 				}
 			}
 			if clientId != "" && orgid == clientId {
