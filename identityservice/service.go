@@ -158,7 +158,6 @@ func (service *Service) FilterPossibleScopes(r *http.Request, username string, r
 	possibleScopes = make([]string, 0, len(requestedScopes))
 	clientId := r.Form.Get("client_id")
 	orgmgr := organizationdb.NewManager(r)
-	invitationMgr := invitations.NewInvitationManager(r)
 	for _, rawscope := range requestedScopes {
 		scope := strings.TrimSpace(rawscope)
 		if strings.HasPrefix(scope, "user:memberof:") {
@@ -180,7 +179,7 @@ func (service *Service) FilterPossibleScopes(r *http.Request, username string, r
 				continue
 			}
 			if allowInvitations {
-				hasInvite, err := invitationMgr.HasInvite(orgid, username)
+				hasInvite, err := userHasOrgInvitation(orgid, username, r)
 				if err != nil {
 					log.Error("FilterPossibleScopes: Error while checking if user has invite for organization: ", err)
 					return nil, err
@@ -237,6 +236,38 @@ func GetOauthClientID(service string) (string, error) {
 			service, service)
 	}
 	return clientIDModel.Value, err
+}
+
+func userHasOrgInvitation(globalid string, username string, r *http.Request) (bool, error) {
+	invitationMgr := invitations.NewInvitationManager(r)
+	hasInvite, err := invitationMgr.HasInvite(globalid, username)
+	if hasInvite || err != nil {
+		return hasInvite, err
+	}
+	valMgr := validationdb.NewManager(r)
+	numbers, err := valMgr.GetByUsernameValidatedPhonenumbers(username)
+	if err != nil {
+		log.Error("Failed to get validated phone numbers for user ", username)
+		return false, err
+	}
+	for _, number := range numbers {
+		hasInvite, err = invitationMgr.HasPhoneInvite(globalid, number.Phonenumber)
+		if hasInvite || err != nil {
+			return hasInvite, err
+		}
+	}
+	emails, err := valMgr.GetByUsernameValidatedEmailAddress(username)
+	if err != nil {
+		log.Error("Failed to get validated email addresses for user ", username)
+		return false, err
+	}
+	for _, email := range emails {
+		hasInvite, err = invitationMgr.HasEmailInvite(globalid, email.EmailAddress)
+		if hasInvite || err != nil {
+			return hasInvite, err
+		}
+	}
+	return false, nil
 }
 
 func isPartOfOrgTree(globalId string, username string, orgMgr *organizationdb.Manager) (bool, error) {

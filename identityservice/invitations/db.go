@@ -200,6 +200,18 @@ func (o *InvitationManager) HasInvite(globalid string, username string) (hasInvi
 	return count != 0, err
 }
 
+// HasPhoneInvite Checks if a phonenumber has an invite to an organization
+func (o *InvitationManager) HasPhoneInvite(globalid string, phonenumber string) (hasInvite bool, err error) {
+	count, err := o.collection.Find(bson.M{"organization": globalid, "phonenumber": phonenumber}).Count()
+	return count != 0, err
+}
+
+// HasEmailInvite Checks if an emailaddress has an invite to an organization
+func (o *InvitationManager) HasEmailInvite(globalid string, email string) (hasInvite bool, err error) {
+	count, err := o.collection.Find(bson.M{"organization": globalid, "emailaddress": email}).Count()
+	return count != 0, err
+}
+
 // CountByOrganization Counts the amount of invitations, filtered by an organization
 func (o *InvitationManager) CountByOrganization(globalid string) (int, error) {
 	count, err := o.collection.Find(bson.M{"organization": globalid}).Count()
