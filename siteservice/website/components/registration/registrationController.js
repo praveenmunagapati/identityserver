@@ -112,6 +112,9 @@
         }
 
         function register() {
+            if(!$scope.signupform.$valid){
+                return;
+            }
             var redirectparams = $window.location.search.replace('?', '');
             registrationService
                 .register(vm.twoFAMethod, vm.login, vm.email, vm.password, vm.totpcode, vm.sms, redirectparams)

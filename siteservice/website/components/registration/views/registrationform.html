@@ -32,10 +32,10 @@
                             <div ng-messages="signupform.login.$error" md-auto-hide="false">
                                 <div ng-message="user_exists" translate="username_taken"></div>
                                 <div ng-message="organization_exists" translate="organization_with_name_exists"></div>
-                                <div ng-message="invalid_username_format" translate='registration.views.registrationform.invalidusername'>Invalid username. Only characters a-z, 0-9,
+                                <div ng-message="invalid_username_format" translate='registration.views.registrationform.invalidusername'>Invalid username. Only lowercase characters a-z, 0-9,
                                     dashes, underscores and space are allowed
                                 </div>
-                                <div ng-message="pattern" translate='registration.views.registrationform.invalidusername'>Invalid username. Only characters a-z, 0-9, dashes,
+                                <div ng-message="pattern" translate='registration.views.registrationform.invalidusername'>Invalid username. Only lowercase characters a-z, 0-9, dashes,
                                     underscores and space are allowed
                                 </div>
                             </div>
@@ -43,7 +43,7 @@
                         <md-input-container>
                             <label for="email" translate='registration.views.registrationform.email'>Email</label>
                             <input ng-model="vm.email" required name="email" type="email" id="email" md-maxlength="80">
-                            <div ng-messages="signupform.email.$error" md-auto-hide="false">
+                            <div ng-messages="signupform.email.$error" md-auto-hide="false" ng-if="signupform.email.$touched">
                                 <div ng-message="email" translate="invalid_email_address">Invalid email address</div>
                                 <div ng-message="md-maxlength" translate='emailmaxlength'>The email address cannot be longer than 80
                                     characters
@@ -109,7 +109,7 @@
                         </md-input-container>
                         <div layout="row">
                             <div flex></div>
-                            <md-button type="submit" class="md-raised md-primary" ng-disabled="!signupform.$valid" translate='registration.views.registrationform.signup'>
+                            <md-button type="submit" class="md-raised md-primary" translate='registration.views.registrationform.signup'>
                                 Sign up
                             </md-button>
                             <div flex></div>

@@ -243,7 +243,7 @@
                 "register": "Register",
                 "username": "Username",
                 "usernametaken": "This username has already been taken",
-                "invalidusername": "Invalid username. Only characters a-z, 0-9, dashes, underscores and spaces are allowed",
+                "invalidusername": "Invalid username. Only lowercase characters a-z, 0-9, dashes, underscores and spaces are allowed",
                 "email": "Email",
                 "password": "Password",
                 "invalidpassword": "Password should contain at least 6 characters.",
