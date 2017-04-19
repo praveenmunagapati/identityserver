@@ -204,7 +204,7 @@
             "deleteorganization": "Verwijder organizatie {{organization}}",
             "yes": "Ja",
             "no": "Nee",
-            "haschildren": "Deze organizatie kan niet worden verwijdert omdat er nog suborganizaties zijn.",
+            "haschildren": "Deze organizatie kan niet worden verwijdert omdat er nog suborganisaties zijn.",
             "confirmleave": "Ben je zeker dat je de organizatie {{organization}} wil verlaten?",
             "leaveorg": "Verlaat organizatie",
             "leaveorganization": "Verlaat organizatie {{organization}}",
@@ -216,8 +216,8 @@
         }
     },
     "organization_globalid": "Organizatie globalId",
-    "organization_include_orgmember_suborgs": "Suborganizaties van deze organizatie opnemen in de ledenlijst",
-    "organization_include_orgowner_suborgs": "Suborganizaties van deze organizatie opnemen in de eigenarenlijst",
+    "organization_include_orgmember_suborgs": "Suborganisaties van deze organizatie opnemen in de ledenlijst",
+    "organization_include_orgowner_suborgs": "Suborganisaties van deze organizatie opnemen in de eigenarenlijst",
     "organization_invite_organization": "Nodig organizatie uit",
     "organization_invite_organization_duplicate": "De uitgenodigde organizatie is al lid van de organzatie",
     "organization_invite_organization_help": "Nodig een andere organizatie uit om deel te worden van {{organization}}",
@@ -231,7 +231,7 @@
     "owner_of_email": "Eigenaar van email address",
     "owner_of_email_x": "Eigenaar van email address {{ email }}",
     "owners": "Eigenaars",
-    "pending_invites_for_organization": "Openstaande uitnodigingen voor jouw organizaties",
+    "pending_invites_for_organization": "Openstaande uitnodigingen voor jouw organisaties",
     "phone_number": "Telefoonnummer",
     "phonenumber": "Telefoonnummer",
     "phonenumberpattern": "Ongeldig telefoonnummer. Telefoonnummer moet starten met de landcode. Voorbeeld: +32471202020",
@@ -291,7 +291,7 @@
                 "onenotification": "Je hebt 1 ongelezen melding",
                 "unreadnotifications": "Je hebt {{count}} ongelezen meldingen",
                 "profile": "Profiel",
-                "organizations": "Organizaties",
+                "organizations": "organisaties",
                 "sharedinfo": "Gedeelde informatie",
                 "signout": "Afmelden",
                 "register": "Registreer",
@@ -332,7 +332,7 @@
             "authorizations": {
                 "sharedinfo": "Gedeelde informatie",
                 "notsharing": "Je deelt momenteel geen informatie van je profiel",
-                "sharingorgs": "Organizaties waarmee je informatie deelt:"
+                "sharingorgs": "organisaties waarmee je informatie deelt:"
             },
             "authorize": {
                 "request": "Vraagt toestemming om een deel van je informatie te zien",
@@ -370,7 +370,7 @@
                 "notsharinginfo": "Een deel van de vereiste informatie wordt niet gedeelt met {{org}}"
             },
             "organizations": {
-                "organizations": "Organizaties",
+                "organizations": "organisaties",
                 "createnew": "Maak nieuwe",
                 "organization": "Organizatie"
             },
@@ -477,7 +477,7 @@
         }
     },
     "verify": "Valideer",
-    "delete_org_with_children": "Deze organizatie heeft suborganizaties. Als je deze organizatie verwijdert, worden ook ALLE suborganizaties verwijderd. Ben je echt zeker?",
+    "delete_org_with_children": "Deze organizatie heeft suborganisaties. Als je deze organizatie verwijdert, worden ook ALLE suborganisaties verwijderd. Ben je echt zeker?",
     "reject": "Weiger",
     "accept": "Aanvaardt",
     "username_taken": "Deze gebruikersnaam is al bezet",
