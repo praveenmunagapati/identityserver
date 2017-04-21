@@ -37,15 +37,15 @@
                 "userminlength": "Er zijn minstens 2 tekens nodig",
                 "userinvalid": "Een gebruiker met deze gebruikersnaam of email is niet gevonden",
                 "sendrecoverymail": "Stuur herstel email",
-                "back": "Terug naar aanmelden"
+                "back": "Terug naar inloggen"
             },
             "loginform": {
-                "login": "Aanmelden",
-                "loginhelp": "Je kan aanmelden met je gebruikersnaam, bevestigde email of telefoonnummer.",
+                "login": "Inloggen",
+                "loginhelp": "Je kan inloggen met je gebruikersnaam, bevestigde email of telefoonnummer.",
                 "password": "Wachtwoord",
                 "invalidcredentials": "Ongeldige credentials",
                 "forgotpassword": "Wachtwoord vergeten?",
-                "loginbtn": "Aanmelden"
+                "loginbtn": "Inloggen"
             },
             "resetpassword": {
                 "forgotpassword": "Wachtwoord vergeten",
@@ -56,7 +56,7 @@
                 "submit": "Dien in"
             },
             "twofactorauthentication": {
-                "login": "Aanmelden",
+                "login": "Inloggen",
                 "method": "Authenticatie methode",
                 "code": "Code",
                 "invalidcode": "Ongeldige code",
@@ -295,7 +295,7 @@
                 "sharedinfo": "Gedeelde informatie",
                 "signout": "Afmelden",
                 "register": "Registreer",
-                "signin": "Aanmelden",
+                "signin": "Inloggen",
                 "language": "taal",
                 "notifications": "meldingen"
             }
