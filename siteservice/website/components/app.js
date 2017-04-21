@@ -11,7 +11,7 @@
         .config(['$translateProvider', translateConfig])
         .config([init])
         .factory('authenticationInterceptor', ['$q', '$window', authenticationInterceptor])
-        .directive('pagetitle', ['$rootScope', '$timeout', pagetitle])
+        .directive('pagetitle', ['$rootScope', '$timeout', 'footerService', pagetitle])
         .run(['$route', '$cookies', '$rootScope', '$location', runFunction]);
 
     function themingConfig($mdThemingProvider) {
@@ -78,7 +78,8 @@
                 controller: 'AuthorizeController',
                 controllerAs: 'vm',
                 data: {
-                    pageTitle: 'Authorize'
+                    pageTitle: 'Authorize',
+                    showFooter: false
                 }
             })
             .when('/company/new', {
@@ -185,14 +186,16 @@
         localStorage.setItem('hasLoggedIn', true);
     }
 
-    function pagetitle($rootScope, $timeout) {
+    function pagetitle($rootScope, $timeout, footerService) {
         return {
             link: function (scope, element) {
                 var listener = function (event, current) {
                     var pageTitle = 'It\'s You Online';
-                    if (current.$$route && current.$$route.data && current.$$route.data.pageTitle) {
+                    var routeData = current.$$route && current.$$route.data || {};
+                    if (routeData.pageTitle) {
                         pageTitle = current.$$route.data.pageTitle + ' - ' + pageTitle;
                     }
+                    footerService.setFooter(routeData.showFooter !== undefined ? routeData.showFooter : true);
                     $timeout(function () {
                         element.text(pageTitle);
                     }, 0, false);
