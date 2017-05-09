@@ -128,7 +128,7 @@ func (api OrganizationsAPI) CreateNewOrganization(w http.ResponseWriter, r *http
 
 }
 
-// CreateNewSubOrganization is the handler for POST /organizations/{globalid}/suborganizations
+// CreateNewSubOrganization is the handler for POST /organizations/{globalid}
 // Create a new suborganization.
 func (api OrganizationsAPI) CreateNewSubOrganization(w http.ResponseWriter, r *http.Request) {
 	parent := mux.Vars(r)["globalid"]
@@ -156,6 +156,13 @@ func (api OrganizationsAPI) CreateNewSubOrganization(w http.ResponseWriter, r *h
 	if strings.Contains(localid, ".") {
 		log.Debug("localid contains a '.'")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	orgMgr := organization.NewManager(r)
+	if !orgMgr.Exists(parent) {
+		log.Debug("Trying to create a suborganization of an unexisting parent")
+		writeErrorResponse(w, http.StatusNotFound, "Parent organization does not exist")
 		return
 	}
 

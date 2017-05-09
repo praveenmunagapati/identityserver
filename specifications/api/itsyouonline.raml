@@ -1286,6 +1286,11 @@ securedBy: [ oauth_2_0 ]
           body:
             application/json:
               type: Organization
+        404:
+          description: Parent organization does not exist
+          body:
+            application/json:
+              type: Error
         422:
           description: Maximum amount of organizations reached
           body:

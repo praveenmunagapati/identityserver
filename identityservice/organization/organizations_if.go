@@ -18,7 +18,7 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// GetOrganization is the handler for GET /organizations/{globalid}
 	// Get organization info
 	GetOrganization(http.ResponseWriter, *http.Request)
-	// CreateNewSubOrganization is the handler for POST /organizations/{globalid}/suborganizations
+	// CreateNewSubOrganization is the handler for POST /organizations/{globalid}
 	// Create a new suborganization.
 	CreateNewSubOrganization(http.ResponseWriter, *http.Request)
 	// UpdateOrganization is the handler for PUT /organizations/{globalid}
