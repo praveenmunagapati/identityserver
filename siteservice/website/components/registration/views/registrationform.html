@@ -27,15 +27,15 @@
                         <md-input-container>
                             <label for="login" translate='registration.views.registrationform.username'>Username</label>
                             <input ng-model="vm.login" md-maxlength="30" required name="login" type="text"
-                                   ng-pattern="/^[a-z0-9 \-_]+$/" ng-minlength="3" autofocus
+                                   ng-pattern="/^[a-zA-Z0-9 \-_]+$/" ng-minlength="3" autofocus
                                    ng-change="vm.validateUsername()" ng-model-options="{allowInvalid: true}" id="login">
                             <div ng-messages="signupform.login.$error" md-auto-hide="false">
                                 <div ng-message="user_exists" translate="username_taken"></div>
                                 <div ng-message="organization_exists" translate="organization_with_name_exists"></div>
-                                <div ng-message="invalid_username_format" translate='registration.views.registrationform.invalidusername'>Invalid username. Only lowercase characters a-z, 0-9,
+                                <div ng-message="invalid_username_format" translate='registration.views.registrationform.invalidusername'>Invalid username. Only characters a-z, 0-9,
                                     dashes, underscores and space are allowed
                                 </div>
-                                <div ng-message="pattern" translate='registration.views.registrationform.invalidusername'>Invalid username. Only lowercase characters a-z, 0-9, dashes,
+                                <div ng-message="pattern" translate='registration.views.registrationform.invalidusername'>Invalid username. Only characters a-z, 0-9, dashes,
                                     underscores and space are allowed
                                 </div>
                             </div>

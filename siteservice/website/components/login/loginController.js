@@ -95,7 +95,7 @@
 
         function submit() {
             var data = {
-                login: vm.login,
+                login: vm.login.toLowerCase(),
                 password: vm.password
             };
             var url = '/login' + $window.location.search;

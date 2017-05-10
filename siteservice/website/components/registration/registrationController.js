@@ -30,7 +30,7 @@
             $scope.signupform.login.$setValidity("invalid_username_format", true);
             if ($scope.signupform.login.$valid) {
                 registrationService
-                    .validateUsername(vm.login)
+                    .validateUsername(vm.login.toLowerCase())
                     .then(function (response) {
                         $scope.signupform.login.$setValidity(response.data.error, response.data.valid);
                     });
@@ -117,7 +117,7 @@
             }
             var redirectparams = $window.location.search.replace('?', '');
             registrationService
-                .register(vm.twoFAMethod, vm.login, vm.email, vm.password, vm.totpcode, vm.sms, redirectparams)
+                .register(vm.twoFAMethod, vm.login.toLowerCase(), vm.email, vm.password, vm.totpcode, vm.sms, redirectparams)
                 .then(function (response) {
                     var url = response.data.redirecturl;
                     if (url === '/') {

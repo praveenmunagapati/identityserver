@@ -245,7 +245,7 @@
                 "register": "Registreer",
                 "username": "Gebruikersnaam",
                 "usernametaken": "Deze gebruikersnaam is al bezet",
-                "invalidusername": "Ongeldige gebruikersnaam. Enkel kleine letters a-z, 0-9, streepjes, underscores en spaties zijn toegelaten",
+                "invalidusername": "Ongeldige gebruikersnaam. Enkel letters a-z, 0-9, streepjes, underscores en spaties zijn toegelaten",
                 "email": "Email",
                 "password": "Wachtwoord",
                 "invalidpassword": "Wachtwoord moet minstens 6 tekens bevatten.",
