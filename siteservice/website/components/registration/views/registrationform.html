@@ -80,19 +80,7 @@
                                 <md-option ng-value="'totp'" translate='registration.views.registrationform.app'>Authenticator application</md-option>
                             </md-select>
                         </md-input-container>
-                        <md-input-container ng-if="vm.twoFAMethod === 'sms'">
-                            <label for="sms" translate="phone_number">Phone number</label>
-                            <input ng-model="vm.sms" minlength="7" ng-required="vm.twoFAMethod === 'sms'"
-                                   name="phonenumber" ng-pattern="/^\+[0-9 ]*$/" ng-change="vm.resetValidation('phone')"
-                                   id="sms">
-                            <div ng-messages="signupform.phonenumber.$error">
-                                <div ng-message="pattern" translate='phonenumberpattern'>
-                                    Invalid phone number. Phone number must start with the country
-                                    code. Example: +32471202020
-                                </div>
-                                <div ng-message="invalid_phonenumber" translate='invalidphonenumber'>Invalid phone number</div>
-                            </div>
-                        </md-input-container>
+                        <telinput phonenumber="vm.sms"></telinput>
                         <md-input-container ng-if="vm.twoFAMethod === 'totp'">
                             <label for="totpcode" translate='registration.views.registrationform.2facode'>2-Factor authentication code</label>
                             <input ng-model="vm.totpcode" md-maxlength="6" minlength="6"

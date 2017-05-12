@@ -4,7 +4,7 @@
         .module('itsyouonlineApp', ['ngCookies', 'ngMaterial', 'ngRoute', 'ngMessages', 'ngSanitize',
             'monospaced.qrcode',
             'itsyouonline.shared', 'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.user',
-            'itsyouonline.validation', 'pascalprecht.translate'])
+            'itsyouonline.validation', 'itsyouonline.telinput', 'pascalprecht.translate'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$httpProvider', httpConfig])
         .config(['$routeProvider', routeConfig])

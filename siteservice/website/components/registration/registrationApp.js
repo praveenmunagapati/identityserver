@@ -3,7 +3,8 @@
     angular
         .module('itsyouonline.registration', [
             'ngMaterial', 'ngMessages', 'ngRoute', 'ngCookies', 'ngSanitize', 'monospaced.qrcode',
-            'itsyouonline.shared', 'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.validation', 'pascalprecht.translate'])
+            'itsyouonline.shared', 'itsyouonline.header', 'itsyouonline.footer', 'itsyouonline.validation',
+            'itsyouonline.telinput', 'pascalprecht.translate'])
         .config(['$mdThemingProvider', themingConfig])
         .config(['$httpProvider', httpConfig])
         .config(['$routeProvider', routeConfig])

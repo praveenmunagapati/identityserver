@@ -109,6 +109,21 @@ func (service *Service) AddRoutes(router *mux.Router) {
 		json.NewEncoder(w).Encode(&response)
 	})
 
+	router.Methods("GET").Path("/location").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Get the header from the cloudflare IP Geolocation service. Value is the
+		// country code in ISO 3166-1 Alpha 2 format.
+		location := r.Header.Get("CF-IPCountry")
+		log.Debug("request location: ", location)
+		response := struct {
+			Location string `json:"location"`
+		}{
+			Location: location,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(&response)
+	})
+
 	//host the assets used in the htmlpages
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(
 		&assetfs.AssetFS{Asset: assets.Asset, AssetDir: assets.AssetDir, AssetInfo: assets.AssetInfo})))

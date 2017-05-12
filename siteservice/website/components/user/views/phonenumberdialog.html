@@ -25,22 +25,7 @@
                         <div ng-message="duplicate_label, duplicate" translate='labelduplicate'>This label is already used</div>
                     </div>
                 </md-input-container>
-                <md-input-container>
-                    <label translate="phone_number">Phone number</label>
-                    <input ng-model="data.phonenumber" ng-pattern="/^\+[0-9 ]*$/" required minlength="4" type="text"
-                           name="phonenumberinput">
-                    <div ng-messages="dataform.phonenumberinput.$error">
-                        <div ng-message="minlength" translate='user.views.phonedialog.phonenumberminlength'>Not enough digits</div>
-                        <div ng-message="pattern" translate='phonenumberpattern'>Invalid phone number. Phone number must contain the country code.
-                            Example: +32471202020
-                        </div>
-                    </div>
-                    <div ng-messages="validationerrors" md-auto-hide="false">
-                        <div ng-message="cannot_delete_last_verified_phone_number" translate='upatelastverified'>You cannot update your last
-                            verified phone number. Please configure a new phone number instead.
-                        </div>
-                    </div>
-                </md-input-container>
+                <telinput phonenumber="data.phonenumber"></telinput>
             </div>
         </md-dialog-content>
         <md-dialog-actions layout="row" layout-align="space-between center">

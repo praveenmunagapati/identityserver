@@ -661,3 +661,7 @@ p.verified {
 .validation-error {
     color: rgb(221, 44, 0);
 }
+
+.countryoption > .md-text  {
+    width: 100%;
+}

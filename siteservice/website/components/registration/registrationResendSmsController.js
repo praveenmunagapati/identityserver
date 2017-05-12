@@ -2,16 +2,17 @@
     'use strict';
     angular
         .module('itsyouonline.registration')
-        .controller('resendSmsController', ['$scope', '$window', '$http', resendSmsController]);
+        .controller('resendSmsController', ['$scope', '$window', '$http', 'registrationService', resendSmsController]);
 
-    function resendSmsController($scope, $window, $http) {
+    function resendSmsController($scope, $window, $http, registrationService) {
         var vm = this;
+        vm.sms = "";
         vm.submit = submit;
         vm.resetValidation = resetValidation;
 
         function submit() {
             var data = {
-                phonenumber: vm.phonenumber.replace(' ', ''),
+                phonenumber: vm.sms.replace(' ', ''),
                 langkey: localStorage.getItem('langKey')
             };
             $http
