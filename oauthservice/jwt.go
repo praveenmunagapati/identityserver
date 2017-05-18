@@ -144,8 +144,8 @@ func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request
 	// Also validate a possible memberof:clientId scope
 	orgMgr := organization.NewManager(r)
 	username := originalToken.Claims["username"].(string)
-	clientId := originalToken.Claims["azp"].(string)
-	scope, err := verifyScopes(strings.Join(rt.Scopes, ","), username, clientId, orgMgr)
+	clientID := originalToken.Claims["azp"].(string)
+	scope, err := verifyScopes(strings.Join(rt.Scopes, ","), username, clientID, orgMgr)
 	if err != nil {
 		return
 	}
@@ -239,7 +239,6 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 	audiencesArr := strings.Split(audiences, ",")
 	if len(audiencesArr) > 0 {
 		token.Claims["aud"] = audiencesArr
-
 	}
 
 	// It does not hurt to always set the azp claim while it is only needed when the ID Token has a single
