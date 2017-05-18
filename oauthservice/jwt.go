@@ -216,12 +216,15 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 		requestedScopes = acquiredScopes
 	}
 
+	//Basic validation to check if the requested scopes are possible within the acquiredScopes
 	if !jwtScopesAreAllowed(acquiredScopes, requestedScopes) {
 		err = errUnauthorized
 		return
 	}
 
 	token := jwt.New(jwt.SigningMethodES384)
+
+	//More extensive validation
 	var grantedScopes []string
 	if at.Username != "" {
 		token.Claims["username"] = at.Username
