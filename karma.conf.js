@@ -38,6 +38,7 @@ module.exports = function(config) {
           'components/shared/shared.js',
           'components/shared/configService.js',
           'components/patches.js',
+          'components/common.js',
           'components/shared/country-info.js',
           'components/shared/directives/telinput.js',
 

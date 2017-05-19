@@ -20,6 +20,7 @@
                         aria-label="language" ng-cloak>
                         <md-option value="en" class="md-no-underline">English</md-option>
                         <md-option value="nl" class="md-no-underline">Nederlands</md-option>
+                        <md-option value="ru" class="md-no-underline">русский</md-option>
                     </md-select>
                     <div class="header-sign-wrap" ng-if="::$root.user">
                         <!--notification icon-->
@@ -95,6 +96,9 @@
                 </md-menu-item>
                 <md-menu-item class="header-pushmenu-item">
                     <md-button class="push-sub-menu-button" ng-click="setLanguage('nl')">Nederlands</md-button>
+                </md-menu-item>
+                <md-menu-item class="header-pushmenu-item">
+                    <md-button class="push-sub-menu-button" ng-click="setLanguage('ru')">русский</md-button>
                 </md-menu-item>
             </div>
             <div ng-show="!langSelect">
