@@ -144,7 +144,8 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 				validity = -1
 			}
 		}
-		tokenString, err := service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences, validity)
+		var tokenString string
+		tokenString, err = service.convertAccessTokenToJWT(r, at, requestedScopeParameter, extraAudiences, validity)
 		if err == errUnauthorized {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
@@ -203,6 +204,7 @@ func clientCredentialsTokenHandler(clientID string, secret string, mgr *Manager,
 	httpStatusCode = http.StatusOK
 	var scopes string
 	username := ""
+	organization := ""
 
 	client, err := mgr.getClientByCredentials(clientID, secret)
 	if err != nil {
@@ -219,15 +221,21 @@ func clientCredentialsTokenHandler(clientID string, secret string, mgr *Manager,
 			httpStatusCode = http.StatusBadRequest
 			return
 		}
+		if apikey.ApiKey != secret {
+			log.Debug("Invalid credentials")
+			httpStatusCode = http.StatusBadRequest
+			return
+		}
 		log.Info("apikey", apikey)
 		scopes = strings.Join(apikey.Scopes, " ")
 		log.Info("scopes ", scopes)
 		username = apikey.Username
 	} else {
+		organization = clientID
 		scopes = "organization:owner"
 	}
 
-	at = newAccessToken(username, clientID, clientID, scopes)
+	at = newAccessToken(username, organization, clientID, scopes)
 	return
 }
 
@@ -336,8 +344,8 @@ func verifyScopes(scopeString string, username string, clientID string, orgMgr *
 	return scopeString, nil
 }
 
-func findSuborgScopes(parentId string, username string, orgMgr *organization.Manager) ([]string, error) {
-	subOrgs, err := orgMgr.GetSubOrganizations(parentId)
+func findSuborgScopes(parentID string, username string, orgMgr *organization.Manager) ([]string, error) {
+	subOrgs, err := orgMgr.GetSubOrganizations(parentID)
 	if err != nil {
 		return nil, err
 	}
@@ -347,29 +355,29 @@ func findSuborgScopes(parentId string, username string, orgMgr *organization.Man
 	}
 	sort.Strings(orgIds)
 
-	foundScopes := make([]string, 0)
+	var foundScopes []string
 
-	var foundId string
-	for _, orgId := range orgIds {
-		if foundId != "" && strings.HasPrefix(orgId, foundId) {
+	var foundID string
+	for _, orgID := range orgIds {
+		if foundID != "" && strings.HasPrefix(orgID, foundID) {
 			// This is a suborg of an organization we already know about so skip it
 			continue
 		}
-		isMember, err := orgMgr.IsMember(orgId, username)
+		isMember, err := orgMgr.IsMember(orgID, username)
 		if err != nil {
 			return nil, err
 		}
 		if isMember {
-			foundScopes = append(foundScopes, "user:memberof:"+orgId)
-			foundId = orgId
+			foundScopes = append(foundScopes, "user:memberof:"+orgID)
+			foundID = orgID
 		}
-		isOwner, err := orgMgr.IsOwner(orgId, username)
+		isOwner, err := orgMgr.IsOwner(orgID, username)
 		if err != nil {
 			return nil, err
 		}
 		if isOwner {
-			foundScopes = append(foundScopes, "user:memberof:"+orgId)
-			foundId = orgId
+			foundScopes = append(foundScopes, "user:memberof:"+orgID)
+			foundID = orgID
 		}
 	}
 	return foundScopes, nil
