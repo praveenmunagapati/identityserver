@@ -92,7 +92,10 @@ In case the requested scopes are not available for your OAuth token or the token
 
 ### Creating JWT's for other audiences
 
-In case you want to pass on a JWT and your authorization to a different audience, you can specify extra audiences to the call for creating a JWT.
+Audiences are implemented according to [RFC7519 section 4.1.3.](https://tools.ietf.org/html/rfc7519#section-4.1.3)
+
+In case you want to pass on a JWT and your authorization to a different audience,
+you can specify said audiences to the call for creating a JWT.
 
 ```
 curl -H "Authorization: token OAUTH-TOKEN" https://itsyou.online/v1/oauth/jwt??scope=user:memberof:org1&aud=external1,external2
@@ -114,7 +117,9 @@ In this case, this results in the following JWT data
     }
     ```
 
-The audience field is a list of audiences, the first audience is always the `client_id` of the OAuth token used to acquire this JWT followed by the audiences passed in the request. The extra audiences are not required to be valid globalid's of organizations in itsyou.online.
+The audience field is a list of audiences. It is only set in case the audiences are
+explicitly requested in the call for creating the JWT. The extra audiences are not
+required to be valid globalid's of organizations in itsyou.online.
 
 
 ### Case 2: Directly get a JWT instead of a normal oauth2 token when following the oauth2 grant type flows

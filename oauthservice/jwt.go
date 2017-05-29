@@ -239,7 +239,15 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 	}
 	token.Claims["scope"] = grantedScopes
 
-	audiencesArr := strings.Split(audiences, ",")
+	// process the audience string and make sure we don't set an empty slice if no
+	// audience is set explicitly
+	var audiencesArr []string
+	for _, aud := range strings.Split(audiences, ",") {
+		trimmedAud := strings.TrimSpace(aud)
+		if trimmedAud != "" {
+			audiencesArr = append(audiencesArr, trimmedAud)
+		}
+	}
 	if len(audiencesArr) > 0 {
 		token.Claims["aud"] = audiencesArr
 	}
@@ -334,7 +342,15 @@ func (service *Service) createNewJWTFromParent(r *http.Request, parentToken *jwt
 	}
 	token.Claims["scope"] = grantedScopes
 
-	audiencesArr := strings.Split(audiences, ",")
+	// process the audience string and make sure we don't set an empty slice if no
+	// audience is set explicitly
+	var audiencesArr []string
+	for _, aud := range strings.Split(audiences, ",") {
+		trimmedAud := strings.TrimSpace(aud)
+		if trimmedAud != "" {
+			audiencesArr = append(audiencesArr, trimmedAud)
+		}
+	}
 	if len(audiencesArr) > 0 {
 		token.Claims["aud"] = audiencesArr
 	}
