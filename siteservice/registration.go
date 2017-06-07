@@ -154,7 +154,7 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 
 	err = service.phonenumberValidationService.ConfirmValidation(request, validationkey, smscode)
 	if err == validation.ErrInvalidCode {
-		w.WriteHeader(422)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		response.Error = "invalid_sms_code"
 		json.NewEncoder(w).Encode(&response)
 		return
@@ -212,7 +212,7 @@ func (service *Service) ResendPhonenumberConfirmation(w http.ResponseWriter, req
 	phonenumber := user.Phonenumber{Label: "main", Phonenumber: values.PhoneNumber}
 	if !phonenumber.Validate() {
 		log.Debug("Invalid phone number")
-		w.WriteHeader(422)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		response.Error = "invalid_phonenumber"
 		json.NewEncoder(w).Encode(&response)
 		return
@@ -289,7 +289,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	var phonenumber user.Phonenumber
 	if !valid {
 		response.Error = "invalid_username_format"
-		w.WriteHeader(422)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		json.NewEncoder(w).Encode(response)
 		return
 	}
@@ -322,13 +322,13 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	}
 	if userExists {
 		log.Debug("USER ", newuser.Username, " already registered")
-		w.WriteHeader(422)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		response.Error = "user_exists"
 		json.NewEncoder(w).Encode(&response)
 		return
 	} else if orgMgr.Exists(newuser.Username) {
 		log.Debugf("Cannot create user: organization with globalid %s already exists", newuser.Username)
-		w.WriteHeader(422)
+		w.WriteHeader(http.StatusUnprocessableEntity)
 		response.Error = "organization_exists"
 		json.NewEncoder(w).Encode(&response)
 		return
@@ -338,7 +338,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		phonenumber = user.Phonenumber{Label: "main", Phonenumber: values.Phonenumber}
 		if !phonenumber.Validate() {
 			log.Debug("Invalid phone number")
-			w.WriteHeader(422)
+			w.WriteHeader(http.StatusUnprocessableEntity)
 			response.Error = "invalid_phonenumber"
 			json.NewEncoder(w).Encode(&response)
 			return
@@ -353,7 +353,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		token := totp.TokenFromSecret(totpsecret)
 		if !token.Validate(values.TotpCode) {
 			log.Debug("Invalid totp code")
-			w.WriteHeader(422)
+			w.WriteHeader(http.StatusUnprocessableEntity)
 			response.Error = "invalid_totpcode"
 			json.NewEncoder(w).Encode(&response)
 			return
@@ -366,7 +366,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 	if err != nil {
 		log.Error(err)
 		if err.Error() != "internal_error" {
-			w.WriteHeader(422)
+			w.WriteHeader(http.StatusUnprocessableEntity)
 			response.Error = "invalid_password"
 			json.NewEncoder(w).Encode(&response)
 		} else {
