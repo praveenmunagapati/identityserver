@@ -52,6 +52,7 @@
         vm.acceptorganizationinvite = acceptorganizationinvite;
         vm.rejectorganizationinvite = rejectorganizationinvite;
         vm.getPendingCount = getPendingCount;
+        vm.showAvatarDialog = UserDialogService.avatar;
         vm.showEmailDetailDialog = UserDialogService.emailDetail;
         vm.showPhonenumberDetailDialog = UserDialogService.phonenumberDetail;
         vm.showAddressDetailDialog = UserDialogService.addressDetail;

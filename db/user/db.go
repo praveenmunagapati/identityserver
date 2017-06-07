@@ -14,6 +14,7 @@ import (
 
 const (
 	mongoUsersCollectionName          = "users"
+	mongoAvatarFileCollectionName     = "avatarfiles"
 	mongoAuthorizationsCollectionName = "authorizations"
 )
 
@@ -34,6 +35,13 @@ func InitModels() {
 		Background:  true,
 	}
 	db.EnsureIndex(mongoUsersCollectionName, automaticUserExpiration)
+
+	avatarIndex := mgo.Index{
+		Key:      []string{"hash"},
+		Unique:   true,
+		DropDups: true,
+	}
+	db.EnsureIndex(mongoAvatarFileCollectionName, avatarIndex)
 }
 
 //Manager is used to store users
@@ -57,6 +65,10 @@ func (m *Manager) getAuthorizationCollection() *mgo.Collection {
 	return db.GetCollection(m.session, mongoAuthorizationsCollectionName)
 }
 
+func (m *Manager) getAvatarFileCollection() *mgo.Collection {
+	return db.GetCollection(m.session, mongoAvatarFileCollectionName)
+}
+
 // Get user by ID.
 func (m *Manager) Get(id string) (*User, error) {
 	var user User
@@ -75,7 +87,16 @@ func (m *Manager) GetByName(username string) (*User, error) {
 	var user User
 
 	err := m.getUserCollection().Find(bson.M{"username": username}).One(&user)
-
+	if user.Avatars == nil {
+		user.Avatars = []Avatar{}
+	}
+	// Get the facebook and github profile pictures if they are linked to the account
+	if user.Github.Avatar_url != "" {
+		user.Avatars = append(user.Avatars, Avatar{Label: "github", Source: user.Github.Avatar_url})
+	}
+	if user.Facebook.Link != "" {
+		user.Avatars = append(user.Avatars, Avatar{Label: "facebook", Source: user.Facebook.Picture})
+	}
 	if user.Addresses == nil {
 		user.Addresses = []Address{}
 	}
@@ -328,4 +349,55 @@ func (m *Manager) GetPendingRegistrationsCount() (int, error) {
 		},
 	}
 	return m.getUserCollection().Find(qry).Count()
+}
+
+// SaveAvatar saves a new or updates an existing avatar
+func (m *Manager) SaveAvatar(username string, avatar Avatar) error {
+	if err := m.RemoveAvatar(username, avatar.Label); err != nil {
+		return err
+	}
+	return m.getUserCollection().Update(
+		bson.M{"username": username},
+		bson.M{"$push": bson.M{"avatars": avatar}})
+}
+
+// RemoveAvatar removes an avatar
+func (m *Manager) RemoveAvatar(username, label string) error {
+	return m.getUserCollection().Update(
+		bson.M{"username": username},
+		bson.M{"$pull": bson.M{"avatars": bson.M{"label": label}}})
+}
+
+// AvatarFileExists checks if an avatarfile with a given hash already exists
+func (m *Manager) AvatarFileExists(hash string) (bool, error) {
+	count, err := m.getAvatarFileCollection().Find(bson.M{"hash": hash}).Count()
+
+	return count >= 1, err
+}
+
+// GetAvatarFile gets the avatar file associated with a hash
+func (m *Manager) GetAvatarFile(hash string) ([]byte, error) {
+	var file struct {
+		Hash string
+		File []byte
+	}
+
+	err := m.getAvatarFileCollection().Find(bson.M{"hash": hash}).One(&file)
+	if err == mgo.ErrNotFound {
+		return nil, nil
+	}
+	return file.File, err
+}
+
+// SaveAvatarFile saves a new avatar file
+func (m *Manager) SaveAvatarFile(hash string, file []byte) error {
+	_, err := m.getAvatarFileCollection().Upsert(
+		bson.M{"hash": hash},
+		bson.M{"$set": bson.M{"file": file}})
+	return err
+}
+
+// RemoveAvatarFile removes an avatar file
+func (m *Manager) RemoveAvatarFile(hash string) error {
+	return m.getAvatarFileCollection().Remove(bson.M{"hash": hash})
 }

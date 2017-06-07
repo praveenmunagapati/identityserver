@@ -11,6 +11,25 @@
           <div ng-show="vm.loaded.user" flex="100" flex-gt-sm="70" flex-gt-md="50"
                class="tab-you">
               <md-toolbar>
+                <div class="md-toolbar-tools" layout-align="space-between center">
+                    <span><i class="fa fa-photo"></i> <span>Avatar</span></span>
+                    <md-button ng-click="vm.showAvatarDialog($event)">
+                        <i class="fa fa-plus"></i> <span translate='add'>Add</span>
+                    </md-button>
+                </div>
+              </md-toolbar>
+              <md-list>
+                  <md-list-item class="md-2-line"
+                              ng-repeat="avatar in vm.user.avatars track by avatar.label"
+                              ng-click="vm.showAvatarDialog($event, avatar)"
+                              aria-label="Avatar {{avatar.label}}">
+                      <div class="md-list-item-text" layout="row" layout-align="start center">
+                          <img ng-src="{{avatar.source}}" class="md-avatar" />
+                          <p ng-bind="avatar.label"></p>
+                      </div>
+                  </md-list-item>
+              </md-list>
+              <md-toolbar>
                   <div class="md-toolbar-tools" layout-align="space-between center">
                       <span><i class="fa fa-user"></i> <span translate="full_name">Full name</span></span>
                       <md-button ng-if="!vm.user.firstname || !vm.user.lastname"

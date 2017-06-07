@@ -483,5 +483,13 @@
     "reject": "Reject",
     "accept": "Accept",
     "username_taken": "This username has already been taken",
-    "user_with_name_exists": "A user with this name already exists. Please pick another name."
+    "user_with_name_exists": "A user with this name already exists. Please pick another name.",
+    "avatar": "Avatar",
+    "avatar_url": "Avatar url",
+    "avatar_file": "Avatar file",
+    "add_avatar": "Add an avatar",
+    "avatar_file_upload": "Avatar uses a file uploaded on ItsYou.Online",
+    "avatar_for": "Avatar for {{label}}",
+    "upload_avatar": "Upload avatar",
+    "upload_avatar_button": "Upload avatar button"
 }

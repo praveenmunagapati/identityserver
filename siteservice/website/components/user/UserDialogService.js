@@ -28,7 +28,8 @@
             showSimpleDialog: showSimpleDialog,
             createOrganization: createOrganization,
             digitalWalletAddressDetail: digitalWalletAddressDetail,
-            publicKey: publicKey
+            publicKey: publicKey,
+            avatar: avatar
         };
 
         function init(scope) {
@@ -368,6 +369,47 @@
             });
         }
 
+        function avatar(ev, avatar) {
+            var originalAvatar = JSON.parse(JSON.stringify(avatar || {}));
+            // all avatars are stored as links in itsyou.online
+            if (avatar) {
+                avatar.link = avatar.source;
+                avatar.fileupload = false;
+            }
+            return $q(function (resolve, reject) {
+                $mdDialog.show({
+                    controller: AvatarDialogController,
+                    templateUrl: 'components/user/views/avatarDialog.html',
+                    targetEvent: ev,
+                    fullscreen: $mdMedia('sm') || $mdMedia('xs'),
+                    locals: {
+                        user: vm.user,
+                        data: avatar,
+                        userService: UserService
+                    }
+                })
+                    .then(
+                        function (data) {
+                            if (data.fx === 'delete') {
+                                vm.user.avatars.splice(vm.user.avatars.indexOf(avatar), 1);
+                            }
+                            else if (data.fx === 'create') {
+                                vm.user.avatars.push(data.data);
+                            }
+                            else if (data.fx === 'update') {
+                                avatar.label = data.data.label;
+                                avatar.source = data.data.source;
+                            }
+                            resolve(data);
+                        }, function (response) {
+                            angular.forEach(originalAvatar, function (value, key) {
+                                avatar[key] = value;
+                            });
+                            reject(response);
+                        });
+            });
+        }
+
         function addFacebook() {
             configService.getConfig(function (config) {
                 $window.location.href = 'https://www.facebook.com/dialog/oauth?client_id='
@@ -600,6 +642,101 @@
                     );
                 }
             }
+        }
+
+        // Controller for the avatar view
+        function AvatarDialogController($scope, $mdDialog, user, data, userService) {
+            data = data || {};
+            $scope.data = data;
+
+            $scope.originalLabel = data.label;
+            $scope.user = user;
+
+            $scope.cancel = cancel;
+            $scope.validationerrors = {};
+            $scope.create = create;
+            $scope.update = update;
+            $scope.remove = remove;
+
+            function cancel() {
+                $mdDialog.cancel();
+            }
+
+            function create(data) {
+                if (Object.keys($scope.dataform.$error).length > 0) {
+                    return;
+                }
+                if (data.fileupload && !data.src) {
+                    $scope.validationerrors.no_file_selected = true;
+                    return;
+                }
+                $scope.validationerrors = {};
+                var createFunction = data.fileupload ? userService.createAvatarFromFile : userService.createAvatarFromLink;
+                createFunction(user.username, data.label,
+                    data.fileupload ? data.src : data.link).then(
+                    function (response) {
+                        $mdDialog.hide({fx: 'create', data: response.data});
+                    },
+                    function (reason) {
+                        if (reason.data && reason.data.error) {
+                            $scope.validationerrors[response.data.error] = true;
+                        }
+                        else if (reason.status === 413) {
+                            $scope.validationerrors.file_too_large = true;
+                        }
+                    }
+                );
+            }
+
+            function update(oldLabel, data) {
+                if (Object.keys($scope.dataform.$error).length > 0) {
+                    return;
+                }
+                $scope.validationerrors = {};
+                var updateFunction = data.fileupload ? userService.updateAvatarFile : userService.updateAvatarLink;
+                updateFunction(user.username, oldLabel, data.label,
+                    data.fileupload ? data.src :  data.link).then(
+                    function (response) {
+                        $mdDialog.hide({fx: 'update', data: response.data});
+                    },
+                    function (response) {
+                        if (response.data && response.data.error) {
+                            $scope.validationerrors[response.data.error] = true;
+                        }
+                        else if (reason.status === 413) {
+                            $scope.validationerrors.file_too_large = true;
+                        }
+                    }
+                );
+            }
+
+            function remove(label) {
+                $scope.validationerrors = {};
+                userService.deleteAvatar(user.username, label)
+                    .then(
+                        function () {
+                            $mdDialog.hide({fx: 'delete'});
+                        },
+                        function (reason) {
+                            if (reason.status === 409) {
+                                $scope.validationerrors.delete_protected_label = true;
+                            }
+                        });
+            }
+
+            // we need to declare this function on the scope to statisfy the directive,
+            // else it won't be able to evaluate it causing some nasty errors
+            $scope.updateFile = function(event) {
+                $scope.validationerrors.no_file_selected = false;
+                $scope.validationerrors.file_too_large = false;
+                var files = event.target.files;
+                $scope.data.src = files[0];
+                var url = URL.createObjectURL(files[0]);
+                if (url) {
+                    $scope.data.file = url;
+                }
+                $scope.$digest();
+            };
         }
 
         function GenericDetailDialogController($scope, $mdDialog, user, data, createFunction, updateFunction, deleteFunction) {

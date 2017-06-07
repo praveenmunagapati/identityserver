@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"fmt"
@@ -24,9 +25,17 @@ import (
 	"github.com/itsyouonline/identityserver/identityservice/invitations"
 	"github.com/itsyouonline/identityserver/identityservice/organization"
 	"github.com/itsyouonline/identityserver/oauthservice"
+	"github.com/itsyouonline/identityserver/tools"
 	"github.com/itsyouonline/identityserver/validation"
 	"gopkg.in/mgo.v2"
 )
+
+// label constants containing the reserved labels for avatars
+var reservedAvatarLabels = []string{"facebook", "github"}
+
+const maxAvatarFileSize = 100 << 10 // 100kb
+const maxAvatarAmount = 5
+const avatarLink = "https://%v/api/users/avatar/img/%v"
 
 //UsersAPI is the actual implementation of the /users api
 type UsersAPI struct {
@@ -437,6 +446,7 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 			EmailAddresses: []user.AuthorizationMap{},
 			Phonenumbers:   []user.AuthorizationMap{},
 			PublicKeys:     []user.AuthorizationMap{},
+			Avatars:        []user.AuthorizationMap{},
 		}
 		for _, address := range userobj.Addresses {
 			authorization.Addresses = append(authorization.Addresses, user.AuthorizationMap{RequestedLabel: address.Label, RealLabel: address.Label})
@@ -455,6 +465,9 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 		}
 		for _, a := range userobj.PublicKeys {
 			authorization.PublicKeys = append(authorization.PublicKeys, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
+		}
+		for _, a := range userobj.Avatars {
+			authorization.Avatars = append(authorization.Avatars, user.AuthorizationMap{RequestedLabel: a.Label, RealLabel: a.Label})
 		}
 
 	}
@@ -476,6 +489,7 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 			EmailAddresses: []string{},
 		},
 		PublicKeys: []user.PublicKey{},
+		Avatars:    []user.Avatar{},
 	}
 
 	if authorization.Name {
@@ -576,6 +590,18 @@ func (api UsersAPI) GetUserInformation(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				publicKey.Label = publicKeyMap.RequestedLabel
 				respBody.PublicKeys = append(respBody.PublicKeys, publicKey)
+			} else {
+				log.Debug(err)
+			}
+		}
+	}
+
+	if authorization.Avatars != nil {
+		for _, avatarMap := range authorization.Avatars {
+			avatar, err := userobj.GetAvatarByLabel(avatarMap.RealLabel)
+			if err == nil {
+				avatar.Label = avatarMap.RequestedLabel
+				respBody.Avatars = append(respBody.Avatars, avatar)
 			} else {
 				log.Debug(err)
 			}
@@ -2064,8 +2090,414 @@ func (api UsersAPI) DeleteUserRegistryEntry(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// GetAvatar is the handler for GET /users/{username}/avatar
+// List all avatars for the user
+func (api UsersAPI) GetAvatars(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	userMgr := user.NewManager(r)
+	u, err := userMgr.GetByName(username)
+	if handleServerError(w, "getting user from database", err) {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&u.Avatars)
+}
+
+// CreateAvatarFromLink is the handler for POST /users/{username}/avatar/link
+// create a new avatar with the specified label
+func (api UsersAPI) CreateAvatarFromLink(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+
+	avatar := user.Avatar{}
+
+	if err := json.NewDecoder(r.Body).Decode(&avatar); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	userMgr := user.NewManager(r)
+	u, err := userMgr.GetByName(username)
+	if handleServerError(w, "getting user by name", err) {
+		return
+	}
+
+	if !validateNewAvatar(w, avatar.Label, u) {
+		return
+	}
+
+	userMgr.SaveAvatar(username, avatar)
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(&avatar)
+}
+
+// CreateAVatarFromImage is the handler for POST /users/{username}/avatar/img/{label}
+// Create a new avatar with the specified label from a provided image file
+func (api UsersAPI) CreateAvatarFromImage(w http.ResponseWriter, r *http.Request) {
+	label := mux.Vars(r)["label"]
+	username := mux.Vars(r)["username"]
+
+	userMgr := user.NewManager(r)
+	u, err := userMgr.GetByName(username)
+	if handleServerError(w, "getting user from db", err) {
+		return
+	}
+
+	if !validateNewAvatar(w, label, u) {
+		return
+	}
+
+	link, errorOccured := saveMultiPartAvatarFile(w, r, userMgr)
+	if errorOccured {
+		// the error responses are already written so just abort
+		return
+	}
+
+	// insert a link to the endpoint that will serve the file
+	avatar := user.Avatar{
+		Label:  label,
+		Source: link,
+	}
+
+	// save the avatar link to the user
+	err = userMgr.SaveAvatar(username, avatar)
+	if handleServerError(w, "saving avatar link", err) {
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(&avatar)
+}
+
+// validateNewAvatar validates the label of a new avatar and whether the user can
+// still add avatars. Returns false if validation fails and an error has been written
+func validateNewAvatar(w http.ResponseWriter, label string, u *user.User) bool {
+	if !user.IsValidLabel(label) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return false
+	}
+
+	if isReservedAvatarLabel(label) {
+		writeErrorResponse(w, http.StatusConflict, "reserved_label")
+		return false
+	}
+
+	if _, err := u.GetAvatarByLabel(label); err == nil {
+		writeErrorResponse(w, http.StatusConflict, "duplicate_label")
+		return false
+	}
+
+	// count the amount of avatars we already have
+	if !(getUserAvatarCount(u) < maxAvatarAmount) {
+		log.Debug("User has reached the max amount of avatars to upload")
+		writeErrorResponse(w, http.StatusConflict, "max_avatar_amount")
+		return false
+	}
+	return true
+}
+
+// isReservedAvatarLabel checks if this is a reserved label
+func isReservedAvatarLabel(label string) bool {
+	for _, plabel := range reservedAvatarLabels {
+		if strings.ToLower(label) == plabel {
+			return true
+		}
+	}
+	return false
+}
+
+// GetAvatarImage is the handler for GET /users/avatar/img/{hash}
+// Get the avatar file associated with this id
+func (api UsersAPI) GetAvatarImage(w http.ResponseWriter, r *http.Request) {
+	hash := mux.Vars(r)["hash"]
+	userMgr := user.NewManager(r)
+	file, err := userMgr.GetAvatarFile(hash)
+	if handleServerError(w, "getting avatar file", err) {
+		return
+	}
+	if file == nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(file)
+}
+
+// DeleteAvatar is the handler for DELETE /users/{username}/avatar/{label}
+// Delete the avatar with the specified label
+func (api UsersAPI) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	label := mux.Vars(r)["label"]
+
+	// return a status conflict when trying to delete a protected label
+	if isReservedAvatarLabel(label) {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	userMgr := user.NewManager(r)
+	u, err := userMgr.GetByName(username)
+	avatar, err := u.GetAvatarByLabel(label)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// If the link points to itsyou.online, we also need to remove the file stored here.
+	if strings.HasPrefix(strings.TrimPrefix(avatar.Source, "https://"), r.Host) {
+		hash := getAvatarHashFromLink(avatar.Source)
+		err = userMgr.RemoveAvatarFile(hash)
+		if handleServerError(w, "removing avatar file", err) {
+			return
+		}
+	}
+	err = userMgr.RemoveAvatar(username, label)
+	if handleServerError(w, "deleting avatar", err) {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// UpdateAvatarFile is the handler for PUT /users/{username}/avatar/{label}/to/{newlabel}
+// Update the avatar and possibly the avatar file stored on itsyou.online
+func (api UsersAPI) UpdateAvatarFile(w http.ResponseWriter, r *http.Request) {
+	oldLabel := mux.Vars(r)["label"]
+	newLabel := mux.Vars(r)["newlabel"]
+	username := mux.Vars(r)["username"]
+
+	userMgr := user.NewManager(r)
+	oldAvatar, errorOccurred := validateAvatarUpdateLabels(oldLabel, newLabel, username, userMgr, w)
+	if errorOccurred {
+		return
+	}
+
+	link, errorOccurred := saveMultiPartAvatarFile(w, r, userMgr)
+	if errorOccurred {
+		return
+	}
+
+	newAvatar := &user.Avatar{
+		Label:  newLabel,
+		Source: link,
+	}
+
+	replaceAvatar(w, r, oldAvatar, newAvatar, username, userMgr)
+}
+
+// UpdateAvatarLink is the handler for PUT /users/{username}/avatar/{label}
+// Update the avatar and possibly the link to the avatar
+func (api UsersAPI) UpdateAvatarLink(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	oldLabel := mux.Vars(r)["label"]
+
+	body := user.Avatar{}
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	newLabel := body.Label
+
+	userMgr := user.NewManager(r)
+	oldAvatar, errorOccurred := validateAvatarUpdateLabels(oldLabel, newLabel, username, userMgr, w)
+	if errorOccurred {
+		return
+	}
+
+	newAvatar := &user.Avatar{
+		Label:  newLabel,
+		Source: body.Source,
+	}
+
+	replaceAvatar(w, r, oldAvatar, newAvatar, username, userMgr)
+
+}
+
+// validateAvatarUpdateLabels validates old and new avatar labels and returns a
+// pointer to the old avatar object. The secondary response value indicates whether
+// an error has occurred. In this case callers must not write to the ResponseWriter
+// again.
+func validateAvatarUpdateLabels(oldLabel string, newLabel string, username string,
+	userMgr *user.Manager, w http.ResponseWriter) (*user.Avatar, bool) {
+	// lets not change reserved labels.
+	if isReservedAvatarLabel(oldLabel) {
+		log.Debug("trying to modify reserved label")
+		writeErrorResponse(w, http.StatusConflict, "changing_protected_label")
+		return nil, true
+	}
+
+	if isReservedAvatarLabel(newLabel) {
+		log.Debug("trying to assign protected label")
+		writeErrorResponse(w, http.StatusConflict, "assign_reserved_label")
+		return nil, true
+	}
+
+	u, err := userMgr.GetByName(username)
+	if handleServerError(w, "getting user from db", err) {
+		return nil, true
+	}
+
+	// make sure the avatar we want to update exists
+	oldAvatar, err := u.GetAvatarByLabel(oldLabel)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return nil, true
+	}
+
+	// check if we already have this label in case it gets renamed
+	if oldLabel != newLabel {
+		if _, err = u.GetAvatarByLabel(newLabel); err == nil {
+			writeErrorResponse(w, http.StatusConflict, "duplicate_label")
+			return nil, true
+		}
+	}
+
+	return &oldAvatar, false
+}
+
+// replaceAvatar replaces an old avatar with a new one. It also removes avatar
+// files stored on the server if the link is updated or a new file is uploaded
+func replaceAvatar(w http.ResponseWriter, r *http.Request, oldAvatar *user.Avatar,
+	newAvatar *user.Avatar, username string, userMgr *user.Manager) {
+	var err error
+	// If the old avatar points to a file on itsyou.online, we need to remove the file stored here.
+	if strings.HasPrefix(strings.TrimPrefix(oldAvatar.Source, "https://"), r.Host) {
+		hash := getAvatarHashFromLink(oldAvatar.Source)
+		err = userMgr.RemoveAvatarFile(hash)
+		if handleServerError(w, "removing avatar file", err) {
+			return
+		}
+	}
+
+	// now remove the old avatar
+	err = userMgr.RemoveAvatar(username, oldAvatar.Label)
+	if handleServerError(w, "removing old avatar", err) {
+		return
+	}
+
+	// insert the new avatar
+	err = userMgr.SaveAvatar(username, *newAvatar)
+	if handleServerError(w, "saving new avatar", err) {
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(newAvatar)
+}
+
+// saveMultiPartAvatarFile attempts to extract an avatar file from a multi part request.
+// The file is expected to be stored under the 'file' key. The file is loaded (partially)
+// into memory (up to maxAvatarFileSize + 1 bytes) to allow file size validation
+// prior to storing the file in the database.
+// returns a link to the stored file if the operation is successfull and a boolean
+// value indicating a possible error. If this second value is true, an error has occurred,
+// and this function will already have written the http response. In this case callers
+// must terminate and refrain from writing further responses on the writer.
+func saveMultiPartAvatarFile(w http.ResponseWriter, r *http.Request, userMgr *user.Manager) (string, bool) {
+	err := r.ParseMultipartForm(110 << 10)
+	if err != nil {
+		log.Debug("Failed to parse multi part form: ", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return "", true
+	}
+
+	fileHeaders, exists := r.MultipartForm.File["file"]
+	if !exists {
+		log.Debug("nothing found in the multipart form under the 'file' key")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return "", true
+	}
+
+	if len(fileHeaders) == 0 {
+		log.Debug("file headers are empty")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return "", true
+	}
+
+	avatarUpload := fileHeaders[0]
+	file, err := avatarUpload.Open()
+	if handleServerError(w, "opening the uploaded multipart file", err) {
+		return "", true
+	}
+
+	// create a temporary buffer for the file contents
+	// add 1 extra byte to the buffer, if this byte is written the file is too large
+	fileBuffer := make([]byte, maxAvatarFileSize+1)
+	bytesRead, err := file.Read(fileBuffer)
+	if bytesRead == len(fileBuffer) {
+		// we've read the entire fileBuffer, so also the extra byte
+		// therefore the file is too large
+		log.Debug("Avatar file that is being uploaded is too large")
+		// Refusing to process a request because the file is too large is actually
+		// reprsented by status code 413
+		http.Error(w, http.StatusText(http.StatusRequestEntityTooLarge), http.StatusRequestEntityTooLarge)
+		return "", true
+	}
+
+	// now check for errors while reading the file
+	if err != nil && err != io.EOF {
+		log.Error("Error while reading the multipart file: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return "", true
+	}
+
+	// resize the buffer to hold only the bytes weve read
+	fileBuffer = fileBuffer[0:bytesRead]
+
+	// not really a hash but it serves the same purpose
+	// find a free hash to store this file
+	var hash string
+	existingHash := true
+	for existingHash {
+		hash, err = tools.GenerateRandomString()
+		if handleServerError(w, "generating random string", err) {
+			return "", true
+		}
+		existingHash, err = userMgr.AvatarFileExists(hash)
+		if handleServerError(w, "chekcing if avatar file exists", err) {
+			return "", true
+		}
+	}
+
+	// save the file
+	err = userMgr.SaveAvatarFile(hash, fileBuffer)
+	if handleServerError(w, "saving avatar file", err) {
+		return "", true
+	}
+
+	link := fmt.Sprintf(avatarLink, r.Host, hash)
+
+	return link, false
+}
+
+// getUserAvatarCount gets the user avatar count
+func getUserAvatarCount(u *user.User) int {
+	avatarCount := 0
+countAvatars:
+	for _, avatar := range u.Avatars {
+		for _, reservedLabel := range reservedAvatarLabels {
+			if avatar.Label == reservedLabel {
+				continue countAvatars
+			}
+		}
+		avatarCount++
+	}
+	return avatarCount
+}
+
+func getAvatarHashFromLink(link string) string {
+	linkParts := strings.Split(link, "/")
+	return linkParts[len(linkParts)-1]
+}
+
 func writeErrorResponse(responseWrite http.ResponseWriter, httpStatusCode int, message string) {
-	log.Debug(httpStatusCode, message)
+	log.Debug(httpStatusCode, " ", message)
 	errorResponse := struct {
 		Error string `json:"error"`
 	}{

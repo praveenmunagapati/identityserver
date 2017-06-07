@@ -3,8 +3,7 @@
     angular
         .module("itsyouonlineApp")
         .controller("OrganizationDetailController", OrganizationDetailController)
-        .controller("InvitationDialogController", InvitationDialogController)
-        .directive('customOnChange', customOnChange);
+        .controller("InvitationDialogController", InvitationDialogController);
 
     InvitationDialogController.$inject = ['$scope', '$mdDialog', '$translate', 'organization', 'OrganizationService', 'UserDialogService'];
     OrganizationDetailController.$inject = ['$routeParams', '$window', '$translate', 'OrganizationService', '$mdDialog', '$mdMedia',
@@ -1071,15 +1070,6 @@
 
     }
 
-    function customOnChange() {
-        return {
-            restrict: 'A',
-            link: function (scope, element, attrs) {
-                var onChangeHandler = scope.$eval(attrs.customOnChange);
-                element.bind('change', onChangeHandler);
-            }
-        };
-    }
 
     function RequiredScopesDialogController($scope, $mdDialog, organization, OrganizationService, requiredScope, ScopeService) {
         var vm = this;

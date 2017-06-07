@@ -12,6 +12,12 @@ types:
     minLength: 2
     pattern: ^[a-zA-Z\d\-_\s]{2,50}$
 
+  Avatar:
+    description: An avatar of a user
+    properties:
+      label: Label
+      source: string
+
   UserAPIKey:
     description: User specific API key
     properties:
@@ -516,6 +522,19 @@ securedBy: [ oauth_2_0 ]
       application/json:
         type: User
 
+  /avatar/img/{hash}:
+    get:
+      displayName: GetAvatarImage
+      description: Get the avatar file associated with this id
+      responses:
+        200:
+          body:
+            image/*:
+              type: file
+        404:
+          description: No avatar file associated with this hash
+
+
   /{username}:
     get:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
@@ -683,6 +702,120 @@ securedBy: [ oauth_2_0 ]
           responses:
             204:
               description: API key removed.
+
+    /avatar:
+      get:
+        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+        displayName: GetAvatars
+        description: List all avatars for the user
+        responses:
+          200:
+            description: List of the avatars
+            body:
+              application/json:
+                type: Avatar
+
+      post:
+        securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+        displayName: CreateAvatarFromLink
+        description: Create a new avatar with the specified label from a link
+        body:
+          application/json:
+            type: Avatar
+        responses:
+          201:
+            description: New avatar created
+            body:
+              application/json:
+                type: Avatar
+          409:
+            description: Create request rejected
+            body:
+              application/json:
+                type: Error
+
+
+      /img/{label}:
+        post:
+          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+          displayName: CreateAvatarFromImage
+          description: Create a new avatar with the specified label from a provided image file
+          body:
+            multipart/form-data:
+              description: the avatar image file, in the 'file' header
+              type: file
+          responses:
+            201:
+              description: New avatar created
+              body:
+                application/json:
+                  type: Avatar
+            409:
+              description: Create request rejected
+              body:
+                application/json:
+                  type: Error
+            413:
+              description: Uploaded file is too large
+
+      /{label}:
+        put:
+          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+          displayName: UpdateAvatarLink
+          description: Update the avatar and possibly the link to the avatar
+          body:
+            application/json:
+              type: Avatar
+          responses:
+            200:
+              description: Avatar updated successfully
+              body:
+                application/json:
+                  type: Avatar
+            404:
+              description: Avatar not found
+            409:
+              description: Avatar update rejected
+              body:
+                application/json:
+                  type: Error
+
+        delete:
+          securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+          displayName: DeleteAvatar
+          description: Delete the avatar with the specified label
+          responses:
+            204:
+              description: Avatar deleted
+            404:
+              description: Avatar not found
+            409:
+              description: Trying to delete a protected avatar
+
+        /to/{newlabel}:
+          put:
+            securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]
+            displayName: UpdateAvatarFile
+            description: Update the avatar and possibly the avatar file stored on itsyou.online
+            body:
+              multipart/form-data:
+                description: the avatar image file, in the 'file' header
+                type: file
+            responses:
+              200:
+                description: Updated avatar
+                body:
+                  application/json:
+                    type: Avatar
+              404:
+                description: Avatar not found
+              409:
+                description: Avatar update rejected
+                body:
+                  application/json:
+                    type: Error
+              413:
+                description: Uploaded file is too large
 
     /registry:
       securedBy: [oauth_2_0: { scopes: [ "user:admin" ] } ]

@@ -52,6 +52,31 @@
         </p>
         <p class="list-item-text-right" ng-bind="::vm.user.username"></p>
     </md-list-item>
+    <md-list-item ng-repeat="auth in authorizations.avatars track by auth.requestedlabel" layout="column"
+                  layout-gt-sm="row" layout-align="center start" layout-align-gt-sm="start center">
+        <p><i class="fa fa-photo">
+            <md-tooltip><span translate="avatar">Avatar</span></md-tooltip>
+        </i>
+                <span ng-if="::auth.requestedlabel !== 'main'" translate='avatar_for' translate-values='{label: auth.requestedlabel}'>
+                    Avatar for <span ng-bind="::auth.requestedlabel"></span>
+                </span>
+                <span ng-if="::auth.requestedlabel  === 'main'" translate="avatar">
+                    Avatar
+                </span>
+        </p>
+        <md-input-container>
+            <label><span translate="avatar">Avatar</span></label>
+            <md-select ng-model="auth.reallabel">
+                <md-option value=""><span translate='user.directives.authorizationdetails.none'>None</span></md-option>
+                <md-option ng-repeat="avatar in vm.user.avatars" value="{{::avatar.label}}"
+                           ng-bind="::avatar.label">
+                </md-option>
+                <md-option ng-click="vm.showAvatarDialog($event, auth)" ng-if="::isNew">
+                    <i class="fa fa-plus"></i> <span translate='user.directives.authorizationdetails.createnew'>Create new</span>
+                </md-option>
+            </md-select>
+        </md-input-container>
+    </md-list-item>
     <md-list-item ng-if="::authorizations.name">
         <p>
             <i class="fa fa-user">

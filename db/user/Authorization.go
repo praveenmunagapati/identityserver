@@ -18,6 +18,7 @@ type Authorization struct {
 	Username       string                       `json:"username"`
 	Name           bool                         `json:"name"`
 	OwnerOf        OwnerOf                      `json:"ownerof,omitempty"`
+	Avatars        []AuthorizationMap           `json:"avatars,omitempty"`
 }
 
 type AuthorizationMap struct {
@@ -74,6 +75,9 @@ func (authorization Authorization) FilterAuthorizedScopes(requestedscopes []stri
 			authorizedScopes = append(authorizedScopes, scope)
 		}
 		if strings.HasPrefix(scope, "user:ownerof:email") && OwnerOfIsAuthorized(scope, "user:ownerof:email", authorization.OwnerOf.EmailAddresses) {
+			authorizedScopes = append(authorizedScopes, scope)
+		}
+		if strings.HasPrefix(scope, "user:avatar") && LabelledPropertyIsAuthorized(scope, "user:avatar", authorization.Avatars) {
 			authorizedScopes = append(authorizedScopes, scope)
 		}
 	}

@@ -20,6 +20,13 @@ type PublicKey struct {
 	Label     string `json:"label" validate:"regexp=^[a-zA-Z\d\-_\s]{2,50}$"`
 }
 
+// Avatar represents an avatar for a user. It is identified by a label, and stirng
+// contains a link to the source
+type Avatar struct {
+	Label  string `json:"label"`
+	Source string `json:"source"`
+}
+
 type User struct {
 	ID             bson.ObjectId         `json:"-" bson:"_id,omitempty"`
 	Addresses      []Address             `json:"addresses"`
@@ -34,6 +41,7 @@ type User struct {
 	Username       string                `json:"username" validate:"min=2,max=30,regexp=^[a-z0-9]{2,30}$"`
 	Firstname      string                `json:"firstname"`
 	Lastname       string                `json:"lastname"`
+	Avatars        []Avatar              `json:"avatars"`
 }
 
 func (u *User) GetEmailAddressByLabel(label string) (email EmailAddress, err error) {
@@ -94,6 +102,17 @@ func (u *User) GetPublicKeyByLabel(label string) (publicKey PublicKey, err error
 		}
 	}
 	err = errors.New("Could not find PublicKey with label " + label)
+	return
+}
+
+// GetAvatarByLabel gets the avatar associated with this label
+func (u *User) GetAvatarByLabel(label string) (avatar Avatar, err error) {
+	for _, avatar = range u.Avatars {
+		if avatar.Label == label {
+			return
+		}
+	}
+	err = errors.New("Could not find Avatar with Label " + label)
 	return
 }
 

@@ -150,6 +150,27 @@ type UsersInterface interface { // Post is the handler for POST /users
 	// DeleteUserRegistryEntry is the handler for DELETE /users/{username}/registry/{key}
 	// Removes a RegistryEntry from the user's registry
 	DeleteUserRegistryEntry(http.ResponseWriter, *http.Request)
+	// GetAvatar is the handler for GET /users/{username}/avatar
+	// List all avatars for the user
+	GetAvatars(http.ResponseWriter, *http.Request)
+	// GetAvatarImage is the handler for GET /users/avatar/img/{hash}
+	// Get the avatar file associated with this id
+	GetAvatarImage(http.ResponseWriter, *http.Request)
+	// CreateAVatarFromImage is the handler for POST /users/{username}/avatar/img/{label}
+	// Create a new avatar with the specified label from a provided image file
+	CreateAvatarFromImage(http.ResponseWriter, *http.Request)
+	// CreateAvatarFromLink is the handler for POST /users/{username}/avatar
+	// Create a new avatar with the specified label from a link
+	CreateAvatarFromLink(http.ResponseWriter, *http.Request)
+	// DeleteAvatar is the handler for DELETE /users/{username}/avatar/{label}
+	// Delete the avatar with the specified label
+	DeleteAvatar(http.ResponseWriter, *http.Request)
+	// UpdateAvatarFile is the handler for PUT /users/{username}/avatar/{label}/to/{newlabel}
+	// Update the avatar and possibly the avatar file stored on itsyou.online
+	UpdateAvatarFile(http.ResponseWriter, *http.Request)
+	// UpdateAvatarLink is the handler for PUT /users/{username}/avatar/{label}
+	// Update the avatar and possibly the link to the avatar
+	UpdateAvatarLink(http.ResponseWriter, *http.Request)
 }
 
 // UsersInterfaceRoutes is routing for /users root endpoint
@@ -214,5 +235,12 @@ func UsersInterfaceRoutes(r *mux.Router, i UsersInterface) {
 	r.Handle("/users/{username}/registry", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.AddUserRegistryEntry))).Methods("POST")
 	r.Handle("/users/{username}/registry/{key}", http.HandlerFunc(i.GetUserRegistryEntry)).Methods("GET")
 	r.Handle("/users/{username}/registry/{key}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteUserRegistryEntry))).Methods("DELETE")
+	r.Handle("/users/{username}/avatar", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.GetAvatars))).Methods("GET")
+	r.Handle("/users/avatar/img/{hash}", http.HandlerFunc(i.GetAvatarImage)).Methods("GET")
+	r.Handle("/users/{username}/avatar/img/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.CreateAvatarFromImage))).Methods("POST")
+	r.Handle("/users/{username}/avatar", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.CreateAvatarFromLink))).Methods("POST")
+	r.Handle("/users/{username}/avatar/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.DeleteAvatar))).Methods("DELETE")
+	r.Handle("/users/{username}/avatar/{label}/to/{newlabel}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateAvatarFile))).Methods("PUT")
+	r.Handle("/users/{username}/avatar/{label}", alice.New(newOauth2oauth_2_0Middleware([]string{"user:admin"}).Handler).Then(http.HandlerFunc(i.UpdateAvatarLink))).Methods("PUT")
 
 }

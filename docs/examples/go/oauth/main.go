@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -47,7 +48,7 @@ func main() {
 		}
 		http.SetCookie(w, sessionCookie)
 
-		u, _ := url.Parse("https://itsyou.online/v1/oauth/authorize")
+		u, _ := url.Parse("https://dev.itsyou.online:8443/v1/oauth/authorize")
 		q := u.Query()
 		q.Add("client_id", s.ClientID)
 		q.Add("redirect_uri", "http://localhost:8080/callback")
@@ -87,8 +88,12 @@ func main() {
 
 		fmt.Println(s)
 
-		hc := &http.Client{}
-		req, err := http.NewRequest("POST", "https://itsyou.online/v1/oauth/access_token", nil)
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		hc := &http.Client{Transport: tr}
+		// hc := &http.Client{}
+		req, err := http.NewRequest("POST", "https://dev.itsyou.online:8443/v1/oauth/access_token", nil)
 		if err != nil {
 			return
 		}
@@ -97,12 +102,14 @@ func main() {
 		q.Add("client_secret", s.Secret)
 		q.Add("code", code)
 		q.Add("redirect_uri", "http://localhost:8080/callback")
+		// q.Add("response_type", "id_token")
 		q.Add("state", state)
+		// q.Add("aud", "testlee,greenitglobe,idfsdljkfsad")
 		req.URL.RawQuery = q.Encode()
 
 		resp, err := hc.Do(req)
 		if err != nil {
-			fmt.Println("Error while getting the access token: ", err)
+			fmt.Println("Error while getting the jwt: ", err)
 			return
 		}
 		defer resp.Body.Close()

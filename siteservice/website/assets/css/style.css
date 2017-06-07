@@ -633,6 +633,30 @@ li > ul.organizationstree {
     cursor: pointer;
 }
 
+#upload-avatar-file {
+    display: none;
+}
+
+.avatar-preview {
+    width: 120px !important;
+    height: 120px !important;
+    margin-left: 16px;
+}
+
+.fake-container {
+    height: 0px;
+    margin: 0px;
+    padding: 0px;
+}
+
+.avatar-file-upload ~ .avatar-container, .avatar-link-upload ~ .avatar-container {
+    padding-top: 0px;
+}
+
+.avatar-label-input ~ .avatar-file-upload, .avatar-label-input ~ .avatar-link-upload {
+    padding-top: 0px;
+}
+
 .list-item-secondary-button-padding p {
     padding-right: 120px;
 }

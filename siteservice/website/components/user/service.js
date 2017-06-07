@@ -143,7 +143,13 @@
             createDigitalWalletAddress: createDigitalWalletAddress,
             updateDigitalWalletAddress: updateDigitalWalletAddress,
             deleteDigitalWalletAddress: deleteDigitalWalletAddress,
-            leaveOrganization: leaveOrganization
+            leaveOrganization: leaveOrganization,
+            getAvatars: getAvatars,
+            createAvatarFromLink: createAvatarFromLink,
+            createAvatarFromFile: createAvatarFromFile,
+            updateAvatarLink: updateAvatarLink,
+            updateAvatarFile: updateAvatarFile,
+            deleteAvatar: deleteAvatar
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -410,6 +416,55 @@
         function leaveOrganization(username, globalid) {
             var url = apiURL + '/' + encodeURIComponent(username) + '/organizations/' + encodeURIComponent(globalid) + '/leave';
             return genericHttpCall(DELETE, url);
+        }
+
+        function getAvatars(username, label) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/avatars';
+            return genericHttpCall(GET, url);
+        }
+
+        function createAvatarFromLink(username, label, link) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/avatar';
+            var data = {
+                label: label,
+                source: link
+            };
+            return $http.post(url, data);
+        }
+
+        function createAvatarFromFile(username, label, file) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/avatar/img/' + encodeURIComponent(label);
+            var formData = new FormData();
+            formData.append('file', file);
+            return $http.post(url, formData, {
+              transform: angular.identity,
+              headers: {'Content-Type': undefined}
+            });
+        }
+
+        function updateAvatarLink(username, oldLabel, newLabel, link) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/avatar/' + encodeURIComponent(oldLabel);
+            var data = {
+                label: newLabel,
+                source: link
+            };
+            return $http.put(url, data);
+        }
+
+        function updateAvatarFile(username, oldLabel, newLabel, file) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/avatar/' +
+                encodeURIComponent(oldLabel) + '/to/' + encodeURIComponent(newLabel);
+            var formData = new FormData();
+            formData.append('file', file);
+            return $http.put(url, formData, {
+                transform: angular.identity,
+                headers: {'Content-Type': undefined}
+            });
+        }
+
+        function deleteAvatar(username, label) {
+            var url = apiURL + '/' + encodeURIComponent(username) + '/avatar/' + encodeURIComponent(label);
+            return genericHttpCall(DELETE, url)
         }
     }
 })();

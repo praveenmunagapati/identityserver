@@ -484,5 +484,13 @@
     "reject": "Weiger",
     "accept": "Aanvaardt",
     "username_taken": "Deze gebruikersnaam is al bezet",
-    "user_with_name_exists": "Er bestaat al een gebruiker met deze naam. Kies een andere naaam."
+    "user_with_name_exists": "Er bestaat al een gebruiker met deze naam. Kies een andere naam.",
+    "avatar": "Avatar",
+    "avatar_url": "Avatar url",
+    "avatar_file": "Avatar bestand",
+    "add_avatar": "Voeg avatar toe",
+    "avatar_file_upload": "Avatar is een bestand op ItsYou.Online",
+    "avatar_for": "Avatar voor {{label}}",
+    "upload_avatar": "Upload avatar",
+    "upload_avatar_button": "Upload avatar knop"
 }

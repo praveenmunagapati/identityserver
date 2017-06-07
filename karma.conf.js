@@ -37,6 +37,7 @@ module.exports = function(config) {
           'thirdpartyassets/angular-qrcode/angular-qrcode.js',
           'components/shared/shared.js',
           'components/shared/configService.js',
+          'components/shared/customOnChange.js',
           'components/patches.js',
           'components/common.js',
           'components/shared/country-info.js',

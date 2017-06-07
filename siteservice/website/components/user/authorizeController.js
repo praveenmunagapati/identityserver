@@ -25,6 +25,7 @@
         vm.pendingOrganizationInvites = {};
 
         UserDialogService.init(vm);
+        vm.showAvatarDialog = addAvatar;
         vm.showEmailDialog = addEmail;
         vm.showPhonenumberDialog = addPhone;
         vm.showAddressDialog = addAddress;
@@ -33,7 +34,7 @@
         vm.verifyEmail = verifyEmail;
         vm.submit = submit;
         vm.showDigitalWalletAddressDialog = digitalWalletAddress;
-        var properties = ['addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet', 'publicKeys'];
+        var properties = ['avatars', 'addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet', 'publicKeys'];
         $scope.requested = {
             organizations: {}
         };
@@ -87,7 +88,8 @@
                     'email': 'emailaddresses',
                     'phone': 'phonenumbers',
                     'bankaccount': 'bankaccounts',
-                    'publickey': 'publicKeys' // why ???
+                    'publickey': 'publicKeys',
+                    'avatar': 'avatars'
                 };
                 var scopes = vm.requestedScopes.split(',');
                 // Filter duplicated scopes
@@ -214,6 +216,10 @@
                     UserDialogService.showSimpleDialog(translations[translation.key], translations['error'], translations['close'], event);
                 });
             });
+        }
+
+        function addAvatar(event, auth) {
+            selectDefault(UserDialogService.avatar, event, auth, 'avatars')
         }
 
         function addEmail(event, auth) {
