@@ -1580,6 +1580,15 @@ func (api UsersAPI) AddAPIKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	apikeyMgr := apikey.NewManager(r)
+	// check if this is a free label
+	existingKey, err := apikeyMgr.GetByUsernameAndLabel(username, body.Label)
+	if handleServerError(w, "getting user api key", err) {
+		return
+	}
+	if existingKey != nil {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
 	apiKey := apikey.NewAPIKey(username, body.Label)
 	apikeyMgr.Save(apiKey)
 	w.Header().Set("Content-type", "application/json")
