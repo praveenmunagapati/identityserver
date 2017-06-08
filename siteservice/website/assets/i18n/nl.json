@@ -65,7 +65,8 @@
                 "invalidcode": "Ongeldige code",
                 "codelength": "De code moet 6 tekens lang zijn",
                 "next": "Volgende",
-                "resend": "Herstuur code"
+                "resend": "Herstuur code",
+                "loginbtn": "Inloggen"
             }
         },
         "2facontroller": {

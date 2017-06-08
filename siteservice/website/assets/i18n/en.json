@@ -65,7 +65,8 @@
                 "invalidcode": "Invalid code",
                 "codelength": "The code must be 6 characters long",
                 "next": "Next",
-                "resend": "Resend code"
+                "resend": "Resend code",
+                "loginbtn": "Log in"
             }
         },
         "2facontroller": {
