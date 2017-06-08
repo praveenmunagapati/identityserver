@@ -59,14 +59,14 @@
                 "submit": "Отправить"
             },
             "twofactorauthentication": {
-                "login": "Пользователь",
+                "login": "Авторизация",
+                "loginbtn": "Авторизоваться",
                 "method": "Метод авторизации",
                 "code": "Код",
                 "invalidcode": "Неверный код.",
                 "codelength": "Код должен содержать не менее 6 символов.",
                 "next": "Далее",
-                "resend": "Отправить код повторно",
-                "loginbtn": "Авторизоваться"
+                "resend": "Отправить код повторно"
             }
         },
         "2facontroller": {
@@ -95,12 +95,12 @@
                 "key": "Ключ доступа к API",
                 "callback": "Callback URL",
                 "callbackrequired": "Это поле обязательно для заполнения.",
-                "callbackmaxlength": "Callback url не может быть длиннее 250 символов.",
+                "callbackmaxlength": "Callback URL не может быть длиннее 250 символов.",
                 "clientcredentials": "Может быть использовано в авторизационной информации клиента для получения доступа (client credentials grant type)",
                 "clientcredentialshelp": "Приложение, не имеющее пользовательского интерфейса, может использовать этот ключ для доступа к информации об организации. При этом от пользователя уже не потребуется специально разрешать соответствующий доступ.",
-                "secret": "Секрет (client secret)",
+                "secret": "Секретный код клиента",
                 "secretplaceholder": "- будет сгенерирован когда вы выберете Создать -",
-                "secrethelp": "Чтобы воспользоваться этим секретным ключем доступа к API, используйте {{organization}} как clientid и данный ключ API как client secret."
+                "secrethelp": "Чтобы воспользоваться этим секретным ключем доступа к API, используйте {{organization}} как идентификатор клиента (clientid) и данный ключ API как секретный код клиента (secret)."
             },
             "changeorganizationroledialog": {
                 "edit": "Редактировать параметры членства организации",
@@ -114,7 +114,7 @@
             },
             "createorganizationdialog": {
                 "neworg": "Новая организация",
-                "createchild": "Создать a дочернюю организацию в составе {{org}}",
+                "createchild": "Создать дочернюю организацию в составе {{org}}",
                 "createnew": "Создать новую организацию"
             },
             "detail": {
@@ -142,19 +142,19 @@
                 "adddomain": "Добавить доменное имя",
                 "adddomainhelp": "Добавить доменное имя, принадлежащее {{organization}}",
                 "apiaccesskeys": "Ключи доступа к API",
-                "apiaccesskeyshelp": "Ключи доступа к API требуются для доступа к API Itsyou.online api с использованием протокола OAuth2.",
+                "apiaccesskeyshelp": "Ключи доступа к API требуются для доступа к API Itsyou.online с использованием протокола OAuth2.",
                 "addapiaccesskey": "Добавить ключ доступа к API",
                 "logo": "Логотип",
                 "logohelp": "Этот логотип используется когда пользователь авторизуется на внешнем сайте с ипользованием протокола OAuth2.",
                 "changelogo": "Изменить логотип",
                 "setlogo": "Установить логотип",
                 "deleteorganization": "Удалить организацию",
-                "deleteorganizationwarning": "Удаление организации это необратимая операция, которая приведет к удалению связанных с ней всех доменных имен и API keys!",
+                "deleteorganizationwarning": "Удаление организации это необратимая операция, которая приведет к удалению всех связанных с ней доменных имен и ключей доступа к API!",
                 "leaveorganization": "Покинуть организацию",
                 "leaveorganizationwarning": "Если вы прекращаете свое членство в организации, вы не сможете присоединиться к ней самостоятельно пока вас снова не пригласят.",
                 "addrequiredsharedinfo": "Добавить обязательную информацию, доступную другим пользователям",
                 "requiredsharedinfo": "Обязательная информация, доступная другим пользователям",
-                "sharedwith": "Доступно: ",
+                "sharedwith": "Доступно для: ",
                 "description": "Описание организации",
                 "descriptionhelp": "Это описание используется когда пользователь авторизуется на внешнем сайте с ипользованием протокола OAuth2.",
                 "changedescription": "Изменить описание организации"
@@ -192,7 +192,7 @@
                 "duplicatescope": "Такой контекст распространения уже существует.",
                 "requiredinformationscopeinvalid": "Некорректный контекст распространения.",
                 "accessscope": "Контекст доступа",
-                "noaccessscopeselected": "Пожалуйста, выберите из списка однин или несколько контекстов доступа.",
+                "noaccessscopeselected": "Пожалуйста, выберите из списка один или несколько контекстов доступа.",
                 "accessscopeinfo": "Контекст задает доступ к публикуемой информации."
             },
             "descriptiondialog": {
@@ -212,10 +212,10 @@
             "confirmleave": "Вы уверены, что хотите покинуть организацию {{organization}}?",
             "leaveorg": "Покинуть организацию",
             "leaveorganization": "Покинуть организацию {{organization}}",
-            "notfound": "Пользователь или организация не найдены",
+            "notfound": "Пользователь или организация не найдены.",
             "loadingkey": "-- Загрузка --",
             "cantchangerole": "Не получается изменить роль, попробуйте позже.",
-            "missinginfo": "Недостаточно информации",
+            "missinginfo": "Недостаточно информации.",
             "missinguserinfo": "Пользователь не предоставил всю затребованную информацию:<br />"
         }
     },
@@ -225,14 +225,14 @@
     "organization_invite_organization": "Пригласить организацию",
     "organization_invite_organization_duplicate": "Организация, которую вы пытаетесь пригласить, уже присоединилась к данной организации.",
     "organization_invite_organization_help": "Пригласить организацию присоедниться к {{organization}}",
-    "organization_invite_organization_nosuchorganization": "Организация с таким globalId не найдена.",
+    "organization_invite_organization_nosuchorganization": "Организация с таким глобальным идентификатором globalID не найдена.",
     "organization_invite_organization_owner_must_accept": "Владелец организации должен принять это приглашение прежде,<br/> чем его организация присоединится к данной организации.",
     "organization_invited_by": "Ваша организация {{invitedorg}} получила приглашение присоединиться к организации {{invitingorg}}.",
     "organization_name": "Наименование организации",
     "organization_name_pattern": "Некорректное наименование организации. <br/>Разрешается использовать только буквы латинского алфавита a-z, цифры 0-9, тире, символ подчеркивания и пробелы.",
     "organization_with_name_exists": "Организация с таким именем уже существует. Пожалуйста, выберете другое имя.",
     "owner": "Владелец",
-    "owner_of_email": "Владелей адреса электронной почты",
+    "owner_of_email": "Владелец адреса электронной почты",
     "owner_of_email_x": "Владелец электронной почты {{ email }}",
     "owners": "Владельцы",
     "pending_invites_for_organization": "Приглашения для ваших организаций, ожидающие ответа",
@@ -295,7 +295,7 @@
                 "unreadnotifications": "У вас {{count}} непрочитанных сообщений",
                 "profile": "Профиль",
                 "organizations": "Организации",
-                "sharedinfo": "Shared information",
+                "sharedinfo": "Опубликованная информация",
                 "signout": "Выйти из системы",
                 "register": "Зарегистрироваться",
                 "signin": "Авторизоваться",
@@ -304,7 +304,7 @@
             }
         }
     },
-    "shared_information": "Shared information",
+    "shared_information": "Опубликованная информация",
     "update": "Обновить",
     "user": {
         "views": {
@@ -322,8 +322,8 @@
                 "apikey": "Ключ доступа к API",
                 "appid": "Идентификатор приложения Application ID",
                 "appidplaceholder": "- отображается после того, как вы выберете Создать -",
-                "secret": "Секрет",
-                "secretplaceholder": "- генерируется после того, как вы выберете Создать -"
+                "secret": "Секретный код клиента",
+                "secretplaceholder": "- сгенерируется после того, как вы выберете Создать -"
             },
             "authorizationdialog": {
                 "sharedinfo": "Информация, которая доступна {{grantedto}} для просмотра",
@@ -352,12 +352,12 @@
             "digitalwallet": {
                 "registerwallet": "Ввести информацию о цифровом кошельке",
                 "digitalwallet": "Адрес цифрового кошелька",
-                "hasexpiredate": "Этот кошелек имеет ограниченный срок действия",
+                "hasexpiredate": "Этот кошелек имеет ограниченный срок действия.",
                 "expirydate": "Срок действия"
             },
             "emaildialog": {
                 "registeremail": "Ввести адрес электронной почты",
-                "emailpattern": "Некорректный адрес электронной почты"
+                "emailpattern": "Некорректный адрес электронной почты."
             },
             "namedialog": {
                 "updatename": "Изменить ФИО",
@@ -383,23 +383,23 @@
                 "updatelastverified": "Обновление последнего подтвержденного телефонного номера не допускается. Пожалуйста, сконфигурируйте новый телефонный номер."
             },
             "pubkeydialog": {
-                "newpubkey": "Новый public key",
-                "pubkeypattern": "Некорректный формат для public key, ssh-ключи должны начинаться с 'ssh-rsa AAAAB3NzaC1yc2E'",
-                "pastehere": "Скопируйте сюда свой public ssh key"
+                "newpubkey": "Новый открытый ключ (public key)",
+                "pubkeypattern": "Некорректный формат для открытого ключа, SSH-ключи должны начинаться с 'ssh-rsa AAAAB3NzaC1yc2E'",
+                "pastehere": "Скопируйте сюда свой открытый SSH-ключ"
             },
             "resetpassdialog": {
                 "changepass": "Изменить парооль",
                 "currentpass": "Текущий пароль",
-                "currentpassinvalid": "Неверный пароль",
+                "currentpassinvalid": "Неверный пароль.",
                 "newpass": "Новый пароль",
-                "newpassminlength": "Пароль не может содержать меньше 6 символов",
+                "newpassminlength": "Пароль не может содержать меньше 6 символов.",
                 "confirmnewpass": "Подтвердите новый пароль",
-                "passidentical": "Пароли не совпадают"
+                "passidentical": "Пароли не совпадают."
             },
             "settings": {
                 "settings": "Настройки",
-                "apikeys": "API keys",
-                "apikey": "API key",
+                "apikeys": "Ключи доступа к API",
+                "apikey": "Ключ доступа к API",
                 "security": "Безопасность",
                 "password": "Пароль",
                 "change": "Изменить",
@@ -425,7 +425,7 @@
             "profile": {
                 "profile": "Профиль",
                 "emailaddresses": "Адреса электронной почты",
-                "verified": "Подтверждено",
+                "verified": "Подтвержденные",
                 "phonenumbers": "Телефонные номера",
                 "nofacebook": "Вы пока не добавили свою учетную запись Facebook.",
                 "nogithub": "Вы пока не добавили свою учетную запись Github.",
@@ -434,7 +434,7 @@
                 "digitalwallet": "Цифровой кошелек",
                 "expiringwallet": "Срок действия - до {{expirydate}}. Валюта: {{symbol}}.",
                 "noneexpiringwallet": "Срок действия неограничен. Валюта: {{symbol}}.",
-                "pubkeys": "Public keys"
+                "pubkeys": "Открытые ключи (Public keys)"
             }
         },
         "directives": {
@@ -456,8 +456,8 @@
                 "currency": "(валюта {{currency}})",
                 "yourgithub": "Ваша учетная запсись Github",
                 "yourfacebook": "Ваша учетная запись Facebook",
-                "pubkey": "Public key",
-                "pubkeyfor": "Public key для {{label}}"
+                "pubkey": "Открытый ключ (Public key)",
+                "pubkeyfor": "Открытый ключ для {{label}}"
             }
         },
         "controller": {
@@ -480,7 +480,7 @@
         }
     },
     "verify": "Подтвердить",
-    "delete_org_with_children": "This organization has children. Deleting this organization will also delete ALL these child organizations. Are you really sure?",
+    "delete_org_with_children": "У данной организациии есть дочерние организации. Удаление этой организации автоматически приведет к удалению всех дочерних организаций. Вы уверены, что хотите продолжить?",
     "reject": "Отказаться",
     "accept": "Принять",
     "username_taken": "Такое имя пользователя уже используется",
