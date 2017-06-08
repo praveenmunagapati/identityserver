@@ -375,6 +375,13 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, request *
 		return
 	}
 
+	// send an email to ask for email address validation now the user is saved
+	_, err = service.emailaddressValidationService.RequestValidation(request, newuser.Username, values.Email, fmt.Sprintf("https://%s/emailvalidation", request.Host), values.LangKey)
+	if err != nil {
+		// Failure to send the email is an error, but not critical so don't abort the flow
+		log.Error("Failed to send email verification in registration flow: ", err)
+	}
+
 	if twoFAMethod == "sms" {
 		validationkey, err := service.phonenumberValidationService.RequestValidation(request, newuser.Username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", request.Host), values.LangKey)
 		if err != nil {
