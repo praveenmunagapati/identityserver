@@ -1,9 +1,10 @@
 package organization
 
 import (
-	"github.com/itsyouonline/identityserver/db/user"
 	"regexp"
 	"strings"
+
+	"github.com/itsyouonline/identityserver/db/user"
 )
 
 type RequiredScope struct {
@@ -27,6 +28,7 @@ func (requiredScope RequiredScope) IsValid() bool {
 		"user:email",
 		"user:phone",
 		"user:publickey",
+		"user:avatar",
 	}
 	valid := false
 	for _, scope := range possibleScopes {

@@ -58,6 +58,12 @@
             vars: {
                 label: true
             }
+        }, {
+            scope: 'user:avatar:{label}',
+            translation: 'avatar',
+            vars: {
+                label: true
+            }
         }];
 
         function getScopes() {
