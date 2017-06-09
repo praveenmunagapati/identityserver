@@ -492,5 +492,16 @@
     "avatar_file_upload": "Avatar uses a file uploaded on ItsYou.Online",
     "avatar_for": "Avatar for {{label}}",
     "upload_avatar": "Upload avatar",
-    "upload_avatar_button": "Upload avatar button"
+    "upload_avatar_button": "Upload avatar button",
+    "content_identity_top": "Your online identity",
+    "content_identity_bottom": "in your own hands",
+    "quote_online_presence": "Online presence means interaction. Companies need your identity which you present in different ways, depending on the company, person or context.",
+    "content_communicate_top": "You communicate over various channels and",
+    "content_communicate_bottom": "in different contexts but it's always you",
+    "quote_grinch": "“Then the Grinch thought of something he hadn't before! What if Christmas, he thought, doesn't come from a store. What if Christmas... perhaps... means a little bit more!”",
+    "dr_seuss": "Dr. Seuss ",
+    "quote_communication_identity": "An identity when communicating is not about the channel or the provider, it's about who you are talking to in which context.",
+    "content_share_top": "Share up to date information",
+    "content_share_bottom": "but only as much as you want",
+    "quote_share": "Don't be afraid to show your face anymore. Share the information you wish to share to a service provider and be sure your other information is safe."
 }

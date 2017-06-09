@@ -307,11 +307,6 @@ md-select.header-select:not([disabled]):focus .md-select-value {
   margin: 20px 6px 0 0;
 }
 
-.homepage .sign-wrap {
-    float: right;
-    margin-top: 31px;
-}
-
 .homepage .sign-wrap a {
     margin-left: 10px;
 }

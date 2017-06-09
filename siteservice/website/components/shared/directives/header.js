@@ -8,6 +8,7 @@
                 templateUrl: 'components/shared/directives/header.html',
                 link: function (scope, element, attr) {
                     scope.header_login = attr.register !== undefined;
+                    scope.header_registration = attr.login !== undefined;
                     scope.showCookieWarning = !localStorage.getItem('cookiewarning-dismissed');
                     scope.hideCookieWarning  = hideCookieWarning;
                     scope.updateLanguage = updateLanguage;

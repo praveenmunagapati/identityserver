@@ -71,7 +71,7 @@
                         </a>
                         <!--end header settings-->
                     </div>
-                    <div class="sign-wrap" ng-if="::!$root.user && ! header_login">
+                    <div class="sign-wrap" ng-if="::!$root.user && header_registration">
                         <a ng-href="{{ $root.registrationUrl || 'register' }}"><i class="fa fa-user-plus"></i><span translate='shared.directives.header.register'>Register</span></a>
                     </div>
                     <div class="sign-wrap" ng-if="::!$root.user && header_login">
@@ -128,7 +128,7 @@
                         <md-button class="push-menu-button" ng-href='logout'><span translate='shared.directives.header.signout'>Signout</span></md-button>
                     </md-menu-item>
                 </div>
-                <div ng-if="::!$root.user && ! header_login">
+                <div ng-if="::!$root.user && header_registration">
                     <md-menu-item class="header-pushmenu-item">
                         <md-button class="push-menu-button" ng-href="{{ $root.registrationUrl || 'register' }}"><span translate='shared.directives.header.register'>Register</span></a>
                     </md-menu-item>
