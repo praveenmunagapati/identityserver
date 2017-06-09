@@ -1585,7 +1585,7 @@ func (api UsersAPI) AddAPIKey(w http.ResponseWriter, r *http.Request) {
 	if handleServerError(w, "getting user api key", err) {
 		return
 	}
-	if existingKey != nil {
+	if existingKey.Label != "" {
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -1624,12 +1624,30 @@ func (api UsersAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	apiKey, err := apikeyMgr.GetByUsernameAndLabel(username, label)
-	if err != nil {
+	if handleServerError(w, "getting user api key", err) {
+		return
+	}
+	if apiKey.Label == "" {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+
+	// check if a key with the new label already exists
+	dupKey, err := apikeyMgr.GetByUsernameAndLabel(username, body.Label)
+	if handleServerError(w, "getting user api key", err) {
+		return
+	}
+	if dupKey.Label != "" {
+		log.Warn(dupKey)
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
 	apiKey.Label = body.Label
-	apikeyMgr.Save(apiKey)
+	err = apikeyMgr.Save(apiKey)
+	if handleServerError(w, "saving api key with updated label", err) {
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 
 }
