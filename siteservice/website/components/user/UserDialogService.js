@@ -679,7 +679,7 @@
                     },
                     function (reason) {
                         if (reason.data && reason.data.error) {
-                            $scope.validationerrors[response.data.error] = true;
+                            $scope.validationerrors[reason.data.error] = true;
                         }
                         else if (reason.status === 413) {
                             $scope.validationerrors.file_too_large = true;
