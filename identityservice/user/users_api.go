@@ -1075,6 +1075,7 @@ func (api UsersAPI) UpdateUserBankAccount(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(newbank)
 }
 
@@ -1656,8 +1657,9 @@ func (api UsersAPI) DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
 	label := mux.Vars(r)["label"]
 	apikeyMgr := apikey.NewManager(r)
 	apikeyMgr.Delete(username, label)
-
+	w.WriteHeader(http.StatusNoContent)
 }
+
 func (api UsersAPI) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
 	username := mux.Vars(r)["username"]
 	apikeyMgr := apikey.NewManager(r)

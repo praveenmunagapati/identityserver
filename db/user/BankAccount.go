@@ -1,9 +1,10 @@
 package user
 
 import (
+	"regexp"
+
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/validator.v2"
-	"regexp"
 )
 
 type BankAccount struct {
@@ -21,6 +22,10 @@ func (bank BankAccount) Validate() bool {
 	}
 	if len(bank.Iban) > 30 || len(bank.Iban) < 1 {
 		log.Debug("Invalid iban: ", bank.Iban)
+		return false
+	}
+	if len(bank.Country) > 40 || len(bank.Country) < 0 {
+		log.Debug("Invalid country: ", bank.Country)
 		return false
 	}
 	return valid

@@ -851,8 +851,11 @@ func (m *Manager) RemoveOrganization(globalID string, organization string) error
 
 // GetValidity gets the 2FA validity duration in seconds
 func (m *Manager) GetValidity(globalID string) (int, error) {
-	var org *Organization
+	var org Organization
 	err := m.collection.Find(bson.M{"globalid": globalID}).One(&org)
+	if err != nil {
+		return 0, err
+	}
 	seconds := org.SecondsValidity
 	if seconds == -1 { //special value to avoid confusion with mongo null
 		return 0, err

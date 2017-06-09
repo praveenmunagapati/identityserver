@@ -828,6 +828,12 @@ func (api OrganizationsAPI) CreateOrganizationDns(w http.ResponseWriter, r *http
 		}
 		return
 	}
+	for _, d := range organisation.DNS {
+		if dns.Name == d {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
 	err = orgMgr.AddDNS(organisation, dns.Name)
 
 	if handleServerError(w, "adding DNS name", err) {
@@ -868,6 +874,20 @@ func (api OrganizationsAPI) UpdateOrganizationDns(w http.ResponseWriter, r *http
 		}
 		return
 	}
+	exists := false
+	for _, d := range organisation.DNS {
+		if d == dns.Name {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+		if d == oldDNS {
+			exists = true
+		}
+	}
+	if !exists {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
 	err = orgMgr.UpdateDNS(organisation, oldDNS, dns.Name)
 
 	if err != nil {
@@ -878,7 +898,7 @@ func (api OrganizationsAPI) UpdateOrganizationDns(w http.ResponseWriter, r *http
 
 	w.Header().Set("Content-Type", "application/json")
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(dns)
 }
 
@@ -1180,11 +1200,9 @@ func (api OrganizationsAPI) Get2faValidityTime(w http.ResponseWriter, r *http.Re
 		return
 	}
 	if err == mgo.ErrNotFound {
-		log.Error("Error while getting validity duration: organization nout found")
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-
 	response := struct {
 		SecondsValidity int `json:"secondsvalidity"`
 	}{
@@ -1192,7 +1210,7 @@ func (api OrganizationsAPI) Get2faValidityTime(w http.ResponseWriter, r *http.Re
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(&response)
 }
 
 // Set2faValidityTime is the handler for PUT /organizations/globalid/2fa/validity
