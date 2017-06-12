@@ -269,7 +269,7 @@
             },
             "registrationsmsform": {
                 "smsconfirmation": "SMS bevestiging",
-                "smshelp": "Klik op de link in de sms die naar je telefoon gestuurd is of vul de code uit de sms hier in",
+                "smshelp": "Klik op de link in de sms die naar je telefoon gestuurd is of vul de code uit de sms hier in.",
                 "smscode": "Code gestuurd via sms",
                 "invalidcode": "Ongeldige code",
                 "resend": "Herstuur...",
