@@ -2013,11 +2013,12 @@ func (api UsersAPI) RemoveTOTP(w http.ResponseWriter, r *http.Request) {
 	}
 	totpMgr := totp.NewManager(r)
 	err = totpMgr.Remove(username)
-	if err != nil {
+	if err != nil && !totpMgr.IsErrNotFound(err) {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	// if the err is an error not found, there was nothing in the first place
 	w.WriteHeader(http.StatusNoContent)
 }
 
