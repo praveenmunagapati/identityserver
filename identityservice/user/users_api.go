@@ -1639,7 +1639,6 @@ func (api UsersAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if dupKey.Label != "" {
-		log.Warn(dupKey)
 		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -1923,23 +1922,38 @@ func (api UsersAPI) GetTwoFAMethods(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetTOTPSecret is the handler for GET /users/{username}/totp/
-// Gets a new TOTP secret
+// Gets the users TOTP secret, or a new one if it doesn't exist yet
 func (api UsersAPI) GetTOTPSecret(w http.ResponseWriter, r *http.Request) {
-	token, err := totp.NewToken()
-	if err != nil {
-		log.Error(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	response := struct {
+	username := mux.Vars(r)["username"]
+
+	var response struct {
 		Totpsecret string `json:"totpsecret"`
 		TotpIssuer string `json:"totpissuer"`
-	}{
-		Totpsecret: token.Secret,
-		TotpIssuer: totp.GetIssuer(r),
 	}
-	json.NewEncoder(w).Encode(response)
+
+	totpManager := totp.NewManager(r)
+	err, secret := totpManager.GetSecret(username)
+	// if no existing secret is found generate a new one
+	if totpManager.IsErrNotFound(err) {
+		var token *totp.Token
+		token, err = totp.NewToken()
+		if handleServerError(w, "generating a new totp secret", err) {
+			return
+		}
+
+		response.Totpsecret = token.Secret
+		response.TotpIssuer = totp.GetIssuer(r)
+		// an error might be an `actual` error and not just a not found
+	} else if handleServerError(w, "get saved totp secret", err) {
+		return
+		// if there was no error then we successfully loaded an existing secret
+	} else {
+		response.TotpIssuer = totp.GetIssuer(r)
+		response.Totpsecret = secret.Secret
+	}
+
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
 
 // SetupTOTP is the handler for POST /users/{username}/totp/

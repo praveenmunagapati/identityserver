@@ -503,5 +503,9 @@
     "quote_communication_identity": "An identity when communicating is not about the channel or the provider, it's about who you are talking to in which context.",
     "content_share_top": "Share up to date information",
     "content_share_bottom": "but only as much as you want",
-    "quote_share": "Don't be afraid to show your face anymore. Share the information you wish to share to a service provider and be sure your other information is safe."
+    "quote_share": "Don't be afraid to show your face anymore. Share the information you wish to share to a service provider and be sure your other information is safe.",
+    "existing_qrcode": "Your QR code that has been setup for use with an authenticator app.",
+    "auth_app_qr_code": "Authenticator application QR code",
+    "qrcode": "QR code",
+    "qrcode_view":"View existing QR code"
 }

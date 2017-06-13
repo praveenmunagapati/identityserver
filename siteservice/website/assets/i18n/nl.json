@@ -504,5 +504,9 @@
     "quote_communication_identity": "Een identiteit bij het communiceren gaat niet over het kanaal of de provider, het gaat over wie je praat in welke context.",
     "content_share_top": "Deel actuele informatie",
     "content_share_bottom": "maar alleen zo veel als u wilt",
-    "quote_share": "Wees niet meer bang om je gezicht te tonen. Deel de informatie die u wilt delen aan een serviceprovider en zorg ervoor dat uw andere informatie veilig is."
+    "quote_share": "Wees niet meer bang om je gezicht te tonen. Deel de informatie die u wilt delen aan een serviceprovider en zorg ervoor dat uw andere informatie veilig is.",
+    "existing_qrcode": "Jouw QR code die ingesteld is voor gebruik met een authenticatie-toepassing.",
+    "auth_app_qr_code": "Authenticatie-toepassing QR code",
+    "qrcode": "QR code",
+    "qrcode_view":"Bekijk bestaande QR code"
 }

@@ -78,6 +78,7 @@
         vm.showPublicKeyDetail = UserDialogService.publicKey;
         vm.createOrganization = UserDialogService.createOrganization;
         vm.showSetupAuthenticatorApplication = showSetupAuthenticatorApplication;
+        vm.showExistingAuthenticatorApplication = showExistingAuthenticatorApplication;
         vm.removeAuthenticatorApplication = removeAuthenticatorApplication;
         vm.resolveMissingScopeClicked = resolveMissingScopeClicked;
         init();
@@ -681,6 +682,46 @@
 
                 function resetValidation() {
                     $scope.form.totpcode.$setValidity('invalid_totpcode', true);
+                }
+            }
+        }
+
+        function showExistingAuthenticatorApplication(event) {
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', 'UserService', 'username', ExistingAuthenticatorController],
+                controllerAs: 'ctrl',
+                templateUrl: 'components/user/views/viewTOTPDialog.html',
+                targetEvent: event,
+                fullscreen: $mdMedia('sm') || $mdMedia('xs'),
+                parent: angular.element(document.body),
+                clickOutsideToClose: true,
+                locals: {
+                    username: vm.username
+                }
+            });
+
+            function ExistingAuthenticatorController($scope, $mdDialog, UserService, username) {
+                var ctrl = this;
+                ctrl.close = close;
+                ctrl.username = username;
+                ctrl.getQrCodeData = getQrCodeData;
+                init();
+
+                function init() {
+                    UserService.getAuthenticatorSecret(vm.username)
+                        .then(function (data) {
+                            ctrl.totpsecret = data.totpsecret;
+                            ctrl.totpissuer = encodeURIComponent(data.totpissuer);
+                        });
+                }
+
+
+                function getQrCodeData() {
+                    return 'otpauth://totp/' + ctrl.totpissuer + ':' + vm.username + '?secret=' + ctrl.totpsecret + '&issuer=' + ctrl.totpissuer;
+                }
+
+                function close() {
+                    $mdDialog.cancel();
                 }
             }
         }
