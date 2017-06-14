@@ -35,8 +35,8 @@ Itsyou.online supports several ways of obtaining JWTs:
 
 Suppose you have an OAuth token OAUTH-TOKEN with the following scopes:
 
-- user:memberOf:org1
-- user:memberOf:org2
+- user:memberof:org1
+- user:memberof:org2
 - user:address:billing
 
 and you want to call a third party service that only needs to know if the user is member of org1, there is no need to expose the billing address you are authorized to see.
@@ -106,7 +106,7 @@ In this case, this results in the following JWT data
     ```
     {
       "username": "bob",
-      "scope": "user:memberOf:org1",
+      "scope": "user:memberof:org1",
       "iss": "itsyouonline",
       "aud": [
             "CLIENTID",
