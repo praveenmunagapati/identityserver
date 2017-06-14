@@ -503,5 +503,6 @@
     "quote_communication_identity": "An identity when communicating is not about the channel or the provider, it's about who you are talking to in which context.",
     "content_share_top": "Share up to date information",
     "content_share_bottom": "but only as much as you want",
-    "quote_share": "Don't be afraid to show your face anymore. Share the information you wish to share to a service provider and be sure your other information is safe."
+    "quote_share": "Don't be afraid to show your face anymore. Share the information you wish to share to a service provider and be sure your other information is safe.",
+    "avatar_file_too_large": "The file is too large, the maximum upload limit is 100 KB."
 }
