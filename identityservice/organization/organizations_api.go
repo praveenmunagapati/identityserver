@@ -1387,7 +1387,6 @@ func (api OrganizationsAPI) SetOrgOwner(w http.ResponseWriter, r *http.Request) 
 	}
 	if !isOwner {
 		api.inviteOrganization(w, r, invitations.RoleOrgOwner, body.OrgOwner)
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
 
