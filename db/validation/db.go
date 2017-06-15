@@ -271,3 +271,7 @@ func (manager *Manager) GetByEmailAddress(searchString string) (validatedEmailad
 	err = mgoCollection.Find(bson.M{"emailaddress": searchString}).One(&validatedEmailaddress)
 	return validatedEmailaddress, err
 }
+
+func (manager *Manager) IsErrNotFound(err error) bool {
+	return err == mgo.ErrNotFound
+}
