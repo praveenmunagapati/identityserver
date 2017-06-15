@@ -485,20 +485,6 @@ func (api OrganizationsAPI) UpdateOrganizationOrgMemberShip(w http.ResponseWrite
 		return
 	}
 
-	// check if the authenticated user is an owner of the Org
-	// the user is known to be an owner of the first organization since we've required the organization:owner scope
-	authenticateduser := context.Get(r, "authenticateduser").(string)
-	isOwner, err := orgMgr.IsOwner(body.Org, authenticateduser)
-	if err != nil {
-		log.Error("Error while checking if user is owner of an organization: ", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	if !isOwner {
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-		return
-	}
-
 	var oldRole string
 	for _, v := range org.OrgMembers {
 		if v == body.Org {
