@@ -127,7 +127,7 @@ func (api UsersAPI) UpdateDigitalAssetAddress(w http.ResponseWriter, r *http.Req
 	}
 
 	if oldlabel != newcurrency.Label {
-		_, err = u.GetAddressByLabel(newcurrency.Label)
+		_, err = u.GetDigitalAssetAddressByLabel(newcurrency.Label)
 		if err == nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
