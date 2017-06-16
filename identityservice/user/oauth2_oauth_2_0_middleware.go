@@ -11,7 +11,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/itsyouonline/identityserver/db/user"
-	"github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/identityservice/security"
 	"github.com/itsyouonline/identityserver/oauthservice"
 )
@@ -81,27 +80,6 @@ func (om *Oauth2oauth_2_0Middleware) Handler(next http.Handler) http.Handler {
 		}
 
 		protectedUsername := mux.Vars(r)["username"]
-		if strings.HasPrefix(protectedUsername, "+") { //its a phone number
-			valMgr := validation.NewManager(r)
-			validatedPhoneNumber, err := valMgr.GetByPhoneNumber(protectedUsername)
-			if err != nil && !valMgr.IsErrNotFound(err) {
-				log.Error("Failed to get validated phone number: ", err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
-			protectedUsername = validatedPhoneNumber.Username
-		} else if strings.Contains(protectedUsername, "@") { // its an email
-			valMgr := validation.NewManager(r)
-			validatedEmailAddress, err := valMgr.GetByEmailAddress(protectedUsername)
-			if err != nil && !valMgr.IsErrNotFound(err) {
-				log.Error("Failed to get validated email address: ", err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
-			protectedUsername = validatedEmailAddress.Username
-		}
-		// replace verified phone numbers and email addresses by the associated username
-		mux.Vars(r)["username"] = protectedUsername
 
 		for _, scope := range strings.Split(atscopestring, ",") {
 			scope = strings.Trim(scope, " ")
