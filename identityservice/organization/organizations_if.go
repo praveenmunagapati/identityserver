@@ -63,6 +63,8 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// GetInvitations is the handler for GET /organizations/{globalid}/invitations
 	// Get the list of invitations for users to join this organization.
 	GetInvitations(http.ResponseWriter, *http.Request)
+	// RegisterNewContract is handler for POST /organizations/{globalId}/contracts
+	RegisterNewContract(http.ResponseWriter, *http.Request)
 	// RemovePendingInvitation is the handler for DELETE /organizations/{globalid}/invitations/{username}
 	// Cancel a pending invitation.
 	RemovePendingInvitation(http.ResponseWriter, *http.Request)
@@ -180,6 +182,7 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/owners", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddOrganizationOwner))).Methods("POST")
 	r.Handle("/organizations/{globalid}/owners/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveOrganizationOwner))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner", "organization:contracts:read"}).Handler).Then(http.HandlerFunc(i.GetContracts))).Methods("GET")
+	r.Handle("/organizations/{globalid}/contracts", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner", "organization:contracts:read"}).Handler).Then(http.HandlerFunc(i.RegisterNewContract))).Methods("POST")
 	r.Handle("/organizations/{globalid}/invitations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.GetInvitations))).Methods("GET")
 	r.Handle("/organizations/{globalid}/invitations/{searchstring}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemovePendingInvitation))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/suborganizations", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.CreateNewSubOrganization))).Methods("POST")

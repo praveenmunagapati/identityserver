@@ -639,7 +639,7 @@ func (api OrganizationsAPI) GetContracts(w http.ResponseWriter, r *http.Request)
 	contract.FindContracts(w, r, includedparty)
 }
 
-// RegisterNewContract is handler for GET /organizations/{globalId}/contracts
+// RegisterNewContract is handler for POST /organizations/{globalId}/contracts
 func (api OrganizationsAPI) RegisterNewContract(w http.ResponseWriter, r *http.Request) {
 	globalID := mux.Vars(r)["glabalId"]
 	includedparty := contractdb.Party{Type: "org", Name: globalID}
@@ -746,6 +746,9 @@ func (api OrganizationsAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	// set a fake secret or override the existing secret for the validator. The secret
+	// is ignored anyway when updating the apikey
+	apiKey.Secret = "dummysecret"
 	if !apiKey.Validate() {
 		log.Debug("Invalid api key: ", apiKey)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -753,7 +756,15 @@ func (api OrganizationsAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request)
 	}
 
 	mgr := oauthservice.NewManager(r)
-	err := mgr.UpdateClient(globalID, oldLabel, apiKey.Label, apiKey.CallbackURL, apiKey.ClientCredentialsGrantType)
+	c, err := mgr.GetClient(globalID, oldLabel)
+	if handleServerError(w, "getting old api key", err) {
+		return
+	}
+	if c == nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	err = mgr.UpdateClient(globalID, oldLabel, apiKey.Label, apiKey.CallbackURL, apiKey.ClientCredentialsGrantType)
 
 	if err != nil && db.IsDup(err) {
 		log.Debug("Duplicate label")
@@ -767,7 +778,7 @@ func (api OrganizationsAPI) UpdateAPIKey(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 }
 
 // DeleteAPIKey is the handler for DELETE /organizations/{globalid}/apikeys/{label}
