@@ -443,6 +443,11 @@ func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, 
 			oldRole = "owners"
 		}
 	}
+	// if oldRole is still not set then the given user is not part of this organization
+	if oldRole == "" {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
 	err = orgMgr.UpdateMembership(globalid, membership.Username, oldRole, membership.Role)
 	if err != nil {
 		handleServerError(w, "updating organization membership", err)
