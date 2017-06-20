@@ -542,6 +542,17 @@ func (api OrganizationsAPI) RemoveOrganizationMember(w http.ResponseWriter, r *h
 		return
 	}
 
+	invitationMgr := invitations.NewInvitationManager(r)
+	err = invitationMgr.Remove(globalID, username)
+	if db.IsNotFound(err) {
+		// most of the time the users will have no invitation if they are already part
+		// of the organization so just silently ignore this
+		err = nil
+	}
+	if handleServerError(w, "removing invitation", err) {
+		return
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -589,6 +600,17 @@ func (api OrganizationsAPI) RemoveOrganizationOwner(w http.ResponseWriter, r *ht
 
 	err = userMgr.DeleteAuthorization(username, globalID)
 	if handleServerError(w, "removing authorization", err) {
+		return
+	}
+
+	invitationMgr := invitations.NewInvitationManager(r)
+	err = invitationMgr.Remove(globalID, username)
+	if db.IsNotFound(err) {
+		// most of the time the users will have no invitation if they are already part
+		// of the organization so just silently ignore this
+		err = nil
+	}
+	if handleServerError(w, "removing invitation", err) {
 		return
 	}
 

@@ -43,3 +43,8 @@ func GetSession() *mgo.Session {
 func IsDup(err error) bool {
 	return (err == ErrDuplicate || mgo.IsDup(err))
 }
+
+// IsNotFound checks if an error indicates that a record does not exist
+func IsNotFound(err error) bool {
+	return err == mgo.ErrNotFound
+}
