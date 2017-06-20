@@ -288,15 +288,15 @@
         function getPendingCount(obj) {
             var count = 0;
             if (obj === 'all') {
-                count += vm.notifications.approvals.length;
-                count += vm.notifications.contractRequests.length;
-                count += vm.notifications.invitations.length;
-                count += vm.notifications.security.length;
+                count += vm.notifications.approvals ? vm.notifications.approvals.length : 0;
+                count += vm.notifications.contractRequests ? vm.notifications.contractRequests.length : 0;
+                count += vm.notifications.invitations ? vm.notifications.invitations.length : 0;
+                count += vm.notifications.security ? vm.notifications.security.length : 0;
                 vm.orgsWithInvitation = vm.notifications.invitations.map(function (invitation) {
                     return invitation.organization;
                 });
-                count += vm.notifications.missingscopes.filter(missingScopeFilter).length;
-                count += vm.notifications.organizationinvitations.length;
+                count += vm.notifications.missingscopes ? vm.notifications.missingscopes.filter(missingScopeFilter).length : 0;
+                count += vm.notifications.organizationinvitations ? vm.notifications.organizationinvitations.length : 0;
                 return count;
             } else {
                 return obj ? obj.length : 0;

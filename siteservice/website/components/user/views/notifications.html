@@ -18,6 +18,7 @@
                     </div>
                     <span flex></span>
                 </div>
+                <span ng-if="vm.getPendingCount('all') == 0" translate='no_notifcations'>You have no notifications.</span>
                 <div ng-if="vm.getPendingCount(vm.notifications.invitations) > 0">
                     <md-subheader class="md-no-sticky"><span translate='user.views.notifications.pendinginvites'>Pending organization invites</span></md-subheader>
                     <md-list>

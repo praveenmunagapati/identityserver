@@ -508,5 +508,6 @@
     "existing_qrcode": "Jouw QR code die ingesteld is voor gebruik met een authenticatie-toepassing.",
     "auth_app_qr_code": "Authenticatie-toepassing QR code",
     "qrcode": "QR code",
-    "qrcode_view":"Bekijk bestaande QR code"
+    "qrcode_view":"Bekijk bestaande QR code",
+    "no_notifcations": "Je hebt geen meldingen."
 }

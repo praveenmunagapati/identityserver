@@ -507,5 +507,6 @@
     "existing_qrcode": "Your QR code that has been setup for use with an authenticator app.",
     "auth_app_qr_code": "Authenticator application QR code",
     "qrcode": "QR code",
-    "qrcode_view":"View existing QR code"
+    "qrcode_view":"View existing QR code",
+    "no_notifcations": "You have no notifications."
 }
