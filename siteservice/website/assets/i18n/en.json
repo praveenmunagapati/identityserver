@@ -504,7 +504,7 @@
     "content_share_top": "Share up to date information",
     "content_share_bottom": "but only as much as you want",
     "quote_share": "Don't be afraid to show your face anymore. Share the information you wish to share to a service provider and be sure your other information is safe.",
-    "avatar_file_too_large": "The file is too large, the maximum upload limit is 100 KB."
+    "avatar_file_too_large": "The file is too large, the maximum upload limit is 100 KB.",
     "existing_qrcode": "Your QR code that has been setup for use with an authenticator app.",
     "auth_app_qr_code": "Authenticator application QR code",
     "qrcode": "QR code",
