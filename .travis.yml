@@ -18,8 +18,7 @@ before_script:
   - sh -e /etc/init.d/xvfb start
 
 script:
-  # checkout 6537f1d as temp workaround for https://github.com/Jumpscale/go-raml/issues/306
-  - cd $GOPATH/src/github.com/Jumpscale/go-raml && git checkout 6537f1d && ./build.sh && cd -
+  - cd $GOPATH/src/github.com/Jumpscale/go-raml &&  ./build.sh && cd -
   - go generate
   - go test -v ./...
   - npm test
