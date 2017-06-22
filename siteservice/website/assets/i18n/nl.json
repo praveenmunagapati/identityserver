@@ -510,5 +510,7 @@
     "auth_app_qr_code": "Authenticatie-toepassing QR code",
     "qrcode": "QR code",
     "qrcode_view":"Bekijk bestaande QR code",
-    "no_notifcations": "Je hebt geen meldingen."
+    "no_notifcations": "Je hebt geen meldingen.",
+    "last_owner": "Je bent de laatste eigenaar van deze organizatie, dus je kan deze niet verlaten.",
+    "error": "Error"
 }

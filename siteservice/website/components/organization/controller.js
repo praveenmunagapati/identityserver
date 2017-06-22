@@ -463,7 +463,7 @@
 
         function showLeaveOrganization(event) {
             $translate(['organization.controller.confirmleave', 'organization.controller.leaveorg', 'organization.controller.leaveorganization', 'organization.controller.yes',
-                'organization.controller.no', 'organization.controller.notfound'], {organization: globalid}).then(function(translations){
+                'organization.controller.no', 'organization.controller.notfound', 'last_owner', 'error'], {organization: globalid}).then(function(translations){
                     var text = translations['organization.controller.confirmleave'];
                     var confirm = $mdDialog.confirm()
                         .title(translations['organization.controller.leaveorg'])
@@ -481,7 +481,10 @@
                                     $window.location.hash = '#/';
                                 }, function (response) {
                                     if (response.status === 404) {
-                                        UserDialogService.showSimpleDialog(translations['organization.controller.notfound'], 'Error', null, event);
+                                        UserDialogService.showSimpleDialog(translations['organization.controller.notfound'], translations['error'], null, event);
+                                    }
+                                    if (response.status === 409) {
+                                        UserDialogService.showSimpleDialog(translations['last_owner'], translations['error'], null, event);
                                     }
                                 });
                         });

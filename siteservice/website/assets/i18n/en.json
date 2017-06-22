@@ -509,5 +509,7 @@
     "auth_app_qr_code": "Authenticator application QR code",
     "qrcode": "QR code",
     "qrcode_view":"View existing QR code",
-    "no_notifcations": "You have no notifications."
+    "no_notifcations": "You have no notifications.",
+    "last_owner": "You are the last owner of this organization, so you can't leave it.",
+    "error": "Error"
 }

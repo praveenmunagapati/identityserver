@@ -15,6 +15,7 @@ import (
 	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/itsyouonline/identityserver/credentials/password"
 	"github.com/itsyouonline/identityserver/credentials/totp"
+	"github.com/itsyouonline/identityserver/db"
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	organizationDb "github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/db/registry"
@@ -2030,6 +2031,25 @@ func (api UsersAPI) LeaveOrganization(w http.ResponseWriter, r *http.Request) {
 	orgMgr := organizationDb.NewManager(r)
 	userMgr := user.NewManager(r)
 	oauthMgr := oauthservice.NewManager(r)
+	// make sure the last owner can't leave an organization. only valid if this is
+	// a top level organization since suborg owners are implicitly extended by the owner
+	// of the parent orgs.
+	if !strings.Contains(organizationGlobalId, ".") {
+		org, err := orgMgr.GetByName(organizationGlobalId)
+		// load the org
+		if db.IsNotFound(err) {
+			writeErrorResponse(w, http.StatusNotFound, "user_not_found")
+			return
+		}
+		if handleServerError(w, "loading organization", err) {
+			return
+		}
+		// if only one owner remains and its the user then don't let them leave
+		if len(org.Owners) == 1 && org.Owners[0] == username {
+			writeErrorResponse(w, http.StatusConflict, "last_owner_can't_leave")
+			return
+		}
+	}
 	err := orgMgr.RemoveUser(organizationGlobalId, username)
 	if err == mgo.ErrNotFound {
 		writeErrorResponse(w, http.StatusNotFound, "user_not_found")
