@@ -511,5 +511,13 @@
     "qrcode_view":"View existing QR code",
     "no_notifcations": "You have no notifications.",
     "last_owner": "You are the last owner of this organization, so you can't leave it.",
-    "error": "Error"
+    "error": "Error",
+    "new_parent_ownership": "This action requires you to have ownership rights on the new parent organization.",
+    "new_parent_doesn't_exist": "The new parent organization does not exist.",
+    "new_name_collision": "This organization move would cause a duplicate name.",
+    "move_to_child": "You can't move organizations to a suborganization of themselves.",
+    "move_suborganization": "Move suborganization",
+    "move_a_suborganization": "Move a suborganization",
+    "suborganization_to_move": "Suborganization to move",
+    "newparent_globalid": "Globalid of the new parent"
 }

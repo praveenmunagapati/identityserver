@@ -16,6 +16,7 @@
         vm.invitations = [];
         vm.apikeylabels = [];
         vm.organization = {};
+        vm.children = [];
         vm.organizationRoot = {};
         vm.childOrganizationNames = [];
         vm.logo = "";
@@ -47,6 +48,8 @@
         vm.getScopeTranslation = getScopeTranslation;
         vm.removeInvitation = removeInvitation;
         vm.includeChanged = includeChanged;
+        vm.showMoveSuborganizationDialog = showMoveSuborganizationDialog;
+        vm.listOrganizatonTree = listOrganizatonTree;
 
         activate();
 
@@ -80,6 +83,7 @@
                     vm.treeGraphStyle = {
                         'width': pixelWidth + 'px'
                     };
+                    vm.listOrganizatonTree(vm.organizationRoot);
                 });
 
             OrganizationService.getLogo(globalid).then(
@@ -158,6 +162,25 @@
         function initSettings() {
             fetchAPIKeyLabels();
             renderLogo();
+        }
+
+        function listOrganizatonTree(org) {
+            angular.forEach(org.children, function(child) {
+                var isParent = false;
+                var parentid = "";
+                angular.forEach(vm.childOrganizationNames, function(parent) {
+                    parentid += parent.name
+                    if (child.globalid === parentid) {
+                       isParent = true;
+                    }
+                    parentid += ".";
+                });
+                parentid = "";
+                if (!isParent) {
+                  vm.children.push(child.globalid);
+                }
+                listOrganizatonTree(child);
+            });
         }
 
         function showInvitationDialog(ev) {
@@ -557,6 +580,30 @@
                 var closeText = 'Close';
                 UserDialogService.showSimpleDialog(msg, title, closeText, event);
             });
+        }
+
+        function showMoveSuborganizationDialog(event) {
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', '$translate', 'organization', 'organizationChildren', 'OrganizationService', moveSuborganizationDialogController],
+                templateUrl: 'components/organization/views/moveSuborganizationDialog.html',
+                targetEvent: event,
+                fullscreen: useFullScreen,
+                locals:
+                    {
+                        OrganizationService: OrganizationService,
+                        organization : vm.organization.globalid,
+                        $window: $window,
+                        organizationChildren: vm.children,
+                    }
+            }).then(
+                function(data) {
+                    if (data.status === "success") {
+                        vm.children = [];
+                        activate();
+                    }
+                }
+            );
         }
 
         function getScopeTranslation(scope) {
@@ -1182,6 +1229,37 @@
                     $mdDialog.hide({action: 'delete'});
                 });
         }
+    }
+
+    function moveSuborganizationDialogController($scope, $mdDialog, $translate, globalid, children, OrganizationService) {
+        $scope.globalid = globalid;
+        $scope.children = children;
+        $scope.orgid = "";
+        $scope.newparent = "";
+
+        $scope.cancel = cancel;
+        $scope.validationerrors = {};
+        $scope.update = update;
+
+
+
+        function cancel(){
+            $mdDialog.cancel();
+        }
+
+        function update(orgid, newparent){
+            $scope.validationerrors = {};
+            OrganizationService.transferSuborganization(globalid, $scope.orgid, $scope.newparent).then(
+                function() {
+                    $mdDialog.hide({status: "success"});
+                },
+                function(reason){
+                    $scope.validationerrors[reason.data.error] = true
+                }
+            )
+        }
+
+
     }
 
 })();

@@ -161,6 +161,9 @@ type OrganizationsInterface interface { // CreateNewOrganization is the handler 
 	// UserIsMember is the handler for GET /organization/{globalid}/users/ismember/{username}
 	// Checks if the user has membership rights on the organization
 	UserIsMember(w http.ResponseWriter, r *http.Request)
+	// TransferSubOrganization is the handler for POST /organization/{globalid}/transfersuborganization
+	// Transfer a suborganization from one parent to another
+	TransferSubOrganization(w http.ResponseWriter, r *http.Request)
 }
 
 // OrganizationsInterfaceRoutes is routing for /organizations root endpoint
@@ -218,4 +221,5 @@ func OrganizationsInterfaceRoutes(r *mux.Router, i OrganizationsInterface) {
 	r.Handle("/organizations/{globalid}/orgmembers/includesuborgs", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.AddIncludeSubOrgsOf))).Methods("POST")
 	r.Handle("/organizations/{globalid}/orgmembers/includesuborgs/{orgmember}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.RemoveIncludeSubOrgsOf))).Methods("DELETE")
 	r.Handle("/organizations/{globalid}/users/ismember/{username}", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.UserIsMember))).Methods("GET")
+	r.Handle("/organizations/{globalid}/transfersuborganization", alice.New(newOauth2oauth_2_0Middleware([]string{"organization:owner"}).Handler).Then(http.HandlerFunc(i.TransferSubOrganization))).Methods("POST")
 }

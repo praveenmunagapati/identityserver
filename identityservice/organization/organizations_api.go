@@ -2098,6 +2098,101 @@ func (api OrganizationsAPI) UserIsMember(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(&response)
 }
 
+// TransferSubOrganization is the handler for POST /organization/{globalid}/transfersuborganization
+// Transfer a suborganization from one parent to another
+func (api OrganizationsAPI) TransferSubOrganization(w http.ResponseWriter, r *http.Request) {
+	parent := mux.Vars(r)["globalid"]
+
+	username := context.Get(r, "authenticateduser").(string)
+
+	transfer := struct {
+		GlobalID  string `json:"globalid"`
+		NewParent string `json:"newparent"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&transfer); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	orgMgr := organization.NewManager(r)
+
+	if !orgMgr.Exists(transfer.GlobalID) {
+		log.Debug("Trying to move an unexisting organization")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	// By requiring a user to be an owner of a parent org of the moved organization,
+	// we don't need to check if the user is an owner of the moved org as this is then
+	// implicit.
+	if !strings.HasPrefix(transfer.GlobalID, parent+".") {
+		log.Debugf("Trying to move organization %v which is not a suborg of %v", transfer.GlobalID, parent)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	// Only allow organization transfers within the same root organization
+	// The `.` must be part of the comparison, if not you could move a suborg from
+	// abc to abdef
+	rootSeparator := strings.Index(parent, ".")
+	var root string
+	if rootSeparator < 0 {
+		root = parent + "."
+	} else {
+		root = parent[:rootSeparator+1]
+	}
+	if !strings.HasPrefix(transfer.NewParent, root) {
+		log.Debugf("trying to move organization to org tree with different root org")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	// You can be an owner of an unexisting organization if you are an owner of one of
+	// its supposed parents so we need an explicit check to see if it exists
+	if !orgMgr.Exists(transfer.NewParent) {
+		writeErrorResponse(w, http.StatusNotFound, "new_parent_doesn't_exist")
+		return
+	}
+
+	// if the organization globalid from the url is a parent of `newparent`, we already have
+	// ownership. In this way organizations with client credentials are also allowed to move
+	// suborgs to all possible locations
+	var err error
+	isOwner := strings.HasPrefix(transfer.NewParent, parent+".") || parent == transfer.NewParent
+	if !isOwner {
+		isOwner, err = orgMgr.IsOwner(transfer.NewParent, username)
+		if handleServerError(w, "checking if user is owner of the new parent org", err) {
+			return
+		}
+	}
+	if !isOwner {
+		log.Debug("user isn't an owner of the new parent org")
+		writeErrorResponse(w, http.StatusConflict, "err_new_parent_ownership")
+		return
+	}
+
+	// Check if the new org name doesn't cause a collision
+	newGlobalid := transfer.NewParent + transfer.GlobalID[strings.LastIndex(transfer.GlobalID, "."):]
+	if orgMgr.Exists(newGlobalid) {
+		writeErrorResponse(w, http.StatusConflict, "err_new_name_collision")
+		return
+	}
+
+	// if new parent is a suborg of the organization we move, the org chain will be broken
+	if strings.HasPrefix(transfer.NewParent, transfer.GlobalID) {
+		log.Debug("Trying to move an org to become a sub of itself")
+		writeErrorResponse(w, http.StatusConflict, "err_move_to_child")
+		return
+	}
+
+	err = orgMgr.TransferSubOrg(transfer.GlobalID, transfer.NewParent)
+	if handleServerError(w, "transfering suborganizations", err) {
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 func writeErrorResponse(responseWriter http.ResponseWriter, httpStatusCode int, message string) {
 	log.Debug(httpStatusCode, message)
 	errorResponse := struct {

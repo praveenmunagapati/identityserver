@@ -512,5 +512,13 @@
     "qrcode_view":"Bekijk bestaande QR code",
     "no_notifcations": "Je hebt geen meldingen.",
     "last_owner": "Je bent de laatste eigenaar van deze organizatie, dus je kan deze niet verlaten.",
-    "error": "Error"
+    "error": "Error",
+    "new_parent_ownership": "Deze actie vereist dat u eigendomsrechten heeft op de nieuwe ouderorganizatie.",
+    "new_parent_doesn't_exist": "De nieuwe ouderorganizatie bestaat niet.",
+    "new_name_collision": "Deze verhuizing zou een duplicate naam veroorzaken.",
+    "move_to_child": "U kunt organizaties niet verplaatsen naar een suborganizatie van zichzelf.",
+    "move_suborganization": "Verhuis suborganizatie",
+    "move_a_suborganization": "Verhuis een suborganizatie",
+    "suborganization_to_move": "Suborganizatie om te verhuizen",
+    "newparent_globalid": "Globalid v.d. nieuwe ouder"
 }

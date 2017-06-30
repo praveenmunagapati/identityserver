@@ -138,10 +138,14 @@
                 <md-tab>
                     <md-tab-label><i class="fa fa-sitemap"></i>&nbsp;<span translate='organization.views.detail.structure'>Structure</span></md-tab-label>
                     <md-tab-body>
-                        <div layout="row">
+                        <div layout="column" layout-align="center start" ng-if="::vm.hasEditPermission">
                             <md-button class="md-primary"
                                        ng-click="vm.showCreateOrganizationDialog($event, vm.organization.globalid)">
                                 <i class="fa fa-plus"></i> <span translate='organization.views.detail.createsuborg'>Create suborganization</span>
+                            </md-button>
+                            <md-button class="md-primary"
+                                       ng-click="vm.showMoveSuborganizationDialog($event)">
+                                <i class="fa fa-arrows-h"></i> <span translate='move_suborganization'>Move suborganization</span>
                             </md-button>
                         </div>
                         <div class="treeview">

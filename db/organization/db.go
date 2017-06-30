@@ -974,6 +974,38 @@ func (m *Manager) ListByUserOrGlobalID(username string, globalIds []string) (err
 	return err, organizations
 }
 
+// TransferSubOrg transfers the suborganization, and all of its suborganizations
+// to a new parent organization
+func (m *Manager) TransferSubOrg(globalId string, newParent string) error {
+	suborgseparator := strings.LastIndex(globalId, ".")
+	suborgs, err := m.GetSubOrganizations(globalId)
+	if err != nil {
+		return err
+	}
+
+	suborgids := make([]string, len(suborgs))
+	for i, subOrg := range suborgs {
+		suborgids[i] = subOrg.Globalid
+	}
+
+	for _, org := range append(suborgids, globalId) {
+		newGlobalid := newParent + org[suborgseparator:]
+		qry := bson.M{
+			"globalid": org,
+		}
+		update := bson.M{
+			"$set": bson.M{
+				"globalid": newGlobalid,
+			},
+		}
+		err = m.collection.Update(qry, update)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // SaveDescription saves a description for an organization
 func (m *DescriptionManager) SaveDescription(globalId string, text LocalizedInfoText) error {
 	_, err := m.collection.Upsert(bson.M{"globalid": globalId}, bson.M{"$addToSet": bson.M{"infotexts": text}})
