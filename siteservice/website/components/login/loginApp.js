@@ -44,6 +44,10 @@
                 templateUrl: 'components/login/views/organizationinvite.html',
                 controller: 'organizationInviteController',
                 controllerAs: 'vm'
+            }).when('/validateemail', {
+                templateUrl: 'components/login/views/validateEmailAddress.html',
+                controller: 'validateEmailController',
+                controllerAs: 'vm'
             })
             .otherwise('/');
     }

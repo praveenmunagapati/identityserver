@@ -67,6 +67,7 @@ module.exports = function(config) {
           'components/login/forgotPasswordController.js',
           'components/login/recoverAccountController.js',
           'components/login/organizationInviteController.js',
+          'components/login/validateEmailController.js',
 
           // load register app and dependancies
           'components/registration/registrationApp.js',

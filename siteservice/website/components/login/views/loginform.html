@@ -41,7 +41,10 @@
             </div>
         </md-card-content>
         <md-card-actions layout="row" layout-align="space-between center">
-            <md-button href="#/forgotpassword" translate='login.views.loginform.forgotpassword'>Forgot your password?</md-button>
+            <div layout="column" layout-align="center start">
+                <md-button href="#/forgotpassword" translate='login.views.loginform.forgotpassword'>Forgot your password?</md-button>
+                <md-button href="#/validateemail" style='margin-left: 0' translate='validate_email'>Validate email</md-button>
+            </div>
             <md-button type="submit" class="md-raised md-primary" translate='login.views.loginform.loginbtn'>Log in</md-button>
         </md-card-actions>
     </md-card>
