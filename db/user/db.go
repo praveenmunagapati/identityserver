@@ -42,6 +42,11 @@ func InitModels() {
 		DropDups: true,
 	}
 	db.EnsureIndex(mongoAvatarFileCollectionName, avatarIndex)
+
+	emailIndex := mgo.Index{
+		Key: []string{"emailaddresses.emailaddress"},
+	}
+	db.EnsureIndex(mongoUsersCollectionName, emailIndex)
 }
 
 //Manager is used to store users
@@ -117,6 +122,11 @@ func (m *Manager) GetByName(username string) (*User, error) {
 	}
 
 	return &user, err
+}
+
+func (m *Manager) GetByEmailAddress(email string) (users []string, err error) {
+	err = m.getUserCollection().Find(bson.M{"emailaddresses.emailaddress": email}).Distinct("username", &users)
+	return
 }
 
 //Exists checks if a user with this username already exists.

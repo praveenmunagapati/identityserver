@@ -520,5 +520,14 @@
     "move_suborganization": "Verhuis suborganizatie",
     "move_a_suborganization": "Verhuis een suborganizatie",
     "suborganization_to_move": "Suborganizatie om te verhuizen",
-    "newparent_globalid": "Globalid v.d. nieuwe ouder"
+    "newparent_globalid": "Globalid v.d. nieuwe ouder",
+    "username": "Gebruikersnaam",
+    "validate_email": "Valideer email",
+    "send_email": "Stuur email",
+    "back_to_login": "Terug naar login",
+    "username_minlength": "Gebruikersnaam moet minstens 3 tekens lang zijn",
+    "user_not_found": "Gebruiker niet gevonden",
+    "unable_to_validate_email": "Kan geen e-mailadres voor deze gebruiker valideren",
+    "email_validation_link": "Er is een email validatie link verzonden.",
+    "back": "Terug"
 }

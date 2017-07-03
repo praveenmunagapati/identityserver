@@ -814,6 +814,97 @@ func verifyInfoAfterLogin(request *http.Request, username string, inviteCode str
 	return invitationMgr.SetAcceptedByCode(inviteCode)
 }
 
+// ValidateEmail is the handler for POST /login/validateemail
+func (service *Service) ValidateEmail(w http.ResponseWriter, r *http.Request) {
+	body := struct {
+		Username string `json:"username"`
+		LangKey  string `json:"langkey"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Debug("Error decoding the validte email request:", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	userMgr := user.NewManager(r)
+	user, err := userMgr.GetByName(body.Username)
+	if err != nil {
+		if db.IsNotFound(err) {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		log.Error("Error while retrieving username: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if len(user.EmailAddresses) < 1 {
+		log.Debug("User does not have any email addresses.")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	valMgr := validationdb.NewManager(r)
+	// Don't send verification if at least 1 email address is already verified
+	ve, err := valMgr.GetByUsernameValidatedEmailAddress(body.Username)
+	if err != nil && !db.IsNotFound(err) {
+		log.Error("Error while retrieving verified email addresses: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	//User has verified email addresses
+	if err == nil && len(ve) > 0 {
+		log.Debug("User has verified email addresses, rejecting validate request")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	// Don't send verification if one is already ongoing
+	ov, err := valMgr.GetOngoingEmailAddressValidationByUser(body.Username)
+	if err != nil && !db.IsNotFound(err) {
+		log.Error("Error while checking ongoing email address verifications: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if err == nil && len(ov) > 0 {
+		log.Debug("User has ongoing email address verifications, rejecting validate request")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	emailMap := make(map[string][]string)
+	for _, mailaddress := range user.EmailAddresses {
+		registeredUsers, err := userMgr.GetByEmailAddress(mailaddress.EmailAddress)
+		if err != nil {
+			log.Error("Failed to find users who added email address: ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		emailMap[mailaddress.EmailAddress] = registeredUsers
+	}
+
+	count := 0
+	for email, users := range emailMap {
+		// if this mail address is only used by 1 user, send the verifcation mail
+		if len(users) == 1 {
+			_, err = service.emailaddressValidationService.RequestValidation(r, body.Username, email, fmt.Sprintf("https://%s/emailvalidation", r.Host), body.LangKey)
+			if err != nil {
+				log.Error("Failed to validate email address: ", err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			count++
+		}
+	}
+	// If no unique email addresses are found
+	if count < 1 {
+		log.Debug("no unique email addresses are found for the user")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 //ForgotPassword handler for POST /login/forgotpassword
 func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Request) {
 	// login can be username or email

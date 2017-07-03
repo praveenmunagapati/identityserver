@@ -187,6 +187,12 @@ func (manager *Manager) GetByKeyEmailAddressValidationInformation(key string) (i
 	return
 }
 
+func (manager *Manager) GetOngoingEmailAddressValidationByUser(username string) (ongoingValidations []EmailAddressValidationInformation, err error) {
+	mgoCollection := db.GetCollection(manager.session, mongoOngoingEmailAddressValidationCollectionName)
+	err = mgoCollection.Find(bson.M{"username": username}).All(&ongoingValidations)
+	return
+}
+
 func (manager *Manager) NewValidatedPhonenumber(username string, phonenumber string) (validatedphonenumber *ValidatedPhonenumber) {
 	validatedphonenumber = &ValidatedPhonenumber{CreatedAt: time.Now(), Username: username, Phonenumber: string(phonenumber)}
 	return

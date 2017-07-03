@@ -519,5 +519,14 @@
     "move_suborganization": "Move suborganization",
     "move_a_suborganization": "Move a suborganization",
     "suborganization_to_move": "Suborganization to move",
-    "newparent_globalid": "Globalid of the new parent"
+    "newparent_globalid": "Globalid of the new parent",
+    "username": "Username",
+    "validate_email": "Validate email",
+    "send_email": "Send email",
+    "back_to_login": "Back to login",
+    "username_minlength": "Username must be at least 3 characters long",
+    "user_not_found": "User not found",
+    "unable_to_validate_email": "Unable to valildate any email address for this user",
+    "email_validation_link": "An email validation link has been sent.",
+    "back": "Back"
 }
