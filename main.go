@@ -40,6 +40,8 @@ func main() {
 	var smtpserver, smtpuser, smtppassword string
 	var smtpport int
 
+	var cmTelecomToken string
+
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:        "debug, d",
@@ -111,6 +113,11 @@ func main() {
 			Destination: &smtpport,
 			Value:       587,
 		},
+		cli.StringFlag{
+			Name:        "CmTelecomToken",
+			Usage:       "Token for CmTelecom",
+			Destination: &cmTelecomToken,
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -136,6 +143,10 @@ func main() {
 				AccountSID:          twilioAccountSID,
 				AuthToken:           twilioAuthToken,
 				MessagingServiceSID: twilioMessagingServiceSID,
+			}
+		} else if cmTelecomToken != "" {
+			smsService = &communication.CmTelecomSMSService{
+				ProductToken: cmTelecomToken,
 			}
 		} else {
 			log.Warn("============================================================================")
