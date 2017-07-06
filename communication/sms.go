@@ -98,7 +98,7 @@ func (s *CmTelecomSMSService) Send(phonenumber string, message string) (err erro
 				ProductToken: s.ProductToken,
 			},
 			Message: []Msg{{
-				From: "ItsYou.online",
+				From: "iyo",
 				To: []Number{{
 					Number: phonenumber,
 				},
