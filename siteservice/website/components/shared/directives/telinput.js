@@ -56,7 +56,11 @@
 
                     function updateSMS() {
                       scope.validationerrors.pattern = false;
-                      scope.number = scope.country.dial_code + scope.sms;
+                      var phone = scope.sms;
+                      if (phone.startsWith("0")) {
+                          phone = phone.substring(1);
+                      }
+                      scope.number = scope.country.dial_code + phone;
                       if (!isNumeric(scope.number)) {
                           scope.validationerrors.pattern = true;
                       }
