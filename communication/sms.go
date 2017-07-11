@@ -118,8 +118,6 @@ func (s *CmTelecomSMSService) Send(phonenumber string, message string) (err erro
 		return
 	}
 
-	log.Debug(bodyBuf)
-
 	req, err := http.NewRequest("POST", "https://gw.cmtelecom.com/v1.0/message", bodyBuf)
 	if err != nil {
 		log.Error("Error creating sms request: ", err)
@@ -136,10 +134,66 @@ func (s *CmTelecomSMSService) Send(phonenumber string, message string) (err erro
 	if resp.StatusCode != http.StatusOK {
 		log.Error("Problem when sending sms via CmTelecom: ", resp.StatusCode, "\n", string(body))
 		err = errors.New("Error sending sms")
-	} else {
-		log.Debug("CmTelecom response: ", resp.StatusCode, "\n", string(body))
 	}
 	log.Infof("SMS: sms send to %s", phonenumber)
 	return
 
+}
+
+// SmsAeroSMSService is an SMS communication channel using smsaero
+type SmsAeroSMSService struct {
+	Username string
+	Password string
+}
+
+func (s *SmsAeroSMSService) Send(phonenumber string, message string) (err error) {
+	// remove the leading + from E.164 format for this provider
+	phonenumber = strings.TrimPrefix(phonenumber, "+")
+	client := &http.Client{}
+
+	req, err := http.NewRequest("POST", "https://gate.smsaero.ru/send/", nil)
+	if err != nil {
+		return
+	}
+	q := req.URL.Query()
+	q.Add("user", s.Username)
+	q.Add("password", s.Password)
+	q.Add("to", phonenumber)
+	q.Add("text", message)
+	q.Add("from", "D_ENERGY") // TODO: <- change to iyo
+	q.Add("answer", "json")
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error("Error while sending sms message to SmsAero: ", err)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		log.Error("Problem when sending sms via SmsAero: ", resp.StatusCode, "\n", string(body))
+		err = errors.New("Error sending sms")
+	} else {
+		log.Debug("SMSAero responed with status code 200: ")
+		log.Debug(string(body)) //TODO: REMOVE
+	}
+	log.Info(req.URL)
+	log.Infof("SMS: sms send to %s", phonenumber)
+	return
+}
+
+// SMSServiceProxySeparateRussia is an SMS communication channel that uses a separate
+// provider for russian phone numbers
+type SMSServiceProxySeparateRussia struct {
+	RussianSMSService SMSService
+	DefaultSMSService SMSService
+}
+
+// Send proxies the send call to the right provider based on the phonenumber
+func (s *SMSServiceProxySeparateRussia) Send(phonenumber string, message string) (err error) {
+	if IsRussianMobileNumber(phonenumber) {
+		return s.RussianSMSService.Send(phonenumber, message)
+	}
+	return s.DefaultSMSService.Send(phonenumber, message)
 }

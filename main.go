@@ -41,6 +41,7 @@ func main() {
 	var smtpport int
 
 	var cmTelecomToken string
+	var smsAeroUser, smsAeroPassword string
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
@@ -118,6 +119,16 @@ func main() {
 			Usage:       "Token for CmTelecom",
 			Destination: &cmTelecomToken,
 		},
+		cli.StringFlag{
+			Name:        "SmsAeroUser",
+			Usage:       "User for SmsAero",
+			Destination: &smsAeroUser,
+		},
+		cli.StringFlag{
+			Name:        "SmsAeroPassword",
+			Usage:       "Password in md5 format or an apikey for SmsAero",
+			Destination: &smsAeroPassword,
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -138,7 +149,19 @@ func main() {
 		cookieSecret := identityservice.GetCookieSecret()
 		var smsService communication.SMSService
 		var emailService communication.EmailService
-		if twilioAccountSID != "" {
+		if twilioAccountSID != "" && smsAeroPassword != "" {
+			smsService = &communication.SMSServiceProxySeparateRussia{
+				DefaultSMSService: &communication.TwilioSMSService{
+					AccountSID:          twilioAccountSID,
+					AuthToken:           twilioAuthToken,
+					MessagingServiceSID: twilioMessagingServiceSID,
+				},
+				RussianSMSService: &communication.SmsAeroSMSService{
+					Username: smsAeroUser,
+					Password: smsAeroPassword,
+				},
+			}
+		} else if twilioAccountSID != "" {
 			smsService = &communication.TwilioSMSService{
 				AccountSID:          twilioAccountSID,
 				AuthToken:           twilioAuthToken,
@@ -147,6 +170,11 @@ func main() {
 		} else if cmTelecomToken != "" {
 			smsService = &communication.CmTelecomSMSService{
 				ProductToken: cmTelecomToken,
+			}
+		} else if smsAeroUser != "" {
+			smsService = &communication.SmsAeroSMSService{
+				Username: smsAeroUser,
+				Password: smsAeroPassword,
 			}
 		} else {
 			log.Warn("============================================================================")
