@@ -162,6 +162,7 @@ func (s *SmsAeroSMSService) Send(phonenumber string, message string) (err error)
 	q.Add("text", message)
 	q.Add("from", "D_ENERGY") // TODO: <- change to iyo
 	q.Add("answer", "json")
+	q.Add("type", "6") // Indicate an "international" message,to reach kazachstan
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)
