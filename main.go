@@ -41,7 +41,7 @@ func main() {
 	var smtpport int
 
 	var cmTelecomToken string
-	var smsAeroUser, smsAeroPassword string
+	var smsAeroUser, smsAeroPassword, smsAeroSenderId string
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
@@ -129,6 +129,11 @@ func main() {
 			Usage:       "Password in md5 format or an apikey for SmsAero",
 			Destination: &smsAeroPassword,
 		},
+		cli.StringFlag{
+			Name:        "SmsAeroSenderId",
+			Usage:       "The sender Id for SmsAero, filled in in the from field",
+			Destination: &smsAeroSenderId,
+		},
 	}
 
 	app.Before = func(c *cli.Context) error {
@@ -159,6 +164,7 @@ func main() {
 				RussianSMSService: &communication.SmsAeroSMSService{
 					Username: smsAeroUser,
 					Password: smsAeroPassword,
+					SenderId: smsAeroSenderId,
 				},
 			}
 		} else if twilioAccountSID != "" {

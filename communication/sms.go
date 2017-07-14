@@ -144,6 +144,7 @@ func (s *CmTelecomSMSService) Send(phonenumber string, message string) (err erro
 type SmsAeroSMSService struct {
 	Username string
 	Password string
+	SenderId string
 }
 
 func (s *SmsAeroSMSService) Send(phonenumber string, message string) (err error) {
@@ -160,9 +161,9 @@ func (s *SmsAeroSMSService) Send(phonenumber string, message string) (err error)
 	q.Add("password", s.Password)
 	q.Add("to", phonenumber)
 	q.Add("text", message)
-	q.Add("from", "D_ENERGY") // TODO: <- change to iyo
+	q.Add("from", s.SenderId)
 	q.Add("answer", "json")
-	q.Add("type", "6") // Indicate an "international" message,to reach kazachstan
+	q.Add("type", "6") // Indicate an "international" message
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)
