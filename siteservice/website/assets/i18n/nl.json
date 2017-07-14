@@ -529,5 +529,7 @@
     "user_not_found": "Gebruiker niet gevonden",
     "unable_to_validate_email": "Kan geen e-mailadres voor deze gebruiker valideren",
     "email_validation_link": "Er is een email validatie link verzonden.",
-    "back": "Terug"
+    "back": "Terug",
+    "no_email_addresses": "Deze gebruiker heeft geen geregistreerde e-mailadressen",
+    "has_validated_email": "Deze gebruiker heeft al minstens 1 gevalideerd e-mailadres of doorlopende e-mailadres validatie"
 }

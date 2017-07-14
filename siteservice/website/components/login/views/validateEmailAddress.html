@@ -15,6 +15,10 @@
                        ng-change="vm.clearValidation()">
                 <div ng-messages="form.login.$error">
                     <div ng-message="minlength" translate='username_minlength'>Username must be at least 3 characters long</div>
+                    <div ng-message="no_email_addresses" translate='no_email_addresses'>This user does not have any registered email addresses</div>
+                    <div ng-message="has_validated_email" translate='has_validated_email'>
+                        This user already has at least 1 validated email address, or ongoing email address validation
+                    </div>
                     <div ng-message="invalid" translate='user_not_found'>A user with this username could not be found</div>
                     <div ng-message="generic" translate='unable_to_validate_email'>Unable to valildate any email address for this user</div>
                 </div>
