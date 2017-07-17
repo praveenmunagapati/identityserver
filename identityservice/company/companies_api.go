@@ -108,7 +108,8 @@ func (api CompaniesAPI) globalIdinfoGet(w http.ResponseWriter, r *http.Request) 
 
 // globalIdvalidateGet It is handler for GET /companies/{globalid}/validate
 func (api CompaniesAPI) globalIdvalidateGet(w http.ResponseWriter, r *http.Request) {
-	log.Error("globalIdvalidateGet is not implemented")
+	log.Warn("globalIdvalidateGet is not implemented")
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
 
 // globalIdcontracts is handler for GET /companies/{globalId}/contracts
