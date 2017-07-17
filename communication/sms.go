@@ -1,8 +1,6 @@
 package communication
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -56,90 +54,6 @@ func (s *TwilioSMSService) Send(phonenumber string, message string) (err error) 
 	return
 }
 
-// CmTelecomSMSService is an SMS communication channel using cmtelecom
-type CmTelecomSMSService struct {
-	ProductToken string
-}
-
-func (s *CmTelecomSMSService) Send(phonenumber string, message string) (err error) {
-
-	client := &http.Client{}
-
-	type MsgBody struct {
-		Content string `json:"content"`
-	}
-
-	type Number struct {
-		Number string `json:"number"`
-	}
-
-	type Msg struct {
-		From string   `json:"from"`
-		To   []Number `json:"to"`
-		Body MsgBody  `json:"body"`
-	}
-
-	type Authentication struct {
-		ProductToken string `json:"producttoken"`
-	}
-
-	type Msgs struct {
-		Authentication Authentication `json:"authentication"`
-		Message        []Msg          `json:"msg"`
-	}
-
-	type SMSData struct {
-		Messages Msgs `json:"messages"`
-	}
-
-	data := SMSData{
-		Messages: Msgs{
-			Authentication: Authentication{
-				ProductToken: s.ProductToken,
-			},
-			Message: []Msg{{
-				From: "iyo",
-				To: []Number{{
-					Number: phonenumber,
-				},
-				},
-				Body: MsgBody{
-					Content: message,
-				},
-			},
-			},
-		},
-	}
-
-	bodyBuf := bytes.NewBuffer(nil)
-	err = json.NewEncoder(bodyBuf).Encode(data)
-	if err != nil {
-		log.Error("Failed to serialize request body: ", err)
-		return
-	}
-
-	req, err := http.NewRequest("POST", "https://gw.cmtelecom.com/v1.0/message", bodyBuf)
-	if err != nil {
-		log.Error("Error creating sms request: ", err)
-		return
-	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Error("Error sending sms via CmTelecom: ", err)
-		return
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode != http.StatusOK {
-		log.Error("Problem when sending sms via CmTelecom: ", resp.StatusCode, "\n", string(body))
-		err = errors.New("Error sending sms")
-	}
-	log.Infof("SMS: sms send to %s", phonenumber)
-	return
-
-}
-
 // SmsAeroSMSService is an SMS communication channel using smsaero
 type SmsAeroSMSService struct {
 	Username string
@@ -176,14 +90,12 @@ func (s *SmsAeroSMSService) Send(phonenumber string, message string) (err error)
 	if resp.StatusCode != http.StatusOK {
 		log.Error("Problem when sending sms via SmsAero: ", resp.StatusCode, "\n", string(body))
 		err = errors.New("Error sending sms")
-	} else {
-		log.Debug("SMSAero responed with status code 200: ")
-		log.Debug(string(body)) //TODO: REMOVE
 	}
-	log.Info(req.URL)
 	log.Infof("SMS: sms send to %s", phonenumber)
 	return
 }
+
+// TODO: Make more generic
 
 // SMSServiceProxySeparateRussia is an SMS communication channel that uses a separate
 // provider for russian phone numbers

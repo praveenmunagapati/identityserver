@@ -40,7 +40,6 @@ func main() {
 	var smtpserver, smtpuser, smtppassword string
 	var smtpport int
 
-	var cmTelecomToken string
 	var smsAeroUser, smsAeroPassword, smsAeroSenderId string
 
 	app.Flags = []cli.Flag{
@@ -115,11 +114,6 @@ func main() {
 			Value:       587,
 		},
 		cli.StringFlag{
-			Name:        "CmTelecomToken",
-			Usage:       "Token for CmTelecom",
-			Destination: &cmTelecomToken,
-		},
-		cli.StringFlag{
 			Name:        "SmsAeroUser",
 			Usage:       "User for SmsAero",
 			Destination: &smsAeroUser,
@@ -172,10 +166,6 @@ func main() {
 				AccountSID:          twilioAccountSID,
 				AuthToken:           twilioAuthToken,
 				MessagingServiceSID: twilioMessagingServiceSID,
-			}
-		} else if cmTelecomToken != "" {
-			smsService = &communication.CmTelecomSMSService{
-				ProductToken: cmTelecomToken,
 			}
 		} else if smsAeroUser != "" {
 			smsService = &communication.SmsAeroSMSService{
