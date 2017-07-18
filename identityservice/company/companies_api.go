@@ -130,7 +130,8 @@ func (api CompaniesAPI) RegisterNewContract(w http.ResponseWriter, r *http.Reque
 // GetCompanyList is the handler for GET /companies
 // Get companies. Authorization limits are applied to requesting user.
 func (api CompaniesAPI) GetCompanyList(w http.ResponseWriter, r *http.Request) {
-	log.Error("GetCompanyList is not implemented")
+	log.Warn("GetCompanyList is not implemented")
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }
 
 // globalIdGet is the handler for GET /companies/{globalId}
