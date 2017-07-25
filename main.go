@@ -148,6 +148,7 @@ func main() {
 		cookieSecret := identityservice.GetCookieSecret()
 		var smsService communication.SMSService
 		var emailService communication.EmailService
+		var mailService communication.MailService
 		if twilioAccountSID != "" && smsAeroPassword != "" {
 			smsService = &communication.SMSServiceProxySeparateRussia{
 				DefaultSMSService: &communication.TwilioSMSService{
@@ -189,7 +190,17 @@ func main() {
 			emailService = communication.NewSMTPEmailService(smtpserver, smtpport, smtpuser, smtppassword)
 		}
 
-		is := identityservice.NewService(smsService, emailService)
+		// TODO: implement actual snailmail provider
+		if true {
+			log.Warn("============================================================================")
+			log.Warn("No valid mail service provided, falling back to development implementation")
+			log.Warn("============================================================================")
+			mailService = &communication.DevMailService{}
+		} else {
+			//TODO implement actual snailmail provider
+		}
+
+		is := identityservice.NewService(smsService, emailService, mailService)
 		sc := siteservice.NewService(cookieSecret, smsService, emailService, is, version)
 
 		config := globalconfig.NewManager()
