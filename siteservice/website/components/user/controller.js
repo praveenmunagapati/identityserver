@@ -802,7 +802,8 @@
                         'email': 'emailaddresses',
                         'phone': 'phonenumbers',
                         'bankaccount': 'bankaccounts',
-                        'publickey': 'publicKeys'
+                        'publickey': 'publicKeys',
+                        'avatar': 'avatars'
                     };
                     angular.forEach(missingScope.scopes, function (scope) {
                         var splitPermission = scope.split(':');
@@ -840,6 +841,9 @@
                         }
                         else if (scope === 'user:facebook') {
                             authorization.facebook = true;
+                        }
+                        else if (scope === 'user:keystore') {
+                            authorizations.keystore = true;
                         }
                     });
                     return showAuthorizationDetailDialog(authorization, event, isNew);
