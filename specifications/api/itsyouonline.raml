@@ -523,6 +523,48 @@ types:
     properties:
       organization: string
       scopes: string[]
+
+  SeeVersion:
+    description: See version object
+    properties:
+       version: integer
+       category: string
+       link: string
+       content_type: string
+       markdown_short_description: string
+       markdown_full_description: string
+       creation_date: string
+       start_date: string
+       end_date: string
+       keystore_label: string
+       signature: string
+
+  See:
+    description: See object
+    properties:
+       username: string
+       globalid: string
+       uniqueid: string
+       versions: SeeVersion[]
+
+  SeeView:
+     description: See view object
+     properties:
+        username: string
+        globalid: string
+        uniqueid: string
+        version: integer
+        category: string
+        link: string
+        content_type: string
+        markdown_short_description: string
+        markdown_full_description: string
+        creation_date: string
+        start_date: string
+        end_date: string
+        keystore_label: string
+        signature: string
+
 securedBy: [ oauth_2_0 ]
 /users:
   post:
@@ -1436,6 +1478,80 @@ securedBy: [ oauth_2_0 ]
                 type: KeyStoreKey
           404:
             description: No key found for this label
+
+  /{username}/see/{globalid}:
+    get:
+      displayName: ListSeeObjectsByOrganization
+      securedBy: [oauth_2_0: { scopes: [ "user:admin", "user:see" ] } ]
+      description: Get all see objects by organization
+      responses:
+        200:
+          body:
+            application/json:
+              type: SeeView[]
+        404:
+          description: Not found
+    post:
+      displayName: CreateSeeObject
+      securedBy: [oauth_2_0: { scopes: [ "user:see" ] } ]
+      description: Create new see object
+      body:
+        application/json:
+          type: SeeView
+      responses:
+        201:
+          body:
+            application/json:
+              type: SeeView
+        404:
+          description: Not found
+    /{uniqueid}:
+      get:
+        displayName: GetSeeObject
+        securedBy: [oauth_2_0: { scopes: [ "user:admin", "user:see" ] } ]
+        description: Get a objects
+        queryParameters:
+          version:
+            type: integer
+            description: What version to filter. -1 latest version, 0 all versions if the version is not found default value will be used.
+            default: -1
+            required: false
+        responses:
+          200:
+            body:
+              application/json:
+                type: See
+          404:
+            description: Not found
+      put:
+        displayName: UpdateSeeObject
+        securedBy: [oauth_2_0: { scopes: [ "user:see" ] } ]
+        description: Sign a see object
+        body:
+          application/json:
+            type: SeeView
+        responses:
+          201:
+            body:
+              application/json:
+                type: SeeView
+          404:
+            description: Not found
+      /sign/{version}:
+        put:
+          displayName: SignSeeObject
+          securedBy: [oauth_2_0: { scopes: [ "user:see" ] } ]
+          description: Upates a see object
+          body:
+            application/json:
+              type: SeeView
+          responses:
+            201:
+              body:
+                application/json:
+                  type: SeeView
+            404:
+              description: Not found
 
 /organizations:
   post:

@@ -11,6 +11,7 @@ import (
 	contractdb "github.com/itsyouonline/identityserver/db/contract"
 	"github.com/itsyouonline/identityserver/db/keystore"
 	organizationdb "github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/db/see"
 	userdb "github.com/itsyouonline/identityserver/db/user"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/globalconfig"
@@ -62,6 +63,7 @@ func (service *Service) AddRoutes(router *mux.Router) {
 	user.UsersInterfaceRoutes(router, user.UsersAPI{SmsService: service.smsService, PhonenumberValidationService: service.phonenumberValidationService, EmailService: service.emailService, EmailAddressValidationService: service.emailaddresValidationService})
 	userdb.InitModels()
 	totp.InitModels()
+	see.InitModels()
 
 	// Company API
 	company.CompaniesInterfaceRoutes(router, company.CompaniesAPI{})

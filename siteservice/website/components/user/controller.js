@@ -8,10 +8,10 @@
 
 
     UserHomeController.$inject = [
-        '$q', '$rootScope', '$routeParams', '$location', '$window', '$filter', '$mdMedia', '$mdDialog', '$translate',
+        '$q', '$rootScope', '$stateParams', '$location', '$window', '$filter', '$mdMedia', '$mdDialog', '$translate',
         'NotificationService', 'OrganizationService', 'UserService', 'UserDialogService'];
 
-    function UserHomeController($q, $rootScope, $routeParams, $location, $window, $filter, $mdMedia, $mdDialog, $translate,
+    function UserHomeController($q, $rootScope, $stateParams, $location, $window, $filter, $mdMedia, $mdDialog, $translate,
                                 NotificationService, OrganizationService, UserService, UserDialogService) {
         var vm = this;
         vm.username = $rootScope.user;
@@ -84,7 +84,7 @@
         init();
 
         function init() {
-            var index = TABS.indexOf($routeParams.tab);
+            var index = TABS.indexOf($stateParams.tab);
             vm.selectedTabIndex = index === -1 ? 0 : index;
             loadUser().then(function () {
                 loadVerifiedPhones();
@@ -845,18 +845,21 @@
                         else if (scope === 'user:keystore') {
                             authorizations.keystore = true;
                         }
+                        else if (scope === 'user:see') {
+                            authorization.see = true;
+                        }
                         else if (scope.startsWith('user:validated:')){
-                          switch (splitPermission[2]) {
-                              case 'email':
-                                  auth.reallabel = vm.user['emailaddresses'].length ? vm.user['emailaddresses'][0].label : '';
-                                  $scope.authorizations['emailaddresses'].push(auth);
-                                break;
-                              case 'phone':
-                                  auth.reallabel = vm.user['phonenumbers'].length ? vm.user['phonenumbers'][0].label : '';
-                                  $scope.authorizations['phonenumbers'].push(auth);
-                                break;
-                          }
-                      }
+                            switch (splitPermission[2]) {
+                                case 'email':
+                                    auth.reallabel = vm.user['emailaddresses'].length ? vm.user['emailaddresses'][0].label : '';
+                                    $scope.authorizations['emailaddresses'].push(auth);
+                                  break;
+                                case 'phone':
+                                    auth.reallabel = vm.user['phonenumbers'].length ? vm.user['phonenumbers'][0].label : '';
+                                    $scope.authorizations['phonenumbers'].push(auth);
+                                  break;
+                            }
+                        }
                     });
                     return showAuthorizationDetailDialog(authorization, event, isNew);
                 }

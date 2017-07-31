@@ -539,5 +539,20 @@
     "validated_email_address": "Validated email address",
     "validated_phone_number": "Validated phone number",
     "validated_email_address_for": "Validated email address for {{label}}",
-    "validated_phone_number_for": "Validated phone number for {{label}}"
+    "validated_phone_number_for": "Validated phone number for {{label}}",
+    "see": "see",
+    "organizationsee": "Your see documents for this organization",
+    "version": "Version",
+    "start": "Start",
+    "end": "End",
+    "details": "Details",
+    "show_full_description": "Show full description",
+    "hide_full_description": "Hide full description",
+    "toggle_full_description": "Toggle full description",
+    "show_full_history": "Show full history",
+    "hide_full_history": "Hide full history",
+    "toggle_full_history": "Toggle full history",
+    "link": "Link",
+    "no_see_documents": "You don't have any see documents for this organization",
+    "seedetail": "See detail"
 }

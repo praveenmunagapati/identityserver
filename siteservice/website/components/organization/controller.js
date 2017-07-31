@@ -6,13 +6,13 @@
         .controller("InvitationDialogController", InvitationDialogController);
 
     InvitationDialogController.$inject = ['$scope', '$mdDialog', '$translate', 'organization', 'OrganizationService', 'UserDialogService'];
-    OrganizationDetailController.$inject = ['$routeParams', '$window', '$translate', 'OrganizationService', '$mdDialog', '$mdMedia',
+    OrganizationDetailController.$inject = ['$state', '$stateParams', '$window', '$translate', 'OrganizationService', '$mdDialog', '$mdMedia',
         '$rootScope', 'UserDialogService', 'UserService', 'ScopeService'];
 
-    function OrganizationDetailController($routeParams, $window, $translate, OrganizationService, $mdDialog, $mdMedia, $rootScope,
+    function OrganizationDetailController($state, $stateParams, $window, $translate, OrganizationService, $mdDialog, $mdMedia, $rootScope,
                                           UserDialogService, UserService, ScopeService) {
         var vm = this,
-            globalid = $routeParams.globalid;
+            globalid = $stateParams.globalid;
         vm.invitations = [];
         vm.apikeylabels = [];
         vm.organization = {};
@@ -21,9 +21,18 @@
         vm.childOrganizationNames = [];
         vm.logo = "";
         vm.includemap = {};
+        vm.seeObjects = [];
         vm.loading = {
             invitations: false
         };
+        vm.selectedTab = 0;
+        if ($state.current.name === "organization.structure") {
+            vm.selectedTab = 1;
+        } else if ($state.current.name === "organization.see") {
+            vm.selectedTab = 2;
+        } else if ($state.current.name === "organization.settings") {
+            vm.selectedTab = 3;
+        }
 
         vm.initSettings = initSettings;
         vm.showInvitationDialog = showInvitationDialog;
@@ -50,6 +59,8 @@
         vm.includeChanged = includeChanged;
         vm.showMoveSuborganizationDialog = showMoveSuborganizationDialog;
         vm.listOrganizatonTree = listOrganizatonTree;
+        vm.loadSeeObjects = loadSeeObjects;
+        vm.showSeeObject = showSeeObject
 
         activate();
 
@@ -181,6 +192,22 @@
                 }
                 listOrganizatonTree(child);
             });
+        }
+
+        function loadSeeObjects() {
+          if (vm.seeObjects.length) {
+              return;
+          }
+          UserService.getSeeObjectsByOrganization($rootScope.user, vm.organization.globalid)
+              .then(
+                  function (data) {
+                      vm.seeObjects = data;
+                  }
+              );
+        }
+
+        function showSeeObject(event, seeObject) {
+            $window.location.hash = '#/organization/' + seeObject.globalid + '/see/' + seeObject.uniqueid + '/detail';
         }
 
         function showInvitationDialog(ev) {
@@ -869,7 +896,7 @@
                 var parents = splitted.slice(0, i + 1);
                 children.push({
                     name: splitted[i],
-                    url: '#/organization/' + parents.join('.')
+                    url: '#/organization/' + parents.join('.') + '/people'
                 });
             }
         }

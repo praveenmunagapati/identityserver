@@ -24,6 +24,7 @@ module.exports = function(config) {
           'https://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-cookies.min.js',
           'https://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-sanitize.min.js',
           'https://ajax.googleapis.com/ajax/libs/angular_material/1.1.1/angular-material.min.js',
+          'https://ajax.googleapis.com/ajax/libs/angular-ui-router/0.4.2/angular-ui-router.min.js',
           '../../node_modules/angular-mocks/angular-mocks.js',
           'thirdpartyassets/angular-translate/angular-translate.min.js',
           'thirdpartyassets/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js',
@@ -42,6 +43,8 @@ module.exports = function(config) {
           'components/common.js',
           'components/shared/country-info.js',
           'components/shared/directives/telinput.js',
+          'thirdpartyassets/showdown/compressed/Showdown.min.js',
+          'thirdpartyassets/angular-markdown-directive/markdown.js',
 
           // load main app and dependancies
           'components/app.js',
@@ -49,6 +52,7 @@ module.exports = function(config) {
           'components/user/directives/treeDirective.js',
           'components/user/UserDialogService.js',
           'components/user/authorizeController.js',
+          'components/user/seeDetailController.js',
           'components/user/controller.js',
           'components/user/service.js',
           'components/organization/controller.js',

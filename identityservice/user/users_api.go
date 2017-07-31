@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	"fmt"
@@ -21,6 +22,7 @@ import (
 	"github.com/itsyouonline/identityserver/db/keystore"
 	organizationDb "github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/db/registry"
+	seeDb "github.com/itsyouonline/identityserver/db/see"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/user/apikey"
 	validationdb "github.com/itsyouonline/identityserver/db/validation"
@@ -1624,6 +1626,337 @@ func (api UsersAPI) DeleteAuthorization(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (api UsersAPI) GetSeeObjectsByOrganization(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	organizationGlobalID := mux.Vars(r)["globalid"]
+
+	seeMgr := seeDb.NewManager(r)
+	seeObjects, err := seeMgr.GetSeeObjectsByOrganization(username, organizationGlobalID)
+	if err != nil {
+		log.Error("Failed to get see objects by organization", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	list := make([]*seeDb.SeeView, len(seeObjects))
+	for i, seeObject := range seeObjects {
+		list[i] = seeObject.ConvertToSeeView(len(seeObject.Versions))
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	json.NewEncoder(w).Encode(list)
+}
+
+func (api UsersAPI) GetSeeObject(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	organizationGlobalID := mux.Vars(r)["globalid"]
+	uniqueID := mux.Vars(r)["uniqueid"]
+	versionStr := r.URL.Query().Get("version")
+	version := "latest"
+	versionInt := 0
+	if versionStr != "" {
+		var err error
+		versionInt, err = strconv.Atoi(versionStr)
+		if err == nil {
+			if versionInt == -1 {
+				version = "latest"
+			} else if versionInt == 0 {
+				version = "all"
+			} else {
+				version = "index"
+			}
+		}
+	}
+
+	requestingClient, validClient := context.Get(r, "client_id").(string)
+	if !validClient {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if requestingClient == "itsyouonline" {
+		requestingClient = organizationGlobalID
+	}
+
+	seeMgr := seeDb.NewManager(r)
+	seeObject, err := seeMgr.GetSeeObject(username, requestingClient, uniqueID)
+	if db.IsNotFound(err) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Error("Failed to get see object", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	for i := range seeObject.Versions {
+		seeObject.Versions[i].Version = i + 1
+	}
+
+	if version == "latest" {
+		version = "index"
+		versionInt = len(seeObject.Versions)
+	}
+	if version == "index" {
+		if versionInt < 1 || versionInt > len(seeObject.Versions) {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		seeVersion := seeObject.Versions[versionInt-1]
+		seeObject.Versions = []seeDb.SeeVersion{seeVersion}
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	json.NewEncoder(w).Encode(seeObject)
+}
+
+func (api UsersAPI) CreateSeeObject(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	organizationGlobalID := mux.Vars(r)["globalid"]
+
+	requestingClient, validClient := context.Get(r, "client_id").(string)
+	if !validClient {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if requestingClient == "itsyouonline" {
+		requestingClient = organizationGlobalID
+	}
+
+	seeView := seeDb.SeeView{}
+	if err := json.NewDecoder(r.Body).Decode(&seeView); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	seeView.Username = username
+	seeView.Globalid = requestingClient
+
+	if !seeView.Validate() {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	if seeView.Signature != "" {
+		keyMgr := keystore.NewManager(r)
+		_, err := keyMgr.GetKeyStoreKey(username, requestingClient, seeView.KeyStoreLabel)
+		if db.IsNotFound(err) {
+			http.Error(w, http.StatusText(http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+			return
+		}
+	}
+
+	seeVersion := seeView.ConvertToSeeVersion()
+	see := seeDb.See{}
+	see.Username = seeView.Username
+	see.Globalid = seeView.Globalid
+	see.Uniqueid = seeView.Uniqueid
+	see.Versions = []seeDb.SeeVersion{*seeVersion}
+
+	seeMgr := seeDb.NewManager(r)
+	err := seeMgr.Create(&see)
+	if err == db.ErrDuplicate {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if handleServerError(w, "Create see object", err) {
+		return
+	}
+
+	seeObject, err := seeMgr.GetSeeObject(username, requestingClient, seeView.Uniqueid)
+	if db.IsNotFound(err) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Error("Failed to get see object", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(seeObject.ConvertToSeeView(len(seeObject.Versions)))
+}
+
+func (api UsersAPI) UpdateSeeObject(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	organizationGlobalID := mux.Vars(r)["globalid"]
+	uniqueID := mux.Vars(r)["uniqueid"]
+
+	requestingClient, validClient := context.Get(r, "client_id").(string)
+	if !validClient {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if requestingClient == "itsyouonline" {
+		requestingClient = organizationGlobalID
+	}
+
+	seeView := seeDb.SeeView{}
+	if err := json.NewDecoder(r.Body).Decode(&seeView); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	seeView.Username = username
+	seeView.Globalid = requestingClient
+	seeView.Uniqueid = uniqueID
+
+	if !seeView.Validate() {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if seeView.Signature != "" {
+		keyMgr := keystore.NewManager(r)
+		_, err := keyMgr.GetKeyStoreKey(username, requestingClient, seeView.KeyStoreLabel)
+		if db.IsNotFound(err) {
+			http.Error(w, http.StatusText(http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+			return
+		}
+	}
+
+	seeVersion := seeView.ConvertToSeeVersion()
+
+	seeMgr := seeDb.NewManager(r)
+	err := seeMgr.AddVersion(seeView.Username, seeView.Globalid, seeView.Uniqueid, seeVersion)
+	if db.IsNotFound(err) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if handleServerError(w, "Update see object", err) {
+		return
+	}
+
+	seeObject, err := seeMgr.GetSeeObject(username, requestingClient, uniqueID)
+	if db.IsNotFound(err) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Error("Failed to get see object", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(seeObject.ConvertToSeeView(len(seeObject.Versions)))
+}
+
+func (api UsersAPI) SignSeeObject(w http.ResponseWriter, r *http.Request) {
+	username := mux.Vars(r)["username"]
+	organizationGlobalID := mux.Vars(r)["globalid"]
+	uniqueID := mux.Vars(r)["uniqueid"]
+	versionStr := mux.Vars(r)["version"]
+	version, err := strconv.Atoi(versionStr)
+	if err != nil {
+		log.Error("ERROR while parsing version :\n", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	requestingClient, validClient := context.Get(r, "client_id").(string)
+	if !validClient {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if requestingClient == "itsyouonline" {
+		requestingClient = organizationGlobalID
+	}
+
+	seeView := seeDb.SeeView{}
+	if err := json.NewDecoder(r.Body).Decode(&seeView); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	seeMgr := seeDb.NewManager(r)
+	seeObject, err := seeMgr.GetSeeObject(username, requestingClient, uniqueID)
+	if db.IsNotFound(err) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Error("Failed to get see object", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if version < 1 || version > len(seeObject.Versions) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if seeObject.Versions[version-1].Category != seeView.Category {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if seeObject.Versions[version-1].Link != seeView.Link {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if seeObject.Versions[version-1].ContentType != seeView.ContentType {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if seeObject.Versions[version-1].MarkdownShortDescription != seeView.MarkdownShortDescription {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if seeObject.Versions[version-1].MarkdownFullDescription != seeView.MarkdownFullDescription {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if seeObject.Versions[version-1].StartDate != nil || seeView.StartDate != nil {
+		if seeObject.Versions[version-1].StartDate == nil || seeView.StartDate == nil {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+		if seeObject.Versions[version-1].StartDate.String() != seeView.StartDate.String() {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
+	if seeObject.Versions[version-1].EndDate != nil || seeView.EndDate != nil {
+		if seeObject.Versions[version-1].EndDate == nil || seeView.EndDate == nil {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+		if seeObject.Versions[version-1].EndDate.String() != seeView.EndDate.String() {
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
+		}
+	}
+	if seeObject.Versions[version-1].Signature != "" {
+		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+
+	keyMgr := keystore.NewManager(r)
+	_, err = keyMgr.GetKeyStoreKey(username, requestingClient, seeView.KeyStoreLabel)
+	if db.IsNotFound(err) {
+		http.Error(w, http.StatusText(http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+		return
+	}
+
+	seeObject.Versions[version-1].KeyStoreLabel = seeView.KeyStoreLabel
+	seeObject.Versions[version-1].Signature = seeView.Signature
+
+	err = seeMgr.Update(seeObject)
+	if db.IsNotFound(err) {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if handleServerError(w, "Sign see object", err) {
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(seeObject.ConvertToSeeView(version))
 }
 
 func (api UsersAPI) AddAPIKey(w http.ResponseWriter, r *http.Request) {
