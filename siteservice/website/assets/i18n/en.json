@@ -554,5 +554,15 @@
     "toggle_full_history": "Toggle full history",
     "link": "Link",
     "no_see_documents": "You don't have any see documents for this organization",
-    "seedetail": "See detail"
+    "seedetail": "See detail",
+    "smscode": "Please enter the code sent to you by sms",
+    "emailcode": "Please enter the code sent to you by email",
+    "validation": "Validation",
+    "sms_code_length": "The code has a length of 6 characters",
+    "email_code_length": "The code has a length of 44 characters",
+    "invalid_sms_code": "Invalid sms code",
+    "invalid_email_code": "Invalid email code",
+    "sms_confirmed_by_link": "Your phone number has already been confirmed via sms link",
+    "email_confirmed_by_link": "Your email address has already been confirmed via email link",
+    "emailoptional": "Validating your email address can optionally be done later"
 }

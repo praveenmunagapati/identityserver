@@ -31,7 +31,7 @@ type User struct {
 	Addresses      []Address             `json:"addresses"`
 	BankAccounts   []BankAccount         `json:"bankaccounts"`
 	EmailAddresses []EmailAddress        `json:"emailaddresses"`
-	Expire         db.DateTime           `json:"-" bson:"expire,omitempty"`
+	Expire         *db.DateTime          `json:"-" bson:"expire,omitempty"`
 	Facebook       FacebookAccount       `json:"facebook"`
 	Github         GithubAccount         `json:"github"`
 	Phonenumbers   []Phonenumber         `json:"phonenumbers"`

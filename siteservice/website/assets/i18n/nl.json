@@ -555,5 +555,15 @@
     "toggle_full_history": "Toggle volledige geschiedenis",
     "link": "Link",
     "no_see_documents": "U heeft geen documenten voor deze organisatie",
-    "seedetail": "See detail"
+    "seedetail": "See detail",
+    "smscode": "Gelieve de code uit de sms in te vullen",
+    "emailcode": "Gelieve de code uit de email in te vullen",
+    "validation": "Validatie",
+    "sms_code_length": "De code heeft een lengte van 6 karakters",
+    "email_code_length": "De code heeft een lengte van 44 karakters",
+    "invalid_sms_code": "Ongeldige sms code",
+    "invalid_email_code": "Ongeldige email code",
+    "sms_confirmed_by_link": "Je telefoonnummer is al bevetigd via de sms link",
+    "email_confirmed_by_link": "Je telefoonnummer is al bevestigd via de email link",
+    "emailoptional": "Je email adres valideren kan eventueel later gebeuren"
 }
