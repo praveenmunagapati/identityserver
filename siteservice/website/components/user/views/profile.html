@@ -1,6 +1,7 @@
 <div flex-gt-sm="80" flex="100" layout="column">
     <div class="breadcrumb-container">
-        <p ng-bind="::vm.username">You</p>
+        <p ng-if="::vm.user.firstname || vm.user.lastname" ng-bind="::vm.user.firstname + ' ' + vm.user.lastname">You</span>
+        <p ng-if="!(vm.user.firstname || vm.user.lastname)" ng-bind="::vm.username">You</p>
         <h1 translate='user.views.profile.profile'>Profile</h1>
     </div>
     <md-card>

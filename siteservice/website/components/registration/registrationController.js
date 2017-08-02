@@ -261,7 +261,6 @@
                 function(response) {
                     if (response.data.confirmed) {
                         vm.phoneConfirmed = response.data.confirmed;
-                        submitIfAllowed();
                     } else {
                         $timeout(checkPhoneConfirmation, 1000);
                     }
@@ -277,7 +276,6 @@
                 function(response) {
                     if (response.data.confirmed) {
                         vm.emailConfirmed = response.data.confirmed;
-                        submitIfAllowed();
                     } else {
                         $timeout(checkEmailConfirmation, 1000);
                     }
@@ -288,19 +286,5 @@
             );
         }
 
-        // try to automatically submit the form if a link is used to validate sms or email
-        function submitIfAllowed() {
-            if (vm.emailConfirmed && vm.phoneConfirmed) {
-                // set the register call on a 1s timeout to give the form time to update
-                $timeout(register(), 1000)
-                return;
-            }
-            if (vm.phoneConfirmed && !vm.needDoubleValidation) {
-                // set the register call on a 1s timeout to give the form time to update
-                $timeout(register(), 1000)
-                return;
-            }
-            return
-        }
     }
 })();

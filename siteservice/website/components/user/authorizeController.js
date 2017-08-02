@@ -116,7 +116,6 @@
                     };
                     var listScope = listAuthorizations[userScope];
                     if (listScope) {
-                      console.log(auth)
                         auth.reallabel = vm.user[listScope].length ? vm.user[listScope][0].label : '';
                         $scope.authorizations[listScope].push(auth);
                     }
@@ -146,8 +145,6 @@
                     else if (scope.startsWith('user:validated:')){
                         permissionLabel = splitPermission.length > 3 && splitPermission[3] ? splitPermission[3] : 'main';
                         auth.requestedlabel = permissionLabel;
-                        console.log(auth)
-                        console.log(vm)
                         switch (splitPermission[2]) {
                             case 'email':
                                 auth.reallabel = vm.user['emailaddresses'].length ? vm.user['emailaddresses'][0].label : '';
