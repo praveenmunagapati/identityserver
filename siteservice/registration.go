@@ -551,6 +551,8 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 
 		newuser := &user.User{
 			Username:       username,
+			Firstname:      data.Firstname,
+			Lastname:       data.Lastname,
 			EmailAddresses: []user.EmailAddress{{Label: "main", EmailAddress: data.Email}},
 			Phonenumbers:   []user.Phonenumber{{Label: "main", Phonenumber: data.Phone}},
 		}
