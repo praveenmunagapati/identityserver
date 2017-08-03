@@ -1,10 +1,10 @@
 <div flex="100" flex-gt-xs="60" flex-gt-sm="40">
     <md-list class="md-dense">
         <md-subheader class="md-no-sticky"><span translate='organization.views.detail.owners'>Owners</span></md-subheader>
-        <md-list-item class="md-1-line" ng-repeat="owner in vm.owners track by owner.username"
+        <md-list-item class="md-1-line" ng-repeat="owner in vm.owners track by owner.user.username"
                       aria-label="Owner" translate-attr="{ 'aria-label': 'owner' }">
             <div class="md-list-item-text">
-                <p ng-bind="::owner.username"></p>
+                <p ng-bind="::owner.user.useridentifier"></p>
             </div>
             <md-icon md-font-icon="fa-exclamation" class="fa md-warn md-secondary"
                      aria-label="Missing scopes"
@@ -39,10 +39,10 @@
     <md-list class="md-dense" ng-if="vm.organization.members.length > 0">
         <md-subheader class="md-no-sticky"><span translate='organization.views.detail.members'>Members</span></md-subheader>
         <md-list-item class="md-1-line"
-                      ng-repeat="member in vm.members track by member.username"
+                      ng-repeat="member in vm.members track by member.user.username"
                       aria-label="Member" translate-attr="{ 'aria-label': 'member' }">
             <div class="md-list-item-text">
-                <p ng-bind="::member.username"></p>
+                <p ng-bind="::member.user.useridentifier"></p>
             </div>
             <md-icon md-font-icon="fa-exclamation" class="fa md-warn md-secondary"
                      aria-label="Missing scopes"
@@ -50,7 +50,7 @@
                      ng-click="vm.showMissingScopesDialog($event, member)"></md-icon>
             <md-icon md-font-icon="fa-pencil" aria-label="Edit member" translate-attr="{ 'aria-label': 'organization.views.detail.editmember' }"
                      class="fa md-secondary md-primary"
-                     ng-if="::vm.canEditRole(member.username)"
+                     ng-if="::vm.canEditRole(member.user.username)"
                      ng-click="vm.editMember($event, member)">
             </md-icon>
         </md-list-item>
@@ -84,7 +84,7 @@
         <md-list-item class="md-3-line" ng-repeat="invite in vm.invitations track by $index"
                       aria-label="Invite" ng-if="!vm.loading.invitations">
             <div class="md-list-item-text">
-                <h3 class="text_align_center" ng-bind="::invite.user || invite.phonenumber || invite.emailaddress"></h3>
+                <h3 class="text_align_center" ng-bind="::invite.user.useridentifier || invite.phonenumber || invite.emailaddress"></h3>
                 <h4 ng-if="::invite.created" translate="invited_on_date"
                     translate-value-timestamp="{{invite.created | date: 'd MMM y H:mm:ss'}}">
                    Invited on <span ng-bind="::invite.created | date: 'd MMM y H:mm:ss'"></span></h4>

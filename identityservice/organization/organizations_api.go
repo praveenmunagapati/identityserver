@@ -249,7 +249,13 @@ func (api OrganizationsAPI) GetOrganization(w http.ResponseWriter, r *http.Reque
 		}
 		return
 	}
-	json.NewEncoder(w).Encode(org)
+
+	// replace owners and members usernames
+	orgView, err := org.ConvertToView(user.NewManager(r), validationdb.NewManager(r))
+	if handleServerError(w, "converting organization to organization view", err) {
+		return
+	}
+	json.NewEncoder(w).Encode(orgView)
 }
 
 func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, role string) {
@@ -361,9 +367,16 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 		}
 	}
 
+	usrMgr := user.NewManager(r)
+	valMgr := validationdb.NewManager(r)
+	reqView, err := orgReq.ConvertToView(usrMgr, valMgr)
+	if handleServerError(w, "converting invite to inviteview", err) {
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(orgReq)
+	json.NewEncoder(w).Encode(reqView)
 }
 
 // AddOrganizationMember Assign a member to organization
@@ -414,7 +427,13 @@ func (api OrganizationsAPI) UpdateOrganizationMemberShip(w http.ResponseWriter, 
 	if err != nil {
 		handleServerError(w, "getting organization", err)
 	}
-	json.NewEncoder(w).Encode(org)
+	usrMgr := user.NewManager(r)
+	valMgr := validationdb.NewManager(r)
+	orgView, err := org.ConvertToView(usrMgr, valMgr)
+	if handleServerError(w, "converting organization to view", err) {
+		return
+	}
+	json.NewEncoder(w).Encode(orgView)
 
 }
 
@@ -591,8 +610,20 @@ func (api OrganizationsAPI) GetInvitations(w http.ResponseWriter, r *http.Reques
 	if handleServerError(w, "filtering invitations by organization", err) {
 		return
 	}
+
+	usrMgr := user.NewManager(r)
+	valMgr := validationdb.NewManager(r)
+	views := make([]*invitations.JoinOrganizationInvtationView, len(invites))
+	for i, invite := range invites {
+		view, err := invite.ConvertToView(usrMgr, valMgr)
+		if handleServerError(w, "converting invite to view", err) {
+			return
+		}
+		views[i] = view
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(invites)
+	json.NewEncoder(w).Encode(views)
 }
 
 // RemovePendingInvitation is the handler for DELETE /organizations/{globalid}/invitations/{username}
@@ -1560,8 +1591,8 @@ func (api OrganizationsAPI) GetOrganizationUsers(w http.ResponseWriter, r *http.
 	}
 	authorizationsMap := make(map[string]user.Authorization)
 	// Only owners can see if there are missing permissions
+	userMgr := user.NewManager(r)
 	if isOwner {
-		userMgr := user.NewManager(r)
 		authorizations, err := userMgr.GetOrganizationAuthorizations(globalID)
 		if handleServerError(w, "getting organizaton authorizations", err) {
 			return
@@ -1571,9 +1602,14 @@ func (api OrganizationsAPI) GetOrganizationUsers(w http.ResponseWriter, r *http.
 		}
 	}
 	users := []organization.OrganizationUser{}
+	valMgr := validationdb.NewManager(r)
 	for username, role := range roleMap {
+		mv, err := organization.ConvertUserToUserView(username, userMgr, valMgr)
+		if handleServerError(w, "converting user to userview", err) {
+			return
+		}
 		orgUser := organization.OrganizationUser{
-			Username:      username,
+			User:          mv,
 			Role:          role,
 			MissingScopes: []string{},
 		}

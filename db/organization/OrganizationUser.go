@@ -1,7 +1,7 @@
 package organization
 
 type OrganizationUser struct {
-	Username      string   `json:"username"`
-	Role          string   `json:"role"`
-	MissingScopes []string `json:"missingscopes"`
+	User          MemberView `json:"user"`
+	Role          string     `json:"role"`
+	MissingScopes []string   `json:"missingscopes"`
 }

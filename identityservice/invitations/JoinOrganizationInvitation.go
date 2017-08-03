@@ -4,6 +4,9 @@ import (
 	"reflect"
 
 	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/db/user"
+	"github.com/itsyouonline/identityserver/db/validation"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -58,4 +61,32 @@ func ParseInvitationType(invitationType string) string {
 		return val
 	}
 	return reflect.ValueOf(RequestPending).String()
+}
+
+type JoinOrganizationInvtationView struct {
+	Organization   string                  `json:"organization"`
+	Role           string                  `json:"role"`
+	User           organization.MemberView `json:"user"`
+	Status         InvitationStatus        `json:"status"`
+	Created        db.DateTime             `json:"created"`
+	Method         InviteMethod            `json:"method"`
+	EmailAddress   string                  `json:"emailaddress"`
+	PhoneNumber    string                  `json:"phonenumber"`
+	IsOrganization bool                    `json:"isorganization"`
+}
+
+func (inv *JoinOrganizationInvitation) ConvertToView(usrMgr *user.Manager, valMgr *validation.Manager) (*JoinOrganizationInvtationView, error) {
+	vw := &JoinOrganizationInvtationView{}
+	vw.Organization = inv.Organization
+	vw.Role = inv.Role
+	vw.Status = inv.Status
+	vw.Created = inv.Created
+	vw.Method = inv.Method
+	vw.EmailAddress = inv.EmailAddress
+	vw.PhoneNumber = inv.PhoneNumber
+	vw.IsOrganization = inv.IsOrganization
+
+	var err error
+	vw.User, err = organization.ConvertUserToUserView(inv.User, usrMgr, valMgr)
+	return vw, err
 }
