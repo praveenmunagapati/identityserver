@@ -43,6 +43,8 @@
         vm.selectedTabIndex = 0;
         vm.pendingCount = 0;
 
+        vm.userIdentifier = "";
+
         UserDialogService.init(vm);
 
         /*vm.tabSelected = tabSelected;*/
@@ -88,7 +90,11 @@
             vm.selectedTabIndex = index === -1 ? 0 : index;
             loadUser().then(function () {
                 loadVerifiedPhones();
-                loadVerifiedEmails().then(loadNotifications);
+                loadVerifiedEmails().then(
+                    function() {
+                        loadNotifications();
+                        getUserIdentifier();
+                });
             });
         }
 
@@ -130,6 +136,26 @@
                         vm.loaded.notifications = true;
                     }
                 );
+        }
+
+        function getUserIdentifier() {
+            if (vm.user.firstname || vm.user.lastname) {
+                vm.userIdentifier = vm.user.firstname + ' ' + vm.user.lastname;
+                return
+            }
+            angular.forEach(vm.user.emailaddresses, function(email, key) {
+                if (email.verified && !vm.userIdentifier) {
+                    vm.userIdentifier = email.emailaddress;
+                }
+            });
+            if (vm.userIdentifier) {
+                return
+            }
+            angular.forEach(vm.user.phonenumbers, function(phone, key) {
+                if (phone.verified && !vm.userIdentifier) {
+                    vm.userIdentifier = phone.phonenumber;
+                }
+            });
         }
 
         function updatePendingNotificationsCount() {
