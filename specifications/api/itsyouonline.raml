@@ -1526,7 +1526,7 @@ securedBy: [ oauth_2_0 ]
       put:
         displayName: UpdateSeeObject
         securedBy: [oauth_2_0: { scopes: [ "user:see" ] } ]
-        description: Sign a see object
+        description: Updates a see object
         body:
           application/json:
             type: SeeView
@@ -1541,7 +1541,7 @@ securedBy: [ oauth_2_0 ]
         put:
           displayName: SignSeeObject
           securedBy: [oauth_2_0: { scopes: [ "user:see" ] } ]
-          description: Upates a see object
+          description: Sign a see object
           body:
             application/json:
               type: SeeView
