@@ -403,7 +403,7 @@ types:
   KeyData:
     properties:
       timestamp?: datetime
-      commen?: string
+      comment?: string
       algorithm: string
 
   Company:
@@ -1462,7 +1462,7 @@ securedBy: [ oauth_2_0 ]
       responses:
         201:
           body:
-            applicaton/json:
+            application/json:
               type: KeyStoreKey
         409:
           description: A key with this label for this organization in this user's keystore already exists
