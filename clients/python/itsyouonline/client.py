@@ -1,7 +1,5 @@
 import requests
 
-from .companies_service import  CompaniesService 
-from .contracts_service import  ContractsService 
 from .organizations_service import  OrganizationsService 
 from .users_service import  UsersService 
 
@@ -14,8 +12,6 @@ class Client:
         self.session = requests.Session()
         self.session.headers.update({"Content-Type": "application/json"})
         
-        self.companies = CompaniesService(self)
-        self.contracts = ContractsService(self)
         self.organizations = OrganizationsService(self)
         self.users = UsersService(self)
     
