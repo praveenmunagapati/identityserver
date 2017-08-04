@@ -9,10 +9,7 @@
     function registrationController($scope, $window, $cookies, $mdUtil, $rootScope, $timeout, $http, configService, registrationService) {
         var vm = this,
             queryParams = URI($window.location.href).search(true);
-        // configService.getConfig(function (config) {
-        //     vm.totpsecret = config.totpsecret;
-        //     vm.totpissuer = encodeURIComponent(config.totpissuer);
-        // });
+        vm.resendValidation = resendValidation;
         vm.register = register;
         vm.resetValidation = resetValidation;
         vm.basicInfoValid = basicInfoValid;
@@ -284,6 +281,11 @@
                     $timeout(checkEmailConfirmation, 1000);
                 }
             );
+        }
+
+        function resendValidation() {
+          console.log("sending validaton")
+            registrationService.resendValidation(vm.email, vm.sms);
         }
 
     }

@@ -96,12 +96,11 @@
                                 <span ng-if="vm.emailConfirmed"translate="email_confirmed_by_link">Your email address has already been confirmed via email link</span>
                             </md-input-container>
                             <span ng-if="!vm.needDoubleValidation && !vm.emailConfirmed" translate="emailoptional">Validating your email address can also be done later</span>
-                            <div layout="row">
-                                <div flex></div>
+                            <div layout="row" layout-align="space-between center">
+                                <md-button class="md-raised" ng-click="vm.resendValidation()" translate='registration.views.registrationsmsform.resend'>Resend...</md-button>
                                 <md-button type="submit" class="md-raised md-primary" translate='login.views.loginform.login'>
                                     Log in
                                 </md-button>
-                                <div flex></div>
                             </div>
                         </div>
                     </md-tab-body>

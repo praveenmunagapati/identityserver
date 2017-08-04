@@ -618,3 +618,63 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	// validations created
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (service *Service) ResendValidationInfo(w http.ResponseWriter, r *http.Request) {
+	data := struct {
+		Email   string `json:"email"`
+		Phone   string `json:"phone"`
+		LangKey string `json:"langkey"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		log.Debug("Failed to decode validate info body: ", err)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	registrationSession, err := service.GetSession(r, SessionForRegistration, "registrationdetails")
+	if err != nil {
+		log.Error(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if registrationSession.IsNew {
+		sessions.Save(r, w)
+		log.Debug("Registration session expired")
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+
+	username, _ := registrationSession.Values["username"].(string)
+
+	//Invalidate the previous phone validation request, ignore a possible error
+	validationkey, _ := registrationSession.Values["phonenumbervalidationkey"].(string)
+	_ = service.phonenumberValidationService.ExpireValidation(r, validationkey)
+
+	phonenumber, _ := registrationSession.Values["phonenumber"].(string)
+
+	validationkey, err = service.phonenumberValidationService.RequestValidation(r, username, user.Phonenumber{Phonenumber: phonenumber}, fmt.Sprintf("https://%s/phonevalidation", r.Host), data.LangKey)
+	if err != nil {
+		log.Error("ResendPhonenumberConfirmation: Could not get validationkey: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	registrationSession.Values["phonenumbervalidationkey"] = validationkey
+
+	//Invalidate the previous email validation request, ignore a possible error
+	emailvalidationkey, _ := registrationSession.Values["emailvalidationkey"].(string)
+	_ = service.emailaddressValidationService.ExpireValidation(r, emailvalidationkey)
+
+	email, _ := registrationSession.Values["email"].(string)
+
+	emailvalidationkey, err = service.emailaddressValidationService.RequestValidation(r, username, email, fmt.Sprintf("https://%s/emailvalidation", r.Host), data.LangKey)
+	if err != nil {
+		log.Error("ResendEmailConfirmation: Could not get validationkey: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	registrationSession.Values["emailvalidationkey"] = emailvalidationkey
+
+	sessions.Save(r, w)
+	w.WriteHeader(http.StatusOK)
+}

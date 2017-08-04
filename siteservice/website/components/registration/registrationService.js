@@ -11,7 +11,8 @@
             requestValidation: requestValidation,
             register: register,
             getLogo: getLogo,
-            getDescription: getDescription
+            getDescription: getDescription,
+            resendValidation: resendValidation
         };
 
         function validateUsername(username) {
@@ -75,6 +76,16 @@
                     return $q.reject(reason);
                 }
             );
+        }
+
+        function resendValidation(email, phone) {
+          var url = '/register/resendvalidation';
+          var data = {
+              email: email,
+              phone: phone,
+              langkey: localStorage.getItem('langKey')
+          };
+          return $http.post(url, data);
         }
     }
 })();
