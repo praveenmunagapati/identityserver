@@ -565,5 +565,6 @@
     "invalid_email_code": "Ongeldige email code",
     "sms_confirmed_by_link": "Je telefoonnummer is al bevetigd via de sms link",
     "email_confirmed_by_link": "Je telefoonnummer is al bevestigd via de email link",
-    "emailoptional": "Je email adres valideren kan eventueel later gebeuren"
+    "emailoptional": "Je email adres valideren kan eventueel later gebeuren",
+    "validate_email_instruction": "Gelieve de knop of link in de email die naar je gestuurd is te gebruiken om je email adres te bevestigen"
 }
