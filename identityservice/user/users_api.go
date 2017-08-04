@@ -854,6 +854,7 @@ func (api UsersAPI) VerifyPhoneNumber(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	userMgr.RemoveExpireDate(username)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -2475,6 +2476,8 @@ func (api UsersAPI) SetupTOTP(w http.ResponseWriter, r *http.Request) {
 		}
 		w.WriteHeader(422)
 	} else {
+		userMgr := user.NewManager(r)
+		userMgr.RemoveExpireDate(username)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
