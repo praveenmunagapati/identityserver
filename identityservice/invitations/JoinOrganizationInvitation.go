@@ -88,5 +88,9 @@ func (inv *JoinOrganizationInvitation) ConvertToView(usrMgr *user.Manager, valMg
 
 	var err error
 	vw.User, err = organization.ConvertUserToUserView(inv.User, usrMgr, valMgr)
+	// user can be empty if invited through email or phone number
+	if db.IsNotFound(err) {
+		err = nil
+	}
 	return vw, err
 }
