@@ -5,7 +5,8 @@ import (
 )
 
 type UsersUsernameTotpPostReqBody struct {
-	Totpcode string `json:"totpcode" validate:"nonzero"`
+	Totpcode   string `json:"totpcode" validate:"nonzero"`
+	Totpsecret string `json:"totpsecret" validate:"nonzero"`
 }
 
 func (s UsersUsernameTotpPostReqBody) Validate() error {
