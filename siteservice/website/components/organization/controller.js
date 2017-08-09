@@ -420,9 +420,9 @@
         }
 
         function editMember(event, user) {
-            var username = user.user.username;
+            var username = user.username;
             var changeRoleDialog = {
-                controller: ['$mdDialog', '$translate', 'OrganizationService', 'UserDialogService', 'organization', 'user', 'userId', 'initialRole', EditOrganizationMemberController],
+                controller: ['$mdDialog', '$translate', 'OrganizationService', 'UserDialogService', 'organization', 'user', 'initialRole', EditOrganizationMemberController],
                 controllerAs: 'ctrl',
                 templateUrl: 'components/organization/views/changeRoleDialog.html',
                 targetEvent: event,
@@ -430,7 +430,6 @@
                 locals: {
                     organization: vm.organization,
                     user: username,
-                    userId: user.user.useridentifier,
                     initialRole: user.role
                 }
             };
@@ -441,14 +440,14 @@
                     if (data.action === 'edit') {
                         vm.organization = data.data;
                         var u = vm.users.filter(function (user) {
-                            return user.user.username === username;
+                            return user.username === username;
                         })[0];
                         u.role = data.newRole;
                     } else if (data.action === 'remove') {
                         var people = vm.organization[data.data.role];
-                        people.splice(people.indexOf(data.data.username), 1);
+                        people.splice(people.indexOf(data.data), 1);
                         vm.users = vm.users.filter(function (user) {
-                            return user.user.username !== username;
+                            return user.username !== username;
                         });
                     }
                     setUsers();
@@ -619,7 +618,7 @@
         }
 
         function removeInvitation(invite) {
-            var searchString = invite.user.username || invite.phonenumber || invite.emailaddress;
+            var searchString = invite.user || invite.phonenumber || invite.emailaddress;
             OrganizationService.removeInvitation(globalid, searchString).then(removeFromView, function (response) {
                 if (response.status === 404) {
                     removeFromView();
@@ -885,11 +884,10 @@
 
     }
 
-    function EditOrganizationMemberController($mdDialog, $translate, OrganizationService, UserDialogService, organization, user, userId, initialRole) {
+    function EditOrganizationMemberController($mdDialog, $translate, OrganizationService, UserDialogService, organization, user, initialRole) {
         var ctrl = this;
         ctrl.role = initialRole;
         ctrl.user = user;
-        ctrl.useridentifier = userId;
         ctrl.organization = organization;
         ctrl.cancel = cancel;
         ctrl.submit = submit;
