@@ -108,13 +108,13 @@ type UsersInterface interface { // Post is the handler for POST /users
 	// GetSeeObjects is the handler for GET /users/{username}/see
 	// Get a list of all see objects.
 	GetSeeObjects(http.ResponseWriter, *http.Request)
-	// GetSeeObject is the handler for GET /users/{username}/see/{uniqueid}
+	// GetSeeObject is the handler for GET /users/{username}/see/{uniqueid}/{globalid}
 	GetSeeObject(http.ResponseWriter, *http.Request)
-	// CreateSeeObject is the handler for POST /users/{username}/see/{uniqueid}/{globalid}
+	// CreateSeeObject is the handler for POST /users/{username}/see
 	CreateSeeObject(http.ResponseWriter, *http.Request)
 	// UpdateSeeObject is the handler for PUT /users/{username}/see/{uniqueid}/{globalid}
 	UpdateSeeObject(http.ResponseWriter, *http.Request)
-	// SignSeeObject is the handler for PUT /users/{username}/see/{uniqueid}/{globalid}/sign
+	// SignSeeObject is the handler for PUT /users/{username}/see/{uniqueid}/{globalid}/sign/{version}
 	SignSeeObject(http.ResponseWriter, *http.Request)
 	// AddAPIKey Add an API Key
 	AddAPIKey(http.ResponseWriter, *http.Request)
