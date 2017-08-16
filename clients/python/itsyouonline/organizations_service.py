@@ -40,15 +40,6 @@ class OrganizationsService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
-    def Get2faValidityTime(self, globalid, headers=None, query_params=None):
-        """
-        Get the 2FA validity time for the organization, in seconds
-        It is method for GET /organizations/{globalid}/2fa/validity
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/2fa/validity"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def Set2faValidityTime(self, data, globalid, headers=None, query_params=None):
         """
         Update the 2FA validity time for the organization
@@ -56,6 +47,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/2fa/validity"
         return self.client.put(uri, data, headers=headers, params=query_params)
+
+
+    def Get2faValidityTime(self, globalid, headers=None, query_params=None):
+        """
+        Get the 2FA validity time for the organization, in seconds
+        It is method for GET /organizations/{globalid}/2fa/validity
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/2fa/validity"
+        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def CreateNewOrganizationAPIKey(self, data, globalid, headers=None, query_params=None):
@@ -76,15 +76,6 @@ class OrganizationsService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def DeleteOrganizationAPIKey(self, label, globalid, headers=None, query_params=None):
-        """
-        Removes an API key
-        It is method for DELETE /organizations/{globalid}/apikeys/{label}
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/apikeys/"+label
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
     def GetOrganizationAPIKey(self, label, globalid, headers=None, query_params=None):
         """
         Get an api key from an organization
@@ -92,6 +83,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/apikeys/"+label
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def DeleteOrganizationAPIKey(self, label, globalid, headers=None, query_params=None):
+        """
+        Removes an API key
+        It is method for DELETE /organizations/{globalid}/apikeys/{label}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/apikeys/"+label
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def UpdateOrganizationAPIKey(self, data, label, globalid, headers=None, query_params=None):
@@ -121,15 +121,6 @@ class OrganizationsService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def UpdateDescription(self, data, globalid, headers=None, query_params=None):
-        """
-        Update the description for this organization for a given language key
-        It is method for PUT /organizations/{globalid}/description
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/description"
-        return self.client.put(uri, data, headers=headers, params=query_params)
-
-
     def SetDescription(self, data, globalid, headers=None, query_params=None):
         """
         Set the description for this organization for a given language key
@@ -139,13 +130,13 @@ class OrganizationsService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def DeleteDescription(self, langkey, globalid, headers=None, query_params=None):
+    def UpdateDescription(self, data, globalid, headers=None, query_params=None):
         """
-        Delete the description for this organization for a given language key
-        It is method for DELETE /organizations/{globalid}/description/{langkey}
+        Update the description for this organization for a given language key
+        It is method for PUT /organizations/{globalid}/description
         """
-        uri = self.client.base_url + "/organizations/"+globalid+"/description/"+langkey
-        return self.client.session.delete(uri, headers=headers, params=query_params)
+        uri = self.client.base_url + "/organizations/"+globalid+"/description"
+        return self.client.put(uri, data, headers=headers, params=query_params)
 
 
     def GetDescription(self, langkey, globalid, headers=None, query_params=None):
@@ -155,6 +146,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/description/"+langkey
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def DeleteDescription(self, langkey, globalid, headers=None, query_params=None):
+        """
+        Delete the description for this organization for a given language key
+        It is method for DELETE /organizations/{globalid}/description/{langkey}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/description/"+langkey
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def GetDescriptionWithFallback(self, langkey, globalid, headers=None, query_params=None):
@@ -247,15 +247,6 @@ class OrganizationsService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
-    def AddOrganizationMember(self, data, globalid, headers=None, query_params=None):
-        """
-        Invite someone to become member of an organization.
-        It is method for POST /organizations/{globalid}/members
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/members"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
     def UpdateOrganizationMemberShip(self, data, globalid, headers=None, query_params=None):
         """
         Update an organization membership
@@ -263,6 +254,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/members"
         return self.client.put(uri, data, headers=headers, params=query_params)
+
+
+    def AddOrganizationMember(self, data, globalid, headers=None, query_params=None):
+        """
+        Invite someone to become member of an organization.
+        It is method for POST /organizations/{globalid}/members
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/members"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def RemoveOrganizationMember(self, username, globalid, headers=None, query_params=None):
@@ -373,15 +373,6 @@ class OrganizationsService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
-    def AddOrganizationRegistryEntry(self, data, globalid, headers=None, query_params=None):
-        """
-        Adds a RegistryEntry to the organization's registry, if the key is already used, it is overwritten.
-        It is method for POST /organizations/{globalid}/registry
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/registry"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
     def ListOrganizationRegistry(self, globalid, headers=None, query_params=None):
         """
         Lists the RegistryEntries in an organization's registry.
@@ -391,13 +382,13 @@ class OrganizationsService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def GetOrganizationRegistryEntry(self, key, globalid, headers=None, query_params=None):
+    def AddOrganizationRegistryEntry(self, data, globalid, headers=None, query_params=None):
         """
-        Get a RegistryEntry from the organization's registry.
-        It is method for GET /organizations/{globalid}/registry/{key}
+        Adds a RegistryEntry to the organization's registry, if the key is already used, it is overwritten.
+        It is method for POST /organizations/{globalid}/registry
         """
-        uri = self.client.base_url + "/organizations/"+globalid+"/registry/"+key
-        return self.client.session.get(uri, headers=headers, params=query_params)
+        uri = self.client.base_url + "/organizations/"+globalid+"/registry"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def DeleteOrganizationRegistryEntry(self, key, globalid, headers=None, query_params=None):
@@ -409,6 +400,15 @@ class OrganizationsService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
+    def GetOrganizationRegistryEntry(self, key, globalid, headers=None, query_params=None):
+        """
+        Get a RegistryEntry from the organization's registry.
+        It is method for GET /organizations/{globalid}/registry/{key}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/registry/"+key
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
     def AddRequiredScope(self, data, globalid, headers=None, query_params=None):
         """
         Adds a required scope
@@ -418,15 +418,6 @@ class OrganizationsService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def UpdateRequiredScope(self, data, requiredscope, globalid, headers=None, query_params=None):
-        """
-        Updates a required scope
-        It is method for PUT /organizations/{globalid}/requiredscopes/{requiredscope}
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/requiredscopes/"+requiredscope
-        return self.client.put(uri, data, headers=headers, params=query_params)
-
-
     def DeleteRequiredScope(self, requiredscope, globalid, headers=None, query_params=None):
         """
         Deletes a required scope
@@ -434,6 +425,15 @@ class OrganizationsService:
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/requiredscopes/"+requiredscope
         return self.client.session.delete(uri, headers=headers, params=query_params)
+
+
+    def UpdateRequiredScope(self, data, requiredscope, globalid, headers=None, query_params=None):
+        """
+        Updates a required scope
+        It is method for PUT /organizations/{globalid}/requiredscopes/{requiredscope}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/requiredscopes/"+requiredscope
+        return self.client.put(uri, data, headers=headers, params=query_params)
 
 
     def TransferSubOrganization(self, data, globalid, headers=None, query_params=None):

@@ -30,15 +30,6 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def GetUserAddresses(self, username, headers=None, query_params=None):
-        """
-        List of all of the user his email addresses.
-        It is method for GET /users/{username}/addresses
-        """
-        uri = self.client.base_url + "/users/"+username+"/addresses"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def RegisterNewUserAddress(self, data, username, headers=None, query_params=None):
         """
         Register a new address
@@ -48,21 +39,12 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def DeleteUserAddress(self, label, username, headers=None, query_params=None):
+    def GetUserAddresses(self, username, headers=None, query_params=None):
         """
-        Removes an address
-        It is method for DELETE /users/{username}/addresses/{label}
+        List of all of the user his email addresses.
+        It is method for GET /users/{username}/addresses
         """
-        uri = self.client.base_url + "/users/"+username+"/addresses/"+label
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
-    def GetUserAddressByLabel(self, label, username, headers=None, query_params=None):
-        """
-        Get the details of an address.
-        It is method for GET /users/{username}/addresses/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/addresses/"+label
+        uri = self.client.base_url + "/users/"+username+"/addresses"
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
@@ -75,13 +57,22 @@ class UsersService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
-    def ListAPIKeys(self, username, headers=None, query_params=None):
+    def GetUserAddressByLabel(self, label, username, headers=None, query_params=None):
         """
-        Lists the API keys
-        It is method for GET /users/{username}/apikeys
+        Get the details of an address.
+        It is method for GET /users/{username}/addresses/{label}
         """
-        uri = self.client.base_url + "/users/"+username+"/apikeys"
+        uri = self.client.base_url + "/users/"+username+"/addresses/"+label
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def DeleteUserAddress(self, label, username, headers=None, query_params=None):
+        """
+        Removes an address
+        It is method for DELETE /users/{username}/addresses/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/addresses/"+label
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def AddApiKey(self, data, username, headers=None, query_params=None):
@@ -93,6 +84,15 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
+    def ListAPIKeys(self, username, headers=None, query_params=None):
+        """
+        Lists the API keys
+        It is method for GET /users/{username}/apikeys
+        """
+        uri = self.client.base_url + "/users/"+username+"/apikeys"
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
     def UpdateAPIkey(self, data, label, username, headers=None, query_params=None):
         """
         Updates the label for the API key
@@ -100,15 +100,6 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/apikeys/"+label
         return self.client.put(uri, data, headers=headers, params=query_params)
-
-
-    def DeleteAPIkey(self, label, username, headers=None, query_params=None):
-        """
-        Removes an API key
-        It is method for DELETE /users/{username}/apikeys/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/apikeys/"+label
-        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def GetAPIkey(self, label, username, headers=None, query_params=None):
@@ -120,21 +111,21 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
+    def DeleteAPIkey(self, label, username, headers=None, query_params=None):
+        """
+        Removes an API key
+        It is method for DELETE /users/{username}/apikeys/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/apikeys/"+label
+        return self.client.session.delete(uri, headers=headers, params=query_params)
+
+
     def GetAllAuthorizations(self, username, headers=None, query_params=None):
         """
         Get the list of authorizations.
         It is method for GET /users/{username}/authorizations
         """
         uri = self.client.base_url + "/users/"+username+"/authorizations"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
-    def GetAuthorization(self, grantedTo, username, headers=None, query_params=None):
-        """
-        Get the authorization for a specific organization.
-        It is method for GET /users/{username}/authorizations/{grantedTo}
-        """
-        uri = self.client.base_url + "/users/"+username+"/authorizations/"+grantedTo
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
@@ -147,6 +138,15 @@ class UsersService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
+    def GetAuthorization(self, grantedTo, username, headers=None, query_params=None):
+        """
+        Get the authorization for a specific organization.
+        It is method for GET /users/{username}/authorizations/{grantedTo}
+        """
+        uri = self.client.base_url + "/users/"+username+"/authorizations/"+grantedTo
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
     def DeleteAuthorization(self, grantedTo, username, headers=None, query_params=None):
         """
         Remove the authorization for an organization, the granted organization will no longer have access the user's information.
@@ -156,15 +156,6 @@ class UsersService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
-    def GetAvatars(self, username, headers=None, query_params=None):
-        """
-        List all avatars for the user
-        It is method for GET /users/{username}/avatar
-        """
-        uri = self.client.base_url + "/users/"+username+"/avatar"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def CreateAvatarFromLink(self, data, username, headers=None, query_params=None):
         """
         Create a new avatar with the specified label from a link
@@ -172,6 +163,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/avatar"
         return self.client.post(uri, data, headers=headers, params=query_params)
+
+
+    def GetAvatars(self, username, headers=None, query_params=None):
+        """
+        List all avatars for the user
+        It is method for GET /users/{username}/avatar
+        """
+        uri = self.client.base_url + "/users/"+username+"/avatar"
+        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def CreateAvatarFromImage(self, data, label, username, headers=None, query_params=None):
@@ -210,15 +210,6 @@ class UsersService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
-    def GetUserBankAccounts(self, username, headers=None, query_params=None):
-        """
-        List of the user his bank accounts.
-        It is method for GET /users/{username}/banks
-        """
-        uri = self.client.base_url + "/users/"+username+"/banks"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def CreateUserBankAccount(self, data, username, headers=None, query_params=None):
         """
         Create new bank account
@@ -228,12 +219,12 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def GetUserBankAccountByLabel(self, username, label, headers=None, query_params=None):
+    def GetUserBankAccounts(self, username, headers=None, query_params=None):
         """
-        Get the details of a bank account
-        It is method for GET /users/{username}/banks/{label}
+        List of the user his bank accounts.
+        It is method for GET /users/{username}/banks
         """
-        uri = self.client.base_url + "/users/"+username+"/banks/"+label
+        uri = self.client.base_url + "/users/"+username+"/banks"
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
@@ -255,6 +246,15 @@ class UsersService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
+    def GetUserBankAccountByLabel(self, username, label, headers=None, query_params=None):
+        """
+        Get the details of a bank account
+        It is method for GET /users/{username}/banks/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/banks/"+label
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
     def GetUserContracts(self, username, headers=None, query_params=None):
         """
         Get the contracts where the user is 1 of the parties. Order descending by date.
@@ -273,15 +273,6 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def RegisterNewDigitalAssetAddress(self, data, username, headers=None, query_params=None):
-        """
-        Register a new digital asset address
-        It is method for POST /users/{username}/digitalwallet
-        """
-        uri = self.client.base_url + "/users/"+username+"/digitalwallet"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
     def GetDigitalWallet(self, username, headers=None, query_params=None):
         """
         List all of the user his digital wallets.
@@ -289,6 +280,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/digitalwallet"
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def RegisterNewDigitalAssetAddress(self, data, username, headers=None, query_params=None):
+        """
+        Register a new digital asset address
+        It is method for POST /users/{username}/digitalwallet
+        """
+        uri = self.client.base_url + "/users/"+username+"/digitalwallet"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def UpdateDigitalAssetAddress(self, data, label, username, headers=None, query_params=None):
@@ -318,15 +318,6 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def RegisterNewEmailAddress(self, data, username, headers=None, query_params=None):
-        """
-        Register a new email address
-        It is method for POST /users/{username}/emailaddresses
-        """
-        uri = self.client.base_url + "/users/"+username+"/emailaddresses"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
     def GetEmailAddresses(self, username, headers=None, query_params=None):
         """
         Get a list of the user his email addresses.
@@ -334,6 +325,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/emailaddresses"
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def RegisterNewEmailAddress(self, data, username, headers=None, query_params=None):
+        """
+        Register a new email address
+        It is method for POST /users/{username}/emailaddresses
+        """
+        uri = self.client.base_url + "/users/"+username+"/emailaddresses"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def DeleteEmailAddress(self, label, username, headers=None, query_params=None):
@@ -390,15 +390,6 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def SaveKeyStoreKey(self, data, username, headers=None, query_params=None):
-        """
-        Saves a new key to this users keystore. The username, globalid and timestamp will be overwritten
-        It is method for POST /users/{username}/keystore
-        """
-        uri = self.client.base_url + "/users/"+username+"/keystore"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
     def GetKeyStore(self, username, headers=None, query_params=None):
         """
         Lists all keys written to this users keystore by the accessing organization
@@ -406,6 +397,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/keystore"
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def SaveKeyStoreKey(self, data, username, headers=None, query_params=None):
+        """
+        Saves a new key to this users keystore. The username, globalid and timestamp will be overwritten
+        It is method for POST /users/{username}/keystore
+        """
+        uri = self.client.base_url + "/users/"+username+"/keystore"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def GetKeyStoreKey(self, label, username, headers=None, query_params=None):
@@ -498,15 +498,6 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def UpdateUserPhonenumber(self, data, label, username, headers=None, query_params=None):
-        """
-        Update the label and/or value of an existing phonenumber.
-        It is method for PUT /users/{username}/phonenumbers/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/phonenumbers/"+label
-        return self.client.put(uri, data, headers=headers, params=query_params)
-
-
     def DeleteUserPhonenumber(self, label, username, headers=None, query_params=None):
         """
         Removes a phonenumber
@@ -525,13 +516,13 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def ValidatePhonenumber(self, data, label, username, headers=None, query_params=None):
+    def UpdateUserPhonenumber(self, data, label, username, headers=None, query_params=None):
         """
-        Sends a validation text message to the phone number.
-        It is method for POST /users/{username}/phonenumbers/{label}/validate
+        Update the label and/or value of an existing phonenumber.
+        It is method for PUT /users/{username}/phonenumbers/{label}
         """
-        uri = self.client.base_url + "/users/"+username+"/phonenumbers/"+label+"/validate"
-        return self.client.post(uri, data, headers=headers, params=query_params)
+        uri = self.client.base_url + "/users/"+username+"/phonenumbers/"+label
+        return self.client.put(uri, data, headers=headers, params=query_params)
 
 
     def VerifyPhoneNumber(self, data, label, username, headers=None, query_params=None):
@@ -541,6 +532,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/phonenumbers/"+label+"/validate"
         return self.client.put(uri, data, headers=headers, params=query_params)
+
+
+    def ValidatePhonenumber(self, data, label, username, headers=None, query_params=None):
+        """
+        Sends a validation text message to the phone number.
+        It is method for POST /users/{username}/phonenumbers/{label}/validate
+        """
+        uri = self.client.base_url + "/users/"+username+"/phonenumbers/"+label+"/validate"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def ListPublicKeys(self, username, headers=None, query_params=None):
@@ -561,15 +561,6 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def DeletePublicKey(self, label, username, headers=None, query_params=None):
-        """
-        Delete a public key
-        It is method for DELETE /users/{username}/publickeys/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/publickeys/"+label
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
     def UpdatePublicKey(self, data, label, username, headers=None, query_params=None):
         """
         Upates the label and/or key of an existing public key
@@ -577,6 +568,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/publickeys/"+label
         return self.client.put(uri, data, headers=headers, params=query_params)
+
+
+    def DeletePublicKey(self, label, username, headers=None, query_params=None):
+        """
+        Delete a public key
+        It is method for DELETE /users/{username}/publickeys/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/publickeys/"+label
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def GetPublicKey(self, label, username, headers=None, query_params=None):
@@ -624,48 +624,48 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def CreateSeeObject(self, data, username, globalid, headers=None, query_params=None):
+    def CreateSeeObject(self, data, username, headers=None, query_params=None):
         """
         Create new see object
-        It is method for POST /users/{username}/see/{globalid}
+        It is method for POST /users/{username}/see
         """
-        uri = self.client.base_url + "/users/"+username+"/see/"+globalid
+        uri = self.client.base_url + "/users/"+username+"/see"
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def ListSeeObjectsByOrganization(self, username, globalid, headers=None, query_params=None):
+    def GetSeeObjects(self, username, headers=None, query_params=None):
         """
-        Get all see objects by organization
-        It is method for GET /users/{username}/see/{globalid}
+        Get a list of all see objects.
+        It is method for GET /users/{username}/see
         """
-        uri = self.client.base_url + "/users/"+username+"/see/"+globalid
+        uri = self.client.base_url + "/users/"+username+"/see"
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def UpdateSeeObject(self, data, uniqueid, username, globalid, headers=None, query_params=None):
+    def GetSeeObject(self, uniqueid, globalid, username, headers=None, query_params=None):
+        """
+        Get a see object
+        It is method for GET /users/{username}/see/{uniqueid}/{globalid}
+        """
+        uri = self.client.base_url + "/users/"+username+"/see/"+uniqueid+"/"+globalid
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def UpdateSeeObject(self, data, uniqueid, globalid, username, headers=None, query_params=None):
         """
         Updates a see object
-        It is method for PUT /users/{username}/see/{globalid}/{uniqueid}
+        It is method for PUT /users/{username}/see/{uniqueid}/{globalid}
         """
-        uri = self.client.base_url + "/users/"+username+"/see/"+globalid+"/"+uniqueid
+        uri = self.client.base_url + "/users/"+username+"/see/"+uniqueid+"/"+globalid
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
-    def GetSeeObject(self, uniqueid, username, globalid, headers=None, query_params=None):
-        """
-        Get a objects
-        It is method for GET /users/{username}/see/{globalid}/{uniqueid}
-        """
-        uri = self.client.base_url + "/users/"+username+"/see/"+globalid+"/"+uniqueid
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
-    def SignSeeObject(self, data, version, uniqueid, username, globalid, headers=None, query_params=None):
+    def SignSeeObject(self, data, version, uniqueid, globalid, username, headers=None, query_params=None):
         """
         Sign a see object
-        It is method for PUT /users/{username}/see/{globalid}/{uniqueid}/sign/{version}
+        It is method for PUT /users/{username}/see/{uniqueid}/{globalid}/sign/{version}
         """
-        uri = self.client.base_url + "/users/"+username+"/see/"+globalid+"/"+uniqueid+"/sign/"+version
+        uri = self.client.base_url + "/users/"+username+"/see/"+uniqueid+"/"+globalid+"/sign/"+version
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
