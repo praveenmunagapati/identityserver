@@ -144,14 +144,14 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 		if invitations.RoleOwner == orgRequest.Role {
 			// Accepted Owner role
 			if err := orgMgr.SaveOwner(org, username); err != nil {
-				log.Error("Failed to save owner: ", username)
+				log.Error("Failed to save owner: ", err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			// Accepted member role
 			if err := orgMgr.SaveMember(org, username); err != nil {
-				log.Error("Failed to save member: ", username)
+				log.Error("Failed to save member: ", err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
