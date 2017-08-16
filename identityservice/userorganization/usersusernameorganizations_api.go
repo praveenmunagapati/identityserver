@@ -106,7 +106,7 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	case invitations.MethodPhone:
 		orgRequest, err = orgReqMgr.GetWithPhonenumber(j.PhoneNumber, organization, role, invitations.RequestPending)
 		if err != nil {
-			log.Error("error while trying to get invitation for email address")
+			log.Error("error while trying to get invitation for phone number")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -124,7 +124,7 @@ func (api UsersusernameorganizationsAPI) globalidrolesrolePost(w http.ResponseWr
 	default:
 		orgRequest, err = orgReqMgr.Get(username, organization, role, invitations.RequestPending)
 		if err != nil {
-			log.Error("error while trying to get invitation for email address")
+			log.Error("error while trying to get invitation for username")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
