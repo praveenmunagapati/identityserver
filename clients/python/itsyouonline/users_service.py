@@ -30,15 +30,6 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def RegisterNewUserAddress(self, data, username, headers=None, query_params=None):
-        """
-        Register a new address
-        It is method for POST /users/{username}/addresses
-        """
-        uri = self.client.base_url + "/users/"+username+"/addresses"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
     def GetUserAddresses(self, username, headers=None, query_params=None):
         """
         List of all of the user his email addresses.
@@ -46,6 +37,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/addresses"
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def RegisterNewUserAddress(self, data, username, headers=None, query_params=None):
+        """
+        Register a new address
+        It is method for POST /users/{username}/addresses
+        """
+        uri = self.client.base_url + "/users/"+username+"/addresses"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def UpdateUserAddress(self, data, label, username, headers=None, query_params=None):
@@ -57,15 +57,6 @@ class UsersService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
-    def GetUserAddressByLabel(self, label, username, headers=None, query_params=None):
-        """
-        Get the details of an address.
-        It is method for GET /users/{username}/addresses/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/addresses/"+label
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def DeleteUserAddress(self, label, username, headers=None, query_params=None):
         """
         Removes an address
@@ -73,6 +64,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/addresses/"+label
         return self.client.session.delete(uri, headers=headers, params=query_params)
+
+
+    def GetUserAddressByLabel(self, label, username, headers=None, query_params=None):
+        """
+        Get the details of an address.
+        It is method for GET /users/{username}/addresses/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/addresses/"+label
+        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def AddApiKey(self, data, username, headers=None, query_params=None):
@@ -93,15 +93,6 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def UpdateAPIkey(self, data, label, username, headers=None, query_params=None):
-        """
-        Updates the label for the API key
-        It is method for PUT /users/{username}/apikeys/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/apikeys/"+label
-        return self.client.put(uri, data, headers=headers, params=query_params)
-
-
     def GetAPIkey(self, label, username, headers=None, query_params=None):
         """
         Get an API key by label
@@ -120,12 +111,30 @@ class UsersService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
+    def UpdateAPIkey(self, data, label, username, headers=None, query_params=None):
+        """
+        Updates the label for the API key
+        It is method for PUT /users/{username}/apikeys/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/apikeys/"+label
+        return self.client.put(uri, data, headers=headers, params=query_params)
+
+
     def GetAllAuthorizations(self, username, headers=None, query_params=None):
         """
         Get the list of authorizations.
         It is method for GET /users/{username}/authorizations
         """
         uri = self.client.base_url + "/users/"+username+"/authorizations"
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def GetAuthorization(self, grantedTo, username, headers=None, query_params=None):
+        """
+        Get the authorization for a specific organization.
+        It is method for GET /users/{username}/authorizations/{grantedTo}
+        """
+        uri = self.client.base_url + "/users/"+username+"/authorizations/"+grantedTo
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
@@ -136,15 +145,6 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/authorizations/"+grantedTo
         return self.client.put(uri, data, headers=headers, params=query_params)
-
-
-    def GetAuthorization(self, grantedTo, username, headers=None, query_params=None):
-        """
-        Get the authorization for a specific organization.
-        It is method for GET /users/{username}/authorizations/{grantedTo}
-        """
-        uri = self.client.base_url + "/users/"+username+"/authorizations/"+grantedTo
-        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def DeleteAuthorization(self, grantedTo, username, headers=None, query_params=None):
@@ -183,15 +183,6 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def UpdateAvatarLink(self, data, label, username, headers=None, query_params=None):
-        """
-        Update the avatar and possibly the link to the avatar
-        It is method for PUT /users/{username}/avatar/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/avatar/"+label
-        return self.client.put(uri, data, headers=headers, params=query_params)
-
-
     def DeleteAvatar(self, label, username, headers=None, query_params=None):
         """
         Delete the avatar with the specified label
@@ -199,6 +190,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/avatar/"+label
         return self.client.session.delete(uri, headers=headers, params=query_params)
+
+
+    def UpdateAvatarLink(self, data, label, username, headers=None, query_params=None):
+        """
+        Update the avatar and possibly the link to the avatar
+        It is method for PUT /users/{username}/avatar/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/avatar/"+label
+        return self.client.put(uri, data, headers=headers, params=query_params)
 
 
     def UpdateAvatarFile(self, data, newlabel, label, username, headers=None, query_params=None):
@@ -228,6 +228,15 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
+    def GetUserBankAccountByLabel(self, username, label, headers=None, query_params=None):
+        """
+        Get the details of a bank account
+        It is method for GET /users/{username}/banks/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/banks/"+label
+        return self.client.session.get(uri, headers=headers, params=query_params)
+
+
     def UpdateUserBankAccount(self, data, username, label, headers=None, query_params=None):
         """
         Update an existing bankaccount and label.
@@ -244,15 +253,6 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/banks/"+label
         return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
-    def GetUserBankAccountByLabel(self, username, label, headers=None, query_params=None):
-        """
-        Get the details of a bank account
-        It is method for GET /users/{username}/banks/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/banks/"+label
-        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def GetUserContracts(self, username, headers=None, query_params=None):
@@ -273,15 +273,6 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def GetDigitalWallet(self, username, headers=None, query_params=None):
-        """
-        List all of the user his digital wallets.
-        It is method for GET /users/{username}/digitalwallet
-        """
-        uri = self.client.base_url + "/users/"+username+"/digitalwallet"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def RegisterNewDigitalAssetAddress(self, data, username, headers=None, query_params=None):
         """
         Register a new digital asset address
@@ -289,6 +280,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/digitalwallet"
         return self.client.post(uri, data, headers=headers, params=query_params)
+
+
+    def GetDigitalWallet(self, username, headers=None, query_params=None):
+        """
+        List all of the user his digital wallets.
+        It is method for GET /users/{username}/digitalwallet
+        """
+        uri = self.client.base_url + "/users/"+username+"/digitalwallet"
+        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def UpdateDigitalAssetAddress(self, data, label, username, headers=None, query_params=None):
@@ -300,15 +300,6 @@ class UsersService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
-    def DeleteDigitalAssetAddress(self, label, username, headers=None, query_params=None):
-        """
-        Removes an address
-        It is method for DELETE /users/{username}/digitalwallet/{label}
-        """
-        uri = self.client.base_url + "/users/"+username+"/digitalwallet/"+label
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
     def GetDigitalAssetAddressByLabel(self, label, username, headers=None, query_params=None):
         """
         Get the details of a digital wallet address.
@@ -316,6 +307,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/digitalwallet/"+label
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def DeleteDigitalAssetAddress(self, label, username, headers=None, query_params=None):
+        """
+        Removes an address
+        It is method for DELETE /users/{username}/digitalwallet/{label}
+        """
+        uri = self.client.base_url + "/users/"+username+"/digitalwallet/"+label
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def GetEmailAddresses(self, username, headers=None, query_params=None):
@@ -453,15 +453,6 @@ class UsersService:
         return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
-    def users_byUsernameorganizations_byGlobalidrolesrole_delete(self, globalid, role, username, headers=None, query_params=None):
-        """
-        Reject membership invitation in an organization.
-        It is method for DELETE /users/{username}/organizations/{globalid}/roles/{role}
-        """
-        uri = self.client.base_url + "/users/"+username+"/organizations/"+globalid+"/roles/"+role
-        return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
     def AcceptMembership(self, data, globalid, role, username, headers=None, query_params=None):
         """
         Accept membership in organization
@@ -469,6 +460,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/organizations/"+globalid+"/roles/"+role
         return self.client.post(uri, data, headers=headers, params=query_params)
+
+
+    def RejectMembership(self, globalid, role, username, headers=None, query_params=None):
+        """
+        Reject membership invitation in an organization.
+        It is method for DELETE /users/{username}/organizations/{globalid}/roles/{role}
+        """
+        uri = self.client.base_url + "/users/"+username+"/organizations/"+globalid+"/roles/"+role
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def UpdatePassword(self, data, username, headers=None, query_params=None):
@@ -480,15 +480,6 @@ class UsersService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
-    def RegisterNewUserPhonenumber(self, data, username, headers=None, query_params=None):
-        """
-        Register a new phonenumber
-        It is method for POST /users/{username}/phonenumbers
-        """
-        uri = self.client.base_url + "/users/"+username+"/phonenumbers"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
     def GetUserPhoneNumbers(self, username, headers=None, query_params=None):
         """
         List of all of the user his phone numbers.
@@ -496,6 +487,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/phonenumbers"
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def RegisterNewUserPhonenumber(self, data, username, headers=None, query_params=None):
+        """
+        Register a new phonenumber
+        It is method for POST /users/{username}/phonenumbers
+        """
+        uri = self.client.base_url + "/users/"+username+"/phonenumbers"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def DeleteUserPhonenumber(self, label, username, headers=None, query_params=None):
@@ -543,15 +543,6 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def ListPublicKeys(self, username, headers=None, query_params=None):
-        """
-        Lists all public keys
-        It is method for GET /users/{username}/publickeys
-        """
-        uri = self.client.base_url + "/users/"+username+"/publickeys"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def AddPublicKey(self, data, username, headers=None, query_params=None):
         """
         Add a public key
@@ -559,6 +550,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/publickeys"
         return self.client.post(uri, data, headers=headers, params=query_params)
+
+
+    def ListPublicKeys(self, username, headers=None, query_params=None):
+        """
+        Lists all public keys
+        It is method for GET /users/{username}/publickeys
+        """
+        uri = self.client.base_url + "/users/"+username+"/publickeys"
+        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def UpdatePublicKey(self, data, label, username, headers=None, query_params=None):
@@ -588,15 +588,6 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def ListUserRegistry(self, username, headers=None, query_params=None):
-        """
-        Lists the Registry entries
-        It is method for GET /users/{username}/registry
-        """
-        uri = self.client.base_url + "/users/"+username+"/registry"
-        return self.client.session.get(uri, headers=headers, params=query_params)
-
-
     def AddUserRegistryEntry(self, data, username, headers=None, query_params=None):
         """
         Adds a RegistryEntry to the user's registry, if the key is already used, it is overwritten.
@@ -606,13 +597,13 @@ class UsersService:
         return self.client.post(uri, data, headers=headers, params=query_params)
 
 
-    def DeleteUserRegistryEntry(self, key, username, headers=None, query_params=None):
+    def ListUserRegistry(self, username, headers=None, query_params=None):
         """
-        Removes a RegistryEntry from the user's registry
-        It is method for DELETE /users/{username}/registry/{key}
+        Lists the Registry entries
+        It is method for GET /users/{username}/registry
         """
-        uri = self.client.base_url + "/users/"+username+"/registry/"+key
-        return self.client.session.delete(uri, headers=headers, params=query_params)
+        uri = self.client.base_url + "/users/"+username+"/registry"
+        return self.client.session.get(uri, headers=headers, params=query_params)
 
 
     def GetUserRegistryEntry(self, key, username, headers=None, query_params=None):
@@ -624,13 +615,13 @@ class UsersService:
         return self.client.session.get(uri, headers=headers, params=query_params)
 
 
-    def CreateSeeObject(self, data, username, headers=None, query_params=None):
+    def DeleteUserRegistryEntry(self, key, username, headers=None, query_params=None):
         """
-        Create new see object
-        It is method for POST /users/{username}/see
+        Removes a RegistryEntry from the user's registry
+        It is method for DELETE /users/{username}/registry/{key}
         """
-        uri = self.client.base_url + "/users/"+username+"/see"
-        return self.client.post(uri, data, headers=headers, params=query_params)
+        uri = self.client.base_url + "/users/"+username+"/registry/"+key
+        return self.client.session.delete(uri, headers=headers, params=query_params)
 
 
     def GetSeeObjects(self, username, headers=None, query_params=None):
@@ -640,6 +631,15 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/see"
         return self.client.session.get(uri, headers=headers, params=query_params)
+
+
+    def CreateSeeObject(self, data, username, headers=None, query_params=None):
+        """
+        Create new see object
+        It is method for POST /users/{username}/see
+        """
+        uri = self.client.base_url + "/users/"+username+"/see"
+        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def GetSeeObject(self, uniqueid, globalid, username, headers=None, query_params=None):
@@ -669,6 +669,15 @@ class UsersService:
         return self.client.put(uri, data, headers=headers, params=query_params)
 
 
+    def SetupTOTP(self, data, username, headers=None, query_params=None):
+        """
+        Enable two-factor authentication using TOTP.
+        It is method for POST /users/{username}/totp
+        """
+        uri = self.client.base_url + "/users/"+username+"/totp"
+        return self.client.post(uri, data, headers=headers, params=query_params)
+
+
     def GetTOTPSecret(self, username, headers=None, query_params=None):
         """
         Get a TOTP secret and issuer that can be used for setting up two-factor authentication.
@@ -685,15 +694,6 @@ class UsersService:
         """
         uri = self.client.base_url + "/users/"+username+"/totp"
         return self.client.session.delete(uri, headers=headers, params=query_params)
-
-
-    def SetupTOTP(self, data, username, headers=None, query_params=None):
-        """
-        Enable two-factor authentication using TOTP.
-        It is method for POST /users/{username}/totp
-        """
-        uri = self.client.base_url + "/users/"+username+"/totp"
-        return self.client.post(uri, data, headers=headers, params=query_params)
 
 
     def GetTwoFAMethods(self, username, headers=None, query_params=None):
