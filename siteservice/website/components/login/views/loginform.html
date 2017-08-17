@@ -16,7 +16,9 @@
             <md-card-title-text ng-if="vm.externalSite">
                 <div layout="column">
                     <p class="loginprompt" ng-if="!vm.description" translate='oauth_default_description'
-                       translate-values="{externalsite: vm.externalSite}"></p>
+                       translate-values="{externalsite: vm.externalSite}">
+                       Dear {{vm.externalsite}} user, access to {{vm.externalsite}} services is managed by the ItsYou.Online identity management system. To proceed, please login or register at ItsYou.Online.
+                    </p>
                     <p class="loginprompt" ng-if="vm.description" ng-bind="vm.description"></p>
                 </div>
             </md-card-title-text>
