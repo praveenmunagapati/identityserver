@@ -52,7 +52,6 @@ module.exports = function(config) {
           'components/user/directives/treeDirective.js',
           'components/user/UserDialogService.js',
           'components/user/authorizeController.js',
-          'components/user/seeDetailController.js',
           'components/user/controller.js',
           'components/user/service.js',
           'components/organization/controller.js',
@@ -112,7 +111,7 @@ module.exports = function(config) {
 
         // level of logging
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        logLevel: config.LOG_INFO,
+        logLevel: config.LOG_DEBUG,
 
 
         // enable / disable watching file and executing tests whenever any file changes
@@ -121,7 +120,7 @@ module.exports = function(config) {
 
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['Chrome', 'Firefox'],
+        browsers: ['ChromeHeadless', 'Firefox'],
 
 
         // Continuous Integration mode
@@ -132,17 +131,8 @@ module.exports = function(config) {
         // how many browser should be started simultaneous
         concurrency: Infinity,
 
-        customLaunchers: {
-            Chrome_travis_ci: {
-                base: 'Chrome',
-                flags: ['--no-sandbox']
-            }
-        },
     };
 
-    if (process.env.TRAVIS) {
-      configuration.browsers = ['Chrome_travis_ci', 'Firefox'];
-    }
 
     config.set(configuration);
 }
