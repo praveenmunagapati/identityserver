@@ -566,5 +566,6 @@
     "validated_phone_number_for": "Проверенный номер телефона для {{label}}",
     "validation": "Проверка",
     "verify": "Подтвердить",
-    "version": "Версия"
+    "version": "Версия",
+    "username_or_phone": "Имя пользователя или номер телефона"
 }

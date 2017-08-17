@@ -10,7 +10,7 @@
         <md-card-content>
             <div layout="column">
             <md-input-container ng-hide="vm.emailSend">
-                <label translate='username'>Username</label>
+                <label translate='username_or_phone'>Username or phone number</label>
                 <input ng-model="vm.login" ng-minlength="3" required name="login" type="text" autofocus
                        ng-change="vm.clearValidation()">
                 <div ng-messages="form.login.$error">

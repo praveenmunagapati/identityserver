@@ -566,5 +566,6 @@
     "validated_phone_number_for": "Validated phone number for {{label}}",
     "validation": "Validation",
     "verify": "Verify",
-    "version": "Version"
+    "version": "Version",
+    "username_or_phone": "Username or phone number"
 }

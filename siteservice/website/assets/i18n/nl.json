@@ -567,5 +567,6 @@
     "validated_phone_number_for": "Gevalideerd telefoonnummer voor {{label}}",
     "validation": "Validatie",
     "verify": "Valideer",
-    "version": "Versie"
+    "version": "Versie",
+    "username_or_phone": "Gebruikersnaam of telefoonnummer"
 }

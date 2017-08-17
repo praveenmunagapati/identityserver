@@ -827,6 +827,18 @@ func (service *Service) ValidateEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// try to load the username if it is a validated phone number
+	valMgr := validationdb.NewManager(r)
+	userFromPhone, err := valMgr.GetByPhoneNumber(body.Username)
+	if err != nil && !db.IsNotFound(err) {
+		log.Error("Error while retrieving username from phone number: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if !db.IsNotFound(err) {
+		body.Username = userFromPhone.Username
+	}
+
 	userMgr := user.NewManager(r)
 	user, err := userMgr.GetByName(body.Username)
 	if err != nil {
@@ -845,7 +857,6 @@ func (service *Service) ValidateEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valMgr := validationdb.NewManager(r)
 	// Don't send verification if at least 1 email address is already verified
 	ve, err := valMgr.GetByUsernameValidatedEmailAddress(body.Username)
 	if err != nil && !db.IsNotFound(err) {
