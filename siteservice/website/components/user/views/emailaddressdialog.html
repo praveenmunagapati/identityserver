@@ -38,6 +38,9 @@
                             characters
                         </div>
                         <div ng-message="pattern" translate='invalid_email_address'>Invalid email address</div>
+                        <div ng-messages="validationerrors" md-auto-hide="false">
+                            <div ng-message="illegalactionforcurrentstate" translate='email_is_validated'>A validated email address can not be changed, only deleted.</div>
+                        </div>
                     </div>
                 </md-input-container>
             </div>

@@ -567,5 +567,6 @@
     "validation": "Validation",
     "verify": "Verify",
     "version": "Version",
-    "username_or_phone": "Username or phone number"
+    "username_or_phone": "Username or phone number",
+    "email_is_validated": "A validated email address can not be changed, only deleted."
 }

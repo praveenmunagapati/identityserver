@@ -203,34 +203,53 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userMgr := user.NewManager(r)
+	u, err := userMgr.GetByName(username)
+	if err != nil {
+		log.Error("failed to get user by username: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	oldEmail, err := u.GetEmailAddressByLabel(oldlabel)
+	if err != nil {
+		log.Debug("Changing email address with non existing label")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	valMgr := validationdb.NewManager(r)
+	oldEmailValidated, err := valMgr.IsEmailAddressValidated(username, oldEmail.EmailAddress)
+	if err != nil {
+		log.Error("Failed to check if email address is verified for user: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if oldEmail.EmailAddress != body.EmailAddress && oldEmailValidated {
+		log.Debug("Trying to change validated email address")
+		http.Error(w, http.StatusText(http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+		return
+	}
 
 	if oldlabel != body.Label {
-		u, err := userMgr.GetByName(username)
-		if err != nil {
-			log.Error(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		if _, err := u.GetEmailAddressByLabel(body.Label); err == nil {
+		if _, err = u.GetEmailAddressByLabel(body.Label); err == nil {
 			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
 			return
 		}
 	}
 
-	if err := userMgr.SaveEmail(username, body); err != nil {
+	if err = userMgr.SaveEmail(username, body); err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	if oldlabel != body.Label {
-		if err := userMgr.RemoveEmail(username, oldlabel); err != nil {
+		if err = userMgr.RemoveEmail(username, oldlabel); err != nil {
 			log.Error(err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 	}
-	valMgr := validationdb.NewManager(r)
 	validated, err := valMgr.IsEmailAddressValidated(username, body.EmailAddress)
 	if err != nil {
 		log.Error(err)
@@ -1899,8 +1918,8 @@ func (api UsersAPI) SignSeeObject(w http.ResponseWriter, r *http.Request) {
 	if previousVersion.EndDate != nil || seeView.EndDate != nil {
 		if previousVersion.EndDate == nil || seeView.EndDate == nil ||
 			previousVersion.EndDate.String() != seeView.EndDate.String() {
-		http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
-		return
+			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			return
 		}
 	}
 

@@ -568,5 +568,6 @@
     "validation": "Validatie",
     "verify": "Valideer",
     "version": "Versie",
-    "username_or_phone": "Gebruikersnaam of telefoonnummer"
+    "username_or_phone": "Gebruikersnaam of telefoonnummer",
+    "email_is_validated": "Een gevalideerd e-mailadres kan niet worden gewijzigd, alleen verwijderd."
 }

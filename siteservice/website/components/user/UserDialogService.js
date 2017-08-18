@@ -789,6 +789,9 @@
                         else if (response.status === 409) {
                             $scope.validationerrors.duplicate = true;
                         }
+                        else if (response.status === 412) {
+                            $scope.validationerrors.illegalactionforcurrentstate = true;
+                        }
                     }
                 );
             }
