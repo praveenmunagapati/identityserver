@@ -66,17 +66,7 @@ func (service *Service) JWTHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		validityString := r.FormValue("validity")
-		var validity int64
-		if validityString == "" {
-			validity = -1
-		} else {
-			validity, err = strconv.ParseInt(validityString, 10, 64)
-			if err != nil {
-				log.Debugf("Failed to parse validty argument (%v) as int64", validityString)
-				validity = -1
-			}
-		}
+		validity := parseValidity(r)
 
 		tokenString, err = service.convertAccessTokenToJWT(r, at, requestedScopeParameter, audiences, validity)
 	}
@@ -158,17 +148,7 @@ func (service *Service) RefreshJWTHandler(w http.ResponseWriter, r *http.Request
 	originalToken.Claims["scope"] = strings.Split(scope, ",")
 
 	// Set a new expiration time
-	validityString := r.FormValue("validity")
-	var validity int64
-	if validityString == "" {
-		validity = -1
-	} else {
-		validity, err = strconv.ParseInt(validityString, 10, 64)
-		if err != nil {
-			log.Debugf("Failed to parse validity argument (%v) as int64", validityString)
-			validity = -1
-		}
-	}
+	validity := parseValidity(r)
 
 	expiration := time.Now().Add(AccessTokenExpiration).Unix()
 
@@ -413,4 +393,21 @@ func checkIfScopeInList(grantedScopes []string, scope string) (valid bool) {
 		}
 	}
 	return
+}
+
+// parseValidity parses the validity parameter from the request
+func parseValidity(r *http.Request) int64 {
+	validityString := r.FormValue("validity")
+	var validity int64
+	if validityString == "" {
+		validity = -1
+	} else {
+		var err error
+		validity, err = strconv.ParseInt(validityString, 10, 64)
+		if err != nil {
+			log.Debugf("Failed to parse validity argument (%v) as int64", validityString)
+			validity = -1
+		}
+	}
+	return validity
 }
