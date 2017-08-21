@@ -13,6 +13,8 @@ import (
 	"github.com/itsyouonline/identityserver/credentials/oauth2"
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/db/organization"
+	"github.com/itsyouonline/identityserver/db/user"
+	"github.com/itsyouonline/identityserver/db/validation"
 )
 
 var errUnauthorized = errors.New("Unauthorized")
@@ -223,6 +225,10 @@ func (service *Service) convertAccessTokenToJWT(r *http.Request, at *AccessToken
 		token.Claims["globalid"] = at.GlobalID
 		grantedScopes = requestedScopes
 	}
+	// now that we have the granted scopes, check if the actual data is requested
+	if r.FormValue("store_info") == "true" && at.Username != "" {
+		grantedScopes = storeActualValue(r, grantedScopes, at.Username, at.ClientID)
+	}
 	token.Claims["scope"] = grantedScopes
 
 	// process the audience string and make sure we don't set an empty slice if no
@@ -326,6 +332,9 @@ func (service *Service) createNewJWTFromParent(r *http.Request, parentToken *jwt
 		token.Claims["globalid"] = globalID
 		grantedScopes = requestedScopes
 	}
+	if r.FormValue("store_info") == "true" && username != "" {
+		grantedScopes = storeActualValue(r, grantedScopes, username, parentToken.Claims["azp"].(string))
+	}
 	token.Claims["scope"] = grantedScopes
 
 	// process the audience string and make sure we don't set an empty slice if no
@@ -410,4 +419,256 @@ func parseValidity(r *http.Request) int64 {
 		}
 	}
 	return validity
+}
+
+func storeActualValue(r *http.Request, grantedScopes []string, username string, clientID string) []string {
+	if username == "" {
+		return grantedScopes
+	}
+
+	fullScopes := []string{}
+	for _, scope := range grantedScopes {
+		fullScopes = append(fullScopes, scope)
+		if strings.HasPrefix(scope, "user:phone") {
+		}
+	}
+	clientCredentialsJWT := false
+	orgMgr := organization.NewManager(r)
+	if _, err := orgMgr.GetByName(clientID); db.IsNotFound(err) {
+		clientCredentialsJWT = true
+	}
+	// jwt aquired through code grant flow
+	if !clientCredentialsJWT {
+		userMgr := user.NewManager(r)
+		authorization, err := userMgr.GetAuthorization(username, clientID)
+		if err != nil {
+			log.Error("Failed to get authorization: ", err)
+			return grantedScopes
+		}
+		mappedValues := getActualValuesToIncludeFromMap(r, grantedScopes, authorization)
+		fullScopes = append(fullScopes, mappedValues...)
+		return fullScopes
+	}
+	// jwt aquired through client credentials
+	fullScopes = append(fullScopes, getActualValuesToInclude(r, grantedScopes, username)...)
+	return fullScopes
+}
+
+func getActualValuesToIncludeFromMap(r *http.Request, grantedScopes []string, authorization *user.Authorization) []string {
+	vals := []string{}
+	userMgr := user.NewManager(r)
+	userObj, err := userMgr.GetByName(authorization.Username)
+	if err != nil {
+		log.Error("Failed to get user: ", err)
+		return vals
+	}
+	// Most of this comes from the user info call
+	valMgr := validation.NewManager(r)
+	for _, scope := range grantedScopes {
+		if scope == "user:name" {
+			vals = append(vals, fmt.Sprintf("[name]:%v %v", userObj.Firstname, userObj.Lastname))
+		}
+		if strings.HasPrefix(scope, "user:email") {
+			requestedLabel := strings.TrimPrefix(scope, "user:email:")
+			for _, emailmap := range authorization.EmailAddresses {
+				if requestedLabel == emailmap.RequestedLabel {
+					email, err := userObj.GetEmailAddressByLabel(emailmap.RealLabel)
+					if err == nil {
+						vals = append(vals, fmt.Sprintf("[email:%v]:%v", requestedLabel, email.EmailAddress))
+					} else {
+						log.Debug(err)
+					}
+					break
+				}
+			}
+		}
+		if strings.HasPrefix(scope, "user:phone") {
+			requestedLabel := strings.TrimPrefix(scope, "user:phone:")
+			for _, phonemap := range authorization.Phonenumbers {
+				if requestedLabel == phonemap.RealLabel {
+					phonenumber, err := userObj.GetPhonenumberByLabel(phonemap.RealLabel)
+					if err == nil {
+						vals = append(vals, fmt.Sprintf("[phone:%v]:%v", requestedLabel, phonenumber.Phonenumber))
+					} else {
+						log.Debug(err)
+					}
+					break
+				}
+			}
+		}
+		if strings.HasPrefix(scope, "user:validated:phone") {
+			requestedLabel := strings.TrimPrefix(scope, "user:validated:phone:")
+			for _, validatedPhoneMap := range authorization.ValidatedPhonenumbers {
+				if requestedLabel == validatedPhoneMap.RequestedLabel {
+					phone, err := userObj.GetPhonenumberByLabel(validatedPhoneMap.RealLabel)
+					if err == nil {
+						validated, err := valMgr.IsPhonenumberValidated(authorization.Username, phone.Phonenumber)
+						if err != nil {
+							log.Error("Failed to verify if phone number is validated for this user: ", err)
+							continue
+						}
+						if !validated {
+							continue
+						}
+						vals = append(vals, fmt.Sprintf("[validated:phone:%v]:%v", requestedLabel, phone.Phonenumber))
+					} else {
+						log.Debug(err)
+					}
+				}
+			}
+		}
+		if strings.HasPrefix(scope, "user:validated:email") {
+			requestedLabel := strings.TrimPrefix(scope, "user:validated:email:")
+			for _, validatedEmailMap := range authorization.ValidatedEmailAddresses {
+				if requestedLabel == validatedEmailMap.RequestedLabel {
+					email, err := userObj.GetEmailAddressByLabel(validatedEmailMap.RealLabel)
+					if err == nil {
+						validated, err := valMgr.IsEmailAddressValidated(authorization.Username, email.EmailAddress)
+						if err != nil {
+							log.Error("Failed to verify if email address is validated for this user: ", err)
+							continue
+						}
+						if !validated {
+							continue
+						}
+						vals = append(vals, fmt.Sprintf("[validated:email:%v]:%v", requestedLabel, email.EmailAddress))
+					} else {
+						log.Debug(err)
+					}
+				}
+			}
+		}
+	}
+	return vals
+}
+
+func getActualValuesToInclude(r *http.Request, grantedScopes []string, username string) []string {
+	vals := []string{}
+	userMgr := user.NewManager(r)
+	userObj, err := userMgr.GetByName(username)
+	if err != nil {
+		log.Error("Failed to get user: ", err)
+		return vals
+	}
+	// Most of this comes from the user info call
+	valMgr := validation.NewManager(r)
+	for _, scope := range grantedScopes {
+		if scope == "user:name" {
+			vals = append(vals, fmt.Sprintf("[name]:%v %v", userObj.Firstname, userObj.Lastname))
+		}
+		if strings.HasPrefix(scope, "user:email") {
+			requestedLabel := strings.TrimPrefix(scope, "user:email:")
+			if requestedLabel == "" || requestedLabel == "user:email" {
+				requestedLabel = "main"
+			}
+			email, err := userObj.GetEmailAddressByLabel(requestedLabel)
+			if err == nil {
+				vals = append(vals, fmt.Sprintf("[email:%v]:%v", requestedLabel, email.EmailAddress))
+			} else {
+				log.Debug(err)
+			}
+		}
+
+		if strings.HasPrefix(scope, "user:phone") {
+			requestedLabel := strings.TrimPrefix(scope, "user:phone:")
+			if requestedLabel == "" || requestedLabel == "user:phone" {
+				requestedLabel = "main"
+			}
+			phonenumber, err := userObj.GetPhonenumberByLabel(requestedLabel)
+			if err == nil {
+				vals = append(vals, fmt.Sprintf("[phone:%v]:%v", requestedLabel, phonenumber.Phonenumber))
+			} else {
+				log.Debug(err)
+
+			}
+		}
+		if strings.HasPrefix(scope, "user:validated:phone") {
+			requestedLabel := strings.TrimPrefix(scope, "user:validated:phone:")
+			if requestedLabel == "" || requestedLabel == "user:validated:phone" {
+				requestedLabel = "main"
+			}
+			phone, err := userObj.GetPhonenumberByLabel(requestedLabel)
+			if err == nil {
+				validated, err := valMgr.IsPhonenumberValidated(username, phone.Phonenumber)
+				if err != nil {
+					log.Error("Failed to verify if phone number is validated for this user: ", err)
+					continue
+				}
+				if !validated {
+					continue
+				}
+				vals = append(vals, fmt.Sprintf("[validated:phone:%v]:%v", requestedLabel, phone.Phonenumber))
+			} else {
+				log.Debug(err)
+			}
+
+		}
+		if strings.HasPrefix(scope, "user:validated:email") {
+			requestedLabel := strings.TrimPrefix(scope, "user:validated:email:")
+			if requestedLabel == "" || requestedLabel == "user:validated:email" {
+				requestedLabel = "main"
+			}
+			email, err := userObj.GetEmailAddressByLabel(requestedLabel)
+			if err == nil {
+				validated, err := valMgr.IsEmailAddressValidated(username, email.EmailAddress)
+				if err != nil {
+					log.Error("Failed to verify if email address is validated for this user: ", err)
+					continue
+				}
+				if !validated {
+					continue
+				}
+				vals = append(vals, fmt.Sprintf("[validated:email:%v]:%v", requestedLabel, email.EmailAddress))
+			} else {
+				log.Debug(err)
+			}
+		}
+
+	}
+	return vals
+}
+
+func getRealLabels(r *http.Request, grantedScopes []string, authorization *user.Authorization) []string {
+	realLabels := []string{}
+	for _, scope := range grantedScopes {
+		if scope == "user:name" {
+			realLabels = append(realLabels, "user:name")
+		}
+		if strings.HasPrefix(scope, "user:email") {
+			requestedLabel := strings.TrimPrefix(scope, "user:email:")
+			for _, emailmap := range authorization.EmailAddresses {
+				if requestedLabel == emailmap.RequestedLabel {
+					realLabels = append(realLabels, fmt.Sprintf("user:email:%v", emailmap.RealLabel))
+					break
+				}
+			}
+		}
+		if strings.HasPrefix(scope, "user:phone") {
+			requestedLabel := strings.TrimPrefix(scope, "user:phone:")
+			for _, phonemap := range authorization.Phonenumbers {
+				if requestedLabel == phonemap.RealLabel {
+					realLabels = append(realLabels, fmt.Sprintf("user:phone:%v", phonemap.RealLabel))
+					break
+				}
+			}
+		}
+		if strings.HasPrefix(scope, "user:validated:phone") {
+			requestedLabel := strings.TrimPrefix(scope, "user:validated:phone:")
+			for _, validatedPhoneMap := range authorization.ValidatedPhonenumbers {
+				if requestedLabel == validatedPhoneMap.RequestedLabel {
+					realLabels = append(realLabels, fmt.Sprintf("user:validated:phone:%v", validatedPhoneMap.RealLabel))
+					break
+				}
+			}
+		}
+		if strings.HasPrefix(scope, "user:validated:email") {
+			requestedLabel := strings.TrimPrefix(scope, "user:validated:email:")
+			for _, validatedEmailMap := range authorization.ValidatedEmailAddresses {
+				if requestedLabel == validatedEmailMap.RequestedLabel {
+					realLabels = append(realLabels, fmt.Sprintf("user:validated:email:%v", validatedEmailMap.RealLabel))
+				}
+			}
+		}
+	}
+	return realLabels
 }
