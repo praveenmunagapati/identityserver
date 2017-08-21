@@ -66,10 +66,11 @@
         </div>
     </md-toolbar>
     <div layout="row" layout-align="center center">
-        <div layout="row" layout-align="center center" class="organization-logo-container">
-            <img ng-src="{{ vm.logo }}" ng-if="vm.logo">
+        <div layout="row" layout-align="center center" class="organization-logo-container" ng-if="vm.logo">
+            <img ng-src="{{ vm.logo }}">
         </div>
     </div>
+    <br />
     <md-toolbar>
         <div class="md-toolbar-tools" layout-align="space-between center">
             <p>
