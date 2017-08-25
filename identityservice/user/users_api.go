@@ -1898,7 +1898,7 @@ func (api UsersAPI) SignSeeObject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	previousVersion := seeObject.Versions[version-1]
+	previousVersion := &seeObject.Versions[version-1]
 	if previousVersion.Category != seeView.Category ||
 		previousVersion.Link != seeView.Link ||
 		previousVersion.ContentType != seeView.ContentType ||
