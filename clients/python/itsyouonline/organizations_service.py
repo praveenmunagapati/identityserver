@@ -132,8 +132,8 @@ class OrganizationsService:
 
     def DeleteOrganizationDns(self, dnsname, globalid, headers=None, query_params=None, content_type="application/json"):
         """
-        Updates an existing DNS name associated with an organization
-        It is method for PUT /organizations/{globalid}/dns/{dnsname}
+        Removes a DNS name associated with an organization
+        It is method for DELETE /organizations/{globalid}/dns/{dnsname}
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/dns/"+dnsname
         return self.client.delete(uri, None, headers, query_params, content_type)
@@ -141,8 +141,8 @@ class OrganizationsService:
 
     def UpdateOrganizationDns(self, data, dnsname, globalid, headers=None, query_params=None, content_type="application/json"):
         """
-        Removes a DNS name associated with an organization
-        It is method for DELETE /organizations/{globalid}/dns/{dnsname}
+        Updates an existing DNS name associated with an organization
+        It is method for PUT /organizations/{globalid}/dns/{dnsname}
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/dns/"+dnsname
         return self.client.put(uri, data, headers, query_params, content_type)

@@ -87,8 +87,8 @@ class UsersService:
 
     def ListAPIKeys(self, username, headers=None, query_params=None, content_type="application/json"):
         """
-        Get an API key by label
-        It is method for GET /users/{username}/apikeys/{label}
+        Lists the API keys
+        It is method for GET /users/{username}/apikeys
         """
         uri = self.client.base_url + "/users/"+username+"/apikeys"
         return self.client.get(uri, None, headers, query_params, content_type)
@@ -207,15 +207,6 @@ class UsersService:
         Get the details of a bank account
         It is method for GET /users/{username}/banks/{label}
         """
-        uri = self.client.base_url + "/users/"+username+"/banks"
-        return self.client.post(uri, data, headers=headers, params=query_params)
-
-
-    def DeleteUserBankAccount(self, username, label, headers=None, query_params=None):
-        """
-        Delete a BankAccount
-        It is method for DELETE /users/{username}/banks/{label}
-        """
         uri = self.client.base_url + "/users/"+username+"/banks/"+label
         return self.client.get(uri, None, headers, query_params, content_type)
 
@@ -249,8 +240,8 @@ class UsersService:
 
     def GetUserContracts(self, username, headers=None, query_params=None, content_type="application/json"):
         """
-        Create a new contract.
-        It is method for POST /users/{username}/contracts
+        Get the contracts where the user is 1 of the parties. Order descending by date.
+        It is method for GET /users/{username}/contracts
         """
         uri = self.client.base_url + "/users/"+username+"/contracts"
         return self.client.get(uri, None, headers, query_params, content_type)
@@ -330,8 +321,8 @@ class UsersService:
 
     def UpdateEmailAddress(self, data, label, username, headers=None, query_params=None, content_type="application/json"):
         """
-        Removes an email address
-        It is method for DELETE /users/{username}/emailaddresses/{label}
+        Updates the label and/or value of an email address
+        It is method for PUT /users/{username}/emailaddresses/{label}
         """
         uri = self.client.base_url + "/users/"+username+"/emailaddresses/"+label
         return self.client.put(uri, data, headers, query_params, content_type)
@@ -510,8 +501,8 @@ class UsersService:
 
     def UpdateUserPhonenumber(self, data, label, username, headers=None, query_params=None, content_type="application/json"):
         """
-        Sends a validation text message to the phone number.
-        It is method for POST /users/{username}/phonenumbers/{label}/validate
+        Update the label and/or value of an existing phonenumber.
+        It is method for PUT /users/{username}/phonenumbers/{label}
         """
         uri = self.client.base_url + "/users/"+username+"/phonenumbers/"+label
         return self.client.put(uri, data, headers, query_params, content_type)
