@@ -222,19 +222,6 @@ func (s *OrganizationsService) GetInvitations(globalid string, headers, queryPar
 	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
 }
 
-// Checks if the user has memberschip rights on the organization
-func (s *OrganizationsService) UserIsMember(username, globalid string, headers, queryParams map[string]interface{}) (OrganizationsGlobalidIsmemberUsernameGetRespBody, *http.Response, error) {
-	var u OrganizationsGlobalidIsmemberUsernameGetRespBody
-
-	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/ismember/"+username, headers, queryParams)
-	if err != nil {
-		return u, nil, err
-	}
-	defer resp.Body.Close()
-
-	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
-}
-
 // Removes the Logo from an organization
 func (s *OrganizationsService) DeleteOrganizationLogo(globalid string, headers, queryParams map[string]interface{}) (*http.Response, error) {
 	// create request object
@@ -497,6 +484,19 @@ func (s *OrganizationsService) GetOrganizationTree(globalid string, headers, que
 	var u []OrganizationTreeItem
 
 	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/tree", headers, queryParams)
+	if err != nil {
+		return u, nil, err
+	}
+	defer resp.Body.Close()
+
+	return u, resp, json.NewDecoder(resp.Body).Decode(&u)
+}
+
+// Checks if the user has memberschip rights on the organization
+func (s *OrganizationsService) UserIsMember(username, globalid string, headers, queryParams map[string]interface{}) (OrganizationsGlobalidUsersIsmemberUsernameGetRespBody, *http.Response, error) {
+	var u OrganizationsGlobalidUsersIsmemberUsernameGetRespBody
+
+	resp, err := s.client.doReqNoBody("GET", s.client.BaseURI+"/organizations/"+globalid+"/users/ismember/"+username, headers, queryParams)
 	if err != nil {
 		return u, nil, err
 	}
