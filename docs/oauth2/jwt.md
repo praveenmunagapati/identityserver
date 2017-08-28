@@ -71,7 +71,8 @@ The response will be a JWT with:
     ```
 
     - iss: Issuer, in this case "itsyouonline"
-    - exp: Expiration time in seconds since the epoch. This is set to the same time as the expiration time of the OAuth token used to acquire this JWT.
+    - exp: Expiration time in seconds since the epoch. This is usually set to the same time as the expiration time of the OAuth token used to acquire this JWT. It is also possible to shorten the expiration time by
+    supplying an additional query parameter. This is explained later in this document.
     - aud: An array with at least 1 entry: the `client_id` of the OAuth token used to acquire this JWT.
 
     If the OAuth token is not for a user but for an organization application that authenticated using the client credentials flow, the `username` field is replaced with a `globalid` field containing the globalid of the organization.
