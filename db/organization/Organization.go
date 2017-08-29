@@ -3,6 +3,7 @@ package organization
 import (
 	"regexp"
 
+	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/db/user"
 	"github.com/itsyouonline/identityserver/db/validation"
 
@@ -104,7 +105,7 @@ func MapUsernamesToIdentifiers(usernames []string, valMgr *validation.Manager) (
 		return identifiers, err
 	}
 	for _, validatedPhone := range validatedPhoneNumbers {
-		identifiers[ validatedPhone.Phonenumber] = validatedPhone.Username
+		identifiers[validatedPhone.Phonenumber] = validatedPhone.Username
 	}
 	return identifiers, nil
 }
@@ -144,8 +145,8 @@ func ConvertIdentifierToUsername(identifier string, valMgr *validation.Manager) 
 		return email.Username, err
 	} else if valMgr.IsErrNotFound(err) {
 		phone, err := valMgr.GetByPhoneNumber(identifier)
-		if err == nil {
-			return phone.Username, err
+		if err == nil || db.IsNotFound(err) {
+			return phone.Username, nil
 		} else {
 			return identifier, err
 		}
