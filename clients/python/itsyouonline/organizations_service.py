@@ -175,15 +175,6 @@ class OrganizationsService:
         return self.client.get(uri, None, headers, query_params, content_type)
 
 
-    def UserIsMember(self, username, globalid, headers=None, query_params=None, content_type="application/json"):
-        """
-        Checks if the user has memberschip rights on the organization
-        It is method for GET /organizations/{globalid}/ismember/{username}
-        """
-        uri = self.client.base_url + "/organizations/"+globalid+"/ismember/"+username
-        return self.client.get(uri, None, headers, query_params, content_type)
-
-
     def DeleteOrganizationLogo(self, globalid, headers=None, query_params=None, content_type="application/json"):
         """
         Removes the Logo from an organization
@@ -415,6 +406,15 @@ class OrganizationsService:
         It is method for GET /organizations/{globalid}/tree
         """
         uri = self.client.base_url + "/organizations/"+globalid+"/tree"
+        return self.client.get(uri, None, headers, query_params, content_type)
+
+
+    def UserIsMember(self, username, globalid, headers=None, query_params=None, content_type="application/json"):
+        """
+        Checks if the user has memberschip rights on the organization
+        It is method for GET /organizations/{globalid}/users/ismember/{username}
+        """
+        uri = self.client.base_url + "/organizations/"+globalid+"/users/ismember/"+username
         return self.client.get(uri, None, headers, query_params, content_type)
 
 
