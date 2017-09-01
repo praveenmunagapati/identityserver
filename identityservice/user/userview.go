@@ -13,7 +13,7 @@ type Userview struct {
 	Organizations           []string                   `json:"organizations"`
 	Phonenumbers            []user.Phonenumber         `json:"phonenumbers"`
 	ValidatedPhonenumbers   []user.Phonenumber         `json:"validatedphonenumbers"`
-	PublicKeys              []user.PublicKey           `json:"publickeys"`
+	PublicKeys              []user.PublicKey           `json:"publicKeys"`
 	Username                string                     `json:"username"`
 	Firstname               string                     `json:"firstname"`
 	Lastname                string                     `json:"lastname"`
