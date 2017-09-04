@@ -569,5 +569,9 @@
     "verify": "Valideer",
     "version": "Versie",
     "username_or_phone": "Gebruikersnaam of telefoonnummer",
-    "email_is_validated": "Een gevalideerd e-mailadres kan niet worden gewijzigd, alleen verwijderd."
+    "email_is_validated": "Een gevalideerd e-mailadres kan niet worden gewijzigd, alleen verwijderd.",
+    "delete_protected_label": "Dit label is gereserveerd en kan niet worden verwijderd",
+    "reserved_label": "This label is reserved, please use another one",
+    "changing_protected_label": "Dit label is gereserveerd en kan niet worden gewijzigd",
+    "max_avatar_amount": "U heeft het maximale aantal avatars bereikt"
 }

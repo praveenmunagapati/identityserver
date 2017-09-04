@@ -568,5 +568,9 @@
     "verify": "Verify",
     "version": "Version",
     "username_or_phone": "Username or phone number",
-    "email_is_validated": "A validated email address can not be changed, only deleted."
+    "email_is_validated": "A validated email address can not be changed, only deleted.",
+    "delete_protected_label": "This label is reserved and can't be deleted",
+    "reserved_label": "This label is reserved, please use another one",
+    "changing_protected_label": "This label is reserved and cannot be changed",
+    "max_avatar_amount": "You have reached the maximum amount of avatars"
 }
