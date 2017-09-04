@@ -911,15 +911,28 @@ func (service *Service) ForgotPassword(w http.ResponseWriter, request *http.Requ
 	userMgr := user.NewManager(request)
 	valMgr := validationdb.NewManager(request)
 	validatedemail, err := valMgr.GetByEmailAddressValidatedEmailAddress(values.Login)
-	if err != nil && err != mgo.ErrNotFound {
+	if err != nil && !db.IsNotFound(err) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 	var username string
 	var emails []string
-	if err != mgo.ErrNotFound {
+	// If the login value is a validated email address, use that to get the username
+	// and only send the reset email to this email address
+	if !db.IsNotFound(err) {
 		username = validatedemail.Username
 		emails = []string{validatedemail.EmailAddress}
 	} else {
+		// First check if the login value is a phone number, and update the login
+		// value with the username coupled to the phone number if it is. Then just get
+		// all validated email addresses for the user and send emails to them
+		validatedPhone, err := valMgr.GetByPhoneNumber(values.Login)
+		if err != nil && !db.IsNotFound(err) {
+			log.Error("Failed to get validated phone numbers: ", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		if !db.IsNotFound(err) {
+			values.Login = validatedPhone.Username
+		}
 		usr, err := userMgr.GetByName(values.Login)
 		if err != nil && err != mgo.ErrNotFound || usr.Username == "" {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)

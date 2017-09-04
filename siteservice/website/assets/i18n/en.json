@@ -73,10 +73,10 @@
             "forgotpassword": {
                 "forgotpassword": "Forgot password",
                 "recoverymailsend": "A recovery email has been send.",
-                "user": "Username or email",
+                "user": "Username, email or phonenumber",
                 "userminlength": "At least 2 characters are required",
-                "userinvalid": "A user with this username or email address could not be found",
-                "novalidatedemail": "A user with this username has no validated email address",
+                "userinvalid": "A user with this username, email address or phonenumber could not be found",
+                "novalidatedemail": "A user with this username or phonenumber has no validated email address",
                 "sendrecoverymail": "Send recovery email",
                 "back": "Back to login"
             },
