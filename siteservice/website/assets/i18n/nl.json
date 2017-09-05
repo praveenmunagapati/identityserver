@@ -573,5 +573,7 @@
     "delete_protected_label": "Dit label is gereserveerd en kan niet worden verwijderd",
     "reserved_label": "This label is reserved, please use another one",
     "changing_protected_label": "Dit label is gereserveerd en kan niet worden gewijzigd",
-    "max_avatar_amount": "U heeft het maximale aantal avatars bereikt"
+    "max_avatar_amount": "U heeft het maximale aantal avatars bereikt",
+    "invalid_first_name": "Ongeldige voornaam. Alleen letters a-z, A-Z, -, _, ', en spaties zijn toegestaan. Namen hebben een lengte van 2 tot 30 karakters.",
+    "invalid_last_name": "Ongeldige achternaam. Alleen tekens a-z, A-Z, -, _, ', en spaties zijn toegestaan. Namen hebben een lengte van 2 tot 30 karakters."
 }
