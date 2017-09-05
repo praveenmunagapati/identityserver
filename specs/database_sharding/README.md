@@ -8,3 +8,5 @@ to be used as the shard key.
 
 For a high level overview of the proposed changes, see
 [high_level_design.md](high_level_design.md)
+
+Normal operation data flow: [dataflow.md](dataflow.md)
