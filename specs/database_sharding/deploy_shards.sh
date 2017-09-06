@@ -23,9 +23,10 @@ function cleanup_and_exit {
 }
 
 # Clean up if we encounter an error
-trap cleanup_and_exit ERR
+# trap cleanup_and_exit ERR
 
 # If the script is run with 'clean' as first argument, just remove the dockers
+# Should use getopts to provide parameters
 if [ "$1" == "clean" ]; then cleanup_and_exit; fi
 
 # Create the config set
@@ -99,12 +100,67 @@ echo "[+] Mongos initialized"
 
 # Add shards to mongos
 echo "[+] Adding primary shard to mongos"
-docker exec iyomongo-mongos mongo --quiet --eval "sh.addShard(\"ps/$ip_ps0:27017,$ip_ps1:27017,$ip_ps2:27017\")"
+docker exec iyomongo-mongos mongo --quiet --eval "sh.addShard(\"ps/$ip_ps0:27017,$ip_ps1:27017,$ip_ps2:27017\")" > /dev/null
 echo "[+] Primary shard added"
 
 echo "[+] Adding secondary shard to mongos"
-docker exec iyomongo-mongos mongo --quiet --eval "sh.addShard(\"ss0/$ip_ss00:27017,$ip_ss01:27017,$ip_ss02:27017\")"
+docker exec iyomongo-mongos mongo --quiet --eval "sh.addShard(\"ss0/$ip_ss00:27017,$ip_ss01:27017,$ip_ss02:27017\")" > /dev/null
 echo "[+] Secondary shard added"
+
+echo "[+] Adding shard tags"
+echo "[+] Adding \"EU\" tag to primary shard"
+docker exec iyomongo-mongos mongo --quiet --eval "sh.addShardTag(\"ps\", \"EU\")" > /dev/null
+echo "[+] Adding \"RU\" tag to secondary shard"
+docker exec iyomongo-mongos mongo --quiet --eval "sh.addShardTag(\"ss0\", \"RU\")" > /dev/null
+echo "[+] Shard tags added"
 
 echo "[+] Database setup ready to receive data"
 echo "[+] Sharding must still be enabled"
+
+# Ideally an optional dump directory param could be passed but hardcode it to the default name for now
+echo "[+] Checking if a dump directory exists"
+if [ ! -d "dump" ]; then
+  echo "[+] Dump directory not found, exit"
+  exit 0
+fi
+echo "[+] Dump directroy found, loading data"
+
+# We know a dump directory exists so lets load it
+docker cp dump iyomongo-mongos:/data
+echo "[+] Restoring data from dump"
+docker exec iyomongo-mongos bash -c "cd /data;mongorestore" &>/dev/null
+echo "[+] Finished loading data"
+
+# Add country fields to the user records
+# Use a javascript file for this purpose
+
+# First copy the script file into the docker so it can be located by the shell
+echo "[+] Coppying patch script into the mongos docker"
+docker cp patch_users.js iyomongo-mongos:/data
+
+echo "[+] Patching users collection"
+docker exec iyomongo-mongos mongo /data/patch_users.js &>/dev/null
+echo "[+] Users collection patched for sharding setup"
+
+# Prepare the sharding commands
+# Note that we need to drop the (uniqueness of) the username index to allow for the shard key to be created
+# Setup the tag ranges
+# And enable the balancer to redistribute the data
+
+read -r -d '' SHARDDB <<- EOM
+  db = new Mongo().getDB("itsyouonline-idserver-db");
+  printjson( sh.enableSharding("itsyouonline-idserver-db") );
+  printjson( db.users.dropIndex("username_1") );
+  printjson( db.users.ensureIndex({"username":1}) );
+  printjson( db.users.ensureIndex({"country":1, "_id":1}) );
+  printjson( sh.shardCollection("itsyouonline-idserver-db.users", {"country":1, "_id":1}) );
+  printjson( sh.addTagRange("itsyouonline-idserver-db.users", {"country":"EU", "_id":MinKey}, {"country":"EU", "_id": MaxKey}, "EU") );
+  printjson( sh.addTagRange("itsyouonline-idserver-db.users", {"country":"RU", "_id":MinKey}, {"country":"RU", "_id": MaxKey}, "RU") );
+  printjson( sh.enableBalancing("itsyouonline-idserver-db.users") );
+EOM
+
+echo "[+] Setting up sharding"
+docker exec iyomongo-mongos mongo --quiet --eval "$SHARDDB" &>/dev/null
+echo "[+] Sharding set up"
+
+echo "[+] All done now"

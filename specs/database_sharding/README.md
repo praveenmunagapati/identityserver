@@ -16,5 +16,8 @@ Normal operation data flow: [dataflow.md](dataflow.md)
 To deploy an example setup, [a shell script is provided](deploy_shards.sh). This
 script deploys: a 3 member config replica set, a 3 member primary shard replica set,
 and a 3 member secondary shard replica set. It also deploys a `mongos` instance, with
-port `27017` exposed on localhost, linked to the created shards. To remove the
-dockers, run the script with `clean` as first argument (`./deploy_shards clean`).
+port `27017` exposed on localhost, linked to the created shards. If a `dump` directory
+is present in the same directory as the script file, it will try to restore the dump.
+The script then modifies the database and sets up the user collection for sharding.
+To remove the dockers, run the script with `clean` as first argument
+ (`./deploy_shards clean`).
