@@ -20,4 +20,6 @@ port `27017` exposed on localhost, linked to the created shards. If a `dump` dir
 is present in the same directory as the script file, it will try to restore the dump.
 The script then modifies the database and sets up the user collection for sharding.
 To remove the dockers, run the script with `clean` as first argument
- (`./deploy_shards clean`).
+ (`./deploy_shards clean`). WARNING: if the script loads a dump into the database,
+ you will be left with some big dangling volumes after remvoing the containers.
+ These can be cleaned with `docker volume prune`

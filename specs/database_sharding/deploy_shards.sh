@@ -23,6 +23,8 @@ function cleanup_and_exit {
 }
 
 # Clean up if we encounter an error
+# Currently cant be used because mongos returns a non 0 exit status when setting up
+# the sharding in case a collection is found
 # trap cleanup_and_exit ERR
 
 # If the script is run with 'clean' as first argument, just remove the dockers
@@ -132,14 +134,20 @@ docker exec iyomongo-mongos bash -c "cd /data;mongorestore" &>/dev/null
 echo "[+] Finished loading data"
 
 # Add country fields to the user records
-# Use a javascript file for this purpose
-
-# First copy the script file into the docker so it can be located by the shell
-echo "[+] Coppying patch script into the mongos docker"
-docker cp patch_users.js iyomongo-mongos:/data
+read -r -d '' PATCH_USERS <<- EOF
+  var i = 0;
+  db = new Mongo().getDB("itsyouonline-idserver-db");
+  db.users.find().forEach(function(doc) {
+      db.users.update(
+          { "_id": doc._id },
+          { "\$set": { "country": i % 2 === 0 ? "EU" : "RU" } }
+      );
+      i++
+  });
+EOF
 
 echo "[+] Patching users collection"
-docker exec iyomongo-mongos mongo /data/patch_users.js &>/dev/null
+docker exec iyomongo-mongos mongo --quiet --eval "$PATCH_USERS"
 echo "[+] Users collection patched for sharding setup"
 
 # Prepare the sharding commands
@@ -147,17 +155,17 @@ echo "[+] Users collection patched for sharding setup"
 # Setup the tag ranges
 # And enable the balancer to redistribute the data
 
-read -r -d '' SHARDDB <<- EOM
+read -r -d '' SHARDDB <<- EOF
   db = new Mongo().getDB("itsyouonline-idserver-db");
-  printjson( sh.enableSharding("itsyouonline-idserver-db") );
-  printjson( db.users.dropIndex("username_1") );
-  printjson( db.users.ensureIndex({"username":1}) );
-  printjson( db.users.ensureIndex({"country":1, "_id":1}) );
-  printjson( sh.shardCollection("itsyouonline-idserver-db.users", {"country":1, "_id":1}) );
-  printjson( sh.addTagRange("itsyouonline-idserver-db.users", {"country":"EU", "_id":MinKey}, {"country":"EU", "_id": MaxKey}, "EU") );
-  printjson( sh.addTagRange("itsyouonline-idserver-db.users", {"country":"RU", "_id":MinKey}, {"country":"RU", "_id": MaxKey}, "RU") );
-  printjson( sh.enableBalancing("itsyouonline-idserver-db.users") );
-EOM
+  sh.enableSharding("itsyouonline-idserver-db")
+  db.users.dropIndex("username_1")
+  db.users.ensureIndex({"username":1})
+  db.users.ensureIndex({"country":1, "_id":1})
+  sh.shardCollection("itsyouonline-idserver-db.users", {"country":1, "_id":1})
+  sh.addTagRange("itsyouonline-idserver-db.users", {"country":"EU", "_id":MinKey}, {"country":"EU", "_id": MaxKey}, "EU")
+  sh.addTagRange("itsyouonline-idserver-db.users", {"country":"RU", "_id":MinKey}, {"country":"RU", "_id": MaxKey}, "RU")
+  sh.enableBalancing("itsyouonline-idserver-db.users")
+EOF
 
 echo "[+] Setting up sharding"
 docker exec iyomongo-mongos mongo --quiet --eval "$SHARDDB" &>/dev/null
