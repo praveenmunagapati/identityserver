@@ -24,4 +24,9 @@ The script then modifies the database and sets up the user collection for shardi
 To remove the dockers, run the script with `clean` as first argument
  (`./deploy_shards clean`). WARNING: if the script loads a dump into the database,
  you will be left with some big dangling volumes after remvoing the containers.
- These can be cleaned with `docker volume prune`
+ These can be cleaned with `docker volume prune`.
+
+ The containers can alo be started or stopped without removing by passing in `start`
+ or `stop` as the first argument. To connect to the database, make sure to comment
+ line 25 in [db/user/db.go](../../db/user/db.go), as the shard key won't allow for
+ another unique index

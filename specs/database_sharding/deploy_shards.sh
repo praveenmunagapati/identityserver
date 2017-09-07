@@ -22,14 +22,39 @@ function cleanup_and_exit {
   exit
 }
 
+# Function to stop running containers, but not remove them
+function stop_containers {
+  echo "[+] Stopping containers"
+  docker stop iyomongo-cfg0 iyomongo-cfg1 iyomongo-cfg2
+  docker stop iyomongo-ps0 iyomongo-ps1 iyomongo-ps2
+  docker stop iyomongo-ss00 iyomongo-ss01 iyomongo-ss02
+  docker stop iyomongo-mongos
+  echo "[+] Cluster containers stopped"
+  exit 0
+}
+
+# Function to start created, but stopped containers
+function start_containers {
+  echo "[+] Starting containers"
+  docker start iyomongo-cfg0 iyomongo-cfg1 iyomongo-cfg2
+  docker start iyomongo-ps0 iyomongo-ps1 iyomongo-ps2
+  docker start iyomongo-ss00 iyomongo-ss01 iyomongo-ss02
+  docker start iyomongo-mongos
+  echo "[+] Cluster containers started"
+  exit 0
+}
+
 # Clean up if we encounter an error
 # Currently cant be used because mongos returns a non 0 exit status when setting up
 # the sharding in case a collection is found
 # trap cleanup_and_exit ERR
 
 # If the script is run with 'clean' as first argument, just remove the dockers
+# For 'start' and 'stop', simply start/stop all containers
 # Should use getopts to provide parameters
 if [ "$1" == "clean" ]; then cleanup_and_exit; fi
+if [ "$1" == "start" ]; then start_containers; fi
+if [ "$1" == "stop" ]; then stop_containers; fi
 
 # Create the config set
 # By default mongo servers with the 'configsvr' flag set run on port 27019. Change
