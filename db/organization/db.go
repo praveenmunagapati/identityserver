@@ -225,6 +225,9 @@ func (m *Manager) isOwnerOrMember(globalID, username string, excludelist map[str
 // or belongs to an organization that is in the owner list
 // It also checks this for the parentorganizations
 func (m *Manager) IsOwner(globalID, username string) (isowner bool, err error) {
+	if !m.Exists(globalID) {
+		return
+	}
 	isowner, err = m.isDirectOwner(globalID, username)
 	if isowner || err != nil {
 		return
@@ -299,6 +302,9 @@ func (m *Manager) isDirectMember(globalID, username string) (ismember bool, err 
 // or belongs to an organization that is in the member list
 // it also checks this for the parentorganization
 func (m *Manager) IsMember(globalID, username string) (result bool, err error) {
+	if !m.Exists(globalID) {
+		return
+	}
 	result, err = m.isDirectMember(globalID, username)
 	if result || err != nil {
 		return
