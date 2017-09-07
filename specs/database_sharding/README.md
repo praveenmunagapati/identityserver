@@ -11,6 +11,8 @@ For a high level overview of the proposed changes, see
 
 Normal operation data flow: [dataflow.md](dataflow.md)
 
+List of failure scenarios related to a sharded db setup:
+[failure_scenarios.md](failure_scenarios.md)
 
 
 To deploy an example setup, [a shell script is provided](deploy_shards.sh). This
