@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"gopkg.in/mgo.v2"
 
@@ -486,7 +487,15 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	counter := 0
-	username := strings.ToLower(data.Firstname) + "_" + strings.ToLower(data.Lastname) + "_"
+	var username string
+	for _, r := range data.Firstname {
+		username += string(unicode.ToLower(r))
+	}
+	username += "_"
+	for _, r := range data.Lastname {
+		username += string(unicode.ToLower(r))
+	}
+	username += "_"
 	userMgr := user.NewManager(r)
 
 	count, err := userMgr.GetPendingRegistrationsCount()

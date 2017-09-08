@@ -202,15 +202,30 @@
                     function(failure) {
                         var err = failure.data.error;
                         switch (err) {
+                          case 'invalid_first_name':
+                              $scope.signupform.firstname.$setValidity(err, false);
+                              break;
+                          case 'invalid_last_name':
+                              $scope.signupform.lastname.$setValidity(err, false);
+                              break;
                           case 'invalid_phonenumber':
                               vm.phone.validationerrors.invalid_phone = true;
                               break;
+                          case 'invalid_totpcode':
+                              $scope.signupform.totpcode.$setValidity(err, false);
+                              break;
                           case 'invalid_password':
-                              $scope.signupform.password.$setValidity('password', false);
+                              $scope.signupform.password.$setValidity(err, false);
+                              break;
+                          case 'invalid_email_code':
+                              $scope.signupform.emailcode.$setValidity(err, false);
+                              break;
+                          case 'invalid_sms_code':
+                              $scope.signupform.smscode.$setValidity(err, false);
                               break;
                           case 'invalid_email_format':
                               $scope.signupform.email.$setValidity('email', false);
-                              break
+                              break;
                           default:
                               console.error('Unconfigured error:', failure.data.error);
                         }
@@ -260,7 +275,6 @@
         }
 
         function resendValidation() {
-          console.log("sending validaton")
             registrationService.resendValidation(vm.email, vm.sms);
         }
 

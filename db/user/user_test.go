@@ -15,10 +15,12 @@ func TestValidateName(t *testing.T) {
 		testcase{name: "dasdf", valid: true},
 		testcase{name: "d", valid: false},
 		testcase{name: "dsf dfa-df", valid: true},
-		testcase{name: "qwertyuiopasdfghjklmnbvczxqwer", valid: true},
-		testcase{name: "qwertyuiopasdfghjklmnbvczxqwerd", valid: false},
+		testcase{name: "qwertyuiopasdfghjklmnbvczxqwerqwertyuiopasdfghjklmnbvczxqwer", valid: true},
+		testcase{name: "qwertyuiopasdfghjklmnbvczxqwerdqwertyuiopasdfghjklmnbvczxqwerd", valid: false},
 		testcase{name: "name with 'special' char", valid: true},
 		testcase{name: "name with illeg@l char", valid: false},
+		testcase{name: "дима", valid: true},
+		testcase{name: "ратушный", valid: true},
 	}
 	for _, test := range testcases {
 		assert.Equal(t, test.valid, ValidateName(test.name))
