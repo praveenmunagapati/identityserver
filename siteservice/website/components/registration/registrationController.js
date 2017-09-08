@@ -100,6 +100,12 @@
                         case 422:
                             var err = response.data.error;
                             switch (err) {
+                                case 'invalid_first_name':
+                                    $scope.signupform.firstname.$setValidity(err, false);
+                                    break;
+                                case 'invalid_last_name':
+                                    $scope.signupform.lastname.$setValidity(err, false);
+                                    break;
                                 case 'invalid_phonenumber':
                                     vm.phone.validationerrors.invalid_phone = true;
                                     break;
@@ -117,7 +123,7 @@
                                     break;
                                 case 'invalid_email_format':
                                     $scope.signupform.email.$setValidity('email', false);
-                                    break
+                                    break;
                                 default:
                                     console.error('Unconfigured error:', response.data.error);
                             }
@@ -131,6 +137,12 @@
 
         function resetValidation(prop) {
             switch (prop) {
+                case 'firstname':
+                    $scope.signupform[prop].$setValidity("invalid_first_name", true);
+                    break;
+                case 'lastname':
+                    $scope.signupform[prop].$setValidity("invalid_last_name", true);
+                    break;
                 case 'smscode':
                     $scope.signupform[prop].$setValidity("invalid_sms_code", true);
                     break;

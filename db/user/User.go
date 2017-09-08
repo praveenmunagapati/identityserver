@@ -121,6 +121,11 @@ func ValidateUsername(username string) bool {
 	return len(matches) == 1
 }
 
+func ValidateName(name string) bool {
+	regex, _ := regexp.Compile(`^[a-z\-_'\s]{2,30}$`)
+	return regex.MatchString(name)
+}
+
 func ValidatePhoneNumber(phoneNumber string) bool {
 	regex := regexp.MustCompile(`^\+[0-9 ]*$`)
 	return regex.MatchString(phoneNumber)
