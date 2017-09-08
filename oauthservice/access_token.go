@@ -207,7 +207,7 @@ func clientCredentialsTokenHandler(clientID string, secret string, mgr *Manager,
 		apikeyMgr := apikey.NewManager(r)
 		apikey, err := apikeyMgr.GetByApplicationAndSecret(clientID, secret)
 		if err != nil || apikey.ApiKey != secret {
-			log.Error("Error getting the user api key: ", err)
+			log.Debug("Failed to get the user api key: ", err)
 			httpStatusCode = http.StatusBadRequest
 			return
 		}
