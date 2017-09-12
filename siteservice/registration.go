@@ -409,6 +409,20 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, r *http.R
 		}
 	}
 
+	// Ideally, we would remove the registration session here as registration is completed.
+	// However the login handler checks the existence of this session because it needs the
+	// redirectparams as part of the logic to move the user to the requested authenticated page.
+	// But this means that if the user immediatly goes back to the registration screen, the old
+	// user data is modified as there is already data in the session such as a username. Since we can't
+	// remove the session, just empty out al the keys to mimic this process, and then only set the
+	// redirectparams
+
+	// Clear registration session
+	for key := range registrationSession.Values {
+		delete(registrationSession.Values, key)
+	}
+
+	// Now set the redirectparams
 	registrationSession.Values["redirectparams"] = values.RedirectParams
 
 	sessions.Save(r, w)
@@ -589,6 +603,10 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 		registrationSession.Values["username"] = username
 	} else {
 		// Update existing user
+		// Don't update the username so we don't create a pointer from a password
+		// or already confirmed email/phone number to a username that nog longer exists
+		userObj.Firstname = data.Firstname
+		userObj.Lastname = data.Lastname
 		userObj.EmailAddresses = []user.EmailAddress{{Label: "main", EmailAddress: data.Email}}
 		userObj.Phonenumbers = []user.Phonenumber{{Label: "main", Phonenumber: data.Phone}}
 		err = userMgr.Save(userObj)
