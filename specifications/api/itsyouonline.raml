@@ -224,14 +224,26 @@ types:
             type: string
         publicKeys?: PublicKey[]
         emailaddresses: EmailAddress[]
+        validatedemailaddresses: EmailAddress[]
         phonenumbers: Phonenumber[]
+        validatedphonenumbers: Phonenumber[]
         addresses: Address[]
         bankaccounts: BankAccount[]
+        digitalwallet: DigitalAssetAddress
         facebook?:
             type: FacebookAccount
         github?:
             type: GithubAccount
         organizations: string[]
+        avatar: Avatar[]
+        firstname: string
+        lastname: string
+        ownerof: Ownerof
+
+  Ownerof:
+    properties:
+      emailaddresses: EmailAddress[]
+
 
   JoinOrganizationInvitation:
     properties:
