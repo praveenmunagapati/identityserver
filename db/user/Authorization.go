@@ -138,6 +138,78 @@ func LabelledPropertyIsAuthorized(scope string, scopePrefix string, authorizedLa
 	return
 }
 
+// Merge merges 2 authorizations.
+func (auth *Authorization) Merge(a *Authorization) {
+	// Merge all but the grantedTo and username fields, those are already the same
+	// Do some sanity checking anyway
+	if auth.Username != a.Username || auth.GrantedTo != a.GrantedTo {
+		return
+	}
+
+	// Bool fields are merged on a once given is alwasy given basis
+	auth.Facebook = auth.Facebook || a.Facebook
+	auth.Github = auth.Github || a.Github
+	auth.Name = auth.Name || a.Name
+	auth.KeyStore = auth.KeyStore || a.KeyStore
+	auth.See = auth.See || a.See
+
+	// Authorized organizations can simply be expanded
+	auth.Organizations = append(auth.Organizations, a.Organizations...)
+
+	// Ownerof is an abstraction over a []string, can also be expanded
+	auth.OwnerOf.EmailAddresses = append(auth.OwnerOf.EmailAddresses, a.OwnerOf.EmailAddresses...)
+
+	// DigitalWallet is a separate type
+	auth.DigitalWallet = mergeDigitalWalletAuthorizationMap(auth.DigitalWallet, a.DigitalWallet)
+
+	// Merge the authorization maps
+	auth.Addresses = mergeAuthorizationMaps(auth.Addresses, a.Addresses)
+	auth.Avatars = mergeAuthorizationMaps(auth.Avatars, a.Avatars)
+	auth.BankAccounts = mergeAuthorizationMaps(auth.BankAccounts, a.BankAccounts)
+	auth.EmailAddresses = mergeAuthorizationMaps(auth.EmailAddresses, a.EmailAddresses)
+	auth.Phonenumbers = mergeAuthorizationMaps(auth.Phonenumbers, a.Phonenumbers)
+	auth.PublicKeys = mergeAuthorizationMaps(auth.PublicKeys, a.PublicKeys)
+	auth.ValidatedEmailAddresses = mergeAuthorizationMaps(auth.ValidatedEmailAddresses, a.ValidatedEmailAddresses)
+	auth.ValidatedPhonenumbers = mergeAuthorizationMaps(auth.ValidatedPhonenumbers, a.ValidatedPhonenumbers)
+}
+
+// mergeAuthorizationMaps merges 2 authorizationmaps, overwriting requestedlabels
+// with those from the authorizationmap provided by the new Authorization
+func mergeAuthorizationMaps(newAuths []AuthorizationMap, oldAuths []AuthorizationMap) []AuthorizationMap {
+OLDAUTHS:
+	for _, oldAuth := range oldAuths {
+		// check all new auths to make sure it isn't overwritten
+		for _, newAuth := range newAuths {
+			// overwritten, continue with the next oldAuth
+			if oldAuth.RequestedLabel == newAuth.RequestedLabel {
+				continue OLDAUTHS
+			}
+		}
+		// All new auths checked and no match, so lets append it
+		newAuths = append(newAuths, oldAuth)
+	}
+
+	return newAuths
+}
+
+// Mainly coppied over from mergeAuthorizationMaps
+func mergeDigitalWalletAuthorizationMap(newAuths []DigitalWalletAuthorization, oldAuths []DigitalWalletAuthorization) []DigitalWalletAuthorization {
+OLDAUTHS:
+	for _, oldAuth := range oldAuths {
+		// check all new auths to make sure it isn't overwritten
+		for _, newAuth := range newAuths {
+			// overwritten, continue with the next oldAuth
+			if oldAuth.RequestedLabel == newAuth.RequestedLabel {
+				continue OLDAUTHS
+			}
+		}
+		// All new auths checked and no match, so lets append it
+		newAuths = append(newAuths, oldAuth)
+	}
+
+	return newAuths
+}
+
 // DigitalWalletIsAuthorized checks if a digital wallet is authorized
 func DigitalWalletIsAuthorized(scope string, scopePrefix string, authorizedLabels []DigitalWalletAuthorization) (authorized bool) {
 	if authorizedLabels == nil {

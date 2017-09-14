@@ -27,6 +27,15 @@ func TestNewAuthorizationRequest(t *testing.T) {
 	assert.Equal(t, "https://localhost", ar.RedirectURL)
 }
 
+func TestIsValidAuthorization(t *testing.T) {
+	authorizedScopes := []string{"user:name", "user:email:main", "user:phone",
+		"user:address", "user:memberof:testorg"}
+	assert.True(t, IsAuthorizationValid([]string{"user:name", "user:phone"}, authorizedScopes))
+	assert.False(t, IsAuthorizationValid([]string{"user:phone:main"}, authorizedScopes))
+	assert.False(t, IsAuthorizationValid([]string{"user:address:work"}, authorizedScopes))
+	assert.True(t, IsAuthorizationValid([]string{"user:name", "user:email:main", "user:memberof:testorg"}, authorizedScopes))
+}
+
 type testClientManager struct {
 	clients []*Oauth2Client
 }

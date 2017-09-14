@@ -1617,13 +1617,25 @@ func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) 
 	authorization.GrantedTo = grantedTo
 	authorization.Addresses = FilterAuthorizationMaps(authorization.Addresses)
 	authorization.EmailAddresses = FilterAuthorizationMaps(authorization.EmailAddresses)
+	authorization.ValidatedEmailAddresses = FilterAuthorizationMaps(authorization.ValidatedEmailAddresses)
 	authorization.Phonenumbers = FilterAuthorizationMaps(authorization.Phonenumbers)
+	authorization.ValidatedPhonenumbers = FilterAuthorizationMaps(authorization.ValidatedPhonenumbers)
 	authorization.BankAccounts = FilterAuthorizationMaps(authorization.BankAccounts)
 	authorization.PublicKeys = FilterAuthorizationMaps(authorization.PublicKeys)
 	authorization.DigitalWallet = FilterDigitalWallet(authorization.DigitalWallet)
 	authorization.OwnerOf = FilterOwnerOf(authorization.OwnerOf, verifiedEmails)
+	authorization.Avatars = FilterAuthorizationMaps(authorization.Avatars)
 
-	err := userMgr.UpdateAuthorization(authorization)
+	existingAuth, err := userMgr.GetAuthorization(username, grantedTo)
+	if handleServerError(w, "getting existing authorization", err) {
+		return
+	}
+	if existingAuth != nil {
+		// Merge authorizations
+		authorization.Merge(existingAuth)
+	}
+
+	err = userMgr.UpdateAuthorization(authorization)
 	if handleServerError(w, "updating authorization", err) {
 		return
 	}

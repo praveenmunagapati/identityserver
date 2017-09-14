@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/oauthservice"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 	"gopkg.in/mgo.v2"
 
@@ -222,7 +223,7 @@ func (service *Service) verifyExistingAuthorization(request *http.Request, usern
 
 	if authorizedScopes != nil {
 
-		validAuthorization = len(possibleScopes) == len(authorizedScopes)
+		validAuthorization = oauthservice.IsAuthorizationValid(possibleScopes, authorizedScopes)
 		//Check if we are redirected from the authorize page, it might be that not all authorizations were given,
 		// authorize the login but only with the authorized scopes
 		referrer := request.Header.Get("Referer")

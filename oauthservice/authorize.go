@@ -195,7 +195,7 @@ func (service *Service) AuthorizeHandler(w http.ResponseWriter, request *http.Re
 
 	if authorizedScopes != nil {
 		authorizedScopeString = strings.Join(authorizedScopes, ",")
-		validAuthorization = len(possibleScopes) == len(authorizedScopes)
+		validAuthorization = IsAuthorizationValid(possibleScopes, authorizedScopes)
 		//Check if we are redirected from the authorize page, it might be that not all authorizations were given,
 		// authorize the login but only with the authorized scopes
 		referrer := request.Header.Get("Referer")
@@ -281,4 +281,27 @@ func handleAuthorizationGrantCodeType(r *http.Request, username, clientID, redir
 	}
 	correctedRedirectURI += parameters.Encode()
 	return
+}
+
+// IsAuthorizationValid checks if the possible scopes that are being requested are already authorized
+func IsAuthorizationValid(possibleScopes []string, authorizedScopes []string) bool {
+	if len(possibleScopes) > len(authorizedScopes) {
+		return false
+	}
+POSSIBLESCOPES:
+	for _, possibleScope := range possibleScopes {
+		for _, authorizedScope := range authorizedScopes {
+			if possibleScope == authorizedScope {
+				// Scope is already authorized, move on to the next one
+				continue POSSIBLESCOPES
+			}
+		}
+		// If we get here, it means the possibleScope is not in the authorizedScopes list
+		// So the standing authorization is not valid
+		return false
+	}
+	// Likewise, if we get here we did not yet return due to a missing scope authorization
+	// and all possible scopes are exhausted. Therefore the standing authorization
+	// is valid
+	return true
 }
