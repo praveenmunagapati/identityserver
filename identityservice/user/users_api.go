@@ -332,6 +332,23 @@ func (api UsersAPI) getValidatedEmails(r *http.Request, userobj user.User) ([]us
 	return emails, err
 }
 
+func (api UsersAPI) getValidatedPhones(r *http.Request, userobj user.User) ([]user.Phonenumber, error) {
+	phones := make([]user.Phonenumber, 0)
+	valMngr := validationdb.NewManager(r)
+	validatedPhones, err := valMngr.GetByUsernameValidatedPhonenumbers(userobj.Username)
+	if err == nil {
+		for _, phone := range userobj.Phonenumbers {
+			for _, validatedPhone := range validatedPhones {
+				if phone.Phonenumber == validatedPhone.Phonenumber {
+					phones = append(phones, phone)
+					break
+				}
+			}
+		}
+	}
+	return phones, err
+}
+
 // DeleteEmailAddress is the handler for DELETE /users/{username}/emailaddresses/{label}
 // Removes an email address
 func (api UsersAPI) DeleteEmailAddress(w http.ResponseWriter, r *http.Request) {
@@ -1588,6 +1605,34 @@ func FilterOwnerOf(s user.OwnerOf, verifiedEmails []user.EmailAddress) user.Owne
 	return o
 }
 
+// FilterValidatedEmail removes email addresses which are not validated
+func FilterValidatedEmails(authorizedMails []user.AuthorizationMap, verifiedMails []user.EmailAddress) []user.AuthorizationMap {
+	var e []user.AuthorizationMap
+	for _, authorizedMail := range authorizedMails {
+		for _, verifiedMail := range verifiedMails {
+			if authorizedMail.RealLabel == verifiedMail.Label {
+				e = append(e, authorizedMail)
+				break
+			}
+		}
+	}
+	return e
+}
+
+// FilterValidatedPhones removes phone numbers which are not validated
+func FilterValidatedPhones(authorizedPhones []user.AuthorizationMap, verifiedPhones []user.Phonenumber) []user.AuthorizationMap {
+	var p []user.AuthorizationMap
+	for _, authorizedPhone := range authorizedPhones {
+		for _, verifiedPhone := range verifiedPhones {
+			if authorizedPhone.RealLabel == verifiedPhone.Label {
+				p = append(p, authorizedPhone)
+				break
+			}
+		}
+	}
+	return p
+}
+
 // UpdateAuthorization is the handler for PUT /users/{username}/authorizations/{grantedTo}
 // Modify which information an organization is able to see.
 func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) {
@@ -1601,14 +1646,22 @@ func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	userMgr := user.NewManager(r)
+	userobj, err := userMgr.GetByName(username)
+	if handleServerError(w, "getting user by name", err) {
+		return
+	}
 	verifiedEmails := []user.EmailAddress{}
-	if len(authorization.OwnerOf.EmailAddresses) != 0 {
-		userobj, err := userMgr.GetByName(username)
-		if handleServerError(w, "getting user by name", err) {
-			return
-		}
+	if len(authorization.OwnerOf.EmailAddresses) != 0 || len(authorization.ValidatedEmailAddresses) > 0 {
 		verifiedEmails, err = api.getValidatedEmails(r, *userobj)
 		if handleServerError(w, "getting verified emails", err) {
+			return
+		}
+	}
+
+	verifiedPhones := []user.Phonenumber{}
+	if len(authorization.ValidatedPhonenumbers) > 0 {
+		verifiedPhones, err = api.getValidatedPhones(r, *userobj)
+		if handleServerError(w, "getting verified phone numbers", err) {
 			return
 		}
 	}
@@ -1617,9 +1670,9 @@ func (api UsersAPI) UpdateAuthorization(w http.ResponseWriter, r *http.Request) 
 	authorization.GrantedTo = grantedTo
 	authorization.Addresses = FilterAuthorizationMaps(authorization.Addresses)
 	authorization.EmailAddresses = FilterAuthorizationMaps(authorization.EmailAddresses)
-	authorization.ValidatedEmailAddresses = FilterAuthorizationMaps(authorization.ValidatedEmailAddresses)
+	authorization.ValidatedEmailAddresses = FilterValidatedEmails(FilterAuthorizationMaps(authorization.ValidatedEmailAddresses), verifiedEmails)
 	authorization.Phonenumbers = FilterAuthorizationMaps(authorization.Phonenumbers)
-	authorization.ValidatedPhonenumbers = FilterAuthorizationMaps(authorization.ValidatedPhonenumbers)
+	authorization.ValidatedPhonenumbers = FilterValidatedPhones(FilterAuthorizationMaps(authorization.ValidatedPhonenumbers), verifiedPhones)
 	authorization.BankAccounts = FilterAuthorizationMaps(authorization.BankAccounts)
 	authorization.PublicKeys = FilterAuthorizationMaps(authorization.PublicKeys)
 	authorization.DigitalWallet = FilterDigitalWallet(authorization.DigitalWallet)
