@@ -191,6 +191,9 @@
 
     // Convert a base64 encoded string into a unicode string
     function base64ToUnicode($window, base64) {
+        if (!base64) {
+            return
+        }
         // Decode to ASCII
         var binary_string =  $window.atob(base64);
         // Create an array to hold the bytes
