@@ -21,6 +21,7 @@
         vm.username = UserService.getUsername();
 
         vm.user = {};
+        vm.loaded = {};
         vm.pendingNotifications = [];
         vm.pendingOrganizationInvites = {};
 
@@ -64,6 +65,8 @@
                     function(data) {
                         vm.user = data;
                         parseScopes();
+                        loadVerifiedPhones();
+                        loadVerifiedEmails();
                         getInitialData();
                     });
             NotificationService
@@ -170,40 +173,46 @@
             }
         }
 
+        function loadVerifiedPhones() {
+            UserService
+                .getVerifiedPhones()
+                .then(function (confirmedPhones) {
+                    confirmedPhones.map(function (p) {
+                        findByLabel('phonenumbers', p.label).verified = true;
+                    });
+                    vm.loaded.verifiedPhones = true;
+                });
+        }
+
+        function loadVerifiedEmails() {
+            return $q(function (resolve, reject) {
+                if (vm.loaded.verifiedEmails) {
+                    return;
+                }
+                UserService
+                    .getVerifiedEmailAddresses()
+                    .then(function (confirmedEmails) {
+                        confirmedEmails.map(function (p) {
+                            findByLabel('emailaddresses', p.label).verified = true;
+                        });
+                        vm.loaded.verifiedEmails = true;
+                        resolve(confirmedEmails);
+                    }, reject);
+            });
+        }
+
+        function findByLabel(property, label) {
+            return vm.user[property].filter(function (val) {
+                return val.label === label;
+            })[0];
+        }
+
         function getInitialData() {
             if (Object.keys($scope.authorizations.ownerof.emailaddresses).length) {
                 getVerifiedEmails();
             }
-            if (Object.keys($scope.authorizations.validatedemailaddresses).length) {
-                getValidatedEmails();
-            }
-            if (Object.keys($scope.authorizations.validatedphonenumbers).length) {
-                getValidatedPhones();
-            }
 
-        }
 
-        function getValidatedEmails() {
-            UserService.getVerifiedEmailAddresses().then(setConfirmedEmails);
-        }
-
-        function setConfirmedEmails(confirmedEmails) {
-            // list of email objects (label, emailaddress)
-            vm.validatedEmails = confirmedEmails.map(function (mail) {
-                return mail;
-            });
-            // list of email addresses
-            vm.verifiedEmails = confirmedEmails.map(function (mail) {
-                return mail.emailaddress;
-            });
-        }
-
-        function getValidatedPhones() {
-            UserService.getVerifiedPhones(vm.username).then(function (confirmedPhones) {
-                vm.validatedPhones = confirmedPhones.map(function (phone) {
-                    return phone;
-                });
-            });
         }
 
         function getMissingRequiredEmails() {
