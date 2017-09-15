@@ -147,6 +147,9 @@ func (api UsersAPI) RegisterNewEmailAddress(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Convert email address to lowercase
+	body.EmailAddress = strings.ToLower(body.EmailAddress)
+
 	if !body.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -197,6 +200,8 @@ func (api UsersAPI) UpdateEmailAddress(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	// Email address to all lowercase
+	body.EmailAddress = strings.ToLower(body.EmailAddress)
 	if !body.Validate() {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
