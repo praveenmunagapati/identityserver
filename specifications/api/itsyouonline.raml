@@ -224,14 +224,26 @@ types:
             type: string
         publicKeys?: PublicKey[]
         emailaddresses: EmailAddress[]
+        validatedemailaddresses: EmailAddress[]
         phonenumbers: Phonenumber[]
+        validatedphonenumbers: Phonenumber[]
         addresses: Address[]
         bankaccounts: BankAccount[]
+        digitalwallet: DigitalAssetAddress
         facebook?:
             type: FacebookAccount
         github?:
             type: GithubAccount
         organizations: string[]
+        avatar: Avatar[]
+        firstname: string
+        lastname: string
+        ownerof: Ownerof
+
+  Ownerof:
+    properties:
+      emailaddresses: EmailAddress[]
+
 
   JoinOrganizationInvitation:
     properties:
@@ -2176,31 +2188,6 @@ securedBy: [ oauth_2_0 ]
             body:
               application/json:
                 type: OrganizationTreeItem[]
-
-    /transfersuborganization:
-      securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]
-      post:
-        displayName: TransferSubOrganization
-        description: Transfer a suborganization from one parent to another
-        body:
-          application/json:
-            properties:
-              globalid:
-                type: string
-                description: the full globalid of the organization to move
-              newparent:
-                type: string
-                description: the full globalid of the new parent organization
-        responses:
-          200:
-            description: move successfull
-          404:
-            description: newparent does not exist
-          409:
-            description: Failed to move, see error message for details
-            body:
-              application/json:
-                type: Error
 
     /requiredscopes:
       securedBy: [oauth_2_0: { scopes: [ "organization:owner" ] } ]

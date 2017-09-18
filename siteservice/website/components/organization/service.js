@@ -50,8 +50,7 @@
             updateDescription: updateDescription,
             saveDescription: saveDescription,
             addInclude: addInclude,
-            removeInclude: removeInclude,
-            transferSuborganization: transferSuborganization
+            removeInclude: removeInclude
         };
 
         function genericHttpCall(httpFunction, url, data) {
@@ -295,15 +294,6 @@
         function removeInclude(globalId, include) {
             var url = apiURL + '/' + encodeURIComponent(globalId) + '/orgmembers/includesuborgs/' + encodeURIComponent(include);
             return genericHttpCall(DELETE, url);
-        }
-
-        function transferSuborganization(globalId, target, newparent) {
-            var url = apiURL + '/' + encodeURIComponent(globalId) + '/transfersuborganization';
-            var data = {
-                globalid: target,
-                newparent: newparent
-            };
-            return genericHttpCall(POST, url, data);
         }
     }
 })();

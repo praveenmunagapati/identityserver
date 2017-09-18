@@ -542,6 +542,10 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	username = username + strconv.Itoa(counter)
 
+	// Convert the email address to all lowercase
+	// Email addresses are limited to printable ASCII characters
+	// See https://tools.ietf.org/html/rfc5322#section-3.4.1 for details
+	data.Email = strings.ToLower(data.Email)
 	valid := user.ValidateEmailAddress(data.Email)
 	if !valid {
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -686,6 +690,9 @@ func (service *Service) ResendValidationInfo(w http.ResponseWriter, r *http.Requ
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+
+	// Convert the email to all lowercase
+	data.Email = strings.ToLower(data.Email)
 
 	registrationSession, err := service.GetSession(r, SessionForRegistration, "registrationdetails")
 	if err != nil {

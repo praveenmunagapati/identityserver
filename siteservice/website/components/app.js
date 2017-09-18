@@ -176,7 +176,10 @@
     }
 
     function runFunction($rootScope, $cookies, $window, UserService) {
-        $rootScope.user = $cookies.get('itsyou.online.user');
+        // Username in cookie is now base64 encoded
+        var base64username = $cookies.get('itsyou.online.user');
+        // Decode cookie
+        $rootScope.user = base64ToUnicode($window, base64username);
         UserService.setUsername($rootScope.user);
         if ($window.location.hostname === 'dev.itsyou.online') {
             setTimeout(function () {
@@ -184,6 +187,25 @@
             }, 9 * 60 * 1000);
         }
         initializePolyfills();
+    }
+
+    // Convert a base64 encoded string into a unicode string
+    function base64ToUnicode($window, base64) {
+        if (!base64) {
+            return
+        }
+        // Decode to ASCII
+        var binary_string =  $window.atob(base64);
+        // Create an array to hold the bytes
+        var len = binary_string.length;
+        var bytes = new Uint8Array( len );
+        for (var i = 0; i < len; i++)        {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        // Decode using utf-8
+        var bytestring = new TextDecoder("utf-8").decode(bytes);
+        return bytestring;
+
     }
 
 })();

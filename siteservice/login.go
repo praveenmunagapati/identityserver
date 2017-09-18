@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/itsyouonline/identityserver/db"
+	"github.com/itsyouonline/identityserver/oauthservice"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 	"gopkg.in/mgo.v2"
 
@@ -222,7 +223,7 @@ func (service *Service) verifyExistingAuthorization(request *http.Request, usern
 
 	if authorizedScopes != nil {
 
-		validAuthorization = len(possibleScopes) == len(authorizedScopes)
+		validAuthorization = oauthservice.IsAuthorizationValid(possibleScopes, authorizedScopes)
 		//Check if we are redirected from the authorize page, it might be that not all authorizations were given,
 		// authorize the login but only with the authorized scopes
 		referrer := request.Header.Get("Referer")
@@ -387,11 +388,9 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	smsmessage := ""
 	if authenticatingOrganization != "" {
 		split := strings.Split(authenticatingOrganization, ".")
-		smsmessage = fmt.Sprintf(translations.Authorizeorganizationsms,
-			split[len(split)-1], sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey), values.LangKey)
+		smsmessage = fmt.Sprintf(translations.Authorizeorganizationsms, split[len(split)-1], sessionInfo.SMSCode)
 	} else {
-		smsmessage = fmt.Sprintf(translations.Signinsms,
-			sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey), values.LangKey)
+		smsmessage = fmt.Sprintf(translations.Signinsms, sessionInfo.SMSCode)
 	}
 	// smsmessage := fmt.Sprintf("To continue signing in at itsyou.online %senter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
 	// 	organizationText, sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
@@ -1093,7 +1092,7 @@ func (service *Service) LoginResendPhonenumberConfirmation(w http.ResponseWriter
 		log.Error("Error while decoding translations: ", err)
 		return
 	}
-	smsmessage := fmt.Sprintf(translations.Smsconfirmationandlogin, info.SMSCode, fmt.Sprintf("https://%s/pvl", request.Host), info.SMSCode, url.QueryEscape(info.Key), values.LangKey)
+	smsmessage := fmt.Sprintf(translations.Smsconfirmationandlogin, info.SMSCode)
 
 	go service.phonenumberValidationService.SMSService.Send(values.PhoneNumber, smsmessage)
 

@@ -42,7 +42,7 @@ class UsersService:
 
     def GetUserAddresses(self, username, headers=None, query_params=None, content_type="application/json"):
         """
-        List of all of the user his email addresses.
+        List of all of the user his addresses.
         It is method for GET /users/{username}/addresses
         """
         uri = self.client.base_url + "/users/"+username+"/addresses"

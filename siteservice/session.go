@@ -1,6 +1,7 @@
 package siteservice
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	log "github.com/Sirupsen/logrus"
@@ -62,10 +63,12 @@ func (service *Service) SetLoggedInUser(w http.ResponseWriter, request *http.Req
 
 	//TODO: rework this, is not really secure I think
 	// Set user cookie after successful login
+	// base64 encode the username. Use standard encoding to enable decoding by native javascript
+	// functions
 	cookie := &http.Cookie{
 		Name:  "itsyou.online.user",
 		Path:  "/",
-		Value: username,
+		Value: base64.StdEncoding.EncodeToString([]byte(username)),
 	}
 	http.SetCookie(w, cookie)
 
