@@ -392,8 +392,7 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	} else {
 		smsmessage = fmt.Sprintf(translations.Signinsms, sessionInfo.SMSCode)
 	}
-	// smsmessage := fmt.Sprintf("To continue signing in at itsyou.online %senter the code %s in the form or use this link: https://%s/sc?c=%s&k=%s",
-	// 	organizationText, sessionInfo.SMSCode, request.Host, sessionInfo.SMSCode, url.QueryEscape(sessionInfo.SessionKey))
+
 	sessions.Save(request, w)
 	go service.smsService.Send(phoneNumber.Phonenumber, smsmessage)
 	w.WriteHeader(http.StatusNoContent)
@@ -637,25 +636,7 @@ func (service *Service) Process2FASMSConfirmation(w http.ResponseWriter, request
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if sessionInfo == nil {
-		loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
-		if err != nil {
-			if err == mgo.ErrNotFound {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		validationkey, _ := loginSession.Values["phonenumbervalidationkey"].(string)
-		err = service.phonenumberValidationService.ConfirmValidation(request, validationkey, values.Smscode)
-		if err == validation.ErrInvalidCode {
-			// TODO: limit to 3 failed attempts
-			w.WriteHeader(422)
-			log.Debug("invalid code")
-			return
-		}
-	} else if !sessionInfo.Confirmed {
+	if sessionInfo != nil && !sessionInfo.Confirmed {
 		//Already confirmed on the phone
 		validsmscode := (values.Smscode == sessionInfo.SMSCode)
 
@@ -665,6 +646,21 @@ func (service *Service) Process2FASMSConfirmation(w http.ResponseWriter, request
 			log.Debugf("Expected code %s, got %s", sessionInfo.SMSCode, values.Smscode)
 			return
 		}
+	}
+	loginSession, err := service.GetSession(request, SessionLogin, "loginsession")
+	if err != nil {
+		log.Error("Failed to get loginsession: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	validationkey, _ := loginSession.Values["phonenumbervalidationkey"].(string)
+	err = service.phonenumberValidationService.ConfirmValidation(request, validationkey, values.Smscode)
+	if err == validation.ErrInvalidCode {
+		log.Debug("Invalid code")
+		// TODO: limit to 3 failed attempts
+		w.WriteHeader(422)
+		log.Debug("invalid code")
+		return
 	}
 	userMgr := user.NewManager(request)
 	userMgr.RemoveExpireDate(username)
