@@ -381,9 +381,9 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, r *http.R
 	if isConfirmed, _ := service.emailaddressValidationService.IsConfirmed(r, emailvalidationkey); isConfirmed {
 		emailConfirmed = true
 	}
-	if !emailConfirmed {
+	if !emailConfirmed && requireValidatedEmail {
 		emailCode := values.EmailCode
-		if emailCode == "" && requireValidatedEmail {
+		if emailCode == "" {
 			log.Debug("no email code provided and email not confirmed yet")
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
