@@ -138,7 +138,25 @@
                     Validated email address
                 </span>
         </p>
-        <md-input-container>
+        <div layout="row" ng-if="vm.isAuthorizeController">
+          <md-input-container>
+                <label><span translate='validated_email_address'>Validated email address</span></label>
+                <md-select ng-model="auth.reallabel">
+                    <md-option ng-repeat="email in vm.user.emailaddresses"
+                               value="{{::email.label}}"
+                               ng-bind="::email.emailaddress"></md-option>
+                     <md-option ng-click="vm.showEmailDialog($event, auth)" ng-if="::isNew">
+                         <i class="fa fa-plus"></i> <span translate='user.directives.authorizationdetails.createnew'>Create new</span>
+                     </md-option>
+                </md-select>
+            </md-input-container>
+            <md-button ng-click="vm.verifyEmailByLabel($event, auth.reallabel)"
+                       class="md-primary md-secondary"
+                       ng-if="vm.loaded.verifiedEmails && !vm.isEmailVerified(auth.reallabel)">
+                <span translate="verify">Verify</span>
+            </md-button>
+        </div>
+        <md-input-container ng-if="!vm.isAuthorizeController">
             <label><span translate='validated_email_address'>Validated email address</span></label>
             <md-select ng-model="auth.reallabel">
                 <md-option ng-repeat="email in vm.user.emailaddresses | filter:{verified:true}"
