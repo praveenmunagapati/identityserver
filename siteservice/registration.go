@@ -383,6 +383,7 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, r *http.R
 	if !emailConfirmed && requireValidatedEmail {
 		log.Debug("Email not confirmed yet")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
 	}
 
 	// Ideally, we would remove the registration session here as registration is completed.
