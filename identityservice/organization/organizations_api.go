@@ -603,7 +603,7 @@ func removeOrganizationMember(w http.ResponseWriter, r *http.Request, role strin
 	}
 
 	invitationMgr := invitations.NewInvitationManager(r)
-	err = invitationMgr.Remove(globalID, username)
+	err = invitationMgr.Remove(globalID, username, username)
 	if db.IsNotFound(err) {
 		// most of the time the users will have no invitation if they are already part
 		// of the organization so just silently ignore this
@@ -615,7 +615,6 @@ func removeOrganizationMember(w http.ResponseWriter, r *http.Request, role strin
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
 
 // AddOrganizationOwner It is handler for POST /organizations/{globalid}/owners
 func (api OrganizationsAPI) AddOrganizationOwner(w http.ResponseWriter, r *http.Request) {
@@ -675,7 +674,20 @@ func (api OrganizationsAPI) RemovePendingInvitation(w http.ResponseWriter, r *ht
 	globalID := mux.Vars(r)["globalid"]
 	searchString := mux.Vars(r)["searchstring"]
 	invitationMgr := invitations.NewInvitationManager(r)
-	err := invitationMgr.Remove(globalID, searchString)
+
+	user, err := SearchUser(r, searchString)
+	if err != nil {
+		if db.IsNotFound(err) {
+			log.Debug("Could not find user for whom to remove the invitation")
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		log.Error("Error while searching user: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = invitationMgr.Remove(globalID, user.Username, searchString)
 	if err == mgo.ErrNotFound {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
