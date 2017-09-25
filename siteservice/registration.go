@@ -574,7 +574,7 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 		expiresAt := time.Now()
 		expiresAt = expiresAt.Add(duration)
 		eat := db.DateTime(expiresAt)
-		userObj.Expire = &eat
+		userObj.Expire = eat
 		err = userMgr.Save(userObj)
 		if err != nil {
 			log.Error("Failed to create new user: ", err)
