@@ -10,17 +10,17 @@ import (
 )
 
 // userIdentifierMiddleware is the representation of a userIdentifierMiddleware
-type userIdentifierMiddleware struct{}
+type UserIdentifierMiddleware struct{}
 
-// newUserIndentifierMiddleware creates a new userIdentifierMiddleware struct
-func newUserIndentifierMiddleware() *userIdentifierMiddleware {
-	return &userIdentifierMiddleware{}
+// newUserIdentifierMiddleware creates a new userIdentifierMiddleware struct
+func NewUserIdentifierMiddleware() *UserIdentifierMiddleware {
+	return &UserIdentifierMiddleware{}
 }
 
 // Handler return HTTP handler representation of this middleware
 // replaces the useridentifier, in the {username} section of the url with the
 // associated username, if any
-func (uim *userIdentifierMiddleware) Handler(next http.Handler) http.Handler {
+func (uim *UserIdentifierMiddleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username := mux.Vars(r)["username"]
 		if strings.HasPrefix(username, "+") { //its a phone number
