@@ -29,7 +29,7 @@
             <div class="md-list-item-text">
                 <p ng-bind="::orgowner"></p>
             </div>
-            <span ng-if="::vm.canEditRole(owner)">
+            <span ng-if="::vm.canEditRole(orgowner)">
                     <div class="md-secondary md-primary">
                         <md-switch ng-model="vm.includemap[orgowner]"
                                    ng-change="vm.includeChanged(orgowner)"></md-switch>
@@ -76,7 +76,7 @@
             <div class="md-list-item-text">
                 <p ng-bind="::orgmember"></p>
             </div>
-            <div ng-if="::vm.canEditRole(owner)" class="md-secondary md-primary">
+            <div ng-if="::vm.canEditRole(orgmember)" class="md-secondary md-primary">
                 <md-switch ng-model="vm.includemap[orgmember]" ng-change="vm.includeChanged(orgmember)"></md-switch>
                 <md-tooltip>
                     <span translate='organization_include_orgmember_suborgs'>Include suborganizations of this organization in the member list</span>
@@ -85,7 +85,7 @@
             <md-icon md-font-icon="fa-pencil" class="fa md-secondary md-primary"
                      aria-label="Edit organization member"
                      translate-attr="{ 'aria-label': 'organization.views.detail.editorganizationmember' }"
-                     ng-if="::vm.canEditRole(owner)" ng-click="vm.editOrgMember($event, orgmember)">
+                     ng-if="::vm.canEditRole(orgmember)" ng-click="vm.editOrgMember($event, orgmember)">
                 <md-icon>
         </md-list-item>
     </md-list>

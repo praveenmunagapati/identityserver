@@ -12,6 +12,13 @@
             <div style="margin-top: 10px;">
                 <div flex="100" flex-gt-sm="80" flex-gt-md="60" layout="row" layout-align="end center">
                     <div flex></div>
+                    <div ng-if="vm.emailNotValidated && vm.emailNotValidated.email">
+                        <span translate="authorize_non_validated_email"
+                              translate-values="{ email:vm.emailNotValidated.email }"
+                              class="authorize-error">
+                            You must validate the email address {{ vm.emailNotValidated.email }} to give this authorization
+                        </span>
+                    </div>
                     <md-button type="submit" class="md-raised md-primary" translate='user.views.authorize.authorize'>Authorize</md-button>
                 </div>
             </div>

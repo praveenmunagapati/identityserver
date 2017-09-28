@@ -691,3 +691,7 @@ p.verified {
     -ms-flex-direction: row-reverse !important;
     -webkit-flex-direction: row-reverse !important;
 }
+
+.authorize-error {
+    color: red;
+}

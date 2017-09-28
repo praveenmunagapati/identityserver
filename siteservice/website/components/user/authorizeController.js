@@ -13,6 +13,7 @@
     function AuthorizeController($scope, $location, $window, $q, $translate,
                                  UserService, UserDialogService, NotificationService) {
         var vm = this;
+        vm.isAuthorizeController = true;
 
         var queryParams = $location.search();
         vm.requestingorganization = queryParams['client_id'];
@@ -35,6 +36,8 @@
         vm.verifyEmail = verifyEmail;
         vm.submit = submit;
         vm.showDigitalWalletAddressDialog = digitalWalletAddress;
+        vm.isEmailVerified = isEmailVerified;
+        vm.verifyEmailByLabel = verifyEmailByLabel;
         var properties = ['avatars', 'addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet', 'publicKeys', 'validatedemailaddresses', 'validatedphonenumbers'];
         $scope.requested = {
             organizations: {}
@@ -186,11 +189,12 @@
 
         function loadVerifiedEmails() {
             return $q(function (resolve, reject) {
-                if (vm.loaded.verifiedEmails) {
+                if (vm.isLoadingVerifiedEmails) {
                     return;
                 }
+                vm.isLoadingVerifiedEmails = true;
                 UserService
-                    .getVerifiedEmailAddresses()
+                    .getVerifiedEmailAddresses(true)
                     .then(function (confirmedEmails) {
                         confirmedEmails.map(function (p) {
                             findByLabel('emailaddresses', p.label).verified = true;
@@ -198,6 +202,7 @@
                         vm.loaded.verifiedEmails = true;
                         resolve(confirmedEmails);
                     }, reject);
+                vm.isLoadingVerifiedEmails = false;
             });
         }
 
@@ -311,6 +316,35 @@
         }
 
         function submit(event) {
+            // Remove the messages that the email address needs to be validated first
+            vm.emailNotValidated = {};
+
+            // If we have validated email address scopes check if given values are all verified
+            // If not, set a value to notify the UI and return
+            if ($scope.authorizations['validatedemailaddresses'] && $scope.authorizations['validatedemailaddresses'].length > 0) {
+
+                loadVerifiedEmails().then(
+                    function() {
+                      angular.forEach($scope.authorizations['validatedemailaddresses'], function(validatedemailrequest) {
+                          if (!isEmailVerified(validatedemailrequest.reallabel)) {
+                              var email = vm.user.emailaddresses.filter(function (e) {
+                                  return e.label === validatedemailrequest.reallabel;
+                              })[0];
+                              vm.emailNotValidated = { email: email.emailaddress };
+                              return
+                          }
+                      });
+                      if (vm.emailNotValidated.email) {
+                          return
+                      }
+                      confirm();
+                    });
+            } else {
+                confirm();
+            }
+        }
+
+        function confirm() {
             // accept all the invites first
             var requests = [];
 
@@ -328,12 +362,26 @@
             selectDefault(UserDialogService.digitalWalletAddressDetail, event, auth, 'digitalwallet');
         }
 
+        function isEmailVerified(authlabel) {
+            var email = vm.user.emailaddresses.filter(function (e) {
+                return e.label === authlabel;
+            })[0];
+            return email && !!email.verified
+        }
+
+        function verifyEmailByLabel(event, authlabel) {
+          var email = vm.user.emailaddresses.filter(function (e) {
+              return e.label === authlabel;
+          })[0];
+          if (email) {
+              UserDialogService.verifyEmailAddress(event, email).then(loadVerifiedEmails)
+          }
+        }
+
         function selectDefault(fx, event, auth, property) {
             fx(event).then(function (data) {
                 auth.reallabel = data.data.label;
-
             }, function () {
-                // Select first possible value, else 'None'
                 auth.reallabel = vm.user[property][0] ? vm.user[property][0].label : '';
             });
         }

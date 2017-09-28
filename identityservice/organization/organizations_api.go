@@ -354,13 +354,25 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 		IsOrganization: false,
 	}
 
+	autoAccepted, err := api.autoAcceptThreefoldInviteIfPossible(orgReq, orgMgr)
+	if err != nil {
+		log.Error("Failure while trying to auto accept organization invite: ", err)
+		log.Warnf("OrgId: %s, role: %s")
+		if db.IsNotFound(err) {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	if err = invitationMgr.Save(orgReq); err != nil {
 		log.Error("Error inviting owner: ", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	if invitenotification != "none" {
+	if invitenotification != "none" && !autoAccepted {
 		err = api.sendInvite(r, orgReq)
 		if handleServerError(w, "sending organization invite", err) {
 			return
@@ -377,6 +389,45 @@ func (api OrganizationsAPI) inviteUser(w http.ResponseWriter, r *http.Request, r
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(reqView)
+}
+
+// FIXME: NUKE ASAP
+func (api OrganizationsAPI) autoAcceptThreefoldInviteIfPossible(invite *invitations.JoinOrganizationInvitation, mgr *organization.Manager) (bool, error) {
+	globalid := invite.Organization
+
+	// we can't just check that the prefix is "threefold" as this would include unrelated
+	// organizations such as threefoldwithsomethingbehindit
+	if !(globalid == "threefold" || strings.HasPrefix(globalid, "threefold.")) {
+		return false, nil
+	}
+
+	// Check for username so we only auto invite already registered users
+	username := invite.User
+	if username == "" {
+		log.Debug("can't auto accept the invite because the username is not known")
+		return false, nil
+	}
+	// add the user
+	log.Debug("Try auto adding user to organization ", invite.Organization)
+	org, err := mgr.GetByName(invite.Organization)
+	if err != nil {
+		return false, err
+	}
+	if invitations.RoleOwner == invite.Role {
+		// Accepted Owner role
+		if err := mgr.SaveOwner(org, username); err != nil {
+			return false, err
+		}
+	} else {
+		// Accepted member role
+		if err := mgr.SaveMember(org, username); err != nil {
+			return false, err
+		}
+	}
+	log.Debug("Auto added user ", username, " to the ", globalid, " organization")
+	// set the invite to status accpeted
+	invite.Status = invitations.RequestAccepted
+	return true, nil
 }
 
 // AddOrganizationMember Assign a member to organization
@@ -552,7 +603,7 @@ func removeOrganizationMember(w http.ResponseWriter, r *http.Request, role strin
 	}
 
 	invitationMgr := invitations.NewInvitationManager(r)
-	err = invitationMgr.Remove(globalID, username)
+	err = invitationMgr.Remove(globalID, username, username)
 	if db.IsNotFound(err) {
 		// most of the time the users will have no invitation if they are already part
 		// of the organization so just silently ignore this
@@ -564,7 +615,6 @@ func removeOrganizationMember(w http.ResponseWriter, r *http.Request, role strin
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
 
 // AddOrganizationOwner It is handler for POST /organizations/{globalid}/owners
 func (api OrganizationsAPI) AddOrganizationOwner(w http.ResponseWriter, r *http.Request) {
@@ -624,7 +674,20 @@ func (api OrganizationsAPI) RemovePendingInvitation(w http.ResponseWriter, r *ht
 	globalID := mux.Vars(r)["globalid"]
 	searchString := mux.Vars(r)["searchstring"]
 	invitationMgr := invitations.NewInvitationManager(r)
-	err := invitationMgr.Remove(globalID, searchString)
+
+	user, err := SearchUser(r, searchString)
+	if err != nil {
+		if db.IsNotFound(err) {
+			log.Debug("Could not find user for whom to remove the invitation")
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		log.Error("Error while searching user: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = invitationMgr.Remove(globalID, user.Username, searchString)
 	if err == mgo.ErrNotFound {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

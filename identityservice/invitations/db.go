@@ -241,11 +241,11 @@ func (o *InvitationManager) SetAcceptedByCode(code string) error {
 }
 
 // Remove removes an invitation
-func (o *InvitationManager) Remove(globalID string, searchString string) error {
+func (o *InvitationManager) Remove(globalID string, username string, searchString string) error {
 	qry := bson.M{
 		"organization": globalID,
 		"$or": []bson.M{
-			{"user": searchString},
+			{"user": username},
 			{"emailaddress": searchString},
 			{"phonenumber": searchString},
 		},
