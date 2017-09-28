@@ -286,7 +286,6 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, r *http.R
 		Firstname       string `json:"firstname"`
 		Lastname        string `json:"lastname"`
 		Email           string `json:"email"`
-		EmailCode       string `json:"emailcode"`
 		Phonenumber     string `json:"phonenumber"`
 		PhonenumberCode string `json:"phonenumbercode"`
 		Password        string `json:"password"`
@@ -375,38 +374,16 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, r *http.R
 		log.Debug("Require validated email because the requirevalidatedemail query parameter is set")
 		requireValidatedEmail = true
 	}
-
-	emailConfirmed := false
-	emailvalidationkey, _ := registrationSession.Values["emailvalidationkey"].(string)
-	if isConfirmed, _ := service.emailaddressValidationService.IsConfirmed(r, emailvalidationkey); isConfirmed {
-		emailConfirmed = true
+	if !requireValidatedEmail {
+		log.Debug("Validated email not required to register")
 	}
-	if !emailConfirmed && requireValidatedEmail {
-		emailCode := values.EmailCode
-		if emailCode == "" {
-			log.Debug("no email code provided and email not confirmed yet")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
 
-		err = service.emailaddressValidationService.ConfirmValidation(r, emailvalidationkey, emailCode)
-		if err == validation.ErrInvalidCode {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			response.Error = "invalid_email_code"
-			json.NewEncoder(w).Encode(&response)
-			return
-		}
-		if err == validation.ErrInvalidOrExpiredKey {
-			sessions.Save(r, w)
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(&response)
-			return
-		}
-		if err != nil {
-			log.Error("Error while trying to validate email address in regsitration flow: ", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
+	emailvalidationkey, _ := registrationSession.Values["emailvalidationkey"].(string)
+	emailConfirmed, _ := service.emailaddressValidationService.IsConfirmed(r, emailvalidationkey)
+	if !emailConfirmed && requireValidatedEmail {
+		log.Debug("Email not confirmed yet")
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
 	}
 
 	// Ideally, we would remove the registration session here as registration is completed.
@@ -597,7 +574,7 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 		expiresAt := time.Now()
 		expiresAt = expiresAt.Add(duration)
 		eat := db.DateTime(expiresAt)
-		userObj.Expire = &eat
+		userObj.Expire = eat
 		err = userMgr.Save(userObj)
 		if err != nil {
 			log.Error("Failed to create new user: ", err)
