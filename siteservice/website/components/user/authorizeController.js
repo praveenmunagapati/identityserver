@@ -337,14 +337,14 @@
                       if (vm.emailNotValidated.email) {
                           return
                       }
-                      confirm();
+                      confirm(event);
                     });
             } else {
-                confirm();
+                confirm(event);
             }
         }
 
-        function confirm() {
+        function confirm(event) {
             // accept all the invites first
             var requests = [];
 
