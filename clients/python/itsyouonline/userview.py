@@ -26,7 +26,7 @@ class userview(object):
         :type addresses: list[Address]
         :type avatar: list[Avatar]
         :type bankaccounts: list[BankAccount]
-        :type digitalwallet: DigitalAssetAddress
+        :type digitalwallet: list[DigitalAssetAddress]
         :type emailaddresses: list[EmailAddress]
         :type facebook: FacebookAccount
         :type firstname: str
@@ -109,7 +109,7 @@ class userview(object):
         if val is not None:
             datatypes = [DigitalAssetAddress]
             try:
-                self.digitalwallet = client_support.val_factory(val, datatypes)
+                self.digitalwallet = client_support.list_factory(val, datatypes)
             except ValueError as err:
                 raise ValueError(create_error.format(cls=class_name, prop=property_name, val=val, err=err))
         else:
