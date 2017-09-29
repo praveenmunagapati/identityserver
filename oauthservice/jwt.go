@@ -360,6 +360,17 @@ func (service *Service) createNewJWTFromParent(r *http.Request, parentToken *jwt
 	} else {
 		token.Claims["exp"] = parentToken.Claims["exp"]
 	}
+	validity := parseValidity(r)
+	expiration := token.Claims["exp"].(int64)
+	requestedExpiration := expiration
+	if validity > 0 {
+		requestedExpiration = time.Now().Unix() + validity
+		if requestedExpiration < expiration {
+			expiration = requestedExpiration
+		}
+	}
+	token.Claims["exp"] = expiration
+
 	token.Claims["iss"] = issuer
 
 	if offlineAccessRequested {
