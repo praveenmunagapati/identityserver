@@ -21,7 +21,7 @@ class userview(object):
     """
 
     @staticmethod
-    def create(addresses, avatar, bankaccounts, digitalwallet, emailaddresses, firstname, lastname, organizations, ownerof, phonenumbers, username, validatedemailaddresses, validatedphonenumbers, facebook=None, github=None, publicKeys=None):
+    def create(addresses, avatar, bankaccounts, digitalwallet, emailaddresses, firstname, lastname, ownerof, phonenumbers, username, validatedemailaddresses, validatedphonenumbers, facebook=None, github=None, publicKeys=None):
         """
         :type addresses: list[Address]
         :type avatar: list[Avatar]
@@ -32,7 +32,6 @@ class userview(object):
         :type firstname: str
         :type github: GithubAccount
         :type lastname: str
-        :type organizations: list[str]
         :type ownerof: Ownerof
         :type phonenumbers: list[Phonenumber]
         :type publicKeys: list[PublicKey]
@@ -52,7 +51,6 @@ class userview(object):
             firstname=firstname,
             github=github,
             lastname=lastname,
-            organizations=organizations,
             ownerof=ownerof,
             phonenumbers=phonenumbers,
             publicKeys=publicKeys,
@@ -161,17 +159,6 @@ class userview(object):
             datatypes = [str]
             try:
                 self.lastname = client_support.val_factory(val, datatypes)
-            except ValueError as err:
-                raise ValueError(create_error.format(cls=class_name, prop=property_name, val=val, err=err))
-        else:
-            raise ValueError(required_error.format(cls=class_name, prop=property_name))
-
-        property_name = 'organizations'
-        val = data.get(property_name)
-        if val is not None:
-            datatypes = [str]
-            try:
-                self.organizations = client_support.list_factory(val, datatypes)
             except ValueError as err:
                 raise ValueError(create_error.format(cls=class_name, prop=property_name, val=val, err=err))
         else:
