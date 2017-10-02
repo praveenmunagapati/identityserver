@@ -1,8 +1,6 @@
 package siteservice
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 
 	log "github.com/Sirupsen/logrus"
@@ -25,36 +23,30 @@ func (service *Service) PhonenumberValidation(w http.ResponseWriter, request *ht
 	smscode := values.Get("c")
 	langKey := values.Get("l")
 
-	translationFile, err := tools.LoadTranslations(langKey)
-	if err != nil {
-		log.Error("Error while loading translations: ", err)
-		return
+	translationValues := tools.TranslationValues{
+		"invalidlink":  nil,
+		"error":        nil,
+		"smsconfirmed": nil,
 	}
 
-	translations := struct {
-		Invalidlink  string
-		Error        string
-		Smsconfirmed string
-	}{}
-
-	r := bytes.NewReader(translationFile)
-	if err = json.NewDecoder(r).Decode(&translations); err != nil {
-		log.Error("Error while decoding translations: ", err)
+	translations, err := tools.ParseTranslations(langKey, translationValues)
+	if err != nil {
+		log.Error("Failed to parse translations: ", err)
 		return
 	}
 
 	err = service.phonenumberValidationService.ConfirmValidation(request, key, smscode)
 	if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
-		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		service.renderSMSConfirmationPage(w, request, translations["invalidlink"])
 		return
 	}
 	if err != nil {
 		log.Error(err)
-		service.renderSMSConfirmationPage(w, request, translations.Error)
+		service.renderSMSConfirmationPage(w, request, translations["error"])
 		return
 	}
 
-	service.renderSMSConfirmationPage(w, request, translations.Smsconfirmed)
+	service.renderSMSConfirmationPage(w, request, translations["smsconfirmed"])
 }
 
 func (service *Service) EmailValidation(w http.ResponseWriter, request *http.Request) {
@@ -71,34 +63,28 @@ func (service *Service) EmailValidation(w http.ResponseWriter, request *http.Req
 	smscode := values.Get("c")
 	langKey := values.Get("l")
 
-	translationFile, err := tools.LoadTranslations(langKey)
-	if err != nil {
-		log.Error("Error while loading translations: ", err)
-		return
+	translationValues := tools.TranslationValues{
+		"invalidlink":    nil,
+		"error":          nil,
+		"emailconfirmed": nil,
 	}
 
-	translations := struct {
-		Invalidlink    string
-		Error          string
-		Emailconfirmed string
-	}{}
-
-	r := bytes.NewReader(translationFile)
-	if err = json.NewDecoder(r).Decode(&translations); err != nil {
-		log.Error("Error while decoding translations: ", err)
+	translations, err := tools.ParseTranslations(langKey, translationValues)
+	if err != nil {
+		log.Error("Failed to parse translations: ", err)
 		return
 	}
 
 	err = service.emailaddressValidationService.ConfirmValidation(request, key, smscode)
 	if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
-		service.renderEmailConfirmationPage(w, request, translations.Invalidlink)
+		service.renderEmailConfirmationPage(w, request, translations["invalidlink"])
 		return
 	}
 	if err != nil {
 		log.Error(err)
-		service.renderEmailConfirmationPage(w, request, translations.Error)
+		service.renderEmailConfirmationPage(w, request, translations["error"])
 		return
 	}
 
-	service.renderEmailConfirmationPage(w, request, translations.Emailconfirmed)
+	service.renderEmailConfirmationPage(w, request, translations["emailconfirmed"])
 }

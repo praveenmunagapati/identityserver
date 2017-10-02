@@ -1,7 +1,6 @@
 package siteservice
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
@@ -368,29 +367,29 @@ func (service *Service) GetSmsCode(w http.ResponseWriter, request *http.Request)
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 	mgoCollection.Insert(sessionInfo)
 
-	translationFile, err := tools.LoadTranslations(values.LangKey)
-	if err != nil {
-		log.Error("Error while loading translations: ", err)
-		return
+	translationValues := make(tools.TranslationValues)
+	if authenticatingOrganization != "" {
+		split := strings.Split(authenticatingOrganization, ".")
+		translationValues["authorizeorganizationsms"] = struct {
+			Organization string
+			Code         string
+		}{
+			Organization: split[len(split)-1], Code: sessionInfo.SMSCode}
+	} else {
+		translationValues["signinsms"] = struct{ Code string }{Code: sessionInfo.SMSCode}
 	}
 
-	translations := struct {
-		Authorizeorganizationsms string
-		Signinsms                string
-	}{}
-
-	r := bytes.NewReader(translationFile)
-	if err = json.NewDecoder(r).Decode(&translations); err != nil {
-		log.Error("Error while decoding translations: ", err)
+	translations, err := tools.ParseTranslations(values.LangKey, translationValues)
+	if err != nil {
+		log.Error("Failed to parse translations: ", err)
 		return
 	}
 
 	smsmessage := ""
 	if authenticatingOrganization != "" {
-		split := strings.Split(authenticatingOrganization, ".")
-		smsmessage = fmt.Sprintf(translations.Authorizeorganizationsms, split[len(split)-1], sessionInfo.SMSCode)
+		smsmessage = translations["authorizeorganizationsms"]
 	} else {
-		smsmessage = fmt.Sprintf(translations.Signinsms, sessionInfo.SMSCode)
+		smsmessage = translations["signinsms"]
 	}
 
 	sessions.Save(request, w)
@@ -471,32 +470,26 @@ func (service *Service) PhonenumberValidationAndLogin(w http.ResponseWriter, req
 	smscode := values.Get("c")
 	langKey := values.Get("l")
 
-	translationFile, err := tools.LoadTranslations(langKey)
-	if err != nil {
-		log.Error("Error while loading translations: ", err)
-		return
+	translationValues := tools.TranslationValues{
+		"invalidlink":          nil,
+		"error":                nil,
+		"smsconfirmedandlogin": nil,
 	}
 
-	translations := struct {
-		Invalidlink          string
-		Error                string
-		Smsconfirmedandlogin string
-	}{}
-
-	r := bytes.NewReader(translationFile)
-	if err = json.NewDecoder(r).Decode(&translations); err != nil {
-		log.Error("Error while decoding translations: ", err)
+	translations, err := tools.ParseTranslations(langKey, translationValues)
+	if err != nil {
+		log.Error("Failed to parse translations: ", err)
 		return
 	}
 
 	err = service.phonenumberValidationService.ConfirmValidation(request, key, smscode)
 	if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
-		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		service.renderSMSConfirmationPage(w, request, translations["invalidlink"])
 		return
 	}
 	if err != nil {
 		log.Error(err)
-		service.renderSMSConfirmationPage(w, request, translations.Error)
+		service.renderSMSConfirmationPage(w, request, translations["error"])
 		return
 	}
 
@@ -507,14 +500,14 @@ func (service *Service) PhonenumberValidationAndLogin(w http.ResponseWriter, req
 	}
 
 	if sessionInfo == nil {
-		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		service.renderSMSConfirmationPage(w, request, translations["invalidlink"])
 		return
 	}
 
 	validsmscode := (smscode == sessionInfo.SMSCode)
 
 	if !validsmscode { //TODO: limit to 3 failed attempts
-		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		service.renderSMSConfirmationPage(w, request, translations["invalidlink"])
 		return
 	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
@@ -526,7 +519,7 @@ func (service *Service) PhonenumberValidationAndLogin(w http.ResponseWriter, req
 		return
 	}
 
-	service.renderSMSConfirmationPage(w, request, translations.Smsconfirmedandlogin)
+	service.renderSMSConfirmationPage(w, request, translations["smsconfirmedandlogin"])
 }
 
 //MobileSMSConfirmation is the page that is linked to in the SMS and is thus accessed on the mobile phone
@@ -544,20 +537,14 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 	smscode := values.Get("c")
 	langKey := values.Get("l")
 
-	translationFile, err := tools.LoadTranslations(langKey)
-	if err != nil {
-		log.Error("Error while loading translations: ", err)
-		return
+	translationValues := tools.TranslationValues{
+		"invalidlink":  nil,
+		"smsloggingin": nil,
 	}
 
-	translations := struct {
-		Invalidlink  string
-		Smsloggingin string
-	}{}
-
-	r := bytes.NewReader(translationFile)
-	if err = json.NewDecoder(r).Decode(&translations); err != nil {
-		log.Error("Error while decoding translations: ", err)
+	translations, err := tools.ParseTranslations(langKey, translationValues)
+	if err != nil {
+		log.Error("Failed to parse translations: ", err)
 		return
 	}
 
@@ -569,14 +556,14 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 	}
 
 	if sessionInfo == nil {
-		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		service.renderSMSConfirmationPage(w, request, translations["invalidlink"])
 		return
 	}
 
 	validsmscode = (smscode == sessionInfo.SMSCode)
 
 	if !validsmscode { //TODO: limit to 3 failed attempts
-		service.renderSMSConfirmationPage(w, request, translations.Invalidlink)
+		service.renderSMSConfirmationPage(w, request, translations["invalidlink"])
 		return
 	}
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
@@ -587,7 +574,7 @@ func (service *Service) MobileSMSConfirmation(w http.ResponseWriter, request *ht
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	service.renderSMSConfirmationPage(w, request, translations.Smsloggingin)
+	service.renderSMSConfirmationPage(w, request, translations["smsloggingin"])
 }
 
 //Check2FASMSConfirmation is called by the sms code form to check if the sms is already confirmed on the mobile phone
@@ -1073,24 +1060,18 @@ func (service *Service) LoginResendPhonenumberConfirmation(w http.ResponseWriter
 	mgoCollection := db.GetCollection(db.GetDBSession(request), mongoLoginCollectionName)
 	mgoCollection.Insert(sessionInfo)
 
-	translationFile, err := tools.LoadTranslations(values.LangKey)
+	TranslationValues := tools.TranslationValues{
+		"smsconfirmationandlogin": struct{ Code string }{Code: info.SMSCode},
+	}
+
+	translations, err := tools.ParseTranslations(values.LangKey, TranslationValues)
 	if err != nil {
-		log.Error("Error while loading translations: ", err)
+		log.Error("Failed to parse translations: ", err)
 		return
 	}
 
-	translations := struct {
-		Smsconfirmationandlogin string
-	}{}
-
-	r := bytes.NewReader(translationFile)
-	if err = json.NewDecoder(r).Decode(&translations); err != nil {
-		log.Error("Error while decoding translations: ", err)
-		return
-	}
-	smsmessage := fmt.Sprintf(translations.Smsconfirmationandlogin, info.SMSCode)
-
-	go service.phonenumberValidationService.SMSService.Send(values.PhoneNumber, smsmessage)
+	go service.phonenumberValidationService.SMSService.Send(values.PhoneNumber,
+		translations["smsconfirmationandlogin"])
 
 	sessions.Save(request, w)
 	w.WriteHeader(http.StatusNoContent)

@@ -1,8 +1,6 @@
 package validation
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -36,25 +34,17 @@ func (service *IYOPhonenumberValidationService) RequestValidation(request *http.
 		return
 	}
 
-	translationFile, err := tools.LoadTranslations(langKey)
+	translationValues := tools.TranslationValues{
+		"smsconfirmation": struct{ Code string }{Code: info.SMSCode},
+	}
+
+	translations, err := tools.ParseTranslations(langKey, translationValues)
 	if err != nil {
-		log.Error("Error while loading translations: ", err)
+		log.Error("Failed to parse translations: ", err)
 		return
 	}
 
-	translations := struct {
-		Smsconfirmation string
-	}{}
-
-	r := bytes.NewReader(translationFile)
-	if err = json.NewDecoder(r).Decode(&translations); err != nil {
-		log.Error("Error while decoding translations: ", err)
-		return
-	}
-
-	smsmessage := fmt.Sprintf(translations.Smsconfirmation, info.SMSCode)
-
-	go service.SMSService.Send(phonenumber.Phonenumber, smsmessage)
+	go service.SMSService.Send(phonenumber.Phonenumber, translations["smsconfirmation"])
 	key = info.Key
 	return
 }
