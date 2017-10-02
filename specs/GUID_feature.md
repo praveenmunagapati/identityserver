@@ -52,34 +52,17 @@ Info is stored in the database in a separate collection with the following field
   - If the id is not found, also return a `403` (this party is not authorized to look up this identifier)
   - Return username as json in response body
 
+## Additional work
+
+Because the user identifier middlewares need to be aware of the `client_id` to correctly
+authorize or block calls with a `GUID` as identifier. To enable this, the current
+implementation of setting the `client_id` in the authorization middleware will be removed,
+and implemented in a separate middleware at the beginning of the middleware chain.
+The useridentifier middlware can then use this `client_id` should it be required.
+Also the functionality of the useridentifier middleware should be put in a separate function
+so that it can be reused by the endpoints which expect a json format.
+
 ## Possbile issues:
-
-- Handling authorization in the middleware:
-
-  Currently the first middleware convers a user identifier to the username. This is then
-  passed to the scopes middleware to handle authorization. Only then the underlying authorization
-  from the request is checked. But this is actually already needed to verify that this
-  party can use the identifier. 3 solutions come to mind:
-
-  - Duplicate some of the logic checking the authorization to the identification middleware
-  - Add some values to the request when passing it from the first to the second middleware
-    The second middleware needs to then check these values. This means we build in some dependency
-    in the middlewares, they are no longer cleanly separated.
-  - Handle the authorization check in the API endpoint. The identifier is already
-    converted to a username, so some extra values need to be added to the request.
-
-  None of the 3 presented options are perfect, so we will need to investigate how
-  to handle this in the cleanest way possible
-
-- Usage of identifiers in json bodies:
-
-  If a user is now identified in a json body for a request, a simple database lookup
-  is done. But if we allow these new identifiers in json bodies, then we will also need
-  to supply the requesting party to the method to allow a validation check if this identifier
-  really can be used by that party. We could also return an additional bool that tells the api
-  to handle the validation, but then we once again make it apparent to the api that the
-  identifier was a GUID (or whatever we end up calling it/using), whereas the use of
-  emails and phone numbers as identifiers is now fully transparent to the api.
 
 - Client credentials jwt for users:
 
@@ -95,7 +78,7 @@ Info is stored in the database in a separate collection with the following field
     as it is linked to the apikey.
 
   A possible solution for this would be to check if the authorization is provided by a
-  user client credentials jwt, and in this case take the username from the jwt. But this
+  user client credentials jwt or access token, and in this case take the username from the jwt. But this
   feels like building in code dependency and loss of separation again.
 
 ## Further remarks:
