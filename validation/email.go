@@ -39,13 +39,22 @@ type IYOEmailAddressValidationService struct {
 	EmailService EmailService
 }
 
-type translations struct {
-	Title      string
-	Text       string
-	Buttontext string
-	Reason     string
-	Subject    string
-	Urlcaption string
+type emailTranslations struct {
+	Title      string `json:"emailvalidation_title"`
+	Text       string `json:"emailvalidation_text"`
+	Buttontext string `json:"emailvalidation_buttontext"`
+	Reason     string `json:"emailvalidation_reason"`
+	Subject    string `json:"emailvalidation_subject"`
+	Urlcaption string `json:"emailvalidation_urlcaption"`
+}
+
+type passwordResetTranslations struct {
+	Title      string `json:"passwordreset_title"`
+	Text       string `json:"passwordreset_text"`
+	Buttontext string `json:"passwordreset_buttontext"`
+	Reason     string `json:"passwordreset_reason"`
+	Subject    string `json:"passwordreset_subject"`
+	Urlcaption string `json:"passwordreset_urlcaption"`
 }
 
 //RequestValidation validates the email address by sending an email
@@ -68,9 +77,7 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 		return
 	}
 
-	translations := struct {
-		Emailvalidation translations
-	}{}
+	translations := emailTranslations{}
 
 	r := bytes.NewReader(translationFile)
 	if err = json.NewDecoder(r).Decode(&translations); err != nil {
@@ -80,13 +87,13 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 
 	validationurl := fmt.Sprintf("%s?c=%s&k=%s&l=%s", confirmationurl, url.QueryEscape(info.Secret), url.QueryEscape(info.Key), langKey)
 	templateParameters := EmailWithButtonTemplateParams{
-		UrlCaption: translations.Emailvalidation.Urlcaption,
+		UrlCaption: translations.Urlcaption,
 		Url:        validationurl,
 		Username:   username,
-		Title:      translations.Emailvalidation.Title,
-		Text:       fmt.Sprintf(translations.Emailvalidation.Text, email),
-		ButtonText: translations.Emailvalidation.Buttontext,
-		Reason:     translations.Emailvalidation.Reason,
+		Title:      translations.Title,
+		Text:       fmt.Sprintf(translations.Text, email),
+		ButtonText: translations.Buttontext,
+		Reason:     translations.Reason,
 		LogoUrl:    fmt.Sprintf("https://%s/assets/img/its-you-online.png", request.Host),
 	}
 	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
@@ -94,7 +101,7 @@ func (service *IYOEmailAddressValidationService) RequestValidation(request *http
 		return
 	}
 
-	go service.EmailService.Send([]string{email}, translations.Emailvalidation.Subject, message)
+	go service.EmailService.Send([]string{email}, translations.Subject, message)
 	key = info.Key
 	return
 }
@@ -116,9 +123,7 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 		return
 	}
 
-	translations := struct {
-		Passwordreset translations
-	}{}
+	translations := passwordResetTranslations{}
 
 	r := bytes.NewReader(translationFile)
 	if err = json.NewDecoder(r).Decode(&translations); err != nil {
@@ -128,20 +133,20 @@ func (service *IYOEmailAddressValidationService) RequestPasswordReset(request *h
 
 	passwordreseturl := fmt.Sprintf("https://%s/login?lang=%s#/resetpassword/%s", request.Host, langKey, url.QueryEscape(token.Token))
 	templateParameters := EmailWithButtonTemplateParams{
-		UrlCaption: translations.Passwordreset.Urlcaption,
+		UrlCaption: translations.Urlcaption,
 		Url:        passwordreseturl,
 		Username:   username,
-		Title:      translations.Passwordreset.Title,
-		Text:       translations.Passwordreset.Text,
-		ButtonText: translations.Passwordreset.Buttontext,
-		Reason:     translations.Passwordreset.Reason,
+		Title:      translations.Title,
+		Text:       translations.Text,
+		ButtonText: translations.Buttontext,
+		Reason:     translations.Reason,
 		LogoUrl:    fmt.Sprintf("https://%s/assets/img/its-you-online.png", request.Host),
 	}
 	message, err := tools.RenderTemplate(emailWithButtonTemplateName, templateParameters)
 	if err != nil {
 		return
 	}
-	go service.EmailService.Send(emails, translations.Passwordreset.Subject, message)
+	go service.EmailService.Send(emails, translations.Subject, message)
 	key = token.Token
 	return
 }
