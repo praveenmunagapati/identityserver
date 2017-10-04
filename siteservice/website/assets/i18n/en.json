@@ -577,5 +577,18 @@
     "invalid_last_name": "Invalid last name. Only letters, -, _, ' and spaces are allowed. Names have a length of 2 to 30 characters.",
     "name_minlength": "Name must contain at least 2 characters",
     "name_maxlength": "Name can contain at most 30 characters",
-    "authorize_non_validated_email": "You must validate the email address {{email}} to give this authorization"
+    "authorize_non_validated_email": "You must validate the email address {{email}} to give this authorization",
+    "Home": "Home",
+    "Work": "Work",
+    "Other": "Other",
+    "Personal": "Personal",
+    "Spam": "Spam",
+    "Mobile": "Mobile",
+    "General": "General",
+    "Fax": "Fax",
+    "Pager": "Pager",
+    "Business": "Business",
+    "Shared": "Shared",
+    "Primary": "Primary",
+    "Secondary": "Secondary"
 }

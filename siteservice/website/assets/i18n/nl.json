@@ -578,5 +578,18 @@
     "invalid_last_name": "Ongeldige achternaam. Alleen letters, -, _, ', en spaties zijn toegestaan. Namen hebben een lengte van 2 tot 30 karakters.",
     "name_minlength": "Een naam moet minstens 2 karakters bevatten",
     "name_maxlength": "Een naam kan maximaal 30 karakters bevatten",
-    "authorize_non_validated_email": "U moet het e-mailadres {{email}} valideren om deze autorisatie te geven"
+    "authorize_non_validated_email": "U moet het e-mailadres {{email}} valideren om deze autorisatie te geven",
+    "Home": "Thuis",
+    "Work": "Werk",
+    "Other": "Ander",
+    "Personal": "Persoonlijk",
+    "Spam": "Spam",
+    "Mobile": "Mobiel",
+    "General": "Algemeen",
+    "Fax": "Fax",
+    "Pager": "Pieper",
+    "Business": "Zakelijk",
+    "Shared": "Gedeeld",
+    "Primary": "Primair",
+    "Secondary": "Secundair"
 }
