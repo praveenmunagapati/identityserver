@@ -122,7 +122,7 @@
                     };
                     var listScope = listAuthorizations[userScope];
                     if (listScope) {
-                        auth.reallabel = vm.user[listScope].length ? vm.user[listScope][0].label : '';
+                        auth.reallabel = vm.user[listScope].length ? vm.user[listScope][0].label : null;
                         $scope.authorizations[listScope].push(auth);
                     }
                     else if (scope === 'user:name') {
@@ -132,8 +132,8 @@
                         $scope.requested.organizations[permissionLabel] = true;
                     }
                     else if (scope.startsWith('user:digitalwalletaddress:')) {
-                        auth.reallabel = vm.user.digitalwallet.length ? vm.user.digitalwallet[0].label : '';
-                        auth.currency = splitPermission.length === 4 ? splitPermission[3] : '';
+                        auth.reallabel = vm.user.digitalwallet.length ? vm.user.digitalwallet[0].label : null;
+                        auth.currency = splitPermission.length === 4 ? splitPermission[3] : null;
                         $scope.authorizations.digitalwallet.push(auth);
                     }
                     else if (scope === 'user:github') {
@@ -153,11 +153,11 @@
                         auth.requestedlabel = permissionLabel;
                         switch (splitPermission[2]) {
                             case 'email':
-                                auth.reallabel = vm.user['emailaddresses'].length ? vm.user['emailaddresses'][0].label : '';
+                                auth.reallabel = vm.user['emailaddresses'].length ? vm.user['emailaddresses'][0].label : null;
                                 $scope.authorizations['validatedemailaddresses'].push(auth);
                               break;
                             case 'phone':
-                                auth.reallabel = vm.user['phonenumbers'].length ? vm.user['phonenumbers'][0].label : '';
+                                auth.reallabel = vm.user['phonenumbers'].length ? vm.user['phonenumbers'][0].label : null;
                                 $scope.authorizations['validatedphonenumbers'].push(auth);
                               break;
                         }
@@ -316,6 +316,9 @@
         }
 
         function submit(event) {
+            if ($scope.authorizeform.$invalid) {
+                return;
+            }
             // Remove the messages that the email address needs to be validated first
             vm.emailNotValidated = {};
 

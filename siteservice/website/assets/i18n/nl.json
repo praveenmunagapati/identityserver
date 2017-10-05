@@ -591,5 +591,6 @@
     "Business": "Zakelijk",
     "Shared": "Gedeeld",
     "Primary": "Primair",
-    "Secondary": "Secundair"
+    "Secondary": "Secundair",
+    "required_field": "Dit veld is verplicht"
 }

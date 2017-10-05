@@ -590,5 +590,6 @@
     "Business": "Business",
     "Shared": "Shared",
     "Primary": "Primary",
-    "Secondary": "Secondary"
+    "Secondary": "Secondary",
+    "required_field": "This field is required"
 }
