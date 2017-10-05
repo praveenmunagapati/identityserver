@@ -17,7 +17,7 @@
                         <label translate='label'>Label</label>
                         <md-select ng-model="data.label" required name="labelinput">
                             <md-option ng-repeat="label in preFilledLabels" ng-value="label">
-                                {{label}}</md-option>
+                                {{label | translate}}</md-option>
                             <md-option ng-value="::originalLabel" ng-if="::isCustomlabel(originalLabel)">{{originalLabel}}</md-option>
                         </md-select>
                     </md-input-container>
