@@ -333,7 +333,7 @@
                 "smshelp": "Klik op de link in de sms die naar je telefoon gestuurd is of vul de code uit de sms hier in.",
                 "smscode": "Code gestuurd via sms",
                 "invalidcode": "Ongeldige code",
-                "resend": "Herstuur...",
+                "resend": "Herstuur code",
                 "submit": "Dien in"
             }
         }
@@ -592,5 +592,18 @@
     "Shared": "Gedeeld",
     "Primary": "Primair",
     "Secondary": "Secundair",
-    "required_field": "Dit veld is verplicht"
+    "required_field": "Dit veld is verplicht",
+    "step_1_of_3": "Stap 1 van 3",
+    "basic_info": "Basic info",
+    "next": "Volgende",
+    "step_2_of_3": "Stap 2 van 3",
+    "phone_validation": "Telefoon validatie",
+    "resend_button_sms": "Als u geen sms hebt ontvangen, gebruik dan de onderstaande herstuurknop",
+    "step_3_of_3": "Stap 3 van 3",
+    "email_validation": "Email validatie",
+    "registration_validate_email_instruction": "Bevestig uw e-mailadres door op de link te klikken in de e-mail die wij u hebben verzonden.",
+    "resend_button_email": "Als u geen e-mail hebt ontvangen, gebruik dan de onderstaande herstuurknop.",
+    "previous": "Vorige",
+    "login_btn": "Login",
+    "great_success": "succes"
 }

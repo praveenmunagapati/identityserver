@@ -3,10 +3,10 @@
     angular
         .module('itsyouonline.registration')
         .controller('registrationController', [
-            '$scope', '$window', '$cookies', '$mdUtil', '$rootScope', '$timeout', '$http', 'configService', 'registrationService',
+            '$scope', '$window', '$cookies', '$mdMedia','$mdUtil', '$rootScope', '$timeout', '$http', 'configService', 'registrationService',
             registrationController]);
 
-    function registrationController($scope, $window, $cookies, $mdUtil, $rootScope, $timeout, $http, configService, registrationService) {
+    function registrationController($scope, $window, $cookies, $mdMedia, $mdUtil, $rootScope, $timeout, $http, configService, registrationService) {
         var vm = this,
             queryParams = URI($window.location.href).search(true);
         vm.resendValidation = resendValidation;
@@ -15,6 +15,9 @@
         vm.basicInfoValid = basicInfoValid;
         vm.onTabSelected = onTabSelected;
         vm.goToNextTabIfValid = goToNextTabIfValid;
+        vm.goToPreviousTab = goToPreviousTab;
+        vm.codeUpdated = codeUpdated;
+        vm.mobileView = mobileView;
         vm.externalSite = queryParams.client_id;
         $rootScope.loginUrl = '/login' + $window.location.search;
         vm.logo = undefined;
@@ -52,14 +55,6 @@
                         break;
                     }
                 }
-            }
-            // require a validated email to register if:
-            //  - a validated email scope is required to log in to an external org
-            //  - the user is registering against IYO (not in an oauth flow) -> no externalsite
-            //  - the `requirevalidatedemail` queryparameter is set.
-            if ((queryParams && queryParams.scope && queryParams.scope.includes('user:validated:email'))
-                || !vm.externalSite || (queryParams && queryParams.requirevalidatedemail)) {
-                vm.needDoubleValidation = true;
             }
             if (vm.externalSite) {
                 registrationService.getLogo(vm.externalSite).then(function (data) {
@@ -182,14 +177,23 @@
         }
 
         function goToNextTabIfValid() {
-            vm.selectedTab = 1;
+            vm.selectedTab += 1;
+        }
+
+        function goToPreviousTab() {
+            vm.oldSelectedTab = vm.selectedTab;
+            vm.selectedTab -= 1;
         }
 
         function onTabSelected() {
-            if (vm.selectedTab === 1 && vm.selectedTab != vm.oldSelectedTab) {
+            if (vm.oldSelectedTab === 0 && vm.selectedTab === 1 && vm.selectedTab != vm.oldSelectedTab) {
                 requestValidationInfo()
             }
             vm.oldSelectedTab = vm.selectedTab;
+        }
+
+        function mobileView() {
+            return !$mdMedia('gt-sm');
         }
 
         function requestValidationInfo() {
@@ -231,7 +235,15 @@
                         }
                     }
                 )
+                if (vm.smsvalidation != vm.sms) {
+                    vm.phoneConfirmed = false;
+                    // Clear the input field
+                    vm.smscode = "";
+                }
                 vm.smsvalidation = vm.sms;
+                if (vm.emailvalidation != vm.email) {
+                    vm.emailConfirmed = false;
+                }
                 vm.emailvalidation = vm.email;
                 vm.firstnamevalidation = vm.firstname;
                 vm.lastnamevalidation = vm.lastname;
@@ -242,6 +254,28 @@
         function startCodePolling() {
             $timeout(checkPhoneConfirmation, 1000);
             $timeout(checkEmailConfirmation, 1000);
+        }
+
+        function codeUpdated() {
+            vm.resetValidation('smscode');
+            if ($scope.signupform.smscode.$invalid) {
+                return;
+            }
+            submitSMSCode();
+        }
+
+        function submitSMSCode() {
+            registrationService.submitSMSCode(vm.smscode).then(
+                function(response) {
+                    if (response.data.confirmed) {
+                        vm.phoneConfirmed = response.data.confirmed;
+                    } 
+                },
+                function(failure) {
+                    var err = failure.data.error;
+                    $scope.signupform.smscode.$setValidity(err, false);
+                }
+            );
         }
 
         function checkPhoneConfirmation() {

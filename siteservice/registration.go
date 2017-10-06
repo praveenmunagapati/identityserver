@@ -145,41 +145,43 @@ func (service *Service) ShowRegistrationForm(w http.ResponseWriter, request *htt
 }
 
 //ProcessPhonenumberConfirmationForm processes the Phone number confirmation form
-func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter, request *http.Request) {
+func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter, r *http.Request) {
 	values := struct {
 		Smscode string `json:"smscode"`
 	}{}
 
 	response := struct {
-		RedirectUrL string `json:"redirecturl"`
-		Error       string `json:"error"`
+		Error     string `json:"error"`
+		Confirmed bool   `json:"confirmed"`
 	}{}
 
-	if err := json.NewDecoder(request.Body).Decode(&values); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&values); err != nil {
 		log.Debug("Error decoding the ProcessPhonenumberConfirmation request:", err)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	registrationSession, err := service.GetSession(request, SessionForRegistration, "registrationdetails")
+	registrationSession, err := service.GetSession(r, SessionForRegistration, "registrationdetails")
 	if err != nil {
 		log.Debug(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if registrationSession.IsNew {
-		sessions.Save(request, w)
-		response.RedirectUrL = fmt.Sprintf("https://%s/register/#/smsconfirmation", request.Host)
-		json.NewEncoder(w).Encode(&response)
+		sessions.Save(r, w)
+		log.Debug("Registration session expired")
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 
 	username, _ := registrationSession.Values["username"].(string)
 	validationkey, _ := registrationSession.Values["phonenumbervalidationkey"].(string)
 
-	if isConfirmed, _ := service.phonenumberValidationService.IsConfirmed(request, validationkey); isConfirmed {
-		userMgr := user.NewManager(request)
+	if isConfirmed, _ := service.phonenumberValidationService.IsConfirmed(r, validationkey); isConfirmed {
+		userMgr := user.NewManager(r)
 		userMgr.RemoveExpireDate(username)
-		service.loginUser(w, request, username)
+		response.Confirmed = true
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
@@ -190,7 +192,7 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 		return
 	}
 
-	err = service.phonenumberValidationService.ConfirmValidation(request, validationkey, smscode)
+	err = service.phonenumberValidationService.ConfirmValidation(r, validationkey, smscode)
 	if err == validation.ErrInvalidCode {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		response.Error = "invalid_sms_code"
@@ -198,7 +200,7 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 		return
 	}
 	if err == validation.ErrInvalidOrExpiredKey {
-		sessions.Save(request, w)
+		sessions.Save(r, w)
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(&response)
 		return
@@ -206,9 +208,11 @@ func (service *Service) ProcessPhonenumberConfirmationForm(w http.ResponseWriter
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	userMgr := user.NewManager(request)
+	userMgr := user.NewManager(r)
 	userMgr.RemoveExpireDate(username)
-	service.loginUser(w, request, username)
+	response.Confirmed = true
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
 
 //ResendPhonenumberConfirmation resend the phonenumberconfirmation to a possbily new phonenumber

@@ -332,7 +332,7 @@
                 "smshelp": "Click the link in the sms sent to your phone or enter the code from the sms here if you are unable to.",
                 "smscode": "Code sent by sms",
                 "invalidcode": "Invalid code",
-                "resend": "Resend...",
+                "resend": "Resend code",
                 "submit": "Submit"
             }
         }
@@ -591,5 +591,18 @@
     "Shared": "Shared",
     "Primary": "Primary",
     "Secondary": "Secondary",
-    "required_field": "This field is required"
+    "required_field": "This field is required",
+    "step_1_of_3": "Step 1 of 3",
+    "basic_info": "Basic info",
+    "next": "Next",
+    "step_2_of_3": "Step 2 of 3",
+    "phone_validation": "Phone validation",
+    "resend_button_sms": "If you did not receive an sms, please use the resend button below",
+    "step_3_of_3": "Step 3 of 3",
+    "email_validation": "Email validation",
+    "registration_validate_email_instruction": "Please validate your email address by clicking the link in the email we sent you.",
+    "resend_button_email": "If you did not receive an email, please use the resend button below.",
+    "previous": "Previous",
+    "login_btn": "Login",
+    "great_success": "success"
 }
