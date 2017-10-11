@@ -17,7 +17,6 @@
         vm.goToNextTabIfValid = goToNextTabIfValid;
         vm.goToPreviousTab = goToPreviousTab;
         vm.codeUpdated = codeUpdated;
-        vm.mobileView = mobileView;
         vm.externalSite = queryParams.client_id;
         $rootScope.loginUrl = '/login' + $window.location.search;
         vm.logo = undefined;
@@ -46,6 +45,11 @@
         init();
 
         function init() {
+            $scope.$watch(function () {
+                return $mdMedia('gt-sm');
+            }, function (isGtSm) {
+                vm.mobileView = isGtSm;
+            });
             if (queryParams && queryParams.scope && queryParams.scope.includes('ownerof:email')) {
                 var scopes = queryParams.scope.split(',');
                 for (var i = 0; i < scopes.length; i++) {
