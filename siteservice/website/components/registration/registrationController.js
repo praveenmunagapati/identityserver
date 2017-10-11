@@ -191,7 +191,11 @@
 
         function onTabSelected() {
             if (vm.oldSelectedTab === 0 && vm.selectedTab === 1 && vm.selectedTab != vm.oldSelectedTab) {
-                requestValidationInfo()
+                if (basicInfoValid()) {
+                    // blur the password validaton field 
+                    document.getElementById('passwordvalidation').blur();
+                    requestValidationInfo()
+                }
             }
             vm.oldSelectedTab = vm.selectedTab;
         }
