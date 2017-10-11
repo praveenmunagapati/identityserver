@@ -196,10 +196,6 @@
             vm.oldSelectedTab = vm.selectedTab;
         }
 
-        function mobileView() {
-            return !$mdMedia('gt-sm');
-        }
-
         function requestValidationInfo() {
             if (basicInfoValid() && (vm.sms != vm.smsvalidation || vm.email != vm.emailvalidation ||
                 vm.firstname != vm.firstnamevalidation || vm.lastname != vm.lastnamevalidation)) {
