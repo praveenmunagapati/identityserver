@@ -578,6 +578,7 @@
     "name_minlength": "Name must contain at least 2 characters",
     "name_maxlength": "Name can contain at most 30 characters",
     "authorize_non_validated_email": "You must validate the email address {{email}} to give this authorization",
+    "authorize_non_validated_phone": "You must validate the phone number {{phone}} to give this authorization",
     "Home": "Home",
     "Work": "Work",
     "Other": "Other",

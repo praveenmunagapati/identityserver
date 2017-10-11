@@ -145,7 +145,7 @@
                 </span>
         </p>
         <div layout="row" ng-if="vm.isAuthorizeController">
-          <md-input-container>
+            <md-input-container>
                 <label><span translate='validated_email_address'>Validated email address</span></label>
                 <md-select required name="validatedemail_{{$index}}" ng-model="auth.reallabel">
                     <md-option ng-repeat="email in vm.user.emailaddresses"
@@ -189,7 +189,28 @@
                     Validated phone number
                 </span>
         </p>
-        <md-input-container>
+        <div layout="row" ng-if="vm.isAuthorizeController">
+            <md-input-container>
+                <label><span translate='validated_phone_number'>Validated phone number</span></label>
+                <md-select required name="validatedphone_{{$index}}" ng-model="auth.reallabel">
+                    <md-option ng-repeat="phone in vm.user.phonenumbers"
+                               value="{{::phone.label}}"
+                               ng-bind="::phone.label + ' ' + phone.phonenumber"></md-option>
+                     <md-option ng-click="vm.showPhoneNumberDialog($event, auth)" ng-if="::isNew">
+                         <i class="fa fa-plus"></i> <span translate='user.directives.authorizationdetails.createnew'>Create new</span>
+                     </md-option>
+                </md-select>
+                <div ng-messages="authorizeform['validatedphone' + $index].$error">
+                    <div ng-message="required" translate="required_field">This is required.</div>
+                </div>
+            </md-input-container>
+            <md-button ng-click="vm.verifyPhoneByLabel($event, auth.reallabel)"
+                       class="md-primary md-secondary"
+                       ng-if="vm.loaded.verifiedPhones && !vm.isPhoneVerified(auth.reallabel)">
+                <span translate="verify">Verify</span>
+            </md-button>
+        </div>
+        <md-input-container ng-if="!vm.isAuthorizeController">
             <label><span translate='validated_phone_number'>Validated Phone number</span></label>
             <md-select required name="validatedphone_{{$index}}" ng-model="auth.reallabel">
                 <md-option ng-repeat="phone in vm.user.phonenumbers | filter:{verified:true}"
@@ -200,6 +221,20 @@
                 <div ng-message="required" translate="required_field">This is required.</div>
             </div>
         </md-input-container>
+        <!-- <md-input-container>
+            <label><span translate='validated_phone_number'>Validated Phone number</span></label>
+            <md-select required name="validatedphone_{{$index}}" ng-model="auth.reallabel">
+                <md-option ng-repeat="phone in vm.user.phonenumbers | filter:{verified:true}"
+                           value="{{::phone.label}}"
+                           ng-bind="::phone.label + ' ' + phone.phonenumber"></md-option>
+                <md-option ng-click="vm.showPhonenumberDialog($event, auth)" ng-if="::isNew">
+                    <i class="fa fa-plus"></i> <span translate='user.directives.authorizationdetails.createnew'>Create new</span>
+                </md-option>
+            </md-select>
+            <div ng-messages="authorizeform['validatedphone' + $index].$error">
+                <div ng-message="required" translate="required_field">This is required.</div>
+            </div>
+        </md-input-container> -->
     </md-list-item>
 
     <md-list-item ng-repeat="auth in authorizations.phonenumbers track by auth.requestedlabel" layout="column"

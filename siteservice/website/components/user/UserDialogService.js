@@ -187,6 +187,7 @@
         }
 
         function verifyPhone(event, phone) {
+            var promise = $q.defer();
             var interval;
             $mdDialog.show({
                 controller: ['$scope', '$mdDialog', '$interval', 'user', 'phone', verifyPhoneDialogController],
@@ -246,7 +247,10 @@
                             if (confirmed) {
                                 findByLabel('phonenumbers', ctrl.label).verified = true;
                                 close();
+                                promise.resolve();
                             }
+                        }, function (response) {
+                            promise.reject(response);
                         });
                 }
 
@@ -256,10 +260,12 @@
                         .then(function () {
                             findByLabel('phonenumbers', ctrl.label).verified = true;
                             close();
+                            promise.resolve()
                         }, function (response) {
                             if (response.status === 422) {
                                 $scope.form.smscode.$setValidity('invalid_code', false);
                             }
+                            promise.reject(response);
                         });
                 }
 
@@ -267,6 +273,7 @@
                     $scope.form.smscode.$setValidity('invalid_code', true);
                 }
             }
+            return promise.promise;
         }
 
         function verifyEmailAddress(event, email) {

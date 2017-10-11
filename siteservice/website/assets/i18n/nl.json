@@ -579,6 +579,7 @@
     "name_minlength": "Een naam moet minstens 2 karakters bevatten",
     "name_maxlength": "Een naam kan maximaal 30 karakters bevatten",
     "authorize_non_validated_email": "U moet het e-mailadres {{email}} valideren om deze autorisatie te geven",
+    "authorize_non_validated_phone": "U moet het telefoonnummer {{phone}} valideren om deze autorisatie te geven",
     "Home": "Thuis",
     "Work": "Werk",
     "Other": "Ander",

@@ -29,7 +29,7 @@
         UserDialogService.init(vm);
         vm.showAvatarDialog = addAvatar;
         vm.showEmailDialog = addEmail;
-        vm.showPhonenumberDialog = addPhone;
+        vm.showPhonenumberDialog = addPhone;      
         vm.showAddressDialog = addAddress;
         vm.showBankAccountDialog = bank;
         vm.showPublicKeyDialog = addPublicKey;
@@ -37,7 +37,9 @@
         vm.submit = submit;
         vm.showDigitalWalletAddressDialog = digitalWalletAddress;
         vm.isEmailVerified = isEmailVerified;
+        vm.isPhoneVerified = isPhoneVerified;
         vm.verifyEmailByLabel = verifyEmailByLabel;
+        vm.verifyPhoneByLabel = verifyPhoneByLabel;
         var properties = ['avatars', 'addresses', 'emailaddresses', 'phonenumbers', 'bankaccounts', 'digitalwallet', 'publicKeys', 'validatedemailaddresses', 'validatedphonenumbers'];
         $scope.requested = {
             organizations: {}
@@ -177,14 +179,25 @@
         }
 
         function loadVerifiedPhones() {
-            UserService
-                .getVerifiedPhones()
-                .then(function (confirmedPhones) {
-                    confirmedPhones.map(function (p) {
-                        findByLabel('phonenumbers', p.label).verified = true;
-                    });
-                    vm.loaded.verifiedPhones = true;
-                });
+            return $q(function (resolve, reject) {
+                if (vm.isLoadingVerifiedPhones) {
+                    return;
+                }
+                vm.isLoadingVerifiedPhones = true;
+                UserService
+                    .getVerifiedPhones(true)
+                    .then(function (confirmedPhones) {
+                        angular.forEach(vm.validatedphonenumbers, function (vp) {
+                            vp.verified = undefined;
+                        });
+                        confirmedPhones.map(function (p) {
+                            findByLabel('phonenumbers', p.label).verified = true;
+                        });
+                        vm.loaded.verifiedPhones = true;
+                        resolve(confirmedPhones);
+                    }, reject);
+                    vm.isLoadingVerifiedPhones = false;
+            });
         }
 
         function loadVerifiedEmails() {
@@ -196,6 +209,9 @@
                 UserService
                     .getVerifiedEmailAddresses(true)
                     .then(function (confirmedEmails) {
+                        angular.forEach(vm.validatedemailaddresses, function (ve) {
+                            ve.verified = undefined;
+                        });
                         confirmedEmails.map(function (p) {
                             findByLabel('emailaddresses', p.label).verified = true;
                         });
@@ -319,32 +335,62 @@
             if ($scope.authorizeform.$invalid) {
                 return;
             }
-            // Remove the messages that the email address needs to be validated first
-            vm.emailNotValidated = {};
 
-            // If we have validated email address scopes check if given values are all verified
-            // If not, set a value to notify the UI and return
+            var requests = [];
             if ($scope.authorizations['validatedemailaddresses'] && $scope.authorizations['validatedemailaddresses'].length > 0) {
-
-                loadVerifiedEmails().then(
-                    function() {
-                      angular.forEach($scope.authorizations['validatedemailaddresses'], function(validatedemailrequest) {
-                          if (!isEmailVerified(validatedemailrequest.reallabel)) {
-                              var email = vm.user.emailaddresses.filter(function (e) {
-                                  return e.label === validatedemailrequest.reallabel;
-                              })[0];
-                              vm.emailNotValidated = { email: email.emailaddress };
-                              return
-                          }
-                      });
-                      if (vm.emailNotValidated.email) {
-                          return
-                      }
-                      confirm(event);
-                    });
-            } else {
-                confirm(event);
+                requests.push(loadVerifiedEmails());
             }
+            if ($scope.authorizations['validatedphonenumbers'] && $scope.authorizations['validatedphonenumbers'].length > 0) {
+                requests.push(loadVerifiedPhones());
+            }
+
+            
+            // Remove the messages that the email address and phone number needs to be validated first
+            vm.emailNotValidated = {};
+            vm.phoneNotValidated = {};
+            
+            $q.all(requests)
+                .then(function (results) {
+               
+                    // If we have validated email address scopes check if given values are all verified
+                    // If not, set a value to notify the UI and return
+                    if ($scope.authorizations['validatedemailaddresses'] && $scope.authorizations['validatedemailaddresses'].length > 0) {
+                        angular.forEach($scope.authorizations['validatedemailaddresses'], function(validatedemailrequest) {
+                            if (!isEmailVerified(validatedemailrequest.reallabel)) {
+                                var email = vm.user.emailaddresses.filter(function (e) {
+                                    return e.label === validatedemailrequest.reallabel;
+                                })[0];
+                                vm.emailNotValidated = { email: email.emailaddress };
+                                return;
+                            }
+                        });
+                    }
+
+                    if (vm.emailNotValidated.email) {
+                        return;
+                    }
+
+                    // Likewise, check if the phone numbers are validated 
+                    if ($scope.authorizations['validatedphonenumbers'] && $scope.authorizations['validatedphonenumbers'].length > 0) {
+                        angular.forEach($scope.authorizations['validatedphonenumbers'], function(validatedphonerequest) {
+                            if (!isPhoneVerified(validatedphonerequest.reallabel)) {
+                                var phone = vm.user.phonenumbers.filter(function (p) {
+                                    return p.label === validatedphonerequest.reallabel;
+                                })[0];
+                                vm.phoneNotValidated = { phone: phone.phonenumber };
+                                return;
+                            }
+                        });
+                    }
+
+                    if (vm.phoneNotValidated.phone) {
+                        return;
+                    }
+
+                    confirm(event);
+
+                });
+        
         }
 
         function confirm(event) {
@@ -372,13 +418,29 @@
             return email && !!email.verified
         }
 
+        function isPhoneVerified(authlabel) {
+            var phone = vm.user.phonenumbers.filter(function (p) {
+                return p.label === authlabel;
+            })[0];
+            return phone && !!phone.verified
+        }
+
         function verifyEmailByLabel(event, authlabel) {
-          var email = vm.user.emailaddresses.filter(function (e) {
-              return e.label === authlabel;
-          })[0];
-          if (email) {
-              UserDialogService.verifyEmailAddress(event, email).then(loadVerifiedEmails)
-          }
+            var email = vm.user.emailaddresses.filter(function (e) {
+                return e.label === authlabel;
+            })[0];
+            if (email) {
+                UserDialogService.verifyEmailAddress(event, email).then(loadVerifiedEmails)
+            }
+        }
+
+        function verifyPhoneByLabel(event, authlabel) {
+            var phone = vm.user.phonenumbers.filter(function (p) {
+                return p.label === authlabel;
+            })[0];
+            if (phone) {
+                UserDialogService.verifyPhone(event, phone).then(loadVerifiedPhones)
+            }
         }
 
         function selectDefault(fx, event, auth, property) {
