@@ -52,7 +52,7 @@
             $scope.$watch(function () {
                 return $mdMedia('gt-sm');
             }, function (isGtSm) {
-                vm.mobileView = isGtSm;
+                vm.mobileView = !isGtSm;
             });
             if (queryParams && queryParams.scope && queryParams.scope.includes('ownerof:email')) {
                 var scopes = queryParams.scope.split(',');
