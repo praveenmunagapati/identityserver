@@ -757,3 +757,7 @@ p.verified {
 .authorize-error {
     color: red;
 }
+
+.pointer {
+    cursor: pointer;
+}

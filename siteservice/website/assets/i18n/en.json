@@ -605,5 +605,11 @@
     "resend_button_email": "If you did not receive an email, please use the resend button below.",
     "previous": "Previous",
     "login_btn": "Login",
-    "great_success": "success"
+    "great_success": "success",
+    "phone_already_used": "This phone number is already in use",
+    "email_already_used": "This email address is already in use",
+    "account_exists_email": "According to our database this email address is already linked to an ItsYou.Online account.",
+    "account_exists_phone": "According to our database this phone number is already linked to an ItsYou.Online account.",
+    "go_to_login": "Please click here to login.",
+    "go_to_forgot_password": "If you forgot your password please click here."
 }

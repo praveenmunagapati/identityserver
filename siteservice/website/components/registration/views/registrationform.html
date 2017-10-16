@@ -36,6 +36,21 @@
                                 </div>
                                 <h2 class="all-caps text-align-center bold no-margin" translate="basic_info">Basic info</h2>
                             </div>
+                            <div class="validation-error text-align-center" ng-if="vm.emailduplicate || vm.phoneduplicate"
+                                layout="column" layout-allign="center center">
+                                <span translate='account_exists_email' ng-if="vm.emailduplicate">
+                                    According to our database this email address is already linked to an ItsYou.Online account.
+                                </span>
+                                <span translate='account_exists_phone' ng-if="vm.phoneduplicate">
+                                    According to our database this phone number is already linked to an ItsYou.Online account.
+                                </span>
+                                <a ng-click="vm.goToLogin()" translate="go_to_login" class='pointer'>
+                                    Please click here to login.
+                                </a>
+                                <a ng-click="vm.goToForgotPassword()" translate='go_to_forgot_password' class='pointer'>
+                                    If you forgot your password please click here.
+                                </a>
+                            </div>
                             <div layout="row" layout-align="space-between center">
                                 <md-input-container flex="45">
                                     <label for="firstname" translate='user.views.namedialog.firstname'>First name</label>
@@ -70,13 +85,15 @@
                             <md-input-container>
                                 <label for="email" translate='registration.views.registrationform.email'>Email</label>
                                 <input ng-model="vm.email" required name="email" type="email" id="email" md-maxlength="80"
-                                       ng-pattern="/[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/">
+                                       ng-pattern="/[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/"
+                                       ng-change="vm.resetValidation('email')">
                                 <div ng-messages="signupform.email.$error" md-auto-hide="false" ng-if="signupform.email.$touched">
                                     <div ng-message="email" translate="invalid_email_address">Invalid email address</div>
                                     <div ng-message="md-maxlength" translate='emailmaxlength'>The email address cannot be longer than 80
                                         characters
                                     </div>
                                     <div ng-message="pattern" translate='invalid_email_address'>Invalid email address</div>
+                                    <div ng-message='email_already_used' translate='email_already_used'>This email is already in use</div>
                                 </div>
                             </md-input-container>
                             <md-input-container>

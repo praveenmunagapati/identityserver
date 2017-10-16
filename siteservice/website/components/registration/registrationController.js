@@ -19,12 +19,16 @@
         vm.codeUpdated = codeUpdated;
         vm.externalSite = queryParams.client_id;
         $rootScope.loginUrl = '/login' + $window.location.search;
+        vm.goToLogin = goToLogin;
+        vm.goToForgotPassword = goToForgotPassword;
         vm.logo = undefined;
         vm.description = "";
         vm.selectedTab = 0;
         vm.oldSelectedTab = 0;
         vm.phone = {};
         vm.phone.validationerrors = {};
+        vm.phoneduplicate = false;
+        vm.emailduplicate = false;
 
         vm.sms = "";
         vm.smsvalidation = "";
@@ -81,6 +85,16 @@
             );
         }
 
+        function goToLogin() {
+            console.log("clikity clickity");
+            $window.location.href = $rootScope.loginUrl;
+        }
+
+        function goToForgotPassword() {
+            console.log("clikity clickity");
+            $window.location.href = '/login#/forgotpassword';
+        }
+
         function register() {
             if(!$scope.signupform.$valid){
                 return;
@@ -123,6 +137,14 @@
                                 case 'invalid_email_format':
                                     $scope.signupform.email.$setValidity('email', false);
                                     break;
+                                case 'email_already_used':
+                                    $scope.signupform.email.$setValidity(err, false);
+                                    vm.emailduplicate = true;
+                                    break;
+                                case 'phone_already_used':
+                                    vm.phone.validationerrors[err] = true;
+                                    vm.phoneduplicate = true;
+                                    break;
                                 default:
                                     console.error('Unconfigured error:', response.data.error);
                             }
@@ -145,12 +167,16 @@
                 case 'smscode':
                     $scope.signupform[prop].$setValidity("invalid_sms_code", true);
                     break;
-                case 'emailcode':
-                    $scope.signupform[prop].$setValidity("invalid_email_code", true);
+                case 'email':
+                    $scope.signupform[prop].$setValidity("email", true);
+                    $scope.signupform[prop].$setValidity("email_already_used", true);
+                    vm.emailduplicate = false;
                     break;
                 case 'phonenumber':
                     $scope.signupform[prop].$setValidity("invalid_phonenumber", true);
                     vm.phone.validationerrors.invalid_phone = false;
+                    vm.phone.validationerrors.phone_already_used = false;
+                    vm.phoneduplicate = false;
                     break;
                 case 'totpcode':
                     $scope.signupform[prop].$setValidity("invalid_totpcode", true);
@@ -175,6 +201,7 @@
                 // double boolean negation to cast to the real boolean form, undefined -> false
                 && !!vm.phone.validationerrors.pattern === false
                 && !!vm.phone.validationerrors.invalid_phone === false
+                && !!vm.phone.validationerrors.phone_already_used === false
                 && $scope.signupform.email.$valid
                 && $scope.signupform.password.$valid
                 && $scope.signupform.passwordvalidation.$valid;
@@ -210,32 +237,37 @@
                     function(failure) {
                         var err = failure.data.error;
                         switch (err) {
-                          case 'invalid_first_name':
-                              $scope.signupform.firstname.$setValidity(err, false);
-                              break;
-                          case 'invalid_last_name':
-                              $scope.signupform.lastname.$setValidity(err, false);
-                              break;
-                          case 'invalid_phonenumber':
-                              vm.phone.validationerrors.invalid_phone = true;
-                              break;
-                          case 'invalid_totpcode':
-                              $scope.signupform.totpcode.$setValidity(err, false);
-                              break;
-                          case 'invalid_password':
-                              $scope.signupform.password.$setValidity(err, false);
-                              break;
-                          case 'invalid_email_code':
-                              $scope.signupform.emailcode.$setValidity(err, false);
-                              break;
-                          case 'invalid_sms_code':
-                              $scope.signupform.smscode.$setValidity(err, false);
-                              break;
-                          case 'invalid_email_format':
-                              $scope.signupform.email.$setValidity('email', false);
-                              break;
-                          default:
-                              console.error('Unconfigured error:', failure.data.error);
+                            case 'invalid_first_name':
+                                $scope.signupform.firstname.$setValidity(err, false);
+                                break;
+                            case 'invalid_last_name':
+                                $scope.signupform.lastname.$setValidity(err, false);
+                                break;
+                            case 'invalid_phonenumber':
+                                vm.phone.validationerrors.invalid_phone = true;
+                                break;
+                            case 'invalid_totpcode':
+                                $scope.signupform.totpcode.$setValidity(err, false);
+                                break;
+                            case 'invalid_password':
+                                $scope.signupform.password.$setValidity(err, false);
+                                break;
+                            case 'invalid_sms_code':
+                                $scope.signupform.smscode.$setValidity(err, false);
+                                break;
+                            case 'invalid_email_format':
+                                $scope.signupform.email.$setValidity('email', false);
+                                break;
+                            case 'email_already_used':
+                                $scope.signupform.email.$setValidity(err, false);
+                                vm.emailduplicate = true;
+                                break;
+                            case 'phone_already_used':
+                                vm.phone.validationerrors[err] = true;
+                                vm.phoneduplicate = true;
+                                break;
+                            default:
+                                console.error('Unconfigured error:', failure.data.error);
                         }
                     }
                 )

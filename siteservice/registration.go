@@ -17,6 +17,7 @@ import (
 	"github.com/itsyouonline/identityserver/db"
 	"github.com/itsyouonline/identityserver/db/organization"
 	"github.com/itsyouonline/identityserver/db/user"
+	validationdb "github.com/itsyouonline/identityserver/db/validation"
 	"github.com/itsyouonline/identityserver/siteservice/website/packaged/html"
 	"github.com/itsyouonline/identityserver/validation"
 )
@@ -505,10 +506,25 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if the email is already known
+	valMgr := validationdb.NewManager(r)
+	if _, err = valMgr.GetByEmailAddress(data.Email); !db.IsNotFound(err) {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		writeErrorResponse(w, "email_already_used")
+		return
+	}
+
 	valid = user.ValidatePhoneNumber(data.Phone)
 	if !valid {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		writeErrorResponse(w, "invalid_phonenumber")
+		return
+	}
+
+	// Check if the phone number is already known
+	if _, err = valMgr.GetByPhoneNumber(data.Phone); !db.IsNotFound(err) {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		writeErrorResponse(w, "phone_already_used")
 		return
 	}
 
