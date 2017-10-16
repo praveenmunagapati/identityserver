@@ -1,13 +1,13 @@
 package siteservice
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"gopkg.in/mgo.v2"
 
@@ -25,6 +25,7 @@ import (
 const (
 	mongoRegistrationCollectionName = "registrationsessions"
 	MAX_PENDING_REGISTRATION_COUNT  = 10000
+	usernameRandBytesRequired       = 24 //The amount of bytes we need to get all the username chars 24 -> 32 chars
 )
 
 //initLoginModels initialize models in mongo
@@ -453,16 +454,6 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	counter := 0
-	var username string
-	for _, r := range data.Firstname {
-		username += string(unicode.ToLower(r))
-	}
-	username += "_"
-	for _, r := range data.Lastname {
-		username += string(unicode.ToLower(r))
-	}
-	username += "_"
 	userMgr := user.NewManager(r)
 
 	count, err := userMgr.GetPendingRegistrationsCount()
@@ -478,22 +469,23 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generate a unique username
 	orgMgr := organization.NewManager(r)
+	var username string
 	exists := true
 	for exists {
-		counter += 1
 		var err error
-		exists, err = userMgr.Exists(username + strconv.Itoa(counter))
+		username, err = generateUsername()
+		exists, err = userMgr.Exists(username)
 		if err != nil {
 			log.Error("Failed to verify if username is taken: ", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 		if !exists {
-			exists = orgMgr.Exists(username + strconv.Itoa(counter))
+			exists = orgMgr.Exists(username)
 		}
 	}
-	username = username + strconv.Itoa(counter)
 
 	// Convert the email address to all lowercase
 	// Email addresses are limited to printable ASCII characters
@@ -655,6 +647,18 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	sessions.Save(r, w)
 	// validations created
 	w.WriteHeader(http.StatusCreated)
+}
+
+// generate a new random username
+func generateUsername() (string, error) {
+	randBytes := make([]byte, usernameRandBytesRequired)
+	_, err := rand.Read(randBytes)
+	if err != nil {
+		return "", err
+	}
+
+	username := base64.URLEncoding.EncodeToString(randBytes)
+	return username, err
 }
 
 func (service *Service) ResendValidationInfo(w http.ResponseWriter, r *http.Request) {
