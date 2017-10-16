@@ -86,12 +86,10 @@
         }
 
         function goToLogin() {
-            console.log("clikity clickity");
             $window.location.href = $rootScope.loginUrl;
         }
 
         function goToForgotPassword() {
-            console.log("clikity clickity");
             $window.location.href = '/login#/forgotpassword';
         }
 
