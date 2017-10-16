@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -352,39 +351,11 @@ func (service *Service) ProcessRegistrationForm(w http.ResponseWriter, r *http.R
 	}
 	// at this point the phone number is confirmed
 	userMgr.RemoveExpireDate(username)
-	// see if we can also verify the email, and if we can't, see if we can continue the registration
-
-	// require a validated email to register if:
-	//  - a validated email scope is required to log in to an external org
-	//  - the user is registering against IYO (not in an oauth flow)
-	//  - the `requirevalidatedemail` queryparameter is set.
-
-	requireValidatedEmail := false
-	queryParams, err := url.ParseQuery(values.RedirectParams)
-	if err != nil {
-		log.Debug("Failed to parse query params: ", err)
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	if strings.Contains(queryParams.Get("scope"), "user:validated:email") {
-		log.Debug("Require validated email because of user:validated:email scope")
-		requireValidatedEmail = true
-	}
-	if queryParams.Get("client_id") == "" {
-		log.Debug("Require validated email because there is no client id")
-		requireValidatedEmail = true
-	}
-	if queryParams.Get("requirevalidatedemail") != "" {
-		log.Debug("Require validated email because the requirevalidatedemail query parameter is set")
-		requireValidatedEmail = true
-	}
-	if !requireValidatedEmail {
-		log.Debug("Validated email not required to register")
-	}
+	// Check if the email has already been verified through the link
 
 	emailvalidationkey, _ := registrationSession.Values["emailvalidationkey"].(string)
 	emailConfirmed, _ := service.emailaddressValidationService.IsConfirmed(r, emailvalidationkey)
-	if !emailConfirmed && requireValidatedEmail {
+	if !emailConfirmed {
 		log.Debug("Email not confirmed yet")
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
