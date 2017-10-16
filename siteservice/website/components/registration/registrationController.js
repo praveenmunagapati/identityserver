@@ -303,6 +303,8 @@
                 function(response) {
                     if (response.data.confirmed) {
                         vm.phoneConfirmed = response.data.confirmed;
+                        // trigger the email verification
+                        resendValidation();
                     } 
                 },
                 function(failure) {

@@ -608,11 +608,18 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 		registrationSession.Values["password"] = data.Password
 	}
 
+	oldPhoneKey, _ := registrationSession.Values["phonenumbervalidationkey"].(string)
+	phoneConfirmed, err := service.phonenumberValidationService.IsConfirmed(r, oldPhoneKey)
+	if err != nil && err != validation.ErrInvalidOrExpiredKey {
+		log.Error("Failed to check if phone number is already confirmed: ", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
 	// phone number validation
 	if phoneChanged {
 		// invalidate old phone number validation
-		oldkey, _ := registrationSession.Values["phonenumbervalidationkey"].(string)
-		_ = service.emailaddressValidationService.ExpireValidation(r, oldkey)
+		_ = service.phonenumberValidationService.ExpireValidation(r, oldPhoneKey)
 
 		phonenumber := user.Phonenumber{Phonenumber: data.Phone}
 		validationkey, err := service.phonenumberValidationService.RequestValidation(r, username, phonenumber, fmt.Sprintf("https://%s/phonevalidation", r.Host), data.LangKey)
@@ -625,8 +632,12 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 		registrationSession.Values["phonenumber"] = phonenumber.Phonenumber
 	}
 
-	// email validation
-	if emailChanged {
+	// Email validation
+	// So the logic here: only send an email if the email address is changed,
+	// also only send it if the phone number is confirmed already (defer sending email until this is done)
+	// and make sure the phone number didn't change so we don't end up sending 2 validations if
+	// the user manages to somehow confirm a wrong phonenumber (magic?)
+	if emailChanged && phoneConfirmed && !phoneChanged {
 		// invalidated old email validation
 		oldkey, _ := registrationSession.Values["emailvalidationkey"].(string)
 		_ = service.emailaddressValidationService.ExpireValidation(r, oldkey)
@@ -703,20 +714,23 @@ func (service *Service) ResendValidationInfo(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		registrationSession.Values["phonenumbervalidationkey"] = validationkey
+
 	}
 
 	// There is no point in resending the validation request if the email is already
 	// verified
 	emailvalidationkey, _ := registrationSession.Values["emailvalidationkey"].(string)
 	emailConfirmed, err := service.emailaddressValidationService.IsConfirmed(r, emailvalidationkey)
-	if err != nil {
+	if err != nil && err != validation.ErrInvalidOrExpiredKey {
 		log.Error("Failed to check if email address is already confirmed: ", err)
 	}
 	if emailConfirmed {
 		log.Debug("Email is already confirmed, ignoring new email validation request")
 	}
 	// Only retrigger the validation if the email is not confirmed yet
-	if !emailConfirmed && err == nil {
+	// Check if the phone is confirmed, if it is not we can't be on the email page yet
+	// So there is no need to resend this validation yet
+	if !emailConfirmed && (err == nil || err == validation.ErrInvalidOrExpiredKey) && phoneConfirmed {
 		// Invalidate the previous email validation request, ignore a possible error
 		_ = service.emailaddressValidationService.ExpireValidation(r, emailvalidationkey)
 
