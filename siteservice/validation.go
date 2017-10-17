@@ -78,9 +78,10 @@ func (service *Service) EmailValidation(w http.ResponseWriter, request *http.Req
 	}
 
 	translations := struct {
-		Invalidlink    string
-		Error          string
-		Emailconfirmed string
+		Invalidlink         string
+		Error               string
+		Emailconfirmed      string
+		Emailconfirmedextra string
 	}{}
 
 	r := bytes.NewReader(translationFile)
@@ -91,14 +92,14 @@ func (service *Service) EmailValidation(w http.ResponseWriter, request *http.Req
 
 	err = service.emailaddressValidationService.ConfirmValidation(request, key, smscode)
 	if err == validation.ErrInvalidCode || err == validation.ErrInvalidOrExpiredKey {
-		service.renderEmailConfirmationPage(w, request, translations.Invalidlink)
+		service.renderEmailConfirmationPage(w, request, translations.Invalidlink, "")
 		return
 	}
 	if err != nil {
 		log.Error(err)
-		service.renderEmailConfirmationPage(w, request, translations.Error)
+		service.renderEmailConfirmationPage(w, request, translations.Error, "")
 		return
 	}
 
-	service.renderEmailConfirmationPage(w, request, translations.Emailconfirmed)
+	service.renderEmailConfirmationPage(w, request, translations.Emailconfirmed, translations.Emailconfirmedextra)
 }

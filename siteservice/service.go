@@ -257,7 +257,7 @@ func (service *Service) renderSMSConfirmationPage(w http.ResponseWriter, request
 }
 
 //renderEmailConfirmationPage renders a small mobile friendly confirmation page after a user follows a link in an email
-func (service *Service) renderEmailConfirmationPage(w http.ResponseWriter, request *http.Request, text string) {
+func (service *Service) renderEmailConfirmationPage(w http.ResponseWriter, request *http.Request, text string, extratext string) {
 	htmlData, err := html.Asset(emailconfirmationPage)
 	if err != nil {
 		log.Error(err)
@@ -265,6 +265,7 @@ func (service *Service) renderEmailConfirmationPage(w http.ResponseWriter, reque
 		return
 	}
 	htmlData = bytes.Replace(htmlData, []byte(`{{ text }}`), []byte(text), 1)
+	htmlData = bytes.Replace(htmlData, []byte(`{{ extratext }}`), []byte(extratext), 1)
 	sessions.Save(request, w)
 	w.Write(htmlData)
 }
