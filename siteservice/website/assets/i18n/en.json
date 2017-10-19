@@ -72,7 +72,7 @@
         "views": {
             "forgotpassword": {
                 "forgotpassword": "Forgot password",
-                "recoverymailsend": "A recovery email has been send.",
+                "recoverymailsend": "A recovery email has been sent.",
                 "user": "Username or email",
                 "userminlength": "At least 2 characters are required",
                 "userinvalid": "A user with this username or email address could not be found",
