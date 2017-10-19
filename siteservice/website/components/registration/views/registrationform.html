@@ -108,8 +108,7 @@
                             <md-input-container>
                                 <label for="passwordvalidation" translate='registration.views.registrationform.confirmpassword'>Password confirmation</label>
                                 <input ng-model="vm.passwordvalidation" required name="passwordvalidation"
-                                       password-validation="vm.password" id="passwordvalidation" type="password"
-                                       ng-change="vm.goToNextTabIfValid()">
+                                       password-validation="vm.password" id="passwordvalidation" type="password">
                                 <div ng-messages="signupform.passwordvalidation.$error">
                                     <div ng-message="passwordIdentical" translate='registration.views.registrationform.passwordmatch'>The passwords do not match</div>
                                 </div>
