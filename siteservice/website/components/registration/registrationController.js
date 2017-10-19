@@ -42,9 +42,8 @@
 
         vm.emailConfirmed = false;
         vm.phoneConfirmed = false;
-        // Do we need a validated email address to register?
-        vm.needDoubleValidation = false;
 
+        vm.basicInfoFailed = false;
 
         init();
 
@@ -53,6 +52,11 @@
                 return $mdMedia('gt-sm');
             }, function (isGtSm) {
                 vm.mobileView = !isGtSm;
+            });
+            $scope.$watch(function () {
+                return vm.phone.validationerrors.phone_already_used;
+            }, function(phoneused) {
+                vm.phoneduplicate = phoneused;
             });
             if (queryParams && queryParams.scope && queryParams.scope.includes('ownerof:email')) {
                 var scopes = queryParams.scope.split(',');
@@ -215,7 +219,7 @@
         }
 
         function onTabSelected() {
-            if (vm.oldSelectedTab === 0 && vm.selectedTab === 1 && vm.selectedTab != vm.oldSelectedTab) {
+            if ((vm.oldSelectedTab === 0 && vm.selectedTab === 1 && vm.selectedTab != vm.oldSelectedTab) || vm.basicInfoFailed ) {
                 if (basicInfoValid()) {
                     // blur the password validaton field 
                     document.getElementById('passwordvalidation').blur();
@@ -226,14 +230,17 @@
         }
 
         function requestValidationInfo() {
-            if (basicInfoValid() && (vm.sms != vm.smsvalidation || vm.email != vm.emailvalidation ||
-                vm.firstname != vm.firstnamevalidation || vm.lastname != vm.lastnamevalidation)) {
+            if (basicInfoValid() && ((vm.sms != vm.smsvalidation || vm.email != vm.emailvalidation ||
+                vm.firstname != vm.firstnamevalidation || vm.lastname != vm.lastnamevalidation) || vm.basicInfoFailed)) {
+
+                vm.basicInfoFailed = false;
                 registrationService.requestValidation(vm.firstname, vm.lastname, vm.email, vm.sms, vm.password).then(
                     function(success) {
                         startCodePolling();
                     },
                     function(failure) {
                         var err = failure.data.error;
+                        vm.basicInfoFailed = true;
                         switch (err) {
                             case 'invalid_first_name':
                                 $scope.signupform.firstname.$setValidity(err, false);
