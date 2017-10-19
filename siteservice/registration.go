@@ -747,7 +747,7 @@ func (service *Service) ResendValidationInfo(w http.ResponseWriter, r *http.Requ
 
 		if email != data.Email {
 			sessions.Save(r, w)
-			log.Info("Attempt to trigger regsitration flow email (resend) validation with a different email address than the one stored in the session")
+			log.Info("Attempt to trigger registration flow email (resend) validation with a different email address than the one stored in the session")
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
