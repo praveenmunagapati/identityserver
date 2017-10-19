@@ -424,7 +424,7 @@ func (service *Service) ValidateUsername(w http.ResponseWriter, request *http.Re
 	return
 }
 
-// Starts validation for a temporary username
+// ValidateInfo starts validation for a temporary username
 func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Firstname string `json:"firstname"`
@@ -609,6 +609,9 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// phone number validation
+	// always set the registrationsession value of the phonenumber key. If the phone validation is not triggered,
+	// the old value and new value are the same anyway
+	registrationSession.Values["phonenumber"] = data.Phone
 	if phoneChanged {
 		// invalidate old phone number validation
 		_ = service.phonenumberValidationService.ExpireValidation(r, oldPhoneKey)
@@ -621,7 +624,6 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		registrationSession.Values["phonenumbervalidationkey"] = validationkey
-		registrationSession.Values["phonenumber"] = phonenumber.Phonenumber
 	}
 
 	// Email validation
@@ -629,6 +631,9 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	// also only send it if the phone number is confirmed already (defer sending email until this is done)
 	// and make sure the phone number didn't change so we don't end up sending 2 validations if
 	// the user manages to somehow confirm a wrong phonenumber (magic?)
+	// always set the registrationsession value of the email key. If the email validation is not triggered,
+	// the old value and new value are the same anyway
+	registrationSession.Values["email"] = data.Email
 	if emailChanged && phoneConfirmed && !phoneChanged {
 		// invalidated old email validation
 		oldkey, _ := registrationSession.Values["emailvalidationkey"].(string)
@@ -641,7 +646,6 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		registrationSession.Values["emailvalidationkey"] = mailvalidationkey
-		registrationSession.Values["email"] = data.Email
 	}
 
 	sessions.Save(r, w)
@@ -661,6 +665,7 @@ func generateUsername() (string, error) {
 	return username, err
 }
 
+// ResendValidationInfo resends the validation info in the login flow
 func (service *Service) ResendValidationInfo(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Email   string `json:"email"`
@@ -739,6 +744,13 @@ func (service *Service) ResendValidationInfo(w http.ResponseWriter, r *http.Requ
 		_ = service.emailaddressValidationService.ExpireValidation(r, emailvalidationkey)
 
 		email, _ := registrationSession.Values["email"].(string)
+
+		if email != data.Email {
+			sessions.Save(r, w)
+			log.Info("Attempt to trigger regsitration flow email (resend) validation with a different email address than the one stored in the session")
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
 
 		emailvalidationkey, err = service.emailaddressValidationService.RequestValidation(r, username, email, fmt.Sprintf("https://%s/emailvalidation", r.Host), data.LangKey)
 		if err != nil {
