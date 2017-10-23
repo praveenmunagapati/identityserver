@@ -109,7 +109,7 @@
             }
         },
         "2facontroller": {
-            "sms": "Klik op de link in de sms die naar je telefoon gestuurd is, of vul de code uit de sms hier in om verder te gaan.",
+            "sms": "Vul de code uit de sms hier in om verder te gaan.",
             "totp": "Vul de 6 cijferige code van de Authenticatie-toepassing op je telefoon in."
         }
     },
@@ -611,6 +611,7 @@
     "email_already_used": "Dit e-mailadres is al in gebruik",
     "account_exists_email": "Volgens onze database is dit emailadres al gekoppeld aan een ItsYou.Online account.",
     "account_exists_phone": "Volgens onze database is dit telefoonnummer al gekoppeld aan een ItsYou.Online account.",
-    "go_to_login": "Klik hier om in te loggen.",
-    "go_to_forgot_password": "Als je je wachtwoord bent vergeten, klik dan hier."
+    "go_to_login": "<u>Klik hier</u> om in te loggen.",
+    "go_to_forgot_password": "Als je je wachtwoord bent vergeten, <u>klik dan hier</u>.",
+    "resend_email": "Herstuur e-mail"
 }

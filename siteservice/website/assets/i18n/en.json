@@ -109,7 +109,7 @@
             }
         },
         "2facontroller": {
-            "sms": "Click the link in the sms sent to your phone or enter the code from the sms here to continue.",
+            "sms": "Enter the code from the sms here to continue.",
             "totp": "Fill in the 6 digit code from the authenticator application on your phone."
         }
     },
@@ -610,6 +610,7 @@
     "email_already_used": "This email address is already in use",
     "account_exists_email": "According to our database this email address is already linked to an ItsYou.Online account.",
     "account_exists_phone": "According to our database this phone number is already linked to an ItsYou.Online account.",
-    "go_to_login": "Please click here to login.",
-    "go_to_forgot_password": "If you forgot your password please click here."
+    "go_to_login": "Please <u>click here</u> to login.",
+    "go_to_forgot_password": "If you forgot your password please <u>click here</u>.",
+    "resend_email": "Resend email"
 }
