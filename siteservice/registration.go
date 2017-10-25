@@ -456,10 +456,16 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	counter := 0
 	var username string
 	for _, r := range data.Firstname {
+		if unicode.IsSpace(r) {
+			continue
+		}
 		username += string(unicode.ToLower(r))
 	}
 	username += "_"
 	for _, r := range data.Lastname {
+		if unicode.IsSpace(r) {
+			continue
+		}
 		username += string(unicode.ToLower(r))
 	}
 	username += "_"
@@ -481,7 +487,7 @@ func (service *Service) ValidateInfo(w http.ResponseWriter, r *http.Request) {
 	orgMgr := organization.NewManager(r)
 	exists := true
 	for exists {
-		counter += 1
+		counter++
 		var err error
 		exists, err = userMgr.Exists(username + strconv.Itoa(counter))
 		if err != nil {
