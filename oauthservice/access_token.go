@@ -114,8 +114,7 @@ func (service *Service) AccessTokenHandler(w http.ResponseWriter, r *http.Reques
 		}
 	} else {
 		redirectURI := r.FormValue("redirect_uri")
-		state := r.FormValue("state")
-		at, httpStatusCode = convertCodeToAccessTokenHandler(code, clientID, clientSecret, redirectURI, state, mgr)
+		at, httpStatusCode = convertCodeToAccessTokenHandler(code, clientID, clientSecret, redirectURI, mgr)
 	}
 
 	if httpStatusCode != http.StatusOK {
@@ -229,7 +228,7 @@ func clientCredentialsTokenHandler(clientID string, secret string, mgr *Manager,
 	return
 }
 
-func convertCodeToAccessTokenHandler(code string, clientID string, secret string, redirectURI string, state string, mgr *Manager) (at *AccessToken, httpStatusCode int) {
+func convertCodeToAccessTokenHandler(code string, clientID string, secret string, redirectURI string, mgr *Manager) (at *AccessToken, httpStatusCode int) {
 	httpStatusCode = http.StatusOK
 
 	ar, err := mgr.getAuthorizationRequest(code)
@@ -244,11 +243,10 @@ func convertCodeToAccessTokenHandler(code string, clientID string, secret string
 		return
 	}
 
-	if ar.ClientID != clientID || ar.State != state || ar.RedirectURL != redirectURI {
+	if ar.ClientID != clientID || ar.RedirectURL != redirectURI {
 		log.Debugf("Client id:%s - Expected client id:%s", clientID, ar.ClientID)
-		log.Debugf("State:%s - Expected state:%s", state, ar.State)
 		log.Debugf("Redirect url:%s - Expected redirect url:%s", redirectURI, ar.RedirectURL)
-		log.Info("Bad client or hacking attempt, state, client_id or redirect_uri is different from the original authorization request")
+		log.Info("Bad client or hacking attempt, client_id or redirect_uri is different from the original authorization request")
 		httpStatusCode = http.StatusBadRequest
 		return
 	}

@@ -101,7 +101,6 @@ func main() {
 		q.Add("client_secret", s.Secret)
 		q.Add("code", code)
 		q.Add("redirect_uri", "http://localhost:8080/callback")
-		q.Add("state", state)
 		req.URL.RawQuery = q.Encode()
 
 		resp, err := hc.Do(req)

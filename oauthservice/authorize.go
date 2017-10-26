@@ -18,7 +18,6 @@ type authorizationRequest struct {
 	Username          string
 	RedirectURL       string
 	ClientID          string
-	State             string
 	Scope             string
 	CreatedAt         time.Time
 }
@@ -27,7 +26,7 @@ func (ar *authorizationRequest) IsExpiredAt(testtime time.Time) bool {
 	return testtime.After(ar.CreatedAt.Add(time.Second * 10))
 }
 
-func newAuthorizationRequest(username, clientID, state, scope, redirectURI string) *authorizationRequest {
+func newAuthorizationRequest(username, clientID, scope, redirectURI string) *authorizationRequest {
 	var ar authorizationRequest
 	randombytes := make([]byte, 21) //Multiple of 3 to make sure no padding is added
 	rand.Read(randombytes)
@@ -35,7 +34,6 @@ func newAuthorizationRequest(username, clientID, state, scope, redirectURI strin
 	ar.CreatedAt = time.Now()
 	ar.Username = username
 	ar.ClientID = clientID
-	ar.State = state
 	ar.Scope = scope
 	ar.RedirectURL = redirectURI
 
@@ -260,7 +258,7 @@ func handleAuthorizationGrantCodeType(r *http.Request, username, clientID, redir
 	clientState := r.Form.Get("state")
 	//TODO: validate state (length and stuff)
 
-	ar := newAuthorizationRequest(username, clientID, clientState, scopes, redirectURI)
+	ar := newAuthorizationRequest(username, clientID, scopes, redirectURI)
 	mgr := NewManager(r)
 	err = mgr.saveAuthorizationRequest(ar)
 	if err != nil {
